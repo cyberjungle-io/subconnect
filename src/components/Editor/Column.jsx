@@ -111,12 +111,12 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
           </div>
         ))}
 
-        <button
+<button
           onClick={handleAddRow}
-          className={`flex items-center text-sm ${textColor} hover:${textColor} transition-colors`}
+          className={`flex items-center justify-center w-full border-2 border-dashed ${borderColor} p-2 ${textColor} hover:bg-gray-50 transition-colors mt-2`}
         >
-          <FaPlusCircle className="mr-1" size={16} />
-          Add Row
+          <FaPlusCircle className="mr-2" size={16} />
+          <span>Add Row</span>
         </button>
 
         <ResizeHandle

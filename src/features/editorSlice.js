@@ -70,6 +70,9 @@ const editorSlice = createSlice({
         }
       }
     },
+    addMainRow: (state) => {
+      state.mainRows.push({ id: Date.now(), columns: [] });
+    },
     deleteColumn: (state, action) => {
       const { rowIndex, path } = action.payload;
       let current = state.mainRows[rowIndex].columns;
@@ -112,7 +115,8 @@ export const {
   deleteColumn,
   deleteRow,
   updateColumnSize,
-  updateContainerWidth
+  updateContainerWidth,
+  addMainRow
 } = editorSlice.actions;
 
 export default editorSlice.reducer;
