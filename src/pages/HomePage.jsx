@@ -1,10 +1,10 @@
 import React from 'react';
+import Editor from '../components/Editor/Editor';
 
 function HomePage() {
   return (
     <div>
-      <h1>Welcome to the Home Page</h1>
-      {/* Add your main content here */}
+     <Editor/> 
     </div>
   );
 }

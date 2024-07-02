@@ -1,5 +1,5 @@
 import React from "react";
-import { PlusCircle } from "lucide-react";
+import {  FaPlusCircle } from 'react-icons/fa';
 
 const AddColumnButton = ({
   onClick,
@@ -29,7 +29,7 @@ const AddColumnButton = ({
       className={`${baseClasses} ${nestedClasses}`}
       title="Add new column"
     >
-      <PlusCircle
+      <FaPlusCircle
         className={isNested ? "mr-1" : "mb-1"}
         size={isNested ? 16 : 24}
       />

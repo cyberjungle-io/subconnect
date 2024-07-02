@@ -1,7 +1,7 @@
-import React, { useContext } from "react";
-import { Maximize, Trash2, PlusCircle } from "lucide-react";
-import EditorContext from "./EditorContext";
-import ErrorBoundary from "./ErrorBoundary";
+import React from "react";
+import { FaWindowMaximize, FaTrashAlt, FaPlusCircle } from 'react-icons/fa';
+import UseEditor from "../../hooks/useEditor";
+import ErrorBoundary from "../common/ErrorBoundary";
 import ResizeHandle from "./ResizeHandle";
 import AddColumnButton from "./AddColumnButton";
 
@@ -16,7 +16,7 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
     addRow,
     deleteRow,
     addColumn,
-  } = useContext(EditorContext);
+  } = UseEditor();
 
   const borderColor = `border-${
     ["gray", "blue", "green", "red", "purple"][nestingLevel % 5]
@@ -49,14 +49,14 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
               className="mr-2 text-gray-500 hover:text-blue-500"
               title="Expand column"
             >
-              <Maximize size={16} />
+              <FaWindowMaximize size={16} />
             </button>
             <button
               onClick={handleDeleteColumn}
               className="text-gray-500 hover:text-red-500"
               title="Delete column"
             >
-              <Trash2 size={16} />
+              <FaTrashAlt size={16} />
             </button>
           </div>
         </div>
@@ -75,7 +75,7 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
                 className="text-gray-500 hover:text-red-500"
                 title="Delete row"
               >
-                <Trash2 size={16} />
+                <FaTrashAlt size={16} />
               </button>
             </div>
 
@@ -104,7 +104,7 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
           onClick={handleAddRow}
           className={`flex items-center text-sm ${textColor} hover:${textColor} transition-colors`}
         >
-          <PlusCircle className="mr-1" size={16} />
+          <FaPlusCircle className="mr-1" size={16} />
           Add Row
         </button>
 

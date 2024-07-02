@@ -1,12 +1,12 @@
-import React, { useContext } from "react";
+import React from "react";
 import { Trash2 } from "lucide-react";
-import EditorContext from "./EditorContext";
+import UseEditor from "../hooks/useEditor";
 import Column from "./Column";
 import AddColumnButton from "./AddColumnButton";
 import ErrorBoundary from "./ErrorBoundary";
 
 const NestedRow = ({ row, rowIndex, columnId, path, nestingLevel }) => {
-  const { deleteRow, addColumn } = useContext(EditorContext);
+  const { deleteRow, addColumn } = UseEditor();
 
   const borderColor = `border-${
     ["gray", "blue", "green", "red", "purple"][nestingLevel % 5]
