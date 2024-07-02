@@ -1,5 +1,5 @@
 import React from "react";
-import { FaWindowMaximize, FaTrashAlt, FaPlusCircle } from 'react-icons/fa';
+import { FaTrashAlt, FaArrowsAltH, FaArrowsAltV, FaPlusCircle } from 'react-icons/fa';
 import UseEditor from "../../hooks/useEditor";
 import ErrorBoundary from "../common/ErrorBoundary";
 import ResizeHandle from "./ResizeHandle";
@@ -11,11 +11,12 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
     columnHeights,
     containerRefs,
     handleResizeStart,
-    expandColumn,
     deleteColumn,
     addRow,
     deleteRow,
     addColumn,
+    expandColumnWidth,
+    expandColumnHeight,
   } = UseEditor();
 
   const borderColor = `border-${
@@ -27,7 +28,8 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
 
   const handleAddRow = () => addRow(rowIndex, [...path, column.id]);
   const handleDeleteColumn = () => deleteColumn(rowIndex, [...path, column.id]);
-  const handleExpandColumn = () => expandColumn(column.id);
+  const handleExpandWidth = () => expandColumnWidth(column.id);
+  const handleExpandHeight = () => expandColumnHeight(column.id);
 
   return (
     <ErrorBoundary>
@@ -44,12 +46,21 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
         >
           <span>{`${"Nested ".repeat(nestingLevel)}Column ${column.id}`}</span>
           <div>
+            {/* Expand width button */}
             <button
-              onClick={handleExpandColumn}
+              onClick={handleExpandWidth}
               className="mr-2 text-gray-500 hover:text-blue-500"
-              title="Expand column"
+              title="Expand column width"
             >
-              <FaWindowMaximize size={16} />
+              <FaArrowsAltH size={16} />
+            </button>
+            {/* Expand height button */}
+            <button
+              onClick={handleExpandHeight}
+              className="mr-2 text-gray-500 hover:text-blue-500"
+              title="Expand column height"
+            >
+              <FaArrowsAltV size={16} />
             </button>
             <button
               onClick={handleDeleteColumn}

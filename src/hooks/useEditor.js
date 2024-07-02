@@ -70,12 +70,16 @@ const useEditor = () => {
     document.addEventListener('mouseup', handleMouseUp);
   }, [dispatch, columnWidths, columnHeights]);
 
-  const handleExpandColumn = useCallback((columnId) => {
+  const handleExpandColumnWidth = useCallback((columnId) => {
     const containerWidth = containerRefs.current[columnId].parentElement.offsetWidth;
-    const siblingWidths = Object.values(columnWidths).reduce((sum, width) => sum + width, 0);
-    const availableWidth = containerWidth - siblingWidths + columnWidths[columnId];
-    dispatch(updateColumnSize({ columnId, width: availableWidth }));
-  }, [dispatch, columnWidths]);
+    dispatch(updateColumnSize({ columnId, width: containerWidth }));
+  }, [dispatch]);
+
+  const handleExpandColumnHeight = useCallback((columnId) => {
+    const containerHeight = containerRefs.current[columnId].parentElement.offsetHeight;
+    dispatch(updateColumnSize({ columnId, height: containerHeight }));
+  }, [dispatch]);
+
 
   return {
     mainRows,
@@ -88,7 +92,8 @@ const useEditor = () => {
     deleteColumn: handleDeleteColumn,
     deleteRow: handleDeleteRow,
     handleResizeStart,
-    expandColumn: handleExpandColumn,
+    expandColumnWidth: handleExpandColumnWidth,
+    expandColumnHeight: handleExpandColumnHeight,
   };
 };
 
