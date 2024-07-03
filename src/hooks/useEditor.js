@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   addColumn,
@@ -9,11 +9,14 @@ import {
   updateContainerWidth,
 } from "../features/editorSlice";
 
+
 const useEditor = () => {
   const dispatch = useDispatch();
   const { mainRows, columnWidths, columnHeights, containerWidths } =
     useSelector((state) => state.editor);
   const containerRefs = useRef({});
+  const [isResizing, setIsResizing] = useState(false);
+  const [manuallyResizedColumns, setManuallyResizedColumns] = useState({});
 
   const handleAddColumn = useCallback(
     (rowIndex, path = []) => {
@@ -45,40 +48,30 @@ const useEditor = () => {
   );
 
   const handleResizeStart = useCallback(
-    (e, columnId, isVertical = false) => {
+    (e, columnId, isVertical) => {
       e.preventDefault();
+      setIsResizing(true);
       const startX = e.clientX;
       const startY = e.clientY;
       const startWidth = columnWidths[columnId];
       const startHeight = columnHeights[columnId];
-      const containerWidth =
-        containerRefs.current[columnId]?.parentElement?.offsetWidth || 0;
 
       const handleMouseMove = (moveEvent) => {
         moveEvent.preventDefault();
         if (isVertical) {
           const deltaY = moveEvent.clientY - startY;
-          dispatch(
-            updateColumnSize({
-              columnId,
-              height: Math.max(50, startHeight + deltaY),
-            })
-          );
+          const newHeight = Math.max(50, startHeight + deltaY);
+          dispatch(updateColumnSize({ columnId, height: newHeight }));
+          setManuallyResizedColumns(prev => ({ ...prev, [columnId]: true }));
         } else {
           const deltaX = moveEvent.clientX - startX;
-          dispatch(
-            updateColumnSize({
-              columnId,
-              width: Math.max(
-                50,
-                Math.min(startWidth + deltaX, containerWidth - 50)
-              ),
-            })
-          );
+          const newWidth = Math.max(50, startWidth + deltaX);
+          dispatch(updateColumnSize({ columnId, width: newWidth }));
         }
       };
 
       const handleMouseUp = () => {
+        setIsResizing(false);
         document.removeEventListener("mousemove", handleMouseMove);
         document.removeEventListener("mouseup", handleMouseUp);
       };
@@ -88,6 +81,14 @@ const useEditor = () => {
     },
     [dispatch, columnWidths, columnHeights]
   );
+
+  const resetColumnManualResize = useCallback((columnId) => {
+    setManuallyResizedColumns(prev => {
+      const newState = { ...prev };
+      delete newState[columnId];
+      return newState;
+    });
+  }, []);
 
   const handleExpandColumnWidth = useCallback(
     (columnId) => {
@@ -108,45 +109,36 @@ const useEditor = () => {
     [dispatch, columnWidths]
   );
 
-  const handleExpandColumnHeight = useCallback((columnId) => {
+  const handleExpandColumnHeight = useCallback((columnId, rowIndex, path) => {
     const columnElement = containerRefs.current[columnId];
     if (!columnElement) return;
 
-    const parentElement = columnElement.parentElement;
-    const parentHeight = parentElement.offsetHeight;
-    
-    // Get all sibling elements
-    const siblings = Array.from(parentElement.children).filter(child => child !== columnElement);
-    
-    // Calculate the maximum height of sibling elements
-    const maxSiblingHeight = Math.max(...siblings.map(sibling => sibling.offsetHeight), 0);
-    
-    // Calculate the total height of all siblings
-    const totalSiblingsHeight = siblings.reduce((sum, sibling) => sum + sibling.offsetHeight, 0);
-    
-    // Calculate available height
-    const availableHeight = parentHeight - totalSiblingsHeight + (columnHeights[columnId] || 0);
-    
-    // New height should be the maximum of current height, available height, and max sibling height
-    const newHeight = Math.max(columnHeights[columnId] || 0, availableHeight, maxSiblingHeight);
+    let currentRow = mainRows[rowIndex];
+    for (let i = 0; i < path.length; i += 2) {
+      const columnIndex = currentRow.columns.findIndex(col => col.id === path[i]);
+      if (i === path.length - 1) {
+        currentRow = currentRow.columns[columnIndex];
+      } else {
+        currentRow = currentRow.columns[columnIndex].rows[path[i + 1]];
+      }
+    }
 
-    console.log('Expanding height:', { 
-      columnId, 
-      newHeight, 
-      parentHeight, 
-      maxSiblingHeight, 
-      totalSiblingsHeight,
-      availableHeight 
-    });
+    const maxHeight = Math.max(...currentRow.columns.map(col => columnHeights[col.id] || 0));
+    const newHeight = Math.max(maxHeight, columnElement.scrollHeight);
 
     dispatch(updateColumnSize({ columnId, height: newHeight }));
-  }, [dispatch, columnHeights]);
+    setManuallyResizedColumns(prev => ({ ...prev, [columnId]: true }));
+  }, [dispatch, mainRows, columnHeights]);
+
+  // Add this new function to handle updating column size
+  const handleUpdateColumnSize = useCallback((payload) => {
+    dispatch(updateColumnSize(payload));
+  }, [dispatch]);
 
   return {
     mainRows,
     columnWidths,
     columnHeights,
-    containerWidths,
     containerRefs,
     addColumn: handleAddColumn,
     addRow: handleAddRow,
@@ -155,6 +147,10 @@ const useEditor = () => {
     handleResizeStart,
     expandColumnWidth: handleExpandColumnWidth,
     expandColumnHeight: handleExpandColumnHeight,
+    updateColumnSize: useCallback((payload) => dispatch(updateColumnSize(payload)), [dispatch]),
+    isResizing,
+    manuallyResizedColumns,
+    resetColumnManualResize,
   };
 };
 
