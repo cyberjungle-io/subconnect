@@ -7,6 +7,7 @@ import {
   deleteRow,
   updateColumnSize,
   updateContainerWidth,
+  updateColumnColor,
 } from "../features/editorSlice";
 
 
@@ -25,6 +26,10 @@ const useEditor = () => {
     },
     [dispatch]
   );
+
+  const handleUpdateColumnColor = useCallback((columnId, color) => {
+    dispatch(updateColumnColor({ columnId, color }));
+  }, [dispatch]);
 
   const handleAddRow = useCallback(
     (rowIndex, path = []) => {
@@ -180,6 +185,7 @@ const useEditor = () => {
     isResizing,
     manuallyResizedColumns,
     resetColumnManualResize,
+    updateColumnColor: handleUpdateColumnColor,
   };
 };
 

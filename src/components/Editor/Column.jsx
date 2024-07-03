@@ -1,16 +1,21 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   FaTrashAlt,
   FaArrowsAltH,
   FaArrowsAltV,
   FaPlusCircle,
+  FaPalette,
+  FaCube,
 } from "react-icons/fa";
 import UseEditor from "../../hooks/useEditor";
 import ErrorBoundary from "../common/ErrorBoundary";
 import ResizeHandle from "./ResizeHandle";
 import AddColumnButton from "./AddColumnButton";
+import Modal from "../common/Modal";
+import ColorPicker from "../common/ColorPicker";
 
 const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const {
     columnWidths,
     columnHeights,
@@ -22,6 +27,7 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
     addColumn,
     expandColumnWidth,
     expandColumnHeight,
+    updateColumnColor,
   } = UseEditor();
 
   const borderColor = `border-${
@@ -38,6 +44,14 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
     console.log('Expanding height for column:', { id: column.id, rowIndex, path });
     expandColumnHeight(column.id, rowIndex, path);
   };
+  const handleColorSelect = (color) => {
+    updateColumnColor(column.id, color);
+    setIsModalOpen(false);
+  };
+
+  const hasRows = column.rows.length > 0;
+  const hasContent = column.content || column.color; // Adjust this based on how you're storing content
+  const shouldShowTopLeftButton = hasRows || hasContent;
   
   return (
     <ErrorBoundary>
@@ -47,6 +61,7 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
         style={{
           width: `${columnWidths[column.id]}px`,
           height: `${columnHeights[column.id]}px`,
+          backgroundColor: column.color || 'transparent',
         }}
       >
         {/* Column Header */}
@@ -79,49 +94,84 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
           </div>
         </div>
 
-        {/* Scrollable Content Area */}
-        <div className="flex-grow overflow-auto p-2">
-          {column.rows.map((row, idx) => (
-            <div
-              key={row.id}
-              className="border border-gray-300 p-2 mb-2 bg-gray-50"
+        {/* Content Picker Button */}
+        {shouldShowTopLeftButton ? (
+          <div className="absolute top-2 left-2 z-10">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-colors"
+              title="Add content"
             >
-              <div className="font-semibold mb-2 flex justify-between items-center">
-                <span>{`${"Nested ".repeat(nestingLevel + 1)}Row ${
-                  row.id
-                }`}</span>
-                <button
-                  onClick={() => deleteRow(rowIndex, [...path, column.id, idx])}
-                  className="text-gray-500 hover:text-red-500"
-                  title="Delete row"
-                >
-                  <FaTrashAlt size={16} />
-                </button>
-              </div>
+              <FaCube size={16} />
+            </button>
+          </div>
+        ) : null}
 
-              <div className="flex flex-wrap gap-2 mb-2">
-                {row.columns.map((nestedColumn) => (
-                  <Column
-                    key={nestedColumn.id}
-                    column={nestedColumn}
-                    rowIndex={rowIndex}
-                    path={[...path, column.id, idx]}
-                    nestingLevel={nestingLevel + 1}
+        {/* Scrollable Content Area */}
+        <div className="flex-grow overflow-auto p-2 relative">
+          {hasRows ? (
+            column.rows.map((row, idx) => (
+              <div
+                key={row.id}
+                className="border border-gray-300 p-2 mb-2 bg-gray-50"
+              >
+                <div className="font-semibold mb-2 flex justify-between items-center">
+                  <span>{`${"Nested ".repeat(nestingLevel + 1)}Row ${
+                    row.id
+                  }`}</span>
+                  <button
+                    onClick={() => deleteRow(rowIndex, [...path, column.id, idx])}
+                    className="text-gray-500 hover:text-red-500"
+                    title="Delete row"
+                  >
+                    <FaTrashAlt size={16} />
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {row.columns.map((nestedColumn) => (
+                    <Column
+                      key={nestedColumn.id}
+                      column={nestedColumn}
+                      rowIndex={rowIndex}
+                      path={[...path, column.id, idx]}
+                      nestingLevel={nestingLevel + 1}
+                    />
+                  ))}
+
+                  <AddColumnButton
+                    onClick={() => addColumn(rowIndex, [...path, column.id, idx])}
+                    isNested={true}
+                    borderColor={borderColor}
+                    textColor={textColor}
                   />
-                ))}
-
-                <AddColumnButton
-                  onClick={() => addColumn(rowIndex, [...path, column.id, idx])}
-                  isNested={true}
-                  borderColor={borderColor}
-                  textColor={textColor}
-                />
+                </div>
               </div>
+            ))
+          ) : !hasContent ? (
+            <div className="flex items-center justify-center h-full">
+              {/* Content Picker Button (centered when no content and no rows) */}
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="p-3 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-colors"
+                title="Add content"
+              >
+                <FaCube size={24} />
+              </button>
             </div>
-          ))}
+          ) : null}
+          
+          {/* Display content here if it exists */}
+          {hasContent && !hasRows && (
+            <div className="h-full flex items-center justify-center">
+              {/* Replace this with actual content rendering */}
+              <span className="text-gray-500">Content goes here</span>
+            </div>
+          )}
         </div>
 
-        <div className="p-3 ">
+        {/* Add Row Button (always present) */}
+        <div className="p-3">
           <button
             onClick={handleAddRow}
             className={`flex items-center justify-center w-full border-2 border-dashed ${borderColor} p-2 ${textColor} hover:bg-gray-50 transition-colors`}
@@ -139,6 +189,10 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
           onMouseDown={(e) => handleResizeStart(e, column.id, true)}
           isVertical={true}
         />
+
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+          <ColorPicker onColorSelect={handleColorSelect} />
+        </Modal>
       </div>
     </ErrorBoundary>
   );
