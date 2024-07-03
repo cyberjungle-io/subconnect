@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import {
   FaTrashAlt,
   FaArrowsAltH,
@@ -22,33 +22,7 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
     addColumn,
     expandColumnWidth,
     expandColumnHeight,
-    updateColumnSize,
-    isResizing,
-    manuallyResizedColumns,
-    resetColumnManualResize,
   } = UseEditor();
-
-  const contentRef = useRef(null);
-
-  useEffect(() => {
-    if (
-      contentRef.current &&
-      !isResizing &&
-      !manuallyResizedColumns[column.id]
-    ) {
-      const contentHeight = contentRef.current.scrollHeight;
-      if (contentHeight !== columnHeights[column.id]) {
-        updateColumnSize({ columnId: column.id, height: contentHeight });
-      }
-    }
-  }, [
-    column.rows,
-    columnHeights,
-    column.id,
-    updateColumnSize,
-    isResizing,
-    manuallyResizedColumns,
-  ]);
 
   const borderColor = `border-${
     ["gray", "blue", "green", "red", "purple"][nestingLevel % 5]
@@ -60,49 +34,53 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
   const handleAddRow = () => addRow(rowIndex, [...path, column.id]);
   const handleDeleteColumn = () => deleteColumn(rowIndex, [...path, column.id]);
   const handleExpandWidth = () => expandColumnWidth(column.id);
-  const handleExpandHeight = () => expandColumnHeight(column.id, rowIndex, path);
+  const handleExpandHeight = () => {
+    console.log('Expanding height for column:', { id: column.id, rowIndex, path });
+    expandColumnHeight(column.id, rowIndex, path);
+  };
+  
   return (
     <ErrorBoundary>
       <div
         ref={(el) => (containerRefs.current[column.id] = el)}
-        className={`relative flex-shrink-0 border ${borderColor} bg-white`}
+        className={`relative flex flex-col border ${borderColor} bg-white overflow-hidden`}
         style={{
           width: `${columnWidths[column.id]}px`,
           height: `${columnHeights[column.id]}px`,
         }}
       >
-        <div ref={contentRef} className="h-full overflow-auto p-2">
-          <div
-            className={`font-semibold mb-2 ${textColor} flex justify-between items-center`}
-          >
-            <span>{`${"Nested ".repeat(nestingLevel)}Column ${
-              column.id
-            }`}</span>
-            <div>
-              <button
-                onClick={handleExpandWidth}
-                className="mr-2 text-gray-500 hover:text-blue-500"
-                title="Expand column width"
-              >
-                <FaArrowsAltH size={16} />
-              </button>
-              <button
-                onClick={handleExpandHeight}
-                className="mr-2 text-gray-500 hover:text-blue-500"
-                title="Expand column height"
-              >
-                <FaArrowsAltV size={16} />
-              </button>
-              <button
-                onClick={handleDeleteColumn}
-                className="text-gray-500 hover:text-red-500"
-                title="Delete column"
-              >
-                <FaTrashAlt size={16} />
-              </button>
-            </div>
+        {/* Column Header */}
+        <div
+          className={`font-semibold p-2 ${textColor} flex justify-between items-center`}
+        >
+          <span>{`${"Nested ".repeat(nestingLevel)}Column ${column.id}`}</span>
+          <div>
+            <button
+              onClick={handleExpandWidth}
+              className="mr-2 text-gray-500 hover:text-blue-500"
+              title="Expand column width"
+            >
+              <FaArrowsAltH size={16} />
+            </button>
+            <button
+              onClick={handleExpandHeight}
+              className="mr-2 text-gray-500 hover:text-blue-500"
+              title="Expand column height"
+            >
+              <FaArrowsAltV size={16} />
+            </button>
+            <button
+              onClick={handleDeleteColumn}
+              className="text-gray-500 hover:text-red-500"
+              title="Delete column"
+            >
+              <FaTrashAlt size={16} />
+            </button>
           </div>
+        </div>
 
+        {/* Scrollable Content Area */}
+        <div className="flex-grow overflow-auto p-2">
           {column.rows.map((row, idx) => (
             <div
               key={row.id}
@@ -141,13 +119,15 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
               </div>
             </div>
           ))}
+        </div>
 
+        <div className="p-3 ">
           <button
             onClick={handleAddRow}
-            className={`flex items-center text-sm ${textColor} hover:${textColor} transition-colors`}
+            className={`flex items-center justify-center w-full border-2 border-dashed ${borderColor} p-2 ${textColor} hover:bg-gray-50 transition-colors`}
           >
-            <FaPlusCircle className="mr-1" size={16} />
-            Add Row
+            <FaPlusCircle className="mr-2" size={16} />
+            <span>Add Row</span>
           </button>
         </div>
 
