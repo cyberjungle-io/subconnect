@@ -5,6 +5,31 @@ const initialState = {
   columnWidths: {},
   columnHeights: {},
   containerWidths: {},
+  pageSettings: {
+    backgroundColor: '#ffffff',
+    scrollDirection: 'vertical',
+    typography: {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '16px',
+      lineHeight: '1.5',
+      h1: { fontSize: '2.5rem', fontWeight: 'bold', color: '#000000' },
+      h2: { fontSize: '2rem', fontWeight: 'bold', color: '#000000' },
+      h3: { fontSize: '1.75rem', fontWeight: 'bold', color: '#000000' },
+      h4: { fontSize: '1.5rem', fontWeight: 'bold', color: '#000000' },
+      h5: { fontSize: '1.25rem', fontWeight: 'bold', color: '#000000' },
+      h6: { fontSize: '1rem', fontWeight: 'bold', color: '#000000' },
+      p: { fontSize: '1rem', fontWeight: 'normal', color: '#000000' },
+    },
+    scrollbar: {
+      width: '10px',
+      trackColor: '#f1f1f1',
+      thumbColor: '#888',
+      thumbHoverColor: '#555',
+      borderRadius: '0px',
+      opacity: '1',
+      useDefault: false,
+    },
+  },
 };
 
 const editorSlice = createSlice({
@@ -126,6 +151,19 @@ const editorSlice = createSlice({
         column.color = color;
       }
     },
+    updatePageSettings: (state, action) => {
+      state.pageSettings = { ...state.pageSettings, ...action.payload };
+    },
+    updateTypography: (state, action) => {
+      state.pageSettings.typography = { ...state.pageSettings.typography, ...action.payload };
+    },
+    updateHeadingStyle: (state, action) => {
+      const { headingType, style } = action.payload;
+      state.pageSettings.typography[headingType] = { ...state.pageSettings.typography[headingType], ...style };
+    },
+    updateScrollbarSettings: (state, action) => {
+      state.pageSettings.scrollbar = { ...state.pageSettings.scrollbar, ...action.payload };
+    },
   },
 });
 const findColumn = (rows, columnId) => {
@@ -149,6 +187,10 @@ export const {
   updateContainerWidth,
   addMainRow,
   updateColumnColor,
+  updatePageSettings,
+  updateTypography,
+  updateHeadingStyle,
+  updateScrollbarSettings,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import {
   FaTrashAlt,
+  FaPlusCircle,
+  FaEllipsisV,
+  FaExpandArrowsAlt,
+  FaArrowsAlt,
+  FaFileImport,
   FaArrowsAltH,
   FaArrowsAltV,
-  FaPlusCircle,
-  FaPalette,
-  FaCube,
 } from "react-icons/fa";
 import UseEditor from "../../hooks/useEditor";
 import ErrorBoundary from "../common/ErrorBoundary";
@@ -13,6 +15,7 @@ import ResizeHandle from "./ResizeHandle";
 import AddColumnButton from "./AddColumnButton";
 import Modal from "../common/Modal";
 import ColorPicker from "../common/ColorPicker";
+import Dropdown from "../common/Dropdown";
 
 const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,11 +40,17 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
     ["gray", "blue", "green", "red", "purple"][nestingLevel % 5]
   }-600`;
 
-  const handleAddRow = () => addRow(rowIndex, [...path, column.id]);
+  const handleAddRow = () => {
+    addRow(rowIndex, [...path, column.id]);
+  };
   const handleDeleteColumn = () => deleteColumn(rowIndex, [...path, column.id]);
   const handleExpandWidth = () => expandColumnWidth(column.id);
   const handleExpandHeight = () => {
-    console.log('Expanding height for column:', { id: column.id, rowIndex, path });
+    console.log("Expanding height for column:", {
+      id: column.id,
+      rowIndex,
+      path,
+    });
     expandColumnHeight(column.id, rowIndex, path);
   };
   const handleColorSelect = (color) => {
@@ -50,9 +59,38 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
   };
 
   const hasRows = column.rows.length > 0;
-  const hasContent = column.content || column.color; // Adjust this based on how you're storing content
-  const shouldShowTopLeftButton = hasRows || hasContent;
-  
+  const hasContent = column.content || column.color;
+  const isEmpty = !hasRows && !hasContent;
+
+  const dropdownItems = [
+    {
+      label: "Add Content",
+      icon: FaFileImport,
+      onClick: () => setIsModalOpen(true),
+    },
+    {
+      label: "Add Row",
+      icon: FaPlusCircle,
+      onClick: handleAddRow,
+    },
+    {
+      label: "Expand Width",
+      icon: FaArrowsAltH,
+      onClick: handleExpandWidth,
+    },
+    {
+      label: "Expand Height",
+      icon: FaArrowsAltV,
+      onClick: handleExpandHeight,
+    },
+    {
+      label: "Delete Column",
+      icon: FaTrashAlt,
+      onClick: handleDeleteColumn,
+      color: "text-red-600",
+    },
+  ];
+
   return (
     <ErrorBoundary>
       <div
@@ -61,7 +99,7 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
         style={{
           width: `${columnWidths[column.id]}px`,
           height: `${columnHeights[column.id]}px`,
-          backgroundColor: column.color || 'transparent',
+          backgroundColor: column.color || "transparent",
         }}
       >
         {/* Column Header */}
@@ -69,43 +107,18 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
           className={`font-semibold p-2 ${textColor} flex justify-between items-center`}
         >
           <span>{`${"Nested ".repeat(nestingLevel)}Column ${column.id}`}</span>
-          <div>
-            <button
-              onClick={handleExpandWidth}
-              className="mr-2 text-gray-500 hover:text-blue-500"
-              title="Expand column width"
-            >
-              <FaArrowsAltH size={16} />
-            </button>
-            <button
-              onClick={handleExpandHeight}
-              className="mr-2 text-gray-500 hover:text-blue-500"
-              title="Expand column height"
-            >
-              <FaArrowsAltV size={16} />
-            </button>
-            <button
-              onClick={handleDeleteColumn}
-              className="text-gray-500 hover:text-red-500"
-              title="Delete column"
-            >
-              <FaTrashAlt size={16} />
-            </button>
-          </div>
+          <Dropdown
+            trigger={
+              <button
+                className="text-gray-500 hover:text-gray-700"
+                title="Column options"
+              >
+                <FaEllipsisV size={16} />
+              </button>
+            }
+            items={dropdownItems}
+          />
         </div>
-
-        {/* Content Picker Button */}
-        {shouldShowTopLeftButton ? (
-          <div className="absolute top-2 left-2 z-10">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="p-2 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-colors"
-              title="Add content"
-            >
-              <FaCube size={16} />
-            </button>
-          </div>
-        ) : null}
 
         {/* Scrollable Content Area */}
         <div className="flex-grow overflow-auto p-2 relative">
@@ -120,7 +133,9 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
                     row.id
                   }`}</span>
                   <button
-                    onClick={() => deleteRow(rowIndex, [...path, column.id, idx])}
+                    onClick={() =>
+                      deleteRow(rowIndex, [...path, column.id, idx])
+                    }
                     className="text-gray-500 hover:text-red-500"
                     title="Delete row"
                   >
@@ -140,7 +155,9 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
                   ))}
 
                   <AddColumnButton
-                    onClick={() => addColumn(rowIndex, [...path, column.id, idx])}
+                    onClick={() =>
+                      addColumn(rowIndex, [...path, column.id, idx])
+                    }
                     isNested={true}
                     borderColor={borderColor}
                     textColor={textColor}
@@ -156,11 +173,11 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
                 className="p-3 bg-gray-100 rounded-full text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition-colors"
                 title="Add content"
               >
-                <FaCube size={24} />
+                <FaFileImport size={24} />
               </button>
             </div>
           ) : null}
-          
+
           {/* Display content here if it exists */}
           {hasContent && !hasRows && (
             <div className="h-full flex items-center justify-center">
@@ -170,16 +187,18 @@ const Column = ({ column, rowIndex, path = [], nestingLevel = 0 }) => {
           )}
         </div>
 
-        {/* Add Row Button (always present) */}
-        <div className="p-3">
-          <button
-            onClick={handleAddRow}
-            className={`flex items-center justify-center w-full border-2 border-dashed ${borderColor} p-2 ${textColor} hover:bg-gray-50 transition-colors`}
-          >
-            <FaPlusCircle className="mr-2" size={16} />
-            <span>Add Row</span>
-          </button>
-        </div>
+        {/* Add Row Button (only visible when column is empty) */}
+        {isEmpty && (
+          <div className="p-3">
+            <button
+              onClick={handleAddRow}
+              className={`flex items-center justify-center w-full border-2 border-dashed ${borderColor} p-2 ${textColor} hover:bg-gray-50 transition-colors`}
+            >
+              <FaPlusCircle className="mr-2" size={16} />
+              <span>Add Row</span>
+            </button>
+          </div>
+        )}
 
         <ResizeHandle
           onMouseDown={(e) => handleResizeStart(e, column.id, false)}
