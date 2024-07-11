@@ -1,10 +1,10 @@
 import React from 'react';
-import Editor from '../components/Editor/Editor';
+import MainEditor from '../components/Editor/MainEditor';
 
 function HomePage() {
   return (
     <div>
-     <Editor/> 
+     <MainEditor/>
     </div>
   );
 }

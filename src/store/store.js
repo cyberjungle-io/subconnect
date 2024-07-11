@@ -1,8 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit';
-import rootReducer from './rootReducer'; // Import your root reducer
- 
+import editorReducer from '../features/editorSlice';
+
 const store = configureStore({
-  reducer: rootReducer,
+  reducer: {
+    editor: editorReducer,
+  },
 });
 
 export default store;
