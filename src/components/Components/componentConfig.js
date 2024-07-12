@@ -1,9 +1,10 @@
-import { FaColumns, FaFont, FaImage, FaChartBar, FaTable, FaPlayCircle, FaSquare } from 'react-icons/fa';
+import { FaColumns, FaFont, FaImage, FaChartBar, FaTable, FaPlayCircle, FaSquare, FaHeading } from 'react-icons/fa';
 
 export const componentTypes = {
   CONTAINER: 'CONTAINER',
   ROW: 'ROW',
   COLUMN: 'COLUMN',
+  HEADING: 'HEADING',
   TEXT: 'TEXT',
   IMAGE: 'IMAGE',
   BUTTON: 'BUTTON',
@@ -31,12 +32,25 @@ export const componentConfig = {
     acceptsChildren: true,
     defaultSize: { width: 200, height: '100%' }
   },
+  [componentTypes.HEADING]: {
+    name: 'Heading',
+    icon: FaHeading,
+    acceptsChildren: false,
+    defaultContent: 'Heading',
+    defaultProps: {
+      level: 'h1',
+      color: '#000000',
+      bold: false,
+      italic: false,
+    }
+  },
   [componentTypes.TEXT]: {
     name: 'Text',
     icon: FaFont,
     acceptsChildren: false,
     defaultContent: 'Enter your text here'
   },
+  
   [componentTypes.IMAGE]: {
     name: 'Image',
     icon: FaImage,

@@ -77,6 +77,68 @@ const PropertiesPanel = ({ selectedComponent, onUpdateComponent, onDeleteCompone
       </div>
     </>
   );
+  const renderHeadingProperties = () => {
+    if (selectedComponent.type !== 'HEADING') return null;
+
+    return (
+      <>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Heading Level</label>
+          <select
+            name="level"
+            value={selectedComponent.props.level || 'h1'}
+            onChange={handlePropChange}
+            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            {['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].map((level) => (
+              <option key={level} value={level}>{level.toUpperCase()}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Color</label>
+          <input
+            type="color"
+            name="color"
+            value={selectedComponent.props.color || '#000000'}
+            onChange={handlePropChange}
+            className="mt-1 block w-full"
+          />
+        </div>
+        <div className="flex items-center mt-2">
+          <input
+            type="checkbox"
+            id="bold"
+            name="bold"
+            checked={selectedComponent.props.bold || false}
+            onChange={handlePropChange}
+            className="mr-2"
+          />
+          <label htmlFor="bold" className="text-sm font-medium text-gray-700">Bold</label>
+        </div>
+        <div className="flex items-center mt-2">
+          <input
+            type="checkbox"
+            id="italic"
+            name="italic"
+            checked={selectedComponent.props.italic || false}
+            onChange={handlePropChange}
+            className="mr-2"
+          />
+          <label htmlFor="italic" className="text-sm font-medium text-gray-700">Italic</label>
+        </div>
+      </>
+    );
+  };
+
+  const handlePropChange = (e) => {
+  const { name, value, type, checked } = e.target;
+  const newValue = type === 'checkbox' ? checked : value;
+  console.log(`Updating ${name} to ${newValue}`); // Debug log
+  onUpdateComponent(selectedComponent.id, { props: { ...selectedComponent.props, [name]: newValue } });
+};
+
+  
 
   return (
     <div className="w-64 bg-gray-200 p-4">
@@ -119,6 +181,7 @@ const PropertiesPanel = ({ selectedComponent, onUpdateComponent, onDeleteCompone
             </div>
           </>
         )}
+        {renderHeadingProperties()}
         {selectedComponent.type === 'CHART' && renderChartProperties()}
         <div>
           <label className="block text-sm font-medium text-gray-700">Width</label>

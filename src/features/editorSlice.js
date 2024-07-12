@@ -60,6 +60,8 @@ export const editorSlice = createSlice({
       const newComponent = {
         id: uuidv4(),
         type,
+        content: config.defaultContent || '',
+        props: config.defaultProps || {},
         style: { ...config.defaultSize, ...otherProps.style },
         children: [],
         ...otherProps,  // This ensures we keep any other properties passed in action.payload
@@ -87,7 +89,9 @@ export const editorSlice = createSlice({
 
     updateComponent: (state, action) => {
       const { id, updates } = action.payload;
-      state.components = updateComponentById(state.components, id, updates);
+      const updatedComponents = updateComponentById(state.components, id, updates);
+      console.log('Updated components:', updatedComponents); // Debug log
+      state.components = updatedComponents;
     },
     deleteComponent: (state, action) => {
       state.components = deleteComponentById(state.components, action.payload);

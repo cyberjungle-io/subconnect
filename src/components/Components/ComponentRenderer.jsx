@@ -152,6 +152,20 @@ const ComponentRenderer = ({
               ))}
           </div>
         );
+        case 'HEADING':
+        const { props = {} } = component; // Add a default empty object
+        const HeadingTag = props.level || 'h1';
+        return (
+          <HeadingTag
+            style={{
+              color: props.color || '#000000',
+              fontWeight: props.bold ? 'bold' : 'normal',
+              fontStyle: props.italic ? 'italic' : 'normal',
+            }}
+          >
+            {component.content || 'Heading'}
+          </HeadingTag>
+        );
       case "TEXT":
         return (
           <p className="w-full h-full overflow-hidden">
