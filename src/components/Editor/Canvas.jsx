@@ -32,7 +32,7 @@ const Canvas = ({ components, selectedIds, onSelectComponent, onUpdateComponent,
           x: 0,
           y: 0,
           width: canvasBounds.width,
-          height: 100 // Default height for rows
+          height: 300 // Default height for rows
         };
       } else {
         // For other components, use the drop position
@@ -40,7 +40,7 @@ const Canvas = ({ components, selectedIds, onSelectComponent, onUpdateComponent,
           x: offset.x - canvasBounds.left,
           y: offset.y - canvasBounds.top,
           width: 100, // Default width for other components
-          height: 100 // Default height for other components
+          height: 300 // Default height for other components
         };
       }
 

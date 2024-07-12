@@ -1,4 +1,5 @@
 import React from 'react';
+import { componentConfig, componentTypes } from '../Components/componentConfig';
 
 const PropertiesPanel = ({ selectedComponent, onUpdateComponent, onDeleteComponent }) => {
   if (!selectedComponent) {
@@ -19,6 +20,63 @@ const PropertiesPanel = ({ selectedComponent, onUpdateComponent, onDeleteCompone
     const { name, value } = e.target;
     onUpdateComponent(selectedComponent.id, { style: { ...selectedComponent.style, [name]: value } });
   };
+  const handleChartConfigChange = (e) => {
+    const { name, value } = e.target;
+    onUpdateComponent(selectedComponent.id, { 
+      chartConfig: { 
+        ...selectedComponent.chartConfig, 
+        [name]: name === 'data' ? JSON.parse(value) : value 
+      } 
+    });
+  };
+  
+  const renderChartProperties = () => (
+    <>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Chart Type</label>
+        <select
+          name="chartType"
+          value={selectedComponent.chartConfig?.chartType || 'line'}
+          onChange={handleChartConfigChange}
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          {componentConfig[componentTypes.CHART].chartTypes.map(type => (
+            <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)} Chart</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Data Key</label>
+        <input
+          type="text"
+          name="dataKey"
+          value={selectedComponent.chartConfig?.dataKey || ''}
+          onChange={handleChartConfigChange}
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Name Key</label>
+        <input
+          type="text"
+          name="nameKey"
+          value={selectedComponent.chartConfig?.nameKey || ''}
+          onChange={handleChartConfigChange}
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Data (JSON)</label>
+        <textarea
+          name="data"
+          value={JSON.stringify(selectedComponent.chartConfig?.data || [], null, 2)}
+          onChange={handleChartConfigChange}
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          rows="5"
+        />
+      </div>
+    </>
+  );
 
   return (
     <div className="w-64 bg-gray-200 p-4">
@@ -61,6 +119,7 @@ const PropertiesPanel = ({ selectedComponent, onUpdateComponent, onDeleteCompone
             </div>
           </>
         )}
+        {selectedComponent.type === 'CHART' && renderChartProperties()}
         <div>
           <label className="block text-sm font-medium text-gray-700">Width</label>
           <input type="text" name="width" value={selectedComponent.style.width} onChange={handleStyleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />

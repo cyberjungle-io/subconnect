@@ -26,8 +26,8 @@ const MainEditor = () => {
     const newComponentData = {
       type: componentType, 
       style: { 
-        width: position ? position.width : 100, 
-        height: position ? position.height : 100,
+        width: position ? position.width : 350, 
+        height: position ? position.height : 300,
         left: position ? position.x : 0,
         top: position ? position.y : 0,
       },

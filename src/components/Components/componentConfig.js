@@ -23,7 +23,7 @@ export const componentConfig = {
     name: 'Row',
     icon: FaColumns,
     acceptsChildren: true,
-    defaultSize: { width: '100%', height: 100 }
+    defaultSize: { width: '100%', height: 300 }
   },
   [componentTypes.COLUMN]: {
     name: 'Column',
@@ -54,8 +54,20 @@ export const componentConfig = {
     name: 'Chart',
     icon: FaChartBar,
     acceptsChildren: false,
-    defaultSize: { width: 300, height: 200 },
-    defaultContent: 'Chart Placeholder'
+    defaultSize: { width: 400, height: 300 },
+    defaultChartConfig: {
+      chartType: 'line',
+      dataKey: 'value',
+      nameKey: 'name',
+      data: [
+        { name: 'A', value: 400 },
+        { name: 'B', value: 300 },
+        { name: 'C', value: 200 },
+        { name: 'D', value: 278 },
+        { name: 'E', value: 189 },
+      ]
+    },
+    chartTypes: ['line', 'bar', 'area', 'pie']
   },
   [componentTypes.TABLE]: {
     name: 'Table',
@@ -70,5 +82,5 @@ export const componentConfig = {
     acceptsChildren: false,
     defaultSize: { width: 300, height: 200 },
     defaultContent: 'Video Placeholder'
-  }
+  },
 };

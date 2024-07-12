@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 import { alignComponentsUtil, distributeComponentsUtil } from '../utils/alignmentUtils';
+import { componentConfig } from '../components/Components/componentConfig';
 
 const initialState = {
   components: [],
@@ -53,13 +54,29 @@ export const editorSlice = createSlice({
   initialState,
   reducers: {
     addComponent: (state, action) => {
+      const { type, parentId, ...otherProps } = action.payload;
+      const config = componentConfig[type];
+    
       const newComponent = {
         id: uuidv4(),
-        ...action.payload,
+        type,
+        style: { ...config.defaultSize, ...otherProps.style },
         children: [],
+        ...otherProps,  // This ensures we keep any other properties passed in action.payload
       };
-      if (action.payload.parentId) {
-        const parent = findComponentById(state.components, action.payload.parentId);
+    
+      // Add chart-specific configuration if it's a CHART component
+      if (type === 'CHART') {
+        newComponent.chartConfig = { ...config.defaultChartConfig, ...otherProps.chartConfig };
+      }
+    
+      // Add content for components that have default content, if not overridden
+      if (config.defaultContent && !newComponent.content) {
+        newComponent.content = config.defaultContent;
+      }
+    
+      if (parentId) {
+        const parent = findComponentById(state.components, parentId);
         if (parent) {
           parent.children.push(newComponent);
         }
@@ -67,6 +84,7 @@ export const editorSlice = createSlice({
         state.components.push(newComponent);
       }
     },
+
     updateComponent: (state, action) => {
       const { id, updates } = action.payload;
       state.components = updateComponentById(state.components, id, updates);
