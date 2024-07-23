@@ -1,16 +1,23 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
 import ReChartProperties from '../Components/ReCharts/ReChartProperties';
 import ChartStyleOptions from '../Components/ReCharts/ChartStyleOptions';
 import HeadingProperties from '../Components/Typography/HeadingProperties';
 import PropertyTabs from './PropertyTabs';
 import ComponentPalette from '../Components/ComponentPalette';
+import { FaThLarge } from 'react-icons/fa';
 
 
 const PropertiesPanel = ({ selectedComponent, onUpdateComponent, onDeleteComponent }) => {
-  if (!selectedComponent) {
+  const [showComponentPalette, setShowComponentPalette] = useState(false);
+  useEffect(() => {
+    if (selectedComponent) {
+      setShowComponentPalette(false);
+    }
+  }, [selectedComponent]);
+
+  if (!selectedComponent && !showComponentPalette) {
     return (
-      <div className="w-64 bg-gray-200 p-4">
-        <h2 className="text-lg font-bold mb-4">Components</h2>
+      <div className="w-64 bg-gray-200 p-4 overflow-y-auto">
         <ComponentPalette />
       </div>
     );
@@ -98,28 +105,40 @@ const PropertiesPanel = ({ selectedComponent, onUpdateComponent, onDeleteCompone
   };
 
   return (
-    <div className="w-64 bg-gray-200 p-4">
-      
-          <h2 className="text-lg font-bold mb-4">Properties</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Type</label>
-              <input type="text" value={selectedComponent.type} disabled className="mt-1 block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
-            </div>
-            {renderComponentProperties()}
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Width</label>
-              <input type="text" name="width" value={selectedComponent.style.width} onChange={handleStyleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Height</label>
-              <input type="text" name="height" value={selectedComponent.style.height} onChange={handleStyleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
-            </div>
-            <button onClick={() => onDeleteComponent(selectedComponent.id)} className="w-full px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">Delete Component</button>
+    <div className="w-64 bg-gray-200 p-4 overflow-y-auto">
+    {showComponentPalette ? (
+      <ComponentPalette />
+    ) : (
+      <>
+        <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-bold text-gray-800 pb-2 border-b border-gray-300">Properties</h2>
+          <button
+            onClick={() => setShowComponentPalette(true)}
+            className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            title="Show Component Palette"
+          >
+            <FaThLarge />
+          </button>
+        </div>
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <input type="text" value={selectedComponent.type} disabled className="block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
           </div>
-     
-    
-    </div>
+          {renderComponentProperties()}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Width</label>
+            <input type="text" name="width" value={selectedComponent.style.width} onChange={handleStyleChange} className="block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Height</label>
+            <input type="text" name="height" value={selectedComponent.style.height} onChange={handleStyleChange} className="block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" />
+          </div>
+          <button onClick={() => onDeleteComponent(selectedComponent.id)} className="w-full px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">Delete Component</button>
+        </div>
+      </>
+    )}
+  </div>
   );
 };
 

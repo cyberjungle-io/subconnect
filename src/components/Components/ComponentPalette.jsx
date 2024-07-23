@@ -15,21 +15,21 @@ const DraggableComponent = ({ type, icon: Icon, label }) => {
   return (
     <div
       ref={drag}
-      className={`flex items-center p-2 bg-white rounded hover:bg-gray-100 cursor-move ${
+      className={`flex flex-col items-center justify-center p-2 bg-white rounded-lg shadow hover:shadow-md hover:bg-blue-50 cursor-move ${
         isDragging ? 'opacity-50' : ''
-      }`}
+      } w-full aspect-square transition-all duration-200`}
     >
-      <Icon className="mr-2" />
-      <span>{label}</span>
+      <Icon className="text-2xl mb-1 text-gray-600" />
+      <span className="text-xs font-medium text-center truncate w-full">{label}</span>
     </div>
   );
 };
 
 const ComponentPalette = () => {
   return (
-    <div className="w-64 bg-gray-200 p-4">
-      <h2 className="text-lg font-bold mb-4">Components</h2>
-      <div className="space-y-2">
+    <div className="space-y-4">
+      <h2 className="text-lg font-bold text-gray-800 pb-2 border-b border-gray-300">Components</h2>
+      <div className="grid grid-cols-2 gap-2">
         {Object.entries(componentTypes).map(([key, type]) => {
           const config = componentConfig[type];
           return (

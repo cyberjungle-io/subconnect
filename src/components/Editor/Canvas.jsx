@@ -1,8 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { useDrop } from 'react-dnd';
 import ComponentRenderer from '../Components/ComponentRenderer';
 
-const Canvas = ({ components, selectedIds, onSelectComponent, onUpdateComponent, onAddComponent, onMoveComponent }) => {
+const Canvas = ({ components, selectedIds, onSelectComponent, onClearSelection, onUpdateComponent, onAddComponent, onMoveComponent }) => {
   const canvasRef = useRef(null);
 
   const [, drop] = useDrop({
@@ -52,6 +52,12 @@ const Canvas = ({ components, selectedIds, onSelectComponent, onUpdateComponent,
     },
   });
 
+  const handleCanvasClick = useCallback((event) => {
+    if (event.target === canvasRef.current) {
+      onClearSelection();
+    }
+  }, [onClearSelection]);
+
 
   return (
     <div 
@@ -61,6 +67,7 @@ const Canvas = ({ components, selectedIds, onSelectComponent, onUpdateComponent,
       }}
       className="canvas-area relative w-full h-full bg-gray-100 overflow-auto"
       style={{ minHeight: '500px' }}
+      onClick={handleCanvasClick}
     >
       {components.map(component => (
         <ComponentRenderer

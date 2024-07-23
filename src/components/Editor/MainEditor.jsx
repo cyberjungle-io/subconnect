@@ -59,6 +59,10 @@ const MainEditor = () => {
     }
   };
 
+  const handleClearSelection = () => {
+    dispatch(setSelectedIds([]));
+  };
+
   const handleAlign = (alignment) => {
     dispatch(alignComponents(alignment));
   };
@@ -99,10 +103,13 @@ const MainEditor = () => {
             onCopy={handleCopy}
             onPaste={handlePaste}
           />
+          <div className="flex flex-grow overflow-hidden">
+          <div className="flex-grow overflow-auto">
           <Canvas
             components={components}
             selectedIds={selectedIds}
             onSelectComponent={handleSelectComponent}
+            onClearSelection={handleClearSelection}
             onUpdateComponent={handleUpdateComponent}
             onAddComponent={handleAddComponent}
             onMoveComponent={handleMoveComponent}
@@ -114,7 +121,7 @@ const MainEditor = () => {
           onDeleteComponent={handleDeleteComponent}
           onAddChildComponent={handleAddComponent}
           onAddComponent={handleAddComponent}
-        />
+        /></div></div>
       </div>
     </DndProvider>
   );
