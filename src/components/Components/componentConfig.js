@@ -73,6 +73,8 @@ export const componentConfig = {
       chartType: 'line',
       dataKey: 'value',
       nameKey: 'name',
+      showLegend: false,
+      legendPosition: 'bottom',
       data: [
         { name: 'A', value: 400 },
         { name: 'B', value: 300 },

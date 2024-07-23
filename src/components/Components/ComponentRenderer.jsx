@@ -198,78 +198,132 @@ const ComponentRenderer = ({
   };
 
   const renderChart = () => {
-    const { chartType, data, dataKey, nameKey } = component.chartConfig || {};
+    const { chartType, data, dataKey, nameKey, title, 
+      titleFontSize, 
+      titleColor, 
+      width, 
+      height, 
+      lineColor, 
+      lineWidth, 
+      dataPointSize, 
+      showLegend, 
+      legendPosition  } = component.chartConfig || {};
 
     const CommonProps = {
       data: data || [],
-      margin: { top: 5, right: 30, left: 20, bottom: 5 },
+      margin: { top: 20, right: 30, left: 20, bottom: 5 },
+      width: width || 500,
+      height: height || 300,
     };
+
+
+    const renderTitle = () => (
+      <text
+        x={CommonProps.width / 2}
+        y={20}
+        textAnchor="middle"
+        fill={titleColor || "#000"}
+        fontSize={titleFontSize || 16}
+        fontWeight="bold"
+      >
+        {title}
+      </text>
+    );
+
+    const renderLegend = () => (
+      showLegend && (
+        <Legend
+          layout={legendPosition === 'top' || legendPosition === 'bottom' ? 'horizontal' : 'vertical'}
+          verticalAlign={legendPosition === 'top' ? 'top' : legendPosition === 'bottom' ? 'bottom' : 'middle'}
+          align={legendPosition === 'left' ? 'left' : legendPosition === 'right' ? 'right' : 'center'}
+        />
+      )
+    );
 
     switch (chartType) {
       case "line":
         return (
           <ResponsiveContainer width="100%" height="100%">
             <LineChart {...CommonProps}>
+              {renderTitle()}
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey={nameKey} />
               <YAxis />
               <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey={dataKey} stroke="#8884d8" />
+              {renderLegend()}
+              <Line
+                type="monotone"
+                dataKey={dataKey}
+                stroke={lineColor || "#8884d8"}
+                strokeWidth={lineWidth || 2}
+                dot={{ r: dataPointSize || 5 }}
+              />
             </LineChart>
           </ResponsiveContainer>
         );
-      case "bar":
-        return (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart {...CommonProps}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey={nameKey} />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey={dataKey} fill="#8884d8" />
-            </BarChart>
-          </ResponsiveContainer>
-        );
-      case "area":
-        return (
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart {...CommonProps}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey={nameKey} />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Area
-                type="monotone"
-                dataKey={dataKey}
-                stroke="#8884d8"
-                fill="#8884d8"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        );
-      case "pie":
-        return (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                dataKey={dataKey}
-                nameKey={nameKey}
-                fill="#8884d8"
-                label
-              />
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        );
-      default:
-        return <div>Unsupported chart type</div>;
-    }
-  };
+        case "bar":
+          return (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart {...CommonProps}>
+                {renderTitle()}
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey={nameKey} />
+                <YAxis />
+                <Tooltip />
+                {renderLegend()}
+                <Bar
+                  dataKey={dataKey}
+                  fill={lineColor || "#8884d8"}
+                  radius={[dataPointSize || 0, dataPointSize || 0, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          );
+        case "area":
+          return (
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart {...CommonProps}>
+                {renderTitle()}
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey={nameKey} />
+                <YAxis />
+                <Tooltip />
+                {renderLegend()}
+                <Area
+                  type="monotone"
+                  dataKey={dataKey}
+                  stroke={lineColor || "#8884d8"}
+                  fill={lineColor || "#8884d8"}
+                  fillOpacity={0.3}
+                  strokeWidth={lineWidth || 2}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          );
+        case "pie":
+          return (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                {renderTitle()}
+                <Pie
+                  data={data}
+                  dataKey={dataKey}
+                  nameKey={nameKey}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={dataPointSize ? 50 + dataPointSize * 5 : 80}
+                  fill={lineColor || "#8884d8"}
+                  label
+                />
+                <Tooltip />
+                {renderLegend()}
+              </PieChart>
+            </ResponsiveContainer>
+          );
+        default:
+          return <div>Unsupported chart type</div>;
+      }
+    };
 
   return (
     <div

@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { alignComponentsUtil, distributeComponentsUtil } from '../utils/alignmentUtils';
 import { componentConfig } from '../components/Components/componentConfig';
 
+
 const initialState = {
   components: [],
   selectedIds: [],
@@ -25,6 +26,16 @@ const findComponentById = (components, id) => {
 const updateComponentById = (components, id, updates) => {
   return components.map(component => {
     if (component.id === id) {
+      if (updates.chartConfig) {
+        return {
+          ...component,
+          ...updates,
+          chartConfig: {
+            ...component.chartConfig,
+            ...updates.chartConfig
+          }
+        };
+      }
       return { ...component, ...updates };
     }
     if (component.children) {

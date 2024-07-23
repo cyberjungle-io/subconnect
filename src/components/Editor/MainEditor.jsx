@@ -114,6 +114,7 @@ const MainEditor = () => {
           onUpdateComponent={handleUpdateComponent}
           onDeleteComponent={handleDeleteComponent}
           onAddChildComponent={handleAddComponent}
+          onAddComponent={handleAddComponent}
         />
       </div>
     </DndProvider>
