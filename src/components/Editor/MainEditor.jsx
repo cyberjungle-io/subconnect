@@ -2,7 +2,6 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import ComponentPalette from '../Components/ComponentPalette';
 import Canvas from './Canvas';
 import PropertiesPanel from './PropertiesPanel';
 import Toolbar from './Toolbar';
@@ -92,7 +91,7 @@ const MainEditor = () => {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex h-screen">
-        <ComponentPalette />
+        
         <div className="flex flex-col flex-grow">
           <Toolbar 
             onAlign={handleAlign}

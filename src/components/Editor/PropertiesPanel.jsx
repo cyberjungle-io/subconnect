@@ -3,14 +3,15 @@ import ReChartProperties from '../Components/ReCharts/ReChartProperties';
 import ChartStyleOptions from '../Components/ReCharts/ChartStyleOptions';
 import HeadingProperties from '../Components/Typography/HeadingProperties';
 import PropertyTabs from './PropertyTabs';
+import ComponentPalette from '../Components/ComponentPalette';
 
 
 const PropertiesPanel = ({ selectedComponent, onUpdateComponent, onDeleteComponent }) => {
   if (!selectedComponent) {
     return (
       <div className="w-64 bg-gray-200 p-4">
-        <h2 className="text-lg font-bold mb-4">Properties</h2>
-        <p>No component selected</p>
+        <h2 className="text-lg font-bold mb-4">Components</h2>
+        <ComponentPalette />
       </div>
     );
   }
