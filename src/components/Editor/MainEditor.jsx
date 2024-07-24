@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -20,6 +20,11 @@ import {
 const MainEditor = () => {
   const dispatch = useDispatch();
   const { components, selectedIds } = useSelector(state => state.editor);
+  const [isPanelVisible, setIsPanelVisible] = useState(true);
+
+  const handleTogglePanel = () => {
+    setIsPanelVisible(!isPanelVisible);
+  };
 
   const handleAddComponent = (componentType, parentId = null, position = null) => {
     const newComponentData = {
@@ -121,6 +126,8 @@ const MainEditor = () => {
           onDeleteComponent={handleDeleteComponent}
           onAddChildComponent={handleAddComponent}
           onAddComponent={handleAddComponent}
+          isVisible={isPanelVisible}
+          onToggleVisibility={handleTogglePanel}
         /></div></div>
       </div>
     </DndProvider>

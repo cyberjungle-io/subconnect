@@ -26,6 +26,7 @@ const ComponentRenderer = ({
   onAddChild,
   onMoveComponent,
   depth = 0,
+  selectedIds,
 }) => {
   const config = componentConfig[component.type];
 
@@ -74,11 +75,11 @@ const ComponentRenderer = ({
       gap: component.style.gap || "0px",
       minHeight: component.style.height || "300px",
       height: component.style.height || '300px',
-      overflow: "hidden", // Prevent content from overflowing
+      overflow: "hidden",
     };
   };
 
-  // New function to handle child component styles
+  
   const getChildStyles = (childComponent) => {
     if (component.type !== "ROW") return childComponent.style;
 
@@ -117,7 +118,8 @@ const ComponentRenderer = ({
                   onSelect={onSelect}
                   onAddChild={onAddChild}
                   onMoveComponent={onMoveComponent}
-                  isSelected={isSelected}
+                  isSelected={selectedIds.includes(child.id)}
+                  selectedIds={selectedIds}
                   depth={depth + 1}
                 />
               ))}
@@ -146,7 +148,8 @@ const ComponentRenderer = ({
                   onSelect={onSelect}
                   onAddChild={onAddChild}
                   onMoveComponent={onMoveComponent}
-                  isSelected={isSelected}
+                  isSelected={selectedIds.includes(child.id)}
+                  selectedIds={selectedIds}
                   depth={depth + 1}
                 />
               ))}
@@ -325,17 +328,22 @@ const ComponentRenderer = ({
       }
     };
 
-  return (
+    const componentStyle = {
+      ...component.style,
+      ...(component.type === "ROW" ? getRowStyles() : {}),
+      border: isSelected ? "2px solid blue" : "1px solid #ccc",
+      padding: "2px",
+      width: component.type === "ROW" ? "100%" : component.style.width,
+      height: component.style.height,
+      overflow: "hidden",
+    };
+
+    return (
     <div
-      ref={drag}
-      style={{
-        ...component.style,
-        border: isSelected ? "2px solid blue" : "1px solid #ccc",
-        padding: "2px",
-        width: component.type === "ROW" ? "100%" : component.style.width,
-        height: component.style.height,
-        overflow: "hidden", // Prevent content from overflowing
+      ref={(node) => {
+        drag(drop(node));
       }}
+      style={componentStyle}
       onClick={handleClick}
       className={`relative ${isSelected ? "shadow-lg" : ""}`}
     >

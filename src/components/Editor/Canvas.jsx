@@ -1,12 +1,20 @@
-import React, { useRef, useCallback } from 'react';
-import { useDrop } from 'react-dnd';
-import ComponentRenderer from '../Components/ComponentRenderer';
+import React, { useRef, useCallback } from "react";
+import { useDrop } from "react-dnd";
+import ComponentRenderer from "../Components/ComponentRenderer";
 
-const Canvas = ({ components, selectedIds, onSelectComponent, onClearSelection, onUpdateComponent, onAddComponent, onMoveComponent }) => {
+const Canvas = ({
+  components,
+  selectedIds,
+  onSelectComponent,
+  onClearSelection,
+  onUpdateComponent,
+  onAddComponent,
+  onMoveComponent,
+}) => {
   const canvasRef = useRef(null);
 
   const [, drop] = useDrop({
-    accept: 'COMPONENT',
+    accept: "COMPONENT",
     drop: (item, monitor) => {
       const didDrop = monitor.didDrop();
       if (didDrop) {
@@ -15,7 +23,7 @@ const Canvas = ({ components, selectedIds, onSelectComponent, onClearSelection, 
 
       const offset = monitor.getClientOffset();
       const canvasElement = canvasRef.current;
-      
+
       if (!offset || !canvasElement) {
         // If we don't have a valid offset or canvas element, add the component at a default position
         onAddComponent(item.type, null, { x: 0, y: 0 });
@@ -23,16 +31,16 @@ const Canvas = ({ components, selectedIds, onSelectComponent, onClearSelection, 
       }
 
       const canvasBounds = canvasElement.getBoundingClientRect();
-      
+
       let position;
-      
-      if (item.type === 'ROW') {
+
+      if (item.type === "ROW") {
         // For rows, place at the top of the canvas with full width
         position = {
           x: 0,
           y: 0,
           width: canvasBounds.width,
-          height: 300 // Default height for rows
+          height: 300, // Default height for rows
         };
       } else {
         // For other components, use the drop position
@@ -40,7 +48,7 @@ const Canvas = ({ components, selectedIds, onSelectComponent, onClearSelection, 
           x: offset.x - canvasBounds.left,
           y: offset.y - canvasBounds.top,
           width: 100, // Default width for other components
-          height: 300 // Default height for other components
+          height: 300, // Default height for other components
         };
       }
 
@@ -52,32 +60,38 @@ const Canvas = ({ components, selectedIds, onSelectComponent, onClearSelection, 
     },
   });
 
-  const handleCanvasClick = useCallback((event) => {
-    if (event.target === canvasRef.current) {
-      onClearSelection();
-    }
-  }, [onClearSelection]);
-
+  const handleCanvasClick = useCallback(
+    (event) => {
+      if (event.target === canvasRef.current) {
+        onClearSelection();
+      }
+    },
+    [onClearSelection]
+  );
 
   return (
-    <div 
+    <div
       ref={(node) => {
         drop(node);
         canvasRef.current = node;
       }}
       className="canvas-area relative w-full h-full bg-gray-100 overflow-auto"
-      style={{ minHeight: '500px' }}
+      style={{ minHeight: "500px" }}
       onClick={handleCanvasClick}
     >
-      {components.map(component => (
+      {components.map((component) => (
         <ComponentRenderer
-          key={component.id}
-          component={component}
-          isSelected={selectedIds.includes(component.id)}
-          onSelect={onSelectComponent}
-          onUpdate={onUpdateComponent}
-          onAddChild={(parentId, childType) => onAddComponent(childType, parentId)}
-        />
+        key={component.id}
+        component={component}
+        isSelected={selectedIds.includes(component.id)}
+        selectedIds={selectedIds}
+        onSelect={onSelectComponent}
+        onUpdate={onUpdateComponent}
+        onAddChild={(parentId, childType) =>
+          onAddComponent(childType, parentId)
+        }
+        onMoveComponent={onMoveComponent}
+      />
       ))}
     </div>
   );
