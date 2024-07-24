@@ -10,6 +10,7 @@ import {
   FaChevronLeft,
 } from "react-icons/fa";
 import HidePropertiesPanelArrow from '../common/CustomIcons/HidePropertiesPanelArrow';
+import DimensionControls from "../Components/CommonControls/DimensionControls";
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -76,9 +77,10 @@ const PropertiesPanel = ({
 
   const handleStyleChange = (e) => {
     const { name, value } = e.target;
-    onUpdateComponent(selectedComponent.id, {
-      style: { ...selectedComponent.style, [name]: value },
-    });
+    console.log(`Style change: ${name} = ${value}`); // Debug log
+    const newStyle = { ...selectedComponent.style, [name]: value };
+    console.log('New style:', newStyle); // Debug log
+    onUpdateComponent(selectedComponent.id, { style: newStyle });
   };
 
   const handleChartConfigChange = (e) => {
@@ -109,10 +111,16 @@ const PropertiesPanel = ({
               chartConfig={selectedComponent.chartConfig}
               onChartConfigChange={handleChartConfigChange}
             />
-            <ChartStyleOptions
-              chartConfig={selectedComponent.chartConfig}
-              onChartConfigChange={handleChartConfigChange}
-            />
+            <div className="space-y-6">
+              <ChartStyleOptions
+                chartConfig={selectedComponent.chartConfig}
+                onChartConfigChange={handleChartConfigChange}
+              />
+              <DimensionControls
+                style={selectedComponent.style}
+                onStyleChange={handleStyleChange}
+              />
+            </div>
           </PropertyTabs>
         );
       case "HEADING":
@@ -130,10 +138,16 @@ const PropertiesPanel = ({
                 className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
-            <HeadingProperties
-              props={selectedComponent.props}
-              onPropChange={handlePropChange}
-            />
+            <div className="space-y-6">
+              <HeadingProperties
+                props={selectedComponent.props}
+                onPropChange={handlePropChange}
+              />
+              <DimensionControls
+                style={selectedComponent.style}
+                onStyleChange={handleStyleChange}
+              />
+            </div>
           </PropertyTabs>
         );
       case "ROW":
@@ -185,11 +199,25 @@ const PropertiesPanel = ({
                   className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
+              <div className="space-y-6">
+              <DimensionControls
+                style={selectedComponent.style}
+                onStyleChange={handleStyleChange}
+              />
+              
+            </div>
             </div>
           </PropertyTabs>
         );
-      default:
-        return null;
+        default:
+        return (
+          <PropertyTabs tabs={["Styles"]}>
+            <DimensionControls
+              style={selectedComponent.style}
+              onStyleChange={handleStyleChange}
+            />
+          </PropertyTabs>
+        );
     }
   };
 
@@ -215,30 +243,7 @@ const PropertiesPanel = ({
           />
         </div>
         {renderComponentProperties()}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Width
-          </label>
-          <input
-            type="text"
-            name="width"
-            value={selectedComponent.style.width}
-            onChange={handleStyleChange}
-            className="block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Height
-          </label>
-          <input
-            type="text"
-            name="height"
-            value={selectedComponent.style.height}
-            onChange={handleStyleChange}
-            className="block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
+        
         <button
           onClick={() => onDeleteComponent(selectedComponent.id)}
           className="w-full px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
