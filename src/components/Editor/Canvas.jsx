@@ -1,6 +1,6 @@
 import React, { useRef, useCallback } from "react";
 import { useDrop } from "react-dnd";
-import ComponentRenderer from "../Components/ComponentRenderer";
+import ComponentRenderer from "../Components/Renderers/ComponentRenderer";
 
 const Canvas = ({
   components,
@@ -81,17 +81,17 @@ const Canvas = ({
     >
       {components.map((component) => (
         <ComponentRenderer
-        key={component.id}
-        component={component}
-        isSelected={selectedIds.includes(component.id)}
-        selectedIds={selectedIds}
-        onSelect={onSelectComponent}
-        onUpdate={onUpdateComponent}
-        onAddChild={(parentId, childType) =>
-          onAddComponent(childType, parentId)
-        }
-        onMoveComponent={onMoveComponent}
-      />
+          key={component.id}
+          component={component}
+          isSelected={selectedIds.includes(component.id)}
+          selectedIds={selectedIds}
+          onSelect={onSelectComponent}
+          onUpdate={onUpdateComponent}
+          onAddChild={(parentId, childType) =>
+            onAddComponent(childType, parentId)
+          }
+          onMoveComponent={onMoveComponent}
+        />
       ))}
     </div>
   );
