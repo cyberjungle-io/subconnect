@@ -2,44 +2,42 @@ import React from "react";
 import ComponentRenderer from "./ComponentRenderer";
 
 const ContainerRenderer = ({ component, ...props }) => {
-  const getRowStyles = () => {
-    if (component.type !== "ROW") return {};
-
+  const getContainerStyles = () => {
     return {
       display: "flex",
-      flexDirection: "row",
-      flexWrap: "wrap",
+      flexDirection: component.type === "ROW" ? "row" : "column",
+      flexWrap: "nowrap",
       alignItems: component.style.alignItems || "stretch",
       justifyContent: component.style.justifyContent || "flex-start",
       gap: component.style.gap || "0px",
-      minHeight: component.style.height || "300px",
-      height: component.style.height || '300px',
+      width: "100%",
+      height: component.style.height || "100%", // Changed from "auto" to "100%"
+      minHeight: component.style.minHeight || "auto",
       overflow: "hidden",
+      boxSizing: 'border-box', // Add this to include padding and border in the element's total width and height
     };
   };
 
   const getChildStyles = (childComponent) => {
-    if (component.type !== "ROW") return childComponent.style;
+    const childStyles = { ...childComponent.style };
 
-    return {
-      ...childComponent.style,
-      flexGrow: 0,
-      flexShrink: 0,
-      flexBasis: "auto",
-      maxWidth: "100%",
-      maxHeight: "100%",
-    };
+    if (component.type === "ROW") {
+      childStyles.flexGrow = childComponent.style.flexGrow || 0;
+      childStyles.flexShrink = childComponent.style.flexShrink || 1;
+      childStyles.flexBasis = childComponent.style.width || "auto";
+      
+      if (childComponent.type !== "ROW") {
+        // For non-row children, set height to 100% if not specified
+        childStyles.height = childComponent.style.height || "100%";
+      }
+    }
+
+    childStyles.boxSizing = 'border-box'; // Add this to include padding and border in the element's total width and height
+    return childStyles;
   };
 
   return (
-    <div
-      className="p-2 border border-gray-300"
-      style={{
-        ...component.style,
-        ...getRowStyles(),
-        width: component.type === "ROW" ? "100%" : component.style.width,
-      }}
-    >
+    <div className="container-renderer" style={getContainerStyles()}>
       {component.children &&
         component.children.map((child) => (
           <ComponentRenderer

@@ -54,6 +54,7 @@ const ComponentRenderer = React.memo(({
   }, [component.id, onSelect]);
 
   const isThisComponentSelected = selectedIds.includes(component.id);
+
   const renderContent = () => {
     const sharedProps = {
       component,
@@ -89,11 +90,17 @@ const ComponentRenderer = React.memo(({
     ...component.style,
     border: isThisComponentSelected ? "2px solid blue" : "1px solid #ccc",
     padding: "0",
-    width: component.type === "ROW" ? "100%" : (component.style.width || "auto"),
-    height: "fit",
     minWidth: component.type === "CHART" ? "200px" : undefined,
     minHeight: component.type === "CHART" ? "150px" : undefined,
     overflow: "hidden",
+    position: 'relative',
+    width: component.type === "ROW" ? "100%" : (component.style.width || "auto"),
+    height: component.style.height || "100%", // Changed from "auto" to "100%"
+    flexGrow: component.type === "ROW" ? 1 : (component.style.flexGrow || 0),
+    flexShrink: component.type === "ROW" ? 0 : (component.style.flexShrink || 1),
+    flexBasis: component.style.width || "auto",
+    display: component.type === "ROW" ? "flex" : undefined,
+    boxSizing: 'border-box', // Add this to include padding and border in the element's total width and height
   };
 
   return (
@@ -107,10 +114,10 @@ const ComponentRenderer = React.memo(({
     >
       {renderContent()}
       {isThisComponentSelected && (
-  <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs px-1 z-10">
-    {component.type}
-  </div>
-)}
+        <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs px-1 z-10">
+          {component.type}
+        </div>
+      )}
     </div>
   );
 });
