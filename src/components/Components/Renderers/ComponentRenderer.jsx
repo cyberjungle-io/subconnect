@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import { useDrop, useDrag } from "react-dnd";
+import FlexContainer from "../FlexContainer";
 import ContainerRenderer from "./ContainerRenderer";
 import HeadingRenderer from "./HeadingRenderer";
 import TextRenderer from "./TextRenderer";
@@ -67,10 +68,8 @@ const ComponentRenderer = React.memo(({
     };
 
     switch (component.type) {
-      case "CONTAINER":
-      case "ROW":
-      case "COLUMN":
-        return <ContainerRenderer {...sharedProps} />;
+      case "FLEX_CONTAINER":
+        return <FlexContainer {...sharedProps} />;
       case "HEADING":
         return <HeadingRenderer {...sharedProps} />;
       case "TEXT":

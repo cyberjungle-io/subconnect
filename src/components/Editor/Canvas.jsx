@@ -34,7 +34,7 @@ const Canvas = ({
 
       let position;
 
-      if (item.type === "ROW") {
+      if (item.type === "FLEX_CONTAINER") {
         // For rows, place at the top of the canvas with full width
         position = {
           x: 0,

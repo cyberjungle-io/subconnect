@@ -104,70 +104,52 @@ const PropertiesPanel = ({
 
   const renderComponentProperties = () => {
     switch (selectedComponent.type) {
-      case "CHART":
+      case "FLEX_CONTAINER":
         return (
-          <PropertyTabs tabs={["Data", "Styles"]}>
-            <ReChartProperties
-              chartConfig={selectedComponent.chartConfig}
-              onChartConfigChange={handleChartConfigChange}
-            />
-            <div className="space-y-6">
-              <ChartStyleOptions
-                chartConfig={selectedComponent.chartConfig}
-                onChartConfigChange={handleChartConfigChange}
-              />
-              <DimensionControls
-                style={selectedComponent.style}
-                onStyleChange={handleStyleChange}
-              />
-            </div>
-          </PropertyTabs>
-        );
-      case "HEADING":
-        return (
-          <PropertyTabs tabs={["Content", "Styles"]}>
+          <PropertyTabs tabs={["Layout", "Styles"]}>
             <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Content
-              </label>
-              <input
-                type="text"
-                name="content"
-                value={selectedComponent.content}
-                onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-            <div className="space-y-6">
-              <HeadingProperties
-                props={selectedComponent.props}
-                onPropChange={handlePropChange}
-              />
-              <DimensionControls
-                style={selectedComponent.style}
-                onStyleChange={handleStyleChange}
-              />
-            </div>
-          </PropertyTabs>
-        );
-      case "ROW":
-        return (
-          <PropertyTabs tabs={["Layout"]}>
-            <div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Direction
+                </label>
+                <select
+                  name="direction"
+                  value={selectedComponent.props.direction || "row"}
+                  onChange={handlePropChange}
+                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="row">Row</option>
+                  <option value="column">Column</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Wrap
+                </label>
+                <select
+                  name="wrap"
+                  value={selectedComponent.props.wrap || "nowrap"}
+                  onChange={handlePropChange}
+                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="nowrap">No Wrap</option>
+                  <option value="wrap">Wrap</option>
+                </select>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">
                   Align Items
                 </label>
                 <select
                   name="alignItems"
-                  value={selectedComponent.style.alignItems || "stretch"}
-                  onChange={handleStyleChange}
+                  value={selectedComponent.props.alignItems || "stretch"}
+                  onChange={handlePropChange}
                   className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="stretch">Stretch</option>
-                  <option value="flex-start">Top</option>
+                  <option value="flex-start">Start</option>
                   <option value="center">Center</option>
-                  <option value="flex-end">Bottom</option>
+                  <option value="flex-end">End</option>
                 </select>
               </div>
               <div>
@@ -176,8 +158,8 @@ const PropertiesPanel = ({
                 </label>
                 <select
                   name="justifyContent"
-                  value={selectedComponent.style.justifyContent || "flex-start"}
-                  onChange={handleStyleChange}
+                  value={selectedComponent.props.justifyContent || "flex-start"}
+                  onChange={handlePropChange}
                   className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="flex-start">Start</option>
@@ -194,18 +176,17 @@ const PropertiesPanel = ({
                 <input
                   type="text"
                   name="gap"
-                  value={selectedComponent.style.gap || "0px"}
-                  onChange={handleStyleChange}
+                  value={selectedComponent.props.gap || "0px"}
+                  onChange={handlePropChange}
                   className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
-              <div className="space-y-6">
+            </div>
+            <div className="space-y-6">
               <DimensionControls
                 style={selectedComponent.style}
                 onStyleChange={handleStyleChange}
               />
-              
-            </div>
             </div>
           </PropertyTabs>
         );

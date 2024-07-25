@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { v4 as uuidv4 } from 'uuid';
 import { alignComponentsUtil, distributeComponentsUtil } from '../utils/alignmentUtils';
 import { componentConfig } from '../components/Components/componentConfig';
+import { createComponent, updateComponent as updateComponentUtil } from '../components/Components/componentFactory';
 
 
 const initialState = {
@@ -26,17 +27,7 @@ const findComponentById = (components, id) => {
 const updateComponentById = (components, id, updates) => {
   return components.map(component => {
     if (component.id === id) {
-      if (updates.chartConfig) {
-        return {
-          ...component,
-          ...updates,
-          chartConfig: {
-            ...component.chartConfig,
-            ...updates.chartConfig
-          }
-        };
-      }
-      return { ...component, ...updates };
+      return updateComponentUtil(component, updates);
     }
     if (component.children) {
       return {
@@ -66,27 +57,18 @@ export const editorSlice = createSlice({
   reducers: {
     addComponent: (state, action) => {
       const { type, parentId, ...otherProps } = action.payload;
-      const config = componentConfig[type];
-    
-      const newComponent = {
-        id: uuidv4(),
-        type,
-        content: config.defaultContent || '',
-        props: config.defaultProps || {},
-        style: { ...config.defaultSize, ...otherProps.style },
-        children: [],
-        ...otherProps,  // This ensures we keep any other properties passed in action.payload
-      };
-    
-      // Add chart-specific configuration if it's a CHART component
-      if (type === 'CHART') {
-        newComponent.chartConfig = { ...config.defaultChartConfig, ...otherProps.chartConfig };
+      let defaultPosition = {};
+      if (type === 'FLEX_CONTAINER') {
+        defaultPosition = {
+          style: {
+            top: 0,
+            left: 0,
+            width: '100%',  // Set to 100% width by default
+            height: 'auto', // Set height to auto
+          }
+        };
       }
-    
-      // Add content for components that have default content, if not overridden
-      if (config.defaultContent && !newComponent.content) {
-        newComponent.content = config.defaultContent;
-      }
+      const newComponent = createComponent(type, { ...defaultPosition, ...otherProps });
     
       if (parentId) {
         const parent = findComponentById(state.components, parentId);
@@ -101,9 +83,9 @@ export const editorSlice = createSlice({
     updateComponent: (state, action) => {
       const { id, updates } = action.payload;
       const updatedComponents = updateComponentById(state.components, id, updates);
-      console.log('Updated components:', updatedComponents); // Debug log
       state.components = updatedComponents;
     },
+
     deleteComponent: (state, action) => {
       state.components = deleteComponentById(state.components, action.payload);
       state.selectedIds = state.selectedIds.filter(id => id !== action.payload);
@@ -122,31 +104,34 @@ export const editorSlice = createSlice({
     },
     pasteComponents: (state) => {
       if (state.clipboard) {
-        const newComponents = state.clipboard.map(c => ({
-          ...c,
-          id: uuidv4(),
-          style: {
-            ...c.style,
-            top: c.style.top + 10,
-            left: c.style.left + 10,
-          },
-        }));
+        const newComponents = state.clipboard.map(c => {
+          const newComponent = createComponent(c.type, {
+            ...c,
+            style: {
+              ...c.style,
+              top: c.style.top + 10,
+              left: c.style.left + 10,
+            },
+          });
+          return newComponent;
+        });
         state.components.push(...newComponents);
         state.selectedIds = newComponents.map(c => c.id);
       }
     },
+
     moveComponent: (state, action) => {
       const { componentId, newParentId, newPosition } = action.payload;
-      const componentToMove = state.components.find(c => c.id === componentId);
+      const componentToMove = findComponentById(state.components, componentId);
       if (componentToMove) {
         // Remove from old parent
-        state.components = state.components.filter(c => c.id !== componentId);
+        state.components = removeComponentFromParent(state.components, componentId);
         if (newParentId) {
           // Add to new parent
-          const newParent = state.components.find(c => c.id === newParentId);
+          const newParent = findComponentById(state.components, newParentId);
           if (newParent) {
             if (!newParent.children) newParent.children = [];
-            newParent.children.push(componentToMove);
+            newParent.children.push(componentToMove); // Fixed typo here
           }
         } else {
           // Move to root level
@@ -159,6 +144,18 @@ export const editorSlice = createSlice({
     },
   },
 });
+
+const removeComponentFromParent = (components, componentId) => {
+  return components.map(component => {
+    if (component.children) {
+      return {
+        ...component,
+        children: component.children.filter(child => child.id !== componentId)
+      };
+    }
+    return component;
+  }).filter(component => component.id !== componentId);
+};
 
 export const {
   addComponent,

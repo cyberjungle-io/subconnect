@@ -1,9 +1,7 @@
 import { FaColumns, FaFont, FaImage, FaChartBar, FaTable, FaPlayCircle, FaSquare, FaHeading } from 'react-icons/fa';
 
 export const componentTypes = {
-  CONTAINER: 'CONTAINER',
-  ROW: 'ROW',
-  COLUMN: 'COLUMN',
+  FLEX_CONTAINER: 'FLEX_CONTAINER',
   HEADING: 'HEADING',
   TEXT: 'TEXT',
   IMAGE: 'IMAGE',
@@ -14,23 +12,18 @@ export const componentTypes = {
 };
 
 export const componentConfig = {
-  [componentTypes.CONTAINER]: {
-    name: 'Container',
-    icon: FaSquare,
-    acceptsChildren: true,
-    defaultSize: { width: 300, height: 200 }
-  },
-  [componentTypes.ROW]: {
-    name: 'Row',
+  [componentTypes.FLEX_CONTAINER]: {
+    name: 'Flex Container',
     icon: FaColumns,
     acceptsChildren: true,
-    defaultSize: { width: '100%', height: 300 }
-  },
-  [componentTypes.COLUMN]: {
-    name: 'Column',
-    icon: FaColumns,
-    acceptsChildren: true,
-    defaultSize: { width: 200, height: '100%' }
+    defaultSize: { width: '100%', height: 'auto' },
+    defaultProps: {
+      direction: 'row',
+      wrap: 'nowrap',
+      alignItems: 'stretch',
+      justifyContent: 'flex-start',
+      gap: '0px'
+    }
   },
   [componentTypes.HEADING]: {
     name: 'Heading',

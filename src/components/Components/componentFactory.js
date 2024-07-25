@@ -1,4 +1,5 @@
 import { componentTypes, componentConfig } from './componentConfig';
+import { v4 as uuidv4 } from 'uuid';
 
 let nextId = 1;
 
@@ -9,7 +10,7 @@ export const createComponent = (type, props = {}) => {
 
   const config = componentConfig[type];
   
-  return {
+  const newComponent = {
     id: `component-${nextId++}`,
     type,
     acceptsChildren: config.acceptsChildren,
@@ -19,8 +20,26 @@ export const createComponent = (type, props = {}) => {
       width: props.width || config.defaultSize?.width || 'auto',
       height: props.height || config.defaultSize?.height || 'auto',
       ...props.style
+    },
+    props: {
+      ...config.defaultProps,
+      ...props
     }
   };
+
+  // Add chart-specific configuration if it's a CHART component
+  if (type === 'CHART') {
+    newComponent.chartConfig = { 
+      ...config.defaultChartConfig, 
+      ...props.chartConfig 
+    };
+  }
+  // Add content for components that have default content, if not overridden
+  if (config.defaultContent && !newComponent.content) {
+    newComponent.content = config.defaultContent;
+  }
+
+  return newComponent;
 };
 
 export const addChildToComponent = (parent, child) => {
@@ -40,6 +59,10 @@ export const updateComponent = (component, updates) => {
     style: {
       ...component.style,
       ...updates.style
+    },
+    props: {
+      ...component.props,
+      ...updates.props
     }
   };
 };

@@ -28,7 +28,6 @@ const DraggableComponent = ({ type, icon: Icon, label }) => {
 const ComponentPalette = () => {
   return (
     <div className="space-y-4">
-      
       <div className="grid grid-cols-2 gap-2">
         {Object.entries(componentTypes).map(([key, type]) => {
           const config = componentConfig[type];

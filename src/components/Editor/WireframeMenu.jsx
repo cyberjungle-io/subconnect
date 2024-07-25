@@ -11,8 +11,7 @@ const WireframeMenu = () => {
   };
 
   const menuItems = [
-    { type: 'row', icon: FaColumns, label: 'Row' },
-    { type: 'column', icon: FaColumns, label: 'Column' },
+    { type: 'FLEX_CONTAINER', icon: FaColumns, label: 'Flex Container' },
     { type: 'text', icon: FaFont, label: 'Text' },
     { type: 'heading', icon: FaFont, label: 'Heading' },
     { type: 'chart', icon: FaChartBar, label: 'Chart' },
