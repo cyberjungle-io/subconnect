@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -19,12 +19,9 @@ import {
 
 const MainEditor = () => {
   const dispatch = useDispatch();
-  const { components, selectedIds, globalSettings } = useSelector(state => state.editor);
+  const { components, selectedIds } = useSelector(state => state.editor);
   const [isPanelVisible, setIsPanelVisible] = useState(true);
-useEffect(() => {
-    // This effect will run whenever globalSettings changes
-    console.log('Global settings updated:', globalSettings);
-  }, [globalSettings]);
+
   const handleTogglePanel = () => {
     setIsPanelVisible(!isPanelVisible);
   };
@@ -102,7 +99,7 @@ useEffect(() => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="flex h-screen" style={{ backgroundColor: globalSettings.backgroundColor }}>
+      <div className="flex h-screen">
         
         <div className="flex flex-col flex-grow">
           <Toolbar 
