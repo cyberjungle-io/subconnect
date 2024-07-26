@@ -117,20 +117,10 @@ const ComponentRenderer = React.memo(({
     }
   };
 
-  const outerStyle = {
-    position: 'absolute',
-    left: component.style.left || 0,
-    top: component.style.top || 0,
-    width: component.style.width || '100%',
-    height: component.style.height || '100%',
-  };
-
-  const innerStyle = {
+  const combinedStyle = {
     ...component.style,
     ...getContainerStyles(),
-    width: '100%',
-    height: '100%',
-    position: 'relative',
+    position: 'absolute',
     border: isThisComponentSelected ? "2px solid blue" : "1px solid #ccc",
     padding: "0",
     minWidth: component.type === "CHART" ? "200px" : undefined,
@@ -140,22 +130,20 @@ const ComponentRenderer = React.memo(({
   };
 
   return (
-    <div style={outerStyle}>
-      <div
-        ref={(node) => {
-          dragRef(dropRef(node));
-        }}
-        style={innerStyle}
-        onClick={handleClick}
-        className={`relative ${isThisComponentSelected ? "shadow-lg" : ""} ${isOver ? "bg-blue-100" : ""}`}
-      >
-        {renderContent()}
-        {isThisComponentSelected && (
-          <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs px-1 z-10">
-            {component.type}
-          </div>
-        )}
-      </div>
+    <div
+      ref={(node) => {
+        dragRef(dropRef(node));
+      }}
+      style={combinedStyle}
+      onClick={handleClick}
+      className={`relative ${isThisComponentSelected ? "shadow-lg" : ""} ${isOver ? "bg-blue-100" : ""}`}
+    >
+      {renderContent()}
+      {isThisComponentSelected && (
+        <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs px-1 z-10">
+          {component.type}
+        </div>
+      )}
     </div>
   );
 });

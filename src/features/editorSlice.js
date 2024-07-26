@@ -11,7 +11,7 @@ const initialState = {
   clipboard: null,
   globalSettings: {
     backgroundColor: '#ffffff',
-    componentLayout: 'vertical',
+    componentLayout: 'horizontal',
   },
 };
 

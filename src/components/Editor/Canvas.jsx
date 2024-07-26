@@ -13,7 +13,7 @@ const Canvas = ({
   onMoveComponent,
 }) => {
   const canvasRef = useRef(null);
-  const { backgroundColor } = useSelector(state => state.editor.globalSettings);
+  const { backgroundColor, componentLayout } = useSelector(state => state.editor.globalSettings);
   const [, drop] = useDrop({
     accept: "COMPONENT",
     drop: (item, monitor) => {
@@ -34,22 +34,24 @@ const Canvas = ({
       const canvasBounds = canvasElement.getBoundingClientRect();
 
       let position;
+      const lastComponent = components[components.length - 1];
+      const lastPosition = lastComponent ? lastComponent.style : { left: 0, top: 0, width: 0, height: 0 };
 
-      if (item.type === "FLEX_CONTAINER") {
-        // For rows, place at the top of the canvas with full width
+      const isVertical = componentLayout === 'vertical';
+
+      if (isVertical) {
+        position = {
+          x: lastPosition.left + (lastPosition.width || 0) + 2, // 2px gap
+          y: 0,
+          width: 200, // Default width
+          height: canvasBounds.height, // Full height
+        };
+      } else { // horizontal layout
         position = {
           x: 0,
-          y: 0,
-          width: canvasBounds.width,
-          height: 300, // Default height for rows
-        };
-      } else {
-        // For other components, use the drop position
-        position = {
-          x: offset.x - canvasBounds.left,
-          y: offset.y - canvasBounds.top,
-          width: 100, // Default width for other components
-          height: 300, // Default height for other components
+          y: lastPosition.top + (lastPosition.height || 0) + 2, // 2px gap
+          width: canvasBounds.width, // Full width
+          height: 200, // Default height
         };
       }
 
