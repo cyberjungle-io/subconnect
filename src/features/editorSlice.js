@@ -11,6 +11,7 @@ const initialState = {
   clipboard: null,
   globalSettings: {
     backgroundColor: '#ffffff',
+    componentLayout: 'vertical',
   },
 };
 
@@ -61,15 +62,39 @@ export const editorSlice = createSlice({
     addComponent: (state, action) => {
       const { type, parentId, ...otherProps } = action.payload;
       let defaultPosition = {};
-      if (type === 'FLEX_CONTAINER') {
-        defaultPosition = {
-          style: {
-            top: 0,
-            left: 0,
-            width: '100%',  // Set to 100% width by default
-            height: 'auto', // Set height to auto
+      if (!parentId) { // Only apply this logic for top-level components
+        const lastComponent = state.components[state.components.length - 1];
+        if (lastComponent) {
+          if (state.globalSettings.componentLayout === 'vertical') {
+            defaultPosition = {
+              style: {
+                top: 0,
+                left: lastComponent.style.left + lastComponent.style.width + 10, // 10px gap
+                width: 200,  // Default width
+                height: 200, // Default height
+              }
+            };
+          } else { // horizontal layout
+            defaultPosition = {
+              style: {
+                top: lastComponent.style.top + lastComponent.style.height + 10, // 10px gap
+                left: 0,
+                width: '100%',
+                height: 200, // Default height
+              }
+            };
           }
-        };
+        } else {
+          // First component
+          defaultPosition = {
+            style: {
+              top: 0,
+              left: 0,
+              width: state.globalSettings.componentLayout === 'vertical' ? 200 : '100%',
+              height: 200,
+            }
+          };
+        }
       }
       const newComponent = createComponent(type, { ...defaultPosition, ...otherProps });
     
