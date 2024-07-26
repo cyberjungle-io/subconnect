@@ -45,6 +45,7 @@ const ComponentRenderer = React.memo(({
   onMoveComponent,
   depth = 0,
   selectedIds,
+  isFlexChild = false,
 }) => {
   const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild);
 
@@ -84,6 +85,7 @@ const ComponentRenderer = React.memo(({
         onMoveComponent={onMoveComponent}
         selectedIds={selectedIds}
         depth={depth + 1}
+        isFlexChild={component.type === "FLEX_CONTAINER"}
       />
     ));
   };
@@ -120,7 +122,7 @@ const ComponentRenderer = React.memo(({
   const combinedStyle = {
     ...component.style,
     ...getContainerStyles(),
-    position: 'absolute',
+    position: isFlexChild ? 'relative' : 'absolute',
     border: isThisComponentSelected ? "2px solid blue" : "1px solid #ccc",
     padding: "0",
     minWidth: component.type === "CHART" ? "200px" : undefined,
