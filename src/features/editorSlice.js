@@ -9,6 +9,9 @@ const initialState = {
   components: [],
   selectedIds: [],
   clipboard: null,
+  globalSettings: {
+    backgroundColor: '#ffffff',
+  },
 };
 
 const findComponentById = (components, id) => {
@@ -142,6 +145,12 @@ export const editorSlice = createSlice({
         }
       }
     },
+    updateGlobalSettings: (state, action) => {
+      state.globalSettings = {
+        ...state.globalSettings,
+        ...action.payload,
+      };
+    },
   },
 });
 
@@ -166,7 +175,8 @@ export const {
   distributeComponents,
   copyComponents,
   pasteComponents,
-  moveComponent
+  moveComponent,
+  updateGlobalSettings,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

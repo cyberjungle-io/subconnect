@@ -1,5 +1,6 @@
 import React, { useRef, useCallback } from "react";
 import { useDrop } from "react-dnd";
+import { useSelector } from 'react-redux';
 import ComponentRenderer from "../Components/Renderers/ComponentRenderer";
 
 const Canvas = ({
@@ -12,7 +13,7 @@ const Canvas = ({
   onMoveComponent,
 }) => {
   const canvasRef = useRef(null);
-
+  const { backgroundColor } = useSelector(state => state.editor.globalSettings);
   const [, drop] = useDrop({
     accept: "COMPONENT",
     drop: (item, monitor) => {
@@ -76,7 +77,10 @@ const Canvas = ({
         canvasRef.current = node;
       }}
       className="canvas-area relative w-full h-full bg-gray-100 overflow-auto"
-      style={{ minHeight: "500px" }}
+      style={{ 
+        minHeight: "500px",
+        backgroundColor: backgroundColor // Apply the background color here
+      }}
       onClick={handleCanvasClick}
     >
       {components.map((component) => (

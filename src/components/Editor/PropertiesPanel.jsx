@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from 'react-redux';
 import ReChartProperties from "../Components/ReCharts/ReChartProperties";
 import ChartStyleOptions from "../Components/ReCharts/ChartStyleOptions";
 import HeadingProperties from "../Components/Typography/HeadingProperties";
@@ -8,9 +9,11 @@ import {
   FaThLarge,
   FaArrowAltCircleRight,
   FaChevronLeft,
+  FaCog,
 } from "react-icons/fa";
 import HidePropertiesPanelArrow from '../common/CustomIcons/HidePropertiesPanelArrow';
 import DimensionControls from "../Components/CommonControls/DimensionControls";
+import { updateGlobalSettings } from '../../features/editorSlice';
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -19,26 +22,18 @@ const PropertiesPanel = ({
   isVisible,
   onToggleVisibility,
 }) => {
+  const dispatch = useDispatch();
+  const globalSettings = useSelector(state => state.editor.globalSettings);
   const [showComponentPalette, setShowComponentPalette] = useState(false);
+  const [showGlobalSettings, setShowGlobalSettings] = useState(false);
   useEffect(() => {
     if (selectedComponent) {
       setShowComponentPalette(false);
+      setShowGlobalSettings(false);
     }
   }, [selectedComponent]);
 
-  if (!isVisible) {
-    return (
-      <button
-        onClick={onToggleVisibility}
-        className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-700 p-2 rounded-l-md hover:bg-gray-300 focus:outline-none transition-colors duration-200"
-        title="Show Panel"
-      >
-        <FaChevronLeft />
-      </button>
-    );
-  }
-
-  const toggleButton = (
+const toggleButton = (
     <button
       onClick={onToggleVisibility}
       className="text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200"
@@ -57,8 +52,65 @@ const PropertiesPanel = ({
       <FaThLarge />
     </button>
   );
+  const showGlobalSettingsButton = (
+    <button
+      onClick={() => setShowGlobalSettings(true)}
+      className="text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200"
+      title="Show Global Settings"
+    >
+      <FaCog />
+    </button>
+  );
+const handleGlobalSettingChange = (e) => {
+    const { name, value } = e.target;
+    dispatch(updateGlobalSettings({ [name]: value }));
+  };
 
-  if (!selectedComponent || showComponentPalette) {
+  const renderGlobalSettings = () => (
+    <div className="space-y-4">
+      <h3 className="text-lg font-semibold">Global Settings</h3>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Background Color
+        </label>
+        <input
+          type="color"
+          name="backgroundColor"
+          value={globalSettings.backgroundColor}
+          onChange={handleGlobalSettingChange}
+          className="block w-full"
+        />
+      </div>
+      {/* Add more global settings here as needed */}
+    </div>
+  );
+
+  if (!isVisible) {
+    return (
+      <button
+        onClick={onToggleVisibility}
+        className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-700 p-2 rounded-l-md hover:bg-gray-300 focus:outline-none transition-colors duration-200"
+        title="Show Panel"
+      >
+        <FaChevronLeft />
+      </button>
+    );
+  }
+  if (showGlobalSettings) {
+    return (
+      <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-bold text-gray-800">Global Settings</h2>
+          <div className="flex space-x-2">
+            {showComponentPaletteButton}
+            {toggleButton}
+          </div>
+        </div>
+        {renderGlobalSettings()}
+      </div>
+    );
+  }
+ if (!selectedComponent || showComponentPalette) {
     return (
       <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
         <div className="flex justify-between items-center mb-4">
@@ -69,6 +121,9 @@ const PropertiesPanel = ({
       </div>
     );
   }
+  
+
+ 
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -208,6 +263,7 @@ const PropertiesPanel = ({
         <h2 className="text-lg font-bold text-gray-800">Properties</h2>
         <div className="flex space-x-2">
           {showComponentPaletteButton}
+          {showGlobalSettingsButton}
           {toggleButton}
         </div>
       </div>
