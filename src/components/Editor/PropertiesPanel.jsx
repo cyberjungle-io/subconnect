@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useSelector, useDispatch } from 'react-redux';
-import ReChartProperties from "../Components/ReCharts/ReChartProperties";
-import ChartStyleOptions from "../Components/ReCharts/ChartStyleOptions";
-import HeadingProperties from "../Components/Typography/HeadingProperties";
+import { useSelector, useDispatch } from "react-redux";
 import PropertyTabs from "./PropertyTabs";
 import ComponentPalette from "../Components/ComponentPalette";
-import {
-  FaThLarge,
-  FaArrowAltCircleRight,
-  FaChevronLeft,
-  FaCog,
-} from "react-icons/fa";
-import HidePropertiesPanelArrow from '../common/CustomIcons/HidePropertiesPanelArrow';
+import { FaChevronLeft } from "react-icons/fa";
 import DimensionControls from "../Components/CommonControls/DimensionControls";
-import { updateGlobalSettings } from '../../features/editorSlice';
+import { updateGlobalSettings } from "../../features/editorSlice";
+import PanelNavBar from "./PanelNavBar";
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -23,52 +15,38 @@ const PropertiesPanel = ({
   onToggleVisibility,
 }) => {
   const dispatch = useDispatch();
-  const globalSettings = useSelector(state => state.editor.globalSettings);
-  const [showComponentPalette, setShowComponentPalette] = useState(false);
-  const [showGlobalSettings, setShowGlobalSettings] = useState(false);
+  const globalSettings = useSelector((state) => state.editor.globalSettings);
+  const [activePanel, setActivePanel] = useState("properties");
   useEffect(() => {
     if (selectedComponent) {
-      setShowComponentPalette(false);
-      setShowGlobalSettings(false);
+      setActivePanel("properties");
     }
   }, [selectedComponent]);
 
-const toggleButton = (
-    <button
-      onClick={onToggleVisibility}
-      className="text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200"
-      title="Hide Panel"
-    >
-      <HidePropertiesPanelArrow className="w-5 h-5" />
-    </button>
-  );
+  const handleShowComponentPalette = () => setActivePanel("componentPalette");
+  const handleShowGlobalSettings = () => setActivePanel("globalSettings");
 
-  const showComponentPaletteButton = (
-    <button
-      onClick={() => setShowComponentPalette(true)}
-      className="text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200"
-      title="Show Component Palette"
-    >
-      <FaThLarge />
-    </button>
-  );
-  const showGlobalSettingsButton = (
-    <button
-      onClick={() => setShowGlobalSettings(true)}
-      className="text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200"
-      title="Show Global Settings"
-    >
-      <FaCog />
-    </button>
-  );
-const handleGlobalSettingChange = (e) => {
+  const handlePropChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const newValue = type === "checkbox" ? checked : value;
+    onUpdateComponent(selectedComponent.id, {
+      props: { ...selectedComponent.props, [name]: newValue },
+    });
+  };
+
+  const handleGlobalSettingChange = (e) => {
     const { name, value } = e.target;
     dispatch(updateGlobalSettings({ [name]: value }));
   };
 
   const renderGlobalSettings = () => (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Global Settings</h3>
+      <PanelNavBar
+        onShowComponentPalette={handleShowComponentPalette}
+        onShowGlobalSettings={handleShowGlobalSettings}
+        onToggleVisibility={onToggleVisibility}
+        activePanel={activePanel}
+      />
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Background Color
@@ -109,66 +87,40 @@ const handleGlobalSettingChange = (e) => {
       </button>
     );
   }
-  if (showGlobalSettings) {
+
+  if (activePanel === "globalSettings") {
     return (
       <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold text-gray-800">Global Settings</h2>
-          <div className="flex space-x-2">
-            {showComponentPaletteButton}
-            {toggleButton}
-          </div>
-        </div>
+        <h2 className="text-lg font-bold text-gray-800 mb-4">
+          Global Settings
+        </h2>
         {renderGlobalSettings()}
       </div>
     );
   }
- if (!selectedComponent || showComponentPalette) {
+  if (!selectedComponent) {
     return (
       <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-bold text-gray-800">Components</h2>
-          {toggleButton}
-        </div>
+        <h2 className="text-lg font-bold text-gray-800 mb-4">Components</h2>
+        <PanelNavBar
+          onShowComponentPalette={handleShowComponentPalette}
+          onShowGlobalSettings={handleShowGlobalSettings}
+          onToggleVisibility={onToggleVisibility}
+          activePanel={activePanel}
+        />
         <ComponentPalette />
       </div>
     );
   }
-  
-
- 
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    onUpdateComponent(selectedComponent.id, { [name]: value });
-  };
 
   const handleStyleChange = (e) => {
     const { name, value } = e.target;
     console.log(`Style change: ${name} = ${value}`); // Debug log
     const newStyle = { ...selectedComponent.style, [name]: value };
-    console.log('New style:', newStyle); // Debug log
+    console.log("New style:", newStyle); // Debug log
     onUpdateComponent(selectedComponent.id, { style: newStyle });
   };
 
-  const handleChartConfigChange = (e) => {
-    const { name, value } = e.target;
-    onUpdateComponent(selectedComponent.id, {
-      chartConfig: {
-        ...selectedComponent.chartConfig,
-        [name]: name === "data" ? JSON.parse(value) : value,
-      },
-    });
-  };
-
-  const handlePropChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const newValue = type === "checkbox" ? checked : value;
-    console.log(`Updating ${name} to ${newValue}`); // Debug log
-    onUpdateComponent(selectedComponent.id, {
-      props: { ...selectedComponent.props, [name]: newValue },
-    });
-  };
 
   const renderComponentProperties = () => {
     switch (selectedComponent.type) {
@@ -258,7 +210,7 @@ const handleGlobalSettingChange = (e) => {
             </div>
           </PropertyTabs>
         );
-        default:
+      default:
         return (
           <PropertyTabs tabs={["Styles"]}>
             <DimensionControls
@@ -272,14 +224,13 @@ const handleGlobalSettingChange = (e) => {
 
   return (
     <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold text-gray-800">Properties</h2>
-        <div className="flex space-x-2">
-          {showComponentPaletteButton}
-          {showGlobalSettingsButton}
-          {toggleButton}
-        </div>
-      </div>
+      <h2 className="text-lg font-bold text-gray-800 mb-4">Properties</h2>
+      <PanelNavBar
+        onShowComponentPalette={handleShowComponentPalette}
+        onShowGlobalSettings={handleShowGlobalSettings}
+        onToggleVisibility={onToggleVisibility}
+        activePanel={activePanel}
+      />
       <div className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -293,7 +244,7 @@ const handleGlobalSettingChange = (e) => {
           />
         </div>
         {renderComponentProperties()}
-        
+
         <button
           onClick={() => onDeleteComponent(selectedComponent.id)}
           className="w-full px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
