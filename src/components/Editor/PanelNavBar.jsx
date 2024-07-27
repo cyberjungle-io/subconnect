@@ -1,10 +1,11 @@
 import React from 'react';
-import { FaThLarge, FaCog } from 'react-icons/fa';
+import { FaThLarge, FaCog, FaTree } from 'react-icons/fa';
 import HidePropertiesPanelArrow from '../common/CustomIcons/HidePropertiesPanelArrow';
 
 const PanelNavBar = ({ 
   onShowComponentPalette, 
   onShowGlobalSettings, 
+  onShowComponentTree,
   onToggleVisibility,
   activePanel
 }) => {
@@ -29,6 +30,13 @@ const PanelNavBar = ({
         title="Show Global Settings"
       >
         <FaCog />
+      </button>
+      <button
+        onClick={onShowComponentTree}
+        className={getButtonClass('componentTree')}
+        title="Show Component Tree"
+      >
+        <FaTree />
       </button>
       <button
         onClick={onToggleVisibility}

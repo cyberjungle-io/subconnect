@@ -128,6 +128,8 @@ const MainEditor = () => {
           onAddComponent={handleAddComponent}
           isVisible={isPanelVisible}
           onToggleVisibility={handleTogglePanel}
+              components={components}
+              onSelectComponent={handleSelectComponent}
         /></div></div>
       </div>
     </DndProvider>

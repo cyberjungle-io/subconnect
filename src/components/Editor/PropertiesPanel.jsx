@@ -6,6 +6,7 @@ import { FaChevronLeft } from "react-icons/fa";
 import DimensionControls from "../Components/CommonControls/DimensionControls";
 import { updateGlobalSettings } from "../../features/editorSlice";
 import PanelNavBar from "./PanelNavBar";
+import ComponentTree from "./ComponentTree";
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -13,6 +14,8 @@ const PropertiesPanel = ({
   onDeleteComponent,
   isVisible,
   onToggleVisibility,
+  components,
+  onSelectComponent,
 }) => {
   const dispatch = useDispatch();
   const globalSettings = useSelector((state) => state.editor.globalSettings);
@@ -25,6 +28,7 @@ const PropertiesPanel = ({
 
   const handleShowComponentPalette = () => setActivePanel("componentPalette");
   const handleShowGlobalSettings = () => setActivePanel("globalSettings");
+  const handleShowComponentTree = () => setActivePanel("componentTree");
 
   const handlePropChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -98,15 +102,31 @@ const PropertiesPanel = ({
       </div>
     );
   }
+  if (activePanel === "componentTree") {
+    return (
+      <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
+        <h2 className="text-lg font-bold text-gray-800 mb-4">Component Tree</h2>
+        <PanelNavBar
+          onShowComponentPalette={handleShowComponentPalette}
+          onShowGlobalSettings={handleShowGlobalSettings}
+          onShowComponentTree={handleShowComponentTree}
+          onToggleVisibility={onToggleVisibility}
+          activePanel={activePanel}
+        />
+        <ComponentTree components={components} onSelectComponent={onSelectComponent} />
+      </div>
+    );
+  }
   if (!selectedComponent) {
     return (
       <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
         <h2 className="text-lg font-bold text-gray-800 mb-4">Components</h2>
         <PanelNavBar
           onShowComponentPalette={handleShowComponentPalette}
-          onShowGlobalSettings={handleShowGlobalSettings}
-          onToggleVisibility={onToggleVisibility}
-          activePanel={activePanel}
+        onShowGlobalSettings={handleShowGlobalSettings}
+        onShowComponentTree={handleShowComponentTree}
+        onToggleVisibility={onToggleVisibility}
+        activePanel={activePanel}
         />
         <ComponentPalette />
       </div>
@@ -228,6 +248,7 @@ const PropertiesPanel = ({
       <PanelNavBar
         onShowComponentPalette={handleShowComponentPalette}
         onShowGlobalSettings={handleShowGlobalSettings}
+        onShowComponentTree={handleShowComponentTree}
         onToggleVisibility={onToggleVisibility}
         activePanel={activePanel}
       />
