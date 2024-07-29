@@ -70,10 +70,12 @@ const PropertiesPanel = ({
       />
       {isComponentTreeVisible && (
         <div className="mb-4 border-b border-gray-300 pb-4">
-          <ComponentTree 
-            components={components} 
+          <ComponentTree
+            components={components}
             onSelectComponent={handleComponentSelect}
-            selectedComponentId={selectedComponent ? selectedComponent.id : null}
+            selectedComponentId={
+              selectedComponent ? selectedComponent.id : null
+            }
           />
         </div>
       )}
@@ -107,9 +109,11 @@ const PropertiesPanel = ({
         style={globalSettings.style || {}}
         onStyleChange={(e) => {
           const { name, value } = e.target;
-          dispatch(updateGlobalSettings({
-            style: { ...globalSettings.style, [name]: value }
-          }));
+          dispatch(
+            updateGlobalSettings({
+              style: { ...globalSettings.style, [name]: value },
+            })
+          );
         }}
       />
     </div>
@@ -149,24 +153,26 @@ const PropertiesPanel = ({
       <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
         <h2 className="text-lg font-bold text-gray-800 mb-4">Components</h2>
         <PanelNavBar
-        onShowComponentPalette={handleShowComponentPalette}
-        onShowGlobalSettings={handleShowGlobalSettings}
-        onShowComponentTree={handleShowComponentTree}
-        onOpenDataModal={onOpenDataModal}
-        onToggleVisibility={onToggleVisibility}
-        activePanel={activePanel}
-        isComponentTreeVisible={isComponentTreeVisible}
-      />
-      {isComponentTreeVisible && (
-        <div className="mb-4 border-b border-gray-300 pb-4">
-          <ComponentTree 
-            components={components} 
-            onSelectComponent={handleComponentSelect}
-            selectedComponentId={selectedComponent ? selectedComponent.id : null}
-          />
-        </div>
-      )}
-        
+          onShowComponentPalette={handleShowComponentPalette}
+          onShowGlobalSettings={handleShowGlobalSettings}
+          onShowComponentTree={handleShowComponentTree}
+          onOpenDataModal={onOpenDataModal}
+          onToggleVisibility={onToggleVisibility}
+          activePanel={activePanel}
+          isComponentTreeVisible={isComponentTreeVisible}
+        />
+        {isComponentTreeVisible && (
+          <div className="mb-4 border-b border-gray-300 pb-4">
+            <ComponentTree
+              components={components}
+              onSelectComponent={handleComponentSelect}
+              selectedComponentId={
+                selectedComponent ? selectedComponent.id : null
+              }
+            />
+          </div>
+        )}
+
         <ComponentPalette />
       </div>
     );
@@ -312,6 +318,69 @@ const PropertiesPanel = ({
                 style={selectedComponent.style}
                 onStyleChange={handleStyleChange}
               />
+              <SpacingControls
+                style={selectedComponent.style}
+                onStyleChange={handleStyleChange}
+                availableControls={["padding", "margin", "gap"]}
+              />
+            </div>
+          </PropertyTabs>
+        );
+      case "HEADING":
+      case "TEXT":
+        return (
+          <PropertyTabs tabs={["Styles"]}>
+            <div className="space-y-6">
+              <DimensionControls
+                style={selectedComponent.style}
+                onStyleChange={handleStyleChange}
+              />
+              {/* Add any text-specific style controls here */}
+            </div>
+            <SpacingControls
+              style={selectedComponent.style}
+              onStyleChange={handleStyleChange}
+              availableControls={["margin"]}
+            />
+          </PropertyTabs>
+        );
+      case "IMAGE":
+      case "BUTTON":
+        return (
+          <PropertyTabs tabs={["Styles"]}>
+            <div className="space-y-6">
+              <DimensionControls
+                style={selectedComponent.style}
+                onStyleChange={handleStyleChange}
+              />
+              {/* Add any image or button-specific style controls here */}
+            </div>
+            <SpacingControls
+              style={selectedComponent.style}
+              onStyleChange={handleStyleChange}
+              availableControls={["margin", "padding"]}
+            />
+          </PropertyTabs>
+        );
+      case "CHART":
+        return (
+          <PropertyTabs tabs={["Chart Settings", "Styles", "Spacing"]}>
+            {/* Chart settings tab content */}
+            <div>{/* Add chart-specific settings controls here */}</div>
+            {/* Styles tab content */}
+            <div className="space-y-6">
+              <DimensionControls
+                style={selectedComponent.style}
+                onStyleChange={handleStyleChange}
+              />
+            </div>
+            {/* Spacing tab content */}
+            <div className="space-y-6">
+              <SpacingControls
+                style={selectedComponent.style}
+                onStyleChange={handleStyleChange}
+                availableControls={["margin", "padding"]}
+              />
             </div>
           </PropertyTabs>
         );
@@ -321,6 +390,11 @@ const PropertiesPanel = ({
             <DimensionControls
               style={selectedComponent.style}
               onStyleChange={handleStyleChange}
+            />
+            <SpacingControls
+              style={selectedComponent.style}
+              onStyleChange={handleStyleChange}
+              availableControls={["margin", "padding"]}
             />
           </PropertyTabs>
         );
@@ -348,8 +422,6 @@ const PropertiesPanel = ({
         </div>
       )}
       <div className="flex-grow overflow-y-auto">{renderPanelContent()}</div>
-
-      
     </div>
   );
 };

@@ -19,6 +19,9 @@ export const createComponent = (type, props = {}) => {
     style: {
       width: props.width || config.defaultSize?.width || 'auto',
       height: props.height || config.defaultSize?.height || 'auto',
+      margin: '0px',
+      padding: '0px',
+      gap: '0px',
       ...props.style
     },
     props: {

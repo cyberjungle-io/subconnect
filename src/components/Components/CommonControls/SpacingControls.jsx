@@ -1,6 +1,6 @@
 import React from 'react';
 
-const SpacingControls = ({ style, onStyleChange }) => {
+const SpacingControls = ({ style, onStyleChange, availableControls = ['padding', 'margin', 'gap'] }) => {
   // Helper function to handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -29,29 +29,33 @@ const SpacingControls = ({ style, onStyleChange }) => {
       <h3 className="text-lg font-medium text-gray-900">Spacing</h3>
       
       {/* Padding controls */}
-      <div>
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Padding</h4>
-        <div className="grid grid-cols-2 gap-2">
-          {renderInput('Top', 'paddingTop', style.paddingTop)}
-          {renderInput('Right', 'paddingRight', style.paddingRight)}
-          {renderInput('Bottom', 'paddingBottom', style.paddingBottom)}
-          {renderInput('Left', 'paddingLeft', style.paddingLeft)}
+      {availableControls.includes('padding') && (
+        <div>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Padding</h4>
+          <div className="grid grid-cols-2 gap-2">
+            {renderInput('Top', 'paddingTop', style.paddingTop)}
+            {renderInput('Right', 'paddingRight', style.paddingRight)}
+            {renderInput('Bottom', 'paddingBottom', style.paddingBottom)}
+            {renderInput('Left', 'paddingLeft', style.paddingLeft)}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Margin controls */}
-      <div>
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Margin</h4>
-        <div className="grid grid-cols-2 gap-2">
-          {renderInput('Top', 'marginTop', style.marginTop)}
-          {renderInput('Right', 'marginRight', style.marginRight)}
-          {renderInput('Bottom', 'marginBottom', style.marginBottom)}
-          {renderInput('Left', 'marginLeft', style.marginLeft)}
+      {availableControls.includes('margin') && (
+        <div>
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Margin</h4>
+          <div className="grid grid-cols-2 gap-2">
+            {renderInput('Top', 'marginTop', style.marginTop)}
+            {renderInput('Right', 'marginRight', style.marginRight)}
+            {renderInput('Bottom', 'marginBottom', style.marginBottom)}
+            {renderInput('Left', 'marginLeft', style.marginLeft)}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Gap control */}
-      {renderInput('Gap', 'gap', style.gap)}
+      {availableControls.includes('gap') && renderInput('Gap', 'gap', style.gap)}
     </div>
   );
 };

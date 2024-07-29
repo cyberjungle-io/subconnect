@@ -74,7 +74,7 @@ const ComponentRenderer = React.memo(({
     if (!component.children || component.children.length === 0) {
       return null;
     }
-
+  
     return component.children.map((child) => (
       <ComponentRenderer
         key={child.id}
@@ -100,10 +100,10 @@ const ComponentRenderer = React.memo(({
       selectedIds,
       depth: depth + 1,
     };
-
+  
     switch (component.type) {
       case "FLEX_CONTAINER":
-        return renderChildren();
+  return <FlexContainer component={component} {...sharedProps} />;
       case "HEADING":
         return <HeadingRenderer {...sharedProps} />;
       case "TEXT":
@@ -119,16 +119,34 @@ const ComponentRenderer = React.memo(({
     }
   };
 
-  const combinedStyle = {
-    ...component.style,
-    ...getContainerStyles(),
-    position: isFlexChild ? 'relative' : 'absolute',
-    border: isThisComponentSelected ? "2px solid blue" : "1px solid #ccc",
-    padding: "0",
-    minWidth: component.type === "CHART" ? "200px" : undefined,
-    minHeight: component.type === "CHART" ? "150px" : undefined,
-    overflow: "hidden",
-    boxSizing: 'border-box',
+  const getComponentStyle = () => {
+    const { style } = component;
+    
+    const componentStyle = {
+      ...style,
+      position: isFlexChild ? 'relative' : 'absolute',
+      border: isThisComponentSelected ? "2px solid blue" : "1px solid #ccc",
+      padding: style.padding || "0px",
+      margin: style.margin || "0px",
+      gap: style.gap || "0px",
+      overflow: "hidden",
+      boxSizing: 'border-box',
+    };
+
+    if (isFlexChild) {
+      // These will be overridden by FlexContainer if necessary
+      componentStyle.flexGrow = style.flexGrow || 0;
+      componentStyle.flexShrink = style.flexShrink || 1;
+      componentStyle.flexBasis = style.width || 'auto';
+    }
+
+    if (component.type === "CHART") {
+      componentStyle.minWidth = style.width || "200px";
+      componentStyle.minHeight = style.height || "150px";
+      componentStyle.width = style.width || "100%";
+      componentStyle.height = style.height || "100%";
+    }
+    return componentStyle;
   };
 
   return (
@@ -136,7 +154,7 @@ const ComponentRenderer = React.memo(({
       ref={(node) => {
         dragRef(dropRef(node));
       }}
-      style={combinedStyle}
+      style={getComponentStyle()}
       onClick={handleClick}
       className={`relative ${isThisComponentSelected ? "shadow-lg" : ""} ${isOver ? "bg-blue-100" : ""}`}
     >

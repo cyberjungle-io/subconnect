@@ -42,7 +42,18 @@ const findComponentById = (components, id) => {
 const updateComponentById = (components, id, updates) => {
   return components.map(component => {
     if (component.id === id) {
-      return updateComponentUtil(component, updates);
+      return {
+        ...component,
+        ...updates,
+        style: {
+          ...component.style,
+          ...updates.style
+        },
+        props: {
+          ...component.props,
+          ...updates.props
+        }
+      };
     }
     if (component.children) {
       return {
