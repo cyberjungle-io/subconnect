@@ -1,11 +1,12 @@
 import React from 'react';
-import { FaThLarge, FaCog, FaTree } from 'react-icons/fa';
+import { FaThLarge, FaCog, FaTree, FaDatabase } from 'react-icons/fa';
 import HidePropertiesPanelArrow from '../common/CustomIcons/HidePropertiesPanelArrow';
 
 const PanelNavBar = ({ 
   onShowComponentPalette, 
   onShowGlobalSettings, 
   onShowComponentTree,
+  onOpenDataModal,
   onToggleVisibility,
   activePanel,
   isComponentTreeVisible
@@ -24,6 +25,13 @@ const PanelNavBar = ({
         title="Show Component Palette"
       >
         <FaThLarge />
+      </button>
+      <button
+        onClick={onOpenDataModal}
+        className={getButtonClass('dataModal')}
+        title="Open Data Modal"
+      >
+        <FaDatabase />
       </button>
       <button
         onClick={onShowGlobalSettings}

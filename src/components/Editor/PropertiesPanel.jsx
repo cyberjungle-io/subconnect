@@ -16,6 +16,7 @@ const PropertiesPanel = ({
   onToggleVisibility,
   components,
   onSelectComponent,
+  onOpenDataModal,
 }) => {
   const dispatch = useDispatch();
   const globalSettings = useSelector((state) => state.editor.globalSettings);
@@ -61,6 +62,7 @@ const PropertiesPanel = ({
         onShowComponentPalette={handleShowComponentPalette}
         onShowGlobalSettings={handleShowGlobalSettings}
         onShowComponentTree={handleShowComponentTree}
+        onOpenDataModal={onOpenDataModal}
         onToggleVisibility={onToggleVisibility}
         activePanel={activePanel}
         isComponentTreeVisible={isComponentTreeVisible}
@@ -121,6 +123,7 @@ const PropertiesPanel = ({
           onShowComponentPalette={handleShowComponentPalette}
           onShowGlobalSettings={handleShowGlobalSettings}
           onShowComponentTree={handleShowComponentTree}
+          onOpenDataModal={onOpenDataModal}
           onToggleVisibility={onToggleVisibility}
           activePanel={activePanel}
         />
@@ -139,6 +142,7 @@ const PropertiesPanel = ({
         onShowComponentPalette={handleShowComponentPalette}
         onShowGlobalSettings={handleShowGlobalSettings}
         onShowComponentTree={handleShowComponentTree}
+        onOpenDataModal={onOpenDataModal}
         onToggleVisibility={onToggleVisibility}
         activePanel={activePanel}
         isComponentTreeVisible={isComponentTreeVisible}
@@ -320,6 +324,7 @@ const PropertiesPanel = ({
         onShowComponentPalette={handleShowComponentPalette}
         onShowGlobalSettings={handleShowGlobalSettings}
         onShowComponentTree={handleShowComponentTree}
+        onOpenDataModal={onOpenDataModal}
         onToggleVisibility={onToggleVisibility}
         activePanel={activePanel}
         isComponentTreeVisible={isComponentTreeVisible}

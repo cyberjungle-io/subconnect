@@ -5,6 +5,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import Canvas from './Canvas';
 import PropertiesPanel from './PropertiesPanel';
 import Toolbar from './Toolbar';
+import DataModal from './DataModal';
 import {
   addComponent,
   updateComponent,
@@ -21,9 +22,16 @@ const MainEditor = () => {
   const dispatch = useDispatch();
   const { components, selectedIds } = useSelector(state => state.editor);
   const [isPanelVisible, setIsPanelVisible] = useState(true);
+  const [isDataModalOpen, setIsDataModalOpen] = useState(false);
 
   const handleTogglePanel = () => {
     setIsPanelVisible(!isPanelVisible);
+  };
+  const handleOpenDataModal = () => {
+    setIsDataModalOpen(true);
+  };
+  const handleCloseDataModal = () => {
+    setIsDataModalOpen(false);
   };
 
   const handleAddComponent = (componentType, parentId = null, position = null) => {
@@ -130,8 +138,10 @@ const MainEditor = () => {
           onToggleVisibility={handleTogglePanel}
               components={components}
               onSelectComponent={handleSelectComponent}
+              onOpenDataModal={handleOpenDataModal}
         /></div></div>
       </div>
+      <DataModal isOpen={isDataModalOpen} onClose={handleCloseDataModal} />
     </DndProvider>
   );
 };
