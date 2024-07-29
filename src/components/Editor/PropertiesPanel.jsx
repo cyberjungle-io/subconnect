@@ -7,6 +7,7 @@ import DimensionControls from "../Components/CommonControls/DimensionControls";
 import { updateGlobalSettings } from "../../features/editorSlice";
 import PanelNavBar from "./PanelNavBar";
 import ComponentTree from "./ComponentTree";
+import SpacingControls from "../Components/CommonControls/SpacingControls";
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -102,6 +103,15 @@ const PropertiesPanel = ({
           <option value="horizontal">Horizontal (One Below Another)</option>
         </select>
       </div>
+      <SpacingControls
+        style={globalSettings.style || {}}
+        onStyleChange={(e) => {
+          const { name, value } = e.target;
+          dispatch(updateGlobalSettings({
+            style: { ...globalSettings.style, [name]: value }
+          }));
+        }}
+      />
     </div>
   );
 

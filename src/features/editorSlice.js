@@ -12,6 +12,17 @@ const initialState = {
   globalSettings: {
     backgroundColor: '#ffffff',
     componentLayout: 'horizontal',
+    style: {
+      paddingTop: '0px',
+      paddingRight: '0px',
+      paddingBottom: '0px',
+      paddingLeft: '0px',
+      marginTop: '0px',
+      marginRight: '0px',
+      marginBottom: '0px',
+      marginLeft: '0px',
+      gap: '0px',
+    },
   },
 };
 
@@ -174,6 +185,10 @@ export const editorSlice = createSlice({
       state.globalSettings = {
         ...state.globalSettings,
         ...action.payload,
+        style: {
+          ...state.globalSettings.style,
+          ...(action.payload.style || {}),
+        },
       };
     },
   },
