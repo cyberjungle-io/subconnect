@@ -7,11 +7,12 @@ const PanelNavBar = ({
   onShowGlobalSettings, 
   onShowComponentTree,
   onToggleVisibility,
-  activePanel
+  activePanel,
+  isComponentTreeVisible
 }) => {
   const getButtonClass = (panelName) => {
     return `text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200 ${
-      activePanel === panelName ? 'bg-gray-300' : ''
+      activePanel === panelName || (panelName === 'componentTree' && isComponentTreeVisible) ? 'bg-gray-300' : ''
     }`;
   };
 
@@ -34,7 +35,7 @@ const PanelNavBar = ({
       <button
         onClick={onShowComponentTree}
         className={getButtonClass('componentTree')}
-        title="Show Component Tree"
+        title="Toggle Component Tree"
       >
         <FaTree />
       </button>

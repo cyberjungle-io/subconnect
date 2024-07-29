@@ -20,16 +20,28 @@ const PropertiesPanel = ({
   const dispatch = useDispatch();
   const globalSettings = useSelector((state) => state.editor.globalSettings);
   const [activePanel, setActivePanel] = useState("properties");
+  const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
   useEffect(() => {
     if (selectedComponent) {
       setActivePanel("properties");
     }
   }, [selectedComponent]);
 
-  const handleShowComponentPalette = () => setActivePanel("componentPalette");
-  const handleShowGlobalSettings = () => setActivePanel("globalSettings");
-  const handleShowComponentTree = () => setActivePanel("componentTree");
-
+  const handleShowComponentPalette = () => {
+    setActivePanel("componentPalette");
+    setIsComponentTreeVisible(false);
+  };
+  const handleShowGlobalSettings = () => {
+    setActivePanel("globalSettings");
+    setIsComponentTreeVisible(false);
+  };
+  const handleShowComponentTree = () => {
+    setIsComponentTreeVisible(!isComponentTreeVisible);
+  };
+  const handleComponentSelect = (componentId) => {
+    onSelectComponent(componentId);
+    setActivePanel("properties");
+  };
   const handlePropChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
@@ -48,9 +60,20 @@ const PropertiesPanel = ({
       <PanelNavBar
         onShowComponentPalette={handleShowComponentPalette}
         onShowGlobalSettings={handleShowGlobalSettings}
+        onShowComponentTree={handleShowComponentTree}
         onToggleVisibility={onToggleVisibility}
         activePanel={activePanel}
+        isComponentTreeVisible={isComponentTreeVisible}
       />
+      {isComponentTreeVisible && (
+        <div className="mb-4 border-b border-gray-300 pb-4">
+          <ComponentTree 
+            components={components} 
+            onSelectComponent={handleComponentSelect}
+            selectedComponentId={selectedComponent ? selectedComponent.id : null}
+          />
+        </div>
+      )}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Background Color
@@ -80,18 +103,6 @@ const PropertiesPanel = ({
     </div>
   );
 
-  if (!isVisible) {
-    return (
-      <button
-        onClick={onToggleVisibility}
-        className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-700 p-2 rounded-l-md hover:bg-gray-300 focus:outline-none transition-colors duration-200"
-        title="Show Panel"
-      >
-        <FaChevronLeft />
-      </button>
-    );
-  }
-
   if (activePanel === "globalSettings") {
     return (
       <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
@@ -113,7 +124,10 @@ const PropertiesPanel = ({
           onToggleVisibility={onToggleVisibility}
           activePanel={activePanel}
         />
-        <ComponentTree components={components} onSelectComponent={onSelectComponent} />
+        <ComponentTree
+          components={components}
+          onSelectComponent={onSelectComponent}
+        />
       </div>
     );
   }
@@ -122,14 +136,72 @@ const PropertiesPanel = ({
       <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
         <h2 className="text-lg font-bold text-gray-800 mb-4">Components</h2>
         <PanelNavBar
-          onShowComponentPalette={handleShowComponentPalette}
+        onShowComponentPalette={handleShowComponentPalette}
         onShowGlobalSettings={handleShowGlobalSettings}
         onShowComponentTree={handleShowComponentTree}
         onToggleVisibility={onToggleVisibility}
         activePanel={activePanel}
-        />
+        isComponentTreeVisible={isComponentTreeVisible}
+      />
+      {isComponentTreeVisible && (
+        <div className="mb-4 border-b border-gray-300 pb-4">
+          <ComponentTree 
+            components={components} 
+            onSelectComponent={handleComponentSelect}
+            selectedComponentId={selectedComponent ? selectedComponent.id : null}
+          />
+        </div>
+      )}
+        
         <ComponentPalette />
       </div>
+    );
+  }
+
+  const renderPanelContent = () => {
+    switch (activePanel) {
+      case "globalSettings":
+        return renderGlobalSettings();
+      case "componentPalette":
+        return <ComponentPalette />;
+      case "properties":
+        return selectedComponent ? (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Type
+              </label>
+              <input
+                type="text"
+                value={selectedComponent.type}
+                disabled
+                className="block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            {renderComponentProperties()}
+            <button
+              onClick={() => onDeleteComponent(selectedComponent.id)}
+              className="w-full mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
+            >
+              Delete Component
+            </button>
+          </>
+        ) : (
+          <ComponentPalette />
+        );
+      default:
+        return null;
+    }
+  };
+  if (!isVisible) {
+    return (
+      <button
+        onClick={onToggleVisibility}
+        className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-700 p-2 rounded-l-md hover:bg-gray-300 focus:outline-none transition-colors duration-200"
+        title="Show Panel"
+      >
+        <FaChevronLeft />
+      </button>
     );
   }
 
@@ -140,7 +212,6 @@ const PropertiesPanel = ({
     console.log("New style:", newStyle); // Debug log
     onUpdateComponent(selectedComponent.id, { style: newStyle });
   };
-
 
   const renderComponentProperties = () => {
     switch (selectedComponent.type) {
@@ -251,28 +322,19 @@ const PropertiesPanel = ({
         onShowComponentTree={handleShowComponentTree}
         onToggleVisibility={onToggleVisibility}
         activePanel={activePanel}
+        isComponentTreeVisible={isComponentTreeVisible}
       />
-      <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Type
-          </label>
-          <input
-            type="text"
-            value={selectedComponent.type}
-            disabled
-            className="block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+      {isComponentTreeVisible && (
+        <div className="mb-4 border-b border-gray-300 pb-4">
+          <ComponentTree
+            components={components}
+            onSelectComponent={onSelectComponent}
           />
         </div>
-        {renderComponentProperties()}
+      )}
+      <div className="flex-grow overflow-y-auto">{renderPanelContent()}</div>
 
-        <button
-          onClick={() => onDeleteComponent(selectedComponent.id)}
-          className="w-full px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-        >
-          Delete Component
-        </button>
-      </div>
+      
     </div>
   );
 };
