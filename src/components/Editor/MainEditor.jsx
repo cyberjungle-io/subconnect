@@ -15,7 +15,9 @@ import {
   distributeComponents,
   copyComponents,
   pasteComponents,
-  moveComponent
+  moveComponent,
+  updateComponentSpacing,
+  updateGlobalSpacing
 } from '../../features/editorSlice';
 
 const MainEditor = () => {
@@ -49,8 +51,16 @@ const MainEditor = () => {
     dispatch(addComponent(newComponentData));
   };
 
+  const handleUpdateGlobalSpacing = (updates) => {
+    dispatch(updateGlobalSpacing(updates));
+  };
+
   const handleUpdateComponent = (id, updates) => {
-    dispatch(updateComponent({ id, updates }));
+    if (updates.style && (updates.style.paddingBulk || updates.style.marginBulk)) {
+      dispatch(updateComponentSpacing({ id, spacing: updates.style }));
+    } else {
+      dispatch(updateComponent({ id, updates }));
+    }
   };
 
   const handleMoveComponent = (componentId, newParentId, newPosition = null) => {
@@ -139,9 +149,15 @@ const MainEditor = () => {
               components={components}
               onSelectComponent={handleSelectComponent}
               onOpenDataModal={handleOpenDataModal}
+              onUpdateGlobalSpacing={handleUpdateGlobalSpacing}
         /></div></div>
       </div>
-      <DataModal isOpen={isDataModalOpen} onClose={handleCloseDataModal} />
+      {isDataModalOpen && (
+        <DataModal
+          isOpen={isDataModalOpen}
+          onClose={() => setIsDataModalOpen(false)}
+        />
+      )}
     </DndProvider>
   );
 };

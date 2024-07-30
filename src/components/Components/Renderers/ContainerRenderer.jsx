@@ -15,6 +15,8 @@ const ContainerRenderer = ({ component, ...props }) => {
       minHeight: component.style.minHeight || "auto",
       overflow: "hidden",
       boxSizing: 'border-box',
+      padding: component.style.padding || "0px",
+      margin: component.style.margin || "0px",
     };
   };
 

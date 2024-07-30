@@ -1,27 +1,32 @@
-import { createSlice } from '@reduxjs/toolkit';
-import { v4 as uuidv4 } from 'uuid';
-import { alignComponentsUtil, distributeComponentsUtil } from '../utils/alignmentUtils';
-import { componentConfig } from '../components/Components/componentConfig';
-import { createComponent, updateComponent as updateComponentUtil } from '../components/Components/componentFactory';
-
+import { createSlice } from "@reduxjs/toolkit";
+import { v4 as uuidv4 } from "uuid";
+import {
+  alignComponentsUtil,
+  distributeComponentsUtil,
+} from "../utils/alignmentUtils";
+import { componentConfig } from "../components/Components/componentConfig";
+import {
+  createComponent,
+  updateComponent as updateComponentUtil,
+} from "../components/Components/componentFactory";
 
 const initialState = {
   components: [],
   selectedIds: [],
   clipboard: null,
   globalSettings: {
-    backgroundColor: '#ffffff',
-    componentLayout: 'horizontal',
+    backgroundColor: "#ffffff",
+    componentLayout: "horizontal",
     style: {
-      paddingTop: '0px',
-      paddingRight: '0px',
-      paddingBottom: '0px',
-      paddingLeft: '0px',
-      marginTop: '0px',
-      marginRight: '0px',
-      marginBottom: '0px',
-      marginLeft: '0px',
-      gap: '0px',
+      paddingTop: "0px",
+      paddingRight: "0px",
+      paddingBottom: "0px",
+      paddingLeft: "0px",
+      marginTop: "0px",
+      marginRight: "0px",
+      marginBottom: "0px",
+      marginLeft: "0px",
+      gap: "0px",
     },
   },
 };
@@ -40,25 +45,25 @@ const findComponentById = (components, id) => {
 };
 
 const updateComponentById = (components, id, updates) => {
-  return components.map(component => {
+  return components.map((component) => {
     if (component.id === id) {
       return {
         ...component,
         ...updates,
         style: {
           ...component.style,
-          ...updates.style
+          ...updates.style,
         },
         props: {
           ...component.props,
-          ...updates.props
-        }
+          ...updates.props,
+        },
       };
     }
     if (component.children) {
       return {
         ...component,
-        children: updateComponentById(component.children, id, updates)
+        children: updateComponentById(component.children, id, updates),
       };
     }
     return component;
@@ -66,7 +71,7 @@ const updateComponentById = (components, id, updates) => {
 };
 
 const deleteComponentById = (components, id) => {
-  return components.filter(component => {
+  return components.filter((component) => {
     if (component.id === id) {
       return false;
     }
@@ -78,35 +83,39 @@ const deleteComponentById = (components, id) => {
 };
 
 export const editorSlice = createSlice({
-  name: 'editor',
+  name: "editor",
   initialState,
   reducers: {
     addComponent: (state, action) => {
       const { type, parentId, ...otherProps } = action.payload;
       let defaultPosition = {};
-    
-      if (!parentId) { // Only apply this logic for top-level components
+
+      if (!parentId) {
+        // Only apply this logic for top-level components
         const lastComponent = state.components[state.components.length - 1];
         const offset = 20; // Offset for cascading effect
-        
+
         if (lastComponent) {
-          if (state.globalSettings.componentLayout === 'vertical') {
+          if (state.globalSettings.componentLayout === "vertical") {
             defaultPosition = {
               style: {
                 top: 0,
-                left: lastComponent.style.left + lastComponent.style.width + offset,
-                width: 200,  // Default width
-                height: '100%', // Full height for vertical layout
-              }
+                left:
+                  lastComponent.style.left + lastComponent.style.width + offset,
+                width: 200, // Default width
+                height: "100%", // Full height for vertical layout
+              },
             };
-          } else { // horizontal layout
+          } else {
+            // horizontal layout
             defaultPosition = {
               style: {
-                top: lastComponent.style.top + lastComponent.style.height + offset,
+                top:
+                  lastComponent.style.top + lastComponent.style.height + offset,
                 left: 0,
-                width: '100%', // Full width for horizontal layout
+                width: "100%", // Full width for horizontal layout
                 height: 200, // Default height
-              }
+              },
             };
           }
         } else {
@@ -115,15 +124,24 @@ export const editorSlice = createSlice({
             style: {
               top: 0,
               left: 0,
-              width: state.globalSettings.componentLayout === 'vertical' ? 200 : '100%',
-              height: state.globalSettings.componentLayout === 'vertical' ? '100%' : 200,
-            }
+              width:
+                state.globalSettings.componentLayout === "vertical"
+                  ? 200
+                  : "100%",
+              height:
+                state.globalSettings.componentLayout === "vertical"
+                  ? "100%"
+                  : 200,
+            },
           };
         }
       }
-    
-      const newComponent = createComponent(type, { ...defaultPosition, ...otherProps });
-    
+
+      const newComponent = createComponent(type, {
+        ...defaultPosition,
+        ...otherProps,
+      });
+
       if (parentId) {
         const parent = findComponentById(state.components, parentId);
         if (parent) {
@@ -136,29 +154,59 @@ export const editorSlice = createSlice({
 
     updateComponent: (state, action) => {
       const { id, updates } = action.payload;
-      const updatedComponents = updateComponentById(state.components, id, updates);
+      const updatedComponents = updateComponentById(
+        state.components,
+        id,
+        updates
+      );
       state.components = updatedComponents;
     },
-
+    updateComponentSpacing: (state, action) => {
+      const { id, spacing } = action.payload;
+      const updatedComponents = updateComponentById(state.components, id, {
+        style: {
+          ...spacing,
+        },
+      });
+      state.components = updatedComponents;
+    },
+    updateGlobalSpacing: (state, action) => {
+      state.globalSettings.style = {
+        ...state.globalSettings.style,
+        ...action.payload,
+      };
+    },
     deleteComponent: (state, action) => {
       state.components = deleteComponentById(state.components, action.payload);
-      state.selectedIds = state.selectedIds.filter(id => id !== action.payload);
+      state.selectedIds = state.selectedIds.filter(
+        (id) => id !== action.payload
+      );
     },
     setSelectedIds: (state, action) => {
       state.selectedIds = action.payload;
     },
     alignComponents: (state, action) => {
-      state.components = alignComponentsUtil(state.components, state.selectedIds, action.payload);
+      state.components = alignComponentsUtil(
+        state.components,
+        state.selectedIds,
+        action.payload
+      );
     },
     distributeComponents: (state, action) => {
-      state.components = distributeComponentsUtil(state.components, state.selectedIds, action.payload);
+      state.components = distributeComponentsUtil(
+        state.components,
+        state.selectedIds,
+        action.payload
+      );
     },
     copyComponents: (state) => {
-      state.clipboard = state.components.filter(c => state.selectedIds.includes(c.id));
+      state.clipboard = state.components.filter((c) =>
+        state.selectedIds.includes(c.id)
+      );
     },
     pasteComponents: (state) => {
       if (state.clipboard) {
-        const newComponents = state.clipboard.map(c => {
+        const newComponents = state.clipboard.map((c) => {
           const newComponent = createComponent(c.type, {
             ...c,
             style: {
@@ -170,7 +218,7 @@ export const editorSlice = createSlice({
           return newComponent;
         });
         state.components.push(...newComponents);
-        state.selectedIds = newComponents.map(c => c.id);
+        state.selectedIds = newComponents.map((c) => c.id);
       }
     },
 
@@ -179,7 +227,10 @@ export const editorSlice = createSlice({
       const componentToMove = findComponentById(state.components, componentId);
       if (componentToMove) {
         // Remove from old parent
-        state.components = removeComponentFromParent(state.components, componentId);
+        state.components = removeComponentFromParent(
+          state.components,
+          componentId
+        );
         if (newParentId) {
           // Add to new parent
           const newParent = findComponentById(state.components, newParentId);
@@ -190,7 +241,10 @@ export const editorSlice = createSlice({
         } else {
           // Move to root level
           if (newPosition) {
-            componentToMove.style = { ...componentToMove.style, ...newPosition };
+            componentToMove.style = {
+              ...componentToMove.style,
+              ...newPosition,
+            };
           }
           state.components.push(componentToMove);
         }
@@ -210,15 +264,19 @@ export const editorSlice = createSlice({
 });
 
 const removeComponentFromParent = (components, componentId) => {
-  return components.map(component => {
-    if (component.children) {
-      return {
-        ...component,
-        children: component.children.filter(child => child.id !== componentId)
-      };
-    }
-    return component;
-  }).filter(component => component.id !== componentId);
+  return components
+    .map((component) => {
+      if (component.children) {
+        return {
+          ...component,
+          children: component.children.filter(
+            (child) => child.id !== componentId
+          ),
+        };
+      }
+      return component;
+    })
+    .filter((component) => component.id !== componentId);
 };
 
 export const {
@@ -232,6 +290,8 @@ export const {
   pasteComponents,
   moveComponent,
   updateGlobalSettings,
+  updateComponentSpacing,
+  updateGlobalSpacing,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

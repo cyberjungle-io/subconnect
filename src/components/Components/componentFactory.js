@@ -19,9 +19,9 @@ export const createComponent = (type, props = {}) => {
     style: {
       width: props.width || config.defaultSize?.width || 'auto',
       height: props.height || config.defaultSize?.height || 'auto',
-      margin: '0px',
-      padding: '0px',
-      gap: '0px',
+      padding: props.padding || '0px',
+      margin: props.margin || '0px',
+      gap: props.gap || '0px',
       ...props.style
     },
     props: {
@@ -30,14 +30,14 @@ export const createComponent = (type, props = {}) => {
     }
   };
 
-  // Add chart-specific configuration if it's a CHART component
+  
   if (type === 'CHART') {
     newComponent.chartConfig = { 
       ...config.defaultChartConfig, 
       ...props.chartConfig 
     };
   }
-  // Add content for components that have default content, if not overridden
+ 
   if (config.defaultContent && !newComponent.content) {
     newComponent.content = config.defaultContent;
   }

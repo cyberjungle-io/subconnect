@@ -127,29 +127,27 @@ const ComponentRenderer = React.memo(({
     const componentStyle = {
       ...style,
       position: isFlexChild ? 'relative' : 'absolute',
-      border: isThisComponentSelected ? "2px solid blue" : "1px solid #ccc",
+      border: isSelected ? "2px solid blue" : "1px solid #ccc",
       padding: style.padding || "0px",
       margin: style.margin || "0px",
-      gap: style.gap || "0px",
       overflow: "hidden",
       boxSizing: 'border-box',
     };
   
     if (type === "FLEX_CONTAINER") {
-      // Apply flex container styles
       componentStyle.display = "flex";
       componentStyle.flexDirection = props.direction || "row";
       componentStyle.flexWrap = props.wrap || "nowrap";
       componentStyle.alignItems = props.alignItems || "stretch";
       componentStyle.justifyContent = props.justifyContent || "flex-start";
+      componentStyle.gap = style.gap || "0px";  // Apply gap for flex containers
       componentStyle.width = style.width || "100%";
       componentStyle.height = style.height || "100%";
       componentStyle.minHeight = style.minHeight || "auto";
     }
   
     if (isFlexChild) {
-      // Apply flex item styles
-      const isRowDirection = component.parent && component.parent.props.direction !== "column";
+      const isRowDirection = parent && parent.props.direction !== "column";
       
       componentStyle.flexGrow = props.flexGrow || 0;
       componentStyle.flexShrink = props.flexShrink || 1;
@@ -185,10 +183,10 @@ const ComponentRenderer = React.memo(({
       }}
       style={getComponentStyle()}
       onClick={handleClick}
-      className={`relative ${isThisComponentSelected ? "shadow-lg" : ""} ${isOver ? "bg-blue-100" : ""}`}
+      className={`relative ${isSelected ? "shadow-lg" : ""} ${isOver ? "bg-blue-100" : ""}`}
     >
       {renderContent()}
-      {isThisComponentSelected && (
+      {isSelected && (
         <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs px-1 z-10">
           {component.type}
         </div>

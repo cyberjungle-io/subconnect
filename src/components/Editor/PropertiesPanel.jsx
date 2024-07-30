@@ -18,6 +18,7 @@ const PropertiesPanel = ({
   components,
   onSelectComponent,
   onOpenDataModal,
+  onUpdateGlobalSpacing,
 }) => {
   const dispatch = useDispatch();
   const globalSettings = useSelector((state) => state.editor.globalSettings);
@@ -51,6 +52,31 @@ const PropertiesPanel = ({
       props: { ...selectedComponent.props, [name]: newValue },
     });
   };
+  const handleStyleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'spacingPreset' || name === 'paddingBulk' || name === 'marginBulk') {
+      // Apply all spacing updates at once
+      onUpdateComponent(selectedComponent.id, {
+        style: { ...selectedComponent.style, ...value },
+      });
+    } else {
+      // Handle individual style property changes
+      onUpdateComponent(selectedComponent.id, {
+        style: { ...selectedComponent.style, [name]: value },
+      });
+    }
+  };
+
+  const handleGlobalStyleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === 'spacingPreset' || name === 'paddingBulk' || name === 'marginBulk') {
+      onUpdateGlobalSpacing(value);
+    } else {
+      dispatch(updateGlobalSettings({
+        style: { ...globalSettings.style, [name]: value },
+      }));
+    }
+  };
 
   const handleGlobalSettingChange = (e) => {
     const { name, value } = e.target;
@@ -59,26 +85,6 @@ const PropertiesPanel = ({
 
   const renderGlobalSettings = () => (
     <div className="space-y-4">
-      <PanelNavBar
-        onShowComponentPalette={handleShowComponentPalette}
-        onShowGlobalSettings={handleShowGlobalSettings}
-        onShowComponentTree={handleShowComponentTree}
-        onOpenDataModal={onOpenDataModal}
-        onToggleVisibility={onToggleVisibility}
-        activePanel={activePanel}
-        isComponentTreeVisible={isComponentTreeVisible}
-      />
-      {isComponentTreeVisible && (
-        <div className="mb-4 border-b border-gray-300 pb-4">
-          <ComponentTree
-            components={components}
-            onSelectComponent={handleComponentSelect}
-            selectedComponentId={
-              selectedComponent ? selectedComponent.id : null
-            }
-          />
-        </div>
-      )}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Background Color
@@ -106,132 +112,12 @@ const PropertiesPanel = ({
         </select>
       </div>
       <SpacingControls
-        style={globalSettings.style || {}}
-        onStyleChange={(e) => {
-          const { name, value } = e.target;
-          dispatch(
-            updateGlobalSettings({
-              style: { ...globalSettings.style, [name]: value },
-            })
-          );
-        }}
-      />
+  style={globalSettings.style || {}}
+  onStyleChange={handleGlobalStyleChange}
+  availableControls={["padding", "margin", "gap"]}
+/>
     </div>
   );
-
-  if (activePanel === "globalSettings") {
-    return (
-      <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
-        <h2 className="text-lg font-bold text-gray-800 mb-4">
-          Global Settings
-        </h2>
-        {renderGlobalSettings()}
-      </div>
-    );
-  }
-  if (activePanel === "componentTree") {
-    return (
-      <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
-        <h2 className="text-lg font-bold text-gray-800 mb-4">Component Tree</h2>
-        <PanelNavBar
-          onShowComponentPalette={handleShowComponentPalette}
-          onShowGlobalSettings={handleShowGlobalSettings}
-          onShowComponentTree={handleShowComponentTree}
-          onOpenDataModal={onOpenDataModal}
-          onToggleVisibility={onToggleVisibility}
-          activePanel={activePanel}
-        />
-        <ComponentTree
-          components={components}
-          onSelectComponent={onSelectComponent}
-        />
-      </div>
-    );
-  }
-  if (!selectedComponent) {
-    return (
-      <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
-        <h2 className="text-lg font-bold text-gray-800 mb-4">Components</h2>
-        <PanelNavBar
-          onShowComponentPalette={handleShowComponentPalette}
-          onShowGlobalSettings={handleShowGlobalSettings}
-          onShowComponentTree={handleShowComponentTree}
-          onOpenDataModal={onOpenDataModal}
-          onToggleVisibility={onToggleVisibility}
-          activePanel={activePanel}
-          isComponentTreeVisible={isComponentTreeVisible}
-        />
-        {isComponentTreeVisible && (
-          <div className="mb-4 border-b border-gray-300 pb-4">
-            <ComponentTree
-              components={components}
-              onSelectComponent={handleComponentSelect}
-              selectedComponentId={
-                selectedComponent ? selectedComponent.id : null
-              }
-            />
-          </div>
-        )}
-
-        <ComponentPalette />
-      </div>
-    );
-  }
-
-  const renderPanelContent = () => {
-    switch (activePanel) {
-      case "globalSettings":
-        return renderGlobalSettings();
-      case "componentPalette":
-        return <ComponentPalette />;
-      case "properties":
-        return selectedComponent ? (
-          <>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Type
-              </label>
-              <input
-                type="text"
-                value={selectedComponent.type}
-                disabled
-                className="block w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-            {renderComponentProperties()}
-            <button
-              onClick={() => onDeleteComponent(selectedComponent.id)}
-              className="w-full mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50"
-            >
-              Delete Component
-            </button>
-          </>
-        ) : (
-          <ComponentPalette />
-        );
-      default:
-        return null;
-    }
-  };
-  if (!isVisible) {
-    return (
-      <button
-        onClick={onToggleVisibility}
-        className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-gray-200 text-gray-700 p-2 rounded-l-md hover:bg-gray-300 focus:outline-none transition-colors duration-200"
-        title="Show Panel"
-      >
-        <FaChevronLeft />
-      </button>
-    );
-  }
-
-  const handleStyleChange = (e) => {
-    const { name, value } = e.target;
-    console.log(`Style change: ${name} = ${value}`); // Debug log
-    const newStyle = { ...selectedComponent.style, [name]: value };
-    console.log("New style:", newStyle); // Debug log
-    onUpdateComponent(selectedComponent.id, { style: newStyle });
-  };
 
   const renderComponentProperties = () => {
     switch (selectedComponent.type) {
@@ -300,18 +186,6 @@ const PropertiesPanel = ({
                   <option value="space-around">Space Around</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Gap
-                </label>
-                <input
-                  type="text"
-                  name="gap"
-                  value={selectedComponent.props.gap || "0px"}
-                  onChange={handlePropChange}
-                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
             </div>
             <div className="space-y-6">
               <DimensionControls
@@ -335,13 +209,12 @@ const PropertiesPanel = ({
                 style={selectedComponent.style}
                 onStyleChange={handleStyleChange}
               />
-              {/* Add any text-specific style controls here */}
+              <SpacingControls
+                style={selectedComponent.style}
+                onStyleChange={handleStyleChange}
+                availableControls={["margin"]}
+              />
             </div>
-            <SpacingControls
-              style={selectedComponent.style}
-              onStyleChange={handleStyleChange}
-              availableControls={["margin"]}
-            />
           </PropertyTabs>
         );
       case "IMAGE":
@@ -353,28 +226,24 @@ const PropertiesPanel = ({
                 style={selectedComponent.style}
                 onStyleChange={handleStyleChange}
               />
-              {/* Add any image or button-specific style controls here */}
+              <SpacingControls
+                style={selectedComponent.style}
+                onStyleChange={handleStyleChange}
+                availableControls={["margin", "padding"]}
+              />
             </div>
-            <SpacingControls
-              style={selectedComponent.style}
-              onStyleChange={handleStyleChange}
-              availableControls={["margin", "padding"]}
-            />
           </PropertyTabs>
         );
       case "CHART":
         return (
           <PropertyTabs tabs={["Chart Settings", "Styles", "Spacing"]}>
-            {/* Chart settings tab content */}
             <div>{/* Add chart-specific settings controls here */}</div>
-            {/* Styles tab content */}
             <div className="space-y-6">
               <DimensionControls
                 style={selectedComponent.style}
                 onStyleChange={handleStyleChange}
               />
             </div>
-            {/* Spacing tab content */}
             <div className="space-y-6">
               <SpacingControls
                 style={selectedComponent.style}
@@ -400,14 +269,28 @@ const PropertiesPanel = ({
         );
     }
   };
+  const renderPanelContent = () => {
+    switch (activePanel) {
+      case "globalSettings":
+        return renderGlobalSettings();
+      case "componentPalette":
+        return <ComponentPalette />;
+      case "properties":
+        return selectedComponent ? renderComponentProperties() : <ComponentPalette />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
-      <h2 className="text-lg font-bold text-gray-800 mb-4">Properties</h2>
+      <h2 className="text-lg font-bold text-gray-800 mb-4">
+        {activePanel === "globalSettings" ? "Global Settings" : "Properties"}
+      </h2>
       <PanelNavBar
-        onShowComponentPalette={handleShowComponentPalette}
-        onShowGlobalSettings={handleShowGlobalSettings}
-        onShowComponentTree={handleShowComponentTree}
+        onShowComponentPalette={() => setActivePanel("componentPalette")}
+        onShowGlobalSettings={() => setActivePanel("globalSettings")}
+        onShowComponentTree={() => setIsComponentTreeVisible(!isComponentTreeVisible)}
         onOpenDataModal={onOpenDataModal}
         onToggleVisibility={onToggleVisibility}
         activePanel={activePanel}
@@ -418,10 +301,13 @@ const PropertiesPanel = ({
           <ComponentTree
             components={components}
             onSelectComponent={onSelectComponent}
+            selectedComponentId={selectedComponent?.id}
           />
         </div>
       )}
-      <div className="flex-grow overflow-y-auto">{renderPanelContent()}</div>
+      <div className="flex-grow overflow-y-auto">
+        {renderPanelContent()}
+      </div>
     </div>
   );
 };
