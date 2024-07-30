@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { useDrop, useDrag } from "react-dnd";
-import FlexContainer from "../FlexContainer";
+
 import ContainerRenderer from "./ContainerRenderer";
 import HeadingRenderer from "./HeadingRenderer";
 import TextRenderer from "./TextRenderer";
@@ -46,6 +46,7 @@ const ComponentRenderer = React.memo(({
   depth = 0,
   selectedIds,
   isFlexChild = false,
+  parent = null,
 }) => {
   const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild);
 
@@ -86,6 +87,7 @@ const ComponentRenderer = React.memo(({
         selectedIds={selectedIds}
         depth={depth + 1}
         isFlexChild={component.type === "FLEX_CONTAINER"}
+        parent={component}
       />
     ));
   };
@@ -99,11 +101,12 @@ const ComponentRenderer = React.memo(({
       onMoveComponent,
       selectedIds,
       depth: depth + 1,
+      parent,  // Add this line
     };
   
     switch (component.type) {
       case "FLEX_CONTAINER":
-  return <FlexContainer component={component} {...sharedProps} />;
+        return renderChildren();  // Just render children directly
       case "HEADING":
         return <HeadingRenderer {...sharedProps} />;
       case "TEXT":
@@ -118,9 +121,8 @@ const ComponentRenderer = React.memo(({
         return null;
     }
   };
-
   const getComponentStyle = () => {
-    const { style } = component;
+    const { style, type, props } = component;
     
     const componentStyle = {
       ...style,
@@ -132,20 +134,47 @@ const ComponentRenderer = React.memo(({
       overflow: "hidden",
       boxSizing: 'border-box',
     };
-
-    if (isFlexChild) {
-      // These will be overridden by FlexContainer if necessary
-      componentStyle.flexGrow = style.flexGrow || 0;
-      componentStyle.flexShrink = style.flexShrink || 1;
-      componentStyle.flexBasis = style.width || 'auto';
+  
+    if (type === "FLEX_CONTAINER") {
+      // Apply flex container styles
+      componentStyle.display = "flex";
+      componentStyle.flexDirection = props.direction || "row";
+      componentStyle.flexWrap = props.wrap || "nowrap";
+      componentStyle.alignItems = props.alignItems || "stretch";
+      componentStyle.justifyContent = props.justifyContent || "flex-start";
+      componentStyle.width = style.width || "100%";
+      componentStyle.height = style.height || "100%";
+      componentStyle.minHeight = style.minHeight || "auto";
     }
-
-    if (component.type === "CHART") {
+  
+    if (isFlexChild) {
+      // Apply flex item styles
+      const isRowDirection = component.parent && component.parent.props.direction !== "column";
+      
+      componentStyle.flexGrow = props.flexGrow || 0;
+      componentStyle.flexShrink = props.flexShrink || 1;
+      
+      if (typeof style.width === 'string' && style.width.endsWith('%')) {
+        componentStyle.flexBasis = style.width;
+      } else {
+        componentStyle.flexBasis = 'auto';
+        componentStyle.width = style.width || (isRowDirection ? 'auto' : '100%');
+      }
+  
+      if (typeof style.height === 'string' && style.height.endsWith('%')) {
+        componentStyle.height = style.height;
+      } else if (!isRowDirection) {
+        componentStyle.height = style.height || "auto";
+      }
+    }
+  
+    if (type === "CHART") {
       componentStyle.minWidth = style.width || "200px";
       componentStyle.minHeight = style.height || "150px";
       componentStyle.width = style.width || "100%";
       componentStyle.height = style.height || "100%";
     }
+  
     return componentStyle;
   };
 

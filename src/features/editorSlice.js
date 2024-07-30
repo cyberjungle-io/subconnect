@@ -84,24 +84,27 @@ export const editorSlice = createSlice({
     addComponent: (state, action) => {
       const { type, parentId, ...otherProps } = action.payload;
       let defaultPosition = {};
+    
       if (!parentId) { // Only apply this logic for top-level components
         const lastComponent = state.components[state.components.length - 1];
+        const offset = 20; // Offset for cascading effect
+        
         if (lastComponent) {
           if (state.globalSettings.componentLayout === 'vertical') {
             defaultPosition = {
               style: {
                 top: 0,
-                left: lastComponent.style.left + lastComponent.style.width + 10, // 10px gap
+                left: lastComponent.style.left + lastComponent.style.width + offset,
                 width: 200,  // Default width
-                height: 200, // Default height
+                height: '100%', // Full height for vertical layout
               }
             };
           } else { // horizontal layout
             defaultPosition = {
               style: {
-                top: lastComponent.style.top + lastComponent.style.height + 10, // 10px gap
+                top: lastComponent.style.top + lastComponent.style.height + offset,
                 left: 0,
-                width: '100%',
+                width: '100%', // Full width for horizontal layout
                 height: 200, // Default height
               }
             };
@@ -113,11 +116,12 @@ export const editorSlice = createSlice({
               top: 0,
               left: 0,
               width: state.globalSettings.componentLayout === 'vertical' ? 200 : '100%',
-              height: 200,
+              height: state.globalSettings.componentLayout === 'vertical' ? '100%' : 200,
             }
           };
         }
       }
+    
       const newComponent = createComponent(type, { ...defaultPosition, ...otherProps });
     
       if (parentId) {
