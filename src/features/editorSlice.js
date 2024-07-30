@@ -50,6 +50,7 @@ const updateComponentById = (components, id, updates) => {
       return {
         ...component,
         ...updates,
+        name: updates.name !== undefined ? updates.name : component.name,
         style: {
           ...component.style,
           ...updates.style,

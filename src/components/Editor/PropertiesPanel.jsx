@@ -4,7 +4,7 @@ import PropertyTabs from "./PropertyTabs";
 import ComponentPalette from "../Components/ComponentPalette";
 import { FaChevronLeft } from "react-icons/fa";
 import DimensionControls from "../Components/CommonControls/DimensionControls";
-import { updateGlobalSettings } from "../../features/editorSlice";
+import { updateGlobalSettings, updateComponent } from "../../features/editorSlice";
 import PanelNavBar from "./PanelNavBar";
 import ComponentTree from "./ComponentTree";
 import SpacingControls from "../Components/CommonControls/SpacingControls";
@@ -30,21 +30,10 @@ const PropertiesPanel = ({
     }
   }, [selectedComponent]);
 
-  const handleShowComponentPalette = () => {
-    setActivePanel("componentPalette");
-    setIsComponentTreeVisible(false);
+  const handleRenameComponent = (id, newName) => {
+    dispatch(updateComponent({ id, updates: { name: newName } }));
   };
-  const handleShowGlobalSettings = () => {
-    setActivePanel("globalSettings");
-    setIsComponentTreeVisible(false);
-  };
-  const handleShowComponentTree = () => {
-    setIsComponentTreeVisible(!isComponentTreeVisible);
-  };
-  const handleComponentSelect = (componentId) => {
-    onSelectComponent(componentId);
-    setActivePanel("properties");
-  };
+  
   const handlePropChange = (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === "checkbox" ? checked : value;
@@ -302,6 +291,7 @@ const PropertiesPanel = ({
             components={components}
             onSelectComponent={onSelectComponent}
             selectedComponentId={selectedComponent?.id}
+            onRenameComponent={handleRenameComponent}
           />
         </div>
       )}

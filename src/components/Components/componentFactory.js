@@ -13,6 +13,7 @@ export const createComponent = (type, props = {}) => {
   const newComponent = {
     id: `component-${nextId++}`,
     type,
+    name: props.name || type,
     acceptsChildren: config.acceptsChildren,
     children: [],
     content: props.content || config.defaultContent || '',
