@@ -66,6 +66,17 @@ const PropertiesPanel = ({
       }));
     }
   };
+  if (!isVisible) {
+    return (
+      <button
+        onClick={onToggleVisibility}
+        className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-gray-200 p-2 rounded-l-md shadow-md"
+        title="Show Panel"
+      >
+        <FaChevronLeft />
+      </button>
+    );
+  }
 
   const handleGlobalSettingChange = (e) => {
     const { name, value } = e.target;
