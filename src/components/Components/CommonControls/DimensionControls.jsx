@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaLink, FaUnlink } from 'react-icons/fa';
+import { FaLink, FaUnlink, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 
 const DimensionControls = ({ style, onStyleChange }) => {
   const [aspectRatio, setAspectRatio] = useState(null);
@@ -7,6 +7,10 @@ const DimensionControls = ({ style, onStyleChange }) => {
   const [widthUnit, setWidthUnit] = useState('px');
   const [heightUnit, setHeightUnit] = useState('px');
   const [activePreset, setActivePreset] = useState(null);
+  const [expandedSections, setExpandedSections] = useState({
+    width: true,
+    height: true,
+  });
 
   useEffect(() => {
     if (style.width && style.height) {
@@ -75,17 +79,21 @@ const DimensionControls = ({ style, onStyleChange }) => {
     return style[dimension] === `${value}${unit}`;
   };
 
+  const toggleSection = (section) => {
+    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
   const renderSizeButtons = (dimension) => {
     return (
-      <div className="flex space-x-2 mb-2">
+      <div className="flex justify-between mt-2 mb-4">
         {[25, 50, 75, 100].map((percentage) => (
           <button
             key={percentage}
             onClick={() => setPercentage(dimension, percentage)}
-            className={`px-2 py-1 text-sm rounded ${
+            className={`flex-1 px-2 py-1 text-xs font-bold rounded transition-colors duration-200 ${
               isActiveSize(dimension, percentage, '%')
                 ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
             }`}
           >
             {percentage}%
@@ -102,7 +110,7 @@ const DimensionControls = ({ style, onStyleChange }) => {
     ];
 
     return (
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex justify-between mt-2 mb-4">
         {presets.map((preset, index) => (
           <button
             key={index}
@@ -113,10 +121,10 @@ const DimensionControls = ({ style, onStyleChange }) => {
               setHeightUnit(getUnitFromValue(preset.height));
               setActivePreset(preset.label);
             }}
-            className={`px-2 py-1 text-sm rounded ${
+            className={`flex-1 px-2 py-1 text-xs font-bold rounded transition-colors duration-200 ${
               activePreset === preset.label
                 ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
             }`}
           >
             {preset.label}
@@ -126,37 +134,83 @@ const DimensionControls = ({ style, onStyleChange }) => {
     );
   };
 
-  const renderUnitButtons = (dimension, currentUnit, setUnit) => {
+  const renderInput = (name, value, unit, setUnit) => {
+    const { number } = parseValue(value);
     const units = ['px', '%', 'em', 'rem'];
+  
     return (
-      <div className="flex">
-        {units.map((unit) => (
-          <button
-            key={unit}
-            onClick={() => {
-              setUnit(unit);
-              const value = getValueWithoutUnit(style[dimension]);
-              if (value !== 'auto') {
-                setDimension(dimension, value, unit);
-              }
-            }}
-            className={`px-2 py-1 text-sm rounded-r ${
-              currentUnit === unit
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            {unit}
-          </button>
-        ))}
+      <div className="flex items-center justify-center py-2">
+        <div className="flex items-center bg-gray-100 bg-opacity-50 rounded-sm overflow-hidden border border-b-gray-400">
+          <input
+            type="number"
+            value={number}
+            onChange={(e) => setDimension(name, e.target.value, unit)}
+            className="w-24 py-1.5 px-2 text-right bg-transparent focus:outline-none focus:border-indigo-500 transition-colors duration-200"
+            placeholder={name.charAt(0).toUpperCase() + name.slice(1)}
+          />
+          <div className="relative group">
+            <select
+              value={unit}
+              onChange={(e) => {
+                setUnit(e.target.value);
+                setDimension(name, number, e.target.value);
+              }}
+              className="py-1 pl-2 pr-6 bg-transparent focus:outline-none text-gray-700 appearance-none cursor-pointer"
+            >
+              {units.map((u) => (
+                <option key={u} value={u}>
+                  {u}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+              <FaChevronDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  const parseValue = (value) => {
+    if (value === null || value === undefined || value === '') {
+      return { number: '', unit: 'px' };
+    }
+    if (typeof value === 'number') {
+      return { number: value.toString(), unit: 'px' };
+    }
+    if (typeof value === 'string') {
+      const match = value.match(/^(\d*\.?\d+)(\D+)?$/);
+      return match ? { number: match[1], unit: match[2] || 'px' } : { number: '', unit: 'px' };
+    }
+    return { number: '', unit: 'px' };
+  };
+
+  const renderSection = (title, name, value, unit, setUnit) => {
+    const isExpanded = expandedSections[name];
+    return (
+      <div className="mb-4">
+        <div 
+          className="flex items-center cursor-pointer hover:bg-gray-100 p-2 rounded-md transition-colors duration-200"
+          onClick={() => toggleSection(name)}
+        >
+          {isExpanded ? <FaChevronDown className="mr-2 text-gray-500" /> : <FaChevronRight className="mr-2 text-gray-500" />}
+          <span className="text-sm font-medium text-gray-700">{title}</span>
+        </div>
+        {isExpanded && (
+          <div className="mt-2">
+            {renderSizeButtons(name)}
+            {renderInput(name, value, unit, setUnit)}
+          </div>
+        )}
       </div>
     );
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <span className="text-sm font-medium text-gray-700">Dimensions</span>
+        <h3 className="text-lg font-medium text-gray-900">Dimensions</h3>
         <button
           onClick={toggleAspectRatioLock}
           className={`p-1 rounded ${
@@ -170,37 +224,8 @@ const DimensionControls = ({ style, onStyleChange }) => {
 
       {renderPresetButtons()}
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Width
-        </label>
-        {renderSizeButtons('width')}
-        <div className="flex">
-          <input
-            type="text"
-            value={getValueWithoutUnit(style.width)}
-            onChange={(e) => setDimension('width', e.target.value, widthUnit)}
-            className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-          {renderUnitButtons('width', widthUnit, setWidthUnit)}
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Height
-        </label>
-        {renderSizeButtons('height')}
-        <div className="flex">
-          <input
-            type="text"
-            value={getValueWithoutUnit(style.height)}
-            onChange={(e) => setDimension('height', e.target.value, heightUnit)}
-            className="block w-full px-3 py-2 bg-white border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-          {renderUnitButtons('height', heightUnit, setHeightUnit)}
-        </div>
-      </div>
+      {renderSection('Width', 'width', style.width, widthUnit, setWidthUnit)}
+      {renderSection('Height', 'height', style.height, heightUnit, setHeightUnit)}
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { updateGlobalSettings, updateComponent } from "../../features/editorSlic
 import PanelNavBar from "./PanelNavBar";
 import ComponentTree from "./ComponentTree";
 import SpacingControls from "../Components/CommonControls/SpacingControls";
+import SpacingPreview from "../Components/CommonControls/SpacingPreview";
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -84,190 +85,195 @@ const PropertiesPanel = ({
   };
 
   const renderGlobalSettings = () => (
-    <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Background Color
-        </label>
-        <input
-          type="color"
-          name="backgroundColor"
-          value={globalSettings.backgroundColor}
-          onChange={handleGlobalSettingChange}
-          className="block w-full"
-        />
+    <PropertyTabs tabs={["Layout", "Canvas"]}>
+      {renderLayoutTab(globalSettings.style, handleGlobalStyleChange, true)}
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Background Color
+          </label>
+          <input
+            type="color"
+            name="backgroundColor"
+            value={globalSettings.backgroundColor}
+            onChange={handleGlobalSettingChange}
+            className="block w-full"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Component Layout
+          </label>
+          <select
+            name="componentLayout"
+            value={globalSettings.componentLayout}
+            onChange={handleGlobalSettingChange}
+            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="vertical">Vertical (Side by Side)</option>
+            <option value="horizontal">Horizontal (One Below Another)</option>
+          </select>
+        </div>
       </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Component Layout
-        </label>
-        <select
-          name="componentLayout"
-          value={globalSettings.componentLayout}
-          onChange={handleGlobalSettingChange}
-          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option value="vertical">Vertical (Side by Side)</option>
-          <option value="horizontal">Horizontal (One Below Another)</option>
-        </select>
-      </div>
+    </PropertyTabs>
+  );
+  const renderLayoutTab = (style, onStyleChange, isGlobal = false) => (
+    <div className="space-y-6">
+      <SpacingPreview
+        padding={{
+          paddingTop: style.paddingTop,
+          paddingRight: style.paddingRight,
+          paddingBottom: style.paddingBottom,
+          paddingLeft: style.paddingLeft,
+        }}
+        margin={{
+          marginTop: style.marginTop,
+          marginRight: style.marginRight,
+          marginBottom: style.marginBottom,
+          marginLeft: style.marginLeft,
+        }}
+        gap={style.gap}
+      />
+      <DimensionControls
+        style={style}
+        onStyleChange={onStyleChange}
+      />
       <SpacingControls
-  style={globalSettings.style || {}}
-  onStyleChange={handleGlobalStyleChange}
-  availableControls={["padding", "margin", "gap"]}
-/>
+        style={style}
+        onStyleChange={onStyleChange}
+        availableControls={isGlobal ? ["padding", "margin", "gap"] : ["margin", "padding"]}
+      />
     </div>
   );
 
-  const renderComponentProperties = () => {
+  const renderComponentSpecificTab = () => {
+    if (!selectedComponent) return null;
+
     switch (selectedComponent.type) {
       case "FLEX_CONTAINER":
         return (
-          <PropertyTabs tabs={["Layout", "Styles"]}>
+          <div className="space-y-4">
             <div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Direction
-                </label>
-                <select
-                  name="direction"
-                  value={selectedComponent.props.direction || "row"}
-                  onChange={handlePropChange}
-                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value="row">Row</option>
-                  <option value="column">Column</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Wrap
-                </label>
-                <select
-                  name="wrap"
-                  value={selectedComponent.props.wrap || "nowrap"}
-                  onChange={handlePropChange}
-                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value="nowrap">No Wrap</option>
-                  <option value="wrap">Wrap</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Align Items
-                </label>
-                <select
-                  name="alignItems"
-                  value={selectedComponent.props.alignItems || "stretch"}
-                  onChange={handlePropChange}
-                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value="stretch">Stretch</option>
-                  <option value="flex-start">Start</option>
-                  <option value="center">Center</option>
-                  <option value="flex-end">End</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Justify Content
-                </label>
-                <select
-                  name="justifyContent"
-                  value={selectedComponent.props.justifyContent || "flex-start"}
-                  onChange={handlePropChange}
-                  className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value="flex-start">Start</option>
-                  <option value="center">Center</option>
-                  <option value="flex-end">End</option>
-                  <option value="space-between">Space Between</option>
-                  <option value="space-around">Space Around</option>
-                </select>
-              </div>
+              <label className="block text-sm font-medium text-gray-700">Direction</label>
+              <select
+                name="direction"
+                value={selectedComponent.props.direction || "row"}
+                onChange={handlePropChange}
+                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="row">Row</option>
+                <option value="column">Column</option>
+              </select>
             </div>
-            <div className="space-y-6">
-              <DimensionControls
-                style={selectedComponent.style}
-                onStyleChange={handleStyleChange}
-              />
-              <SpacingControls
-                style={selectedComponent.style}
-                onStyleChange={handleStyleChange}
-                availableControls={["padding", "margin", "gap"]}
-              />
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Wrap</label>
+              <select
+                name="wrap"
+                value={selectedComponent.props.wrap || "nowrap"}
+                onChange={handlePropChange}
+                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="nowrap">No Wrap</option>
+                <option value="wrap">Wrap</option>
+              </select>
             </div>
-          </PropertyTabs>
-        );
-      case "HEADING":
-      case "TEXT":
-        return (
-          <PropertyTabs tabs={["Styles"]}>
-            <div className="space-y-6">
-              <DimensionControls
-                style={selectedComponent.style}
-                onStyleChange={handleStyleChange}
-              />
-              <SpacingControls
-                style={selectedComponent.style}
-                onStyleChange={handleStyleChange}
-                availableControls={["margin"]}
-              />
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Align Items</label>
+              <select
+                name="alignItems"
+                value={selectedComponent.props.alignItems || "stretch"}
+                onChange={handlePropChange}
+                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="stretch">Stretch</option>
+                <option value="flex-start">Start</option>
+                <option value="center">Center</option>
+                <option value="flex-end">End</option>
+              </select>
             </div>
-          </PropertyTabs>
-        );
-      case "IMAGE":
-      case "BUTTON":
-        return (
-          <PropertyTabs tabs={["Styles"]}>
-            <div className="space-y-6">
-              <DimensionControls
-                style={selectedComponent.style}
-                onStyleChange={handleStyleChange}
-              />
-              <SpacingControls
-                style={selectedComponent.style}
-                onStyleChange={handleStyleChange}
-                availableControls={["margin", "padding"]}
-              />
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Justify Content</label>
+              <select
+                name="justifyContent"
+                value={selectedComponent.props.justifyContent || "flex-start"}
+                onChange={handlePropChange}
+                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="flex-start">Start</option>
+                <option value="center">Center</option>
+                <option value="flex-end">End</option>
+                <option value="space-between">Space Between</option>
+                <option value="space-around">Space Around</option>
+              </select>
             </div>
-          </PropertyTabs>
+          </div>
         );
       case "CHART":
         return (
-          <PropertyTabs tabs={["Chart Settings", "Styles", "Spacing"]}>
-            <div>{/* Add chart-specific settings controls here */}</div>
-            <div className="space-y-6">
-              <DimensionControls
-                style={selectedComponent.style}
-                onStyleChange={handleStyleChange}
-              />
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Chart Type</label>
+              <select
+                name="chartType"
+                value={selectedComponent.props.chartType || "bar"}
+                onChange={handlePropChange}
+                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="bar">Bar Chart</option>
+                <option value="line">Line Chart</option>
+                <option value="pie">Pie Chart</option>
+              </select>
             </div>
-            <div className="space-y-6">
-              <SpacingControls
-                style={selectedComponent.style}
-                onStyleChange={handleStyleChange}
-                availableControls={["margin", "padding"]}
-              />
-            </div>
-          </PropertyTabs>
+            {/* Add more chart-specific controls here */}
+          </div>
         );
+      case "VIDEO":
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Video URL</label>
+              <input
+                type="text"
+                name="videoUrl"
+                value={selectedComponent.props.videoUrl || ""}
+                onChange={handlePropChange}
+                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Autoplay</label>
+              <input
+                type="checkbox"
+                name="autoplay"
+                checked={selectedComponent.props.autoplay || false}
+                onChange={handlePropChange}
+                className="mt-1"
+              />
+            </div>
+            {/* Add more video-specific controls here */}
+          </div>
+        );
+      // Add cases for other component types as needed
       default:
         return (
-          <PropertyTabs tabs={["Styles"]}>
-            <DimensionControls
-              style={selectedComponent.style}
-              onStyleChange={handleStyleChange}
-            />
-            <SpacingControls
-              style={selectedComponent.style}
-              onStyleChange={handleStyleChange}
-              availableControls={["margin", "padding"]}
-            />
-          </PropertyTabs>
+          <div className="text-gray-500 italic">
+            No specific properties for this component type.
+          </div>
         );
     }
+  };
+
+  const renderComponentProperties = () => {
+    if (!selectedComponent) return null;
+
+    const componentName = selectedComponent.type.charAt(0).toUpperCase() + selectedComponent.type.slice(1).toLowerCase();
+
+    return (
+      <PropertyTabs tabs={["Layout", componentName]}>
+        {renderLayoutTab(selectedComponent.style, handleStyleChange)}
+        {renderComponentSpecificTab()}
+      </PropertyTabs>
+    );
   };
   const renderPanelContent = () => {
     switch (activePanel) {

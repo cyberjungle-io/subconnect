@@ -173,22 +173,7 @@ const SpacingControls = ({ style, onStyleChange, availableControls = ['padding',
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium text-gray-900">Spacing</h3>
-      <SpacingPreview
-        padding={{
-          paddingTop: style.paddingTop,
-          paddingRight: style.paddingRight,
-          paddingBottom: style.paddingBottom,
-          paddingLeft: style.paddingLeft,
-        }}
-        margin={{
-          marginTop: style.marginTop,
-          marginRight: style.marginRight,
-          marginBottom: style.marginBottom,
-          marginLeft: style.marginLeft,
-        }}
-        gap={style.gap}
-      />
+      
 
       {availableControls.includes('padding') && renderSection(
         'Padding',
