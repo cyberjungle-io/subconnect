@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaLink, FaUnlink, FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import { FaLink, FaUnlink, FaChevronDown, FaPlus, FaMinus } from 'react-icons/fa';
 
 const DimensionControls = ({ style, onStyleChange }) => {
   const [aspectRatio, setAspectRatio] = useState(null);
@@ -7,9 +7,10 @@ const DimensionControls = ({ style, onStyleChange }) => {
   const [widthUnit, setWidthUnit] = useState('px');
   const [heightUnit, setHeightUnit] = useState('px');
   const [activePreset, setActivePreset] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(true);
   const [expandedSections, setExpandedSections] = useState({
-    width: true,
-    height: true,
+    width: false,
+    height: false,
   });
 
   useEffect(() => {
@@ -79,7 +80,8 @@ const DimensionControls = ({ style, onStyleChange }) => {
     return style[dimension] === `${value}${unit}`;
   };
 
-  const toggleSection = (section) => {
+  const toggleSection = (section, event) => {
+    event.stopPropagation();
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
@@ -133,19 +135,18 @@ const DimensionControls = ({ style, onStyleChange }) => {
       </div>
     );
   };
-
   const renderInput = (name, value, unit, setUnit) => {
     const { number } = parseValue(value);
     const units = ['px', '%', 'em', 'rem'];
   
     return (
-      <div className="flex items-center justify-center py-2">
+      <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center bg-gray-100 bg-opacity-50 rounded-sm overflow-hidden border border-b-gray-400">
           <input
             type="number"
             value={number}
             onChange={(e) => setDimension(name, e.target.value, unit)}
-            className="w-24 py-1.5 px-2 text-right bg-transparent focus:outline-none focus:border-indigo-500 transition-colors duration-200"
+            className="w-16 py-1 px-2 text-right bg-transparent focus:outline-none focus:border-indigo-500 transition-colors duration-200"
             placeholder={name.charAt(0).toUpperCase() + name.slice(1)}
           />
           <div className="relative group">
@@ -171,7 +172,7 @@ const DimensionControls = ({ style, onStyleChange }) => {
       </div>
     );
   };
-  
+
   const parseValue = (value) => {
     if (value === null || value === undefined || value === '') {
       return { number: '', unit: 'px' };
@@ -190,17 +191,33 @@ const DimensionControls = ({ style, onStyleChange }) => {
     const isExpanded = expandedSections[name];
     return (
       <div className="mb-4">
-        <div 
-          className="flex items-center cursor-pointer hover:bg-gray-100 p-2 rounded-md transition-colors duration-200"
-          onClick={() => toggleSection(name)}
-        >
-          {isExpanded ? <FaChevronDown className="mr-2 text-gray-500" /> : <FaChevronRight className="mr-2 text-gray-500" />}
-          <span className="text-sm font-medium text-gray-700">{title}</span>
+        <div className="flex items-center p-2 rounded-md transition-colors duration-200">
+          <button
+            onClick={(e) => toggleSection(name, e)}
+            className={`mr-2 w-6 h-6 flex items-center justify-center rounded-full transition-colors duration-200 
+              focus:outline-none
+              ${isExpanded 
+                ? 'bg-gray-300 text-gray-700' 
+                : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
+              }`}
+          >
+            {isExpanded ? (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
+          <span className="text-sm font-bold text-gray-700 flex-grow mr-4">{title}</span>
+          {renderInput(name, value, unit, setUnit)}
         </div>
         {isExpanded && (
-          <div className="mt-2">
+          <div className="mt-2 pl-6">
             {renderSizeButtons(name)}
-            {renderInput(name, value, unit, setUnit)}
+            {/* Space for future advanced features */}
           </div>
         )}
       </div>
@@ -213,9 +230,11 @@ const DimensionControls = ({ style, onStyleChange }) => {
         <h3 className="text-lg font-medium text-gray-900">Dimensions</h3>
         <button
           onClick={toggleAspectRatioLock}
-          className={`p-1 rounded ${
-            isAspectRatioLocked ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700'
-          }`}
+          className={`p-1 rounded transition-colors duration-200 
+            ${isAspectRatioLocked 
+              ? 'bg-gray-200 text-gray-700' 
+              : 'text-gray-700 hover:bg-gray-200'
+            }`}
           title={isAspectRatioLocked ? "Unlock aspect ratio" : "Lock aspect ratio"}
         >
           {isAspectRatioLocked ? <FaLink /> : <FaUnlink />}
