@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { FaChevronDown } from 'react-icons/fa';
+import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 
 const SpacingControls = ({ style, onStyleChange, availableControls = ['padding', 'margin', 'gap'] }) => {
-  const [expandedSections, setExpandedSections] = useState({
+    const [isExpanded, setIsExpanded] = useState(true); 
+    const [expandedSections, setExpandedSections] = useState({
     padding: false,
     margin: false,
     gap: false
@@ -153,9 +154,25 @@ const SpacingControls = ({ style, onStyleChange, availableControls = ['padding',
 
   return (
     <div className="space-y-6">
-      {availableControls.includes('padding') && renderSection('Padding', 'padding')}
-      {availableControls.includes('margin') && renderSection('Margin', 'margin')}
-      {availableControls.includes('gap') && renderSection('Gap', 'gap')}
+      <div className="flex items-center">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="p-1 rounded transition-colors duration-200 text-gray-700 hover:bg-gray-200"
+          title={isExpanded ? "Collapse spacing controls" : "Expand spacing controls"}
+        >
+          {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
+        </button>
+        <h3 className="text-lg font-medium text-gray-900 ml-3">Spacing</h3>
+        
+      </div>
+      
+      {isExpanded && (
+        <>
+          {availableControls.includes('padding') && renderSection('Padding', 'padding')}
+          {availableControls.includes('margin') && renderSection('Margin', 'margin')}
+          {availableControls.includes('gap') && renderSection('Gap', 'gap')}
+        </>
+      )}
     </div>
   );
 };

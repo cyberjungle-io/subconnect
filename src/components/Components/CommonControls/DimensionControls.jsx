@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { FaLink, FaUnlink, FaChevronDown, FaPlus, FaMinus } from 'react-icons/fa';
+import { FaLink, FaUnlink, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 
 const DimensionControls = ({ style, onStyleChange }) => {
   const [aspectRatio, setAspectRatio] = useState(null);
-  const [isAspectRatioLocked, setIsAspectRatioLocked] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
+  
   const [widthUnit, setWidthUnit] = useState('px');
   const [heightUnit, setHeightUnit] = useState('px');
   const [activePreset, setActivePreset] = useState(null);
-  const [isExpanded, setIsExpanded] = useState(true);
+  
   const [expandedSections, setExpandedSections] = useState({
     width: false,
     height: false,
@@ -31,11 +32,7 @@ const DimensionControls = ({ style, onStyleChange }) => {
     return unit || 'px';
   };
 
-  const getValueWithoutUnit = (value) => {
-    if (typeof value !== 'string') return value;
-    if (value === 'auto') return 'auto';
-    return parseFloat(value) || 0;
-  };
+
 
   const setDimension = (dimension, value, unit) => {
     if (value === 'auto') {
@@ -49,15 +46,7 @@ const DimensionControls = ({ style, onStyleChange }) => {
     const newValue = `${numericValue}${unit}`;
     onStyleChange({ target: { name: dimension, value: newValue } });
 
-    if (isAspectRatioLocked && aspectRatio) {
-      if (dimension === 'width') {
-        const newHeight = numericValue / aspectRatio;
-        onStyleChange({ target: { name: 'height', value: `${newHeight}${heightUnit}` } });
-      } else {
-        const newWidth = numericValue * aspectRatio;
-        onStyleChange({ target: { name: 'width', value: `${newWidth}${widthUnit}` } });
-      }
-    }
+    
 
     setActivePreset(null);
   };
@@ -72,9 +61,7 @@ const DimensionControls = ({ style, onStyleChange }) => {
     setActivePreset(null);
   };
 
-  const toggleAspectRatioLock = () => {
-    setIsAspectRatioLocked(!isAspectRatioLocked);
-  };
+ 
 
   const isActiveSize = (dimension, value, unit) => {
     return style[dimension] === `${value}${unit}`;
@@ -226,25 +213,26 @@ const DimensionControls = ({ style, onStyleChange }) => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium text-gray-900">Dimensions</h3>
-        <button
-          onClick={toggleAspectRatioLock}
-          className={`p-1 rounded transition-colors duration-200 
-            ${isAspectRatioLocked 
-              ? 'bg-gray-200 text-gray-700' 
-              : 'text-gray-700 hover:bg-gray-200'
-            }`}
-          title={isAspectRatioLocked ? "Unlock aspect ratio" : "Lock aspect ratio"}
-        >
-          {isAspectRatioLocked ? <FaLink /> : <FaUnlink />}
-        </button>
+      <div className="flex items-center">
+        
+        <div className="flex items-center">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-1 rounded transition-colors duration-200 text-gray-700 hover:bg-gray-200"
+            title={isExpanded ? "Collapse dimensions" : "Expand dimensions"}
+          >
+            {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
+          </button><h3 className="text-lg font-medium text-gray-900 ml-3">Dimensions</h3>
+          
+        </div>
       </div>
-
-      {renderPresetButtons()}
-
-      {renderSection('Width', 'width', style.width, widthUnit, setWidthUnit)}
-      {renderSection('Height', 'height', style.height, heightUnit, setHeightUnit)}
+      {isExpanded && (
+        <>
+          {renderPresetButtons()}
+          {renderSection('Width', 'width', style.width, widthUnit, setWidthUnit)}
+          {renderSection('Height', 'height', style.height, heightUnit, setHeightUnit)}
+        </>
+      )}
     </div>
   );
 };
