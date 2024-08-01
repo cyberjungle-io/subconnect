@@ -32,9 +32,37 @@ export const componentConfig = {
     defaultContent: 'Heading',
     defaultProps: {
       level: 'h1',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '32px',
+      fontWeight: 'bold',
+      fontStyle: 'normal',
+      textDecoration: 'none',
+      textTransform: 'none',
       color: '#000000',
-      bold: false,
-      italic: false,
+      backgroundColor: 'transparent',
+      textAlign: 'left',
+      verticalAlign: 'top',
+      textIndent: '0px',
+      lineHeight: '1.2',
+      letterSpacing: 'normal',
+      wordSpacing: 'normal',
+      textShadow: 'none',
+      margin: '0px',
+      padding: '0px',
+      width: 'auto',
+      height: 'auto',
+      hoverEffect: 'none',
+      clickAction: 'none',
+      responsiveHide: {
+        mobile: false,
+        tablet: false,
+        desktop: false
+      },
+      responsiveFontSize: {
+        mobile: '24px',
+        tablet: '28px',
+        desktop: '32px'
+      }
     }
   },
   [componentTypes.TEXT]: {

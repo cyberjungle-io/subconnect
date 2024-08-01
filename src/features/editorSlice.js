@@ -59,8 +59,14 @@ const updateComponentById = (components, id, updates) => {
           ...component.props,
           ...updates.props,
         },
-      };
-    }
+        responsiveHide: updates.props?.responsiveHide
+        ? { ...component.props.responsiveHide, ...updates.props.responsiveHide }
+        : component.props.responsiveHide,
+      responsiveFontSize: updates.props?.responsiveFontSize
+        ? { ...component.props.responsiveFontSize, ...updates.props.responsiveFontSize }
+        : component.props.responsiveFontSize,
+    };
+  }
     if (component.children) {
       return {
         ...component,
@@ -261,6 +267,24 @@ export const editorSlice = createSlice({
         },
       };
     },
+    updateHeadingProperties: (state, action) => {
+      const { id, properties } = action.payload;
+      const updatedComponents = updateComponentById(state.components, id, {
+        props: properties,
+      });
+      state.components = updatedComponents;
+    },
+
+    updateResponsiveProperties: (state, action) => {
+      const { id, responsiveProps } = action.payload;
+      const updatedComponents = updateComponentById(state.components, id, {
+        props: {
+          responsiveHide: responsiveProps.responsiveHide,
+          responsiveFontSize: responsiveProps.responsiveFontSize,
+        },
+      });
+      state.components = updatedComponents;
+    },
   },
 });
 
@@ -293,6 +317,8 @@ export const {
   updateGlobalSettings,
   updateComponentSpacing,
   updateGlobalSpacing,
+  updateHeadingProperties,
+  updateResponsiveProperties,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

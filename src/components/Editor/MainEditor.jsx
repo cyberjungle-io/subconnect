@@ -17,7 +17,9 @@ import {
   pasteComponents,
   moveComponent,
   updateComponentSpacing,
-  updateGlobalSpacing
+  updateGlobalSpacing,
+  updateHeadingProperties,
+  updateResponsiveProperties
 } from '../../features/editorSlice';
 
 const MainEditor = () => {
@@ -56,10 +58,24 @@ const MainEditor = () => {
   };
 
   const handleUpdateComponent = (id, updates) => {
-    if (updates.style && (updates.style.paddingBulk || updates.style.marginBulk)) {
-      dispatch(updateComponentSpacing({ id, spacing: updates.style }));
-    } else {
-      dispatch(updateComponent({ id, updates }));
+    if (updates.props) {
+      const { responsiveHide, responsiveFontSize, ...otherProps } = updates.props;
+      
+      if (responsiveHide || responsiveFontSize) {
+        dispatch(updateResponsiveProperties({ id, responsiveProps: { responsiveHide, responsiveFontSize } }));
+      }
+
+      if (Object.keys(otherProps).length > 0) {
+        dispatch(updateHeadingProperties({ id, properties: otherProps }));
+      }
+    }
+
+    if (updates.style) {
+      dispatch(updateComponent({ id, updates: { style: updates.style } }));
+    }
+
+    if (updates.content !== undefined) {
+      dispatch(updateComponent({ id, updates: { content: updates.content } }));
     }
   };
 

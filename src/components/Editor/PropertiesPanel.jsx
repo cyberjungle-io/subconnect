@@ -9,6 +9,7 @@ import PanelNavBar from "./PanelNavBar";
 import ComponentTree from "./ComponentTree";
 import SpacingControls from "../Components/CommonControls/SpacingControls";
 import SpacingPreview from "../Components/CommonControls/SpacingPreview";
+import HeadingControls from "../Components/CommonControls/HeadingControls";
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -78,6 +79,18 @@ const PropertiesPanel = ({
       </button>
     );
   }
+  const handleSpacingPreviewUpdate = (property, value) => {
+    if (selectedComponent) {
+      onUpdateComponent(selectedComponent.id, {
+        style: { ...selectedComponent.style, [property]: value },
+      });
+    } else {
+      // Update global settings if no component is selected
+      dispatch(updateGlobalSettings({
+        style: { ...globalSettings.style, [property]: value },
+      }));
+    }
+  };
 
   const handleGlobalSettingChange = (e) => {
     const { name, value } = e.target;
@@ -132,7 +145,11 @@ const PropertiesPanel = ({
           marginBottom: style.marginBottom,
           marginLeft: style.marginLeft,
         }}
-        gap={style.gap}
+        dimensions={{
+          width: style.width,
+          height: style.height,
+        }}
+        onUpdate={handleSpacingPreviewUpdate}
       />
       <DimensionControls
         style={style}
@@ -252,6 +269,13 @@ const PropertiesPanel = ({
             </div>
             {/* Add more video-specific controls here */}
           </div>
+        );
+        case "HEADING":
+        return (
+          <HeadingControls
+            component={selectedComponent}
+            onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+          />
         );
       // Add cases for other component types as needed
       default:

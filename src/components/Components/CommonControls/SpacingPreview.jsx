@@ -1,74 +1,126 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 
-const SpacingPreview = ({ padding, margin, gap }) => {
-    const [isExpanded, setIsExpanded] = useState(true);
+const SpacingPreview = ({ padding, margin, dimensions, onUpdate }) => {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const [editingValue, setEditingValue] = useState(null);
+  const [scale, setScale] = useState(1);
+
+  // Parse padding, margin, and dimension values
+  const parsePx = (value) => parseInt(value, 10) || 0;
+  const parsedPadding = {
+    top: parsePx(padding.paddingTop),
+    right: parsePx(padding.paddingRight),
+    bottom: parsePx(padding.paddingBottom),
+    left: parsePx(padding.paddingLeft),
+  };
+
+  const parsedMargin = {
+    top: parsePx(margin.marginTop),
+    right: parsePx(margin.marginRight),
+    bottom: parsePx(margin.marginBottom),
+    left: parsePx(margin.marginLeft),
+  };
+
+  const parsedDimensions = {
+    width: parsePx(dimensions.width),
+    height: parsePx(dimensions.height),
+  };
+
+  // Calculate total width and height
+  const totalWidth = parsedMargin.left + parsedPadding.left + parsedDimensions.width + parsedPadding.right + parsedMargin.right;
+  const totalHeight = parsedMargin.top + parsedPadding.top + parsedDimensions.height + parsedPadding.bottom + parsedMargin.bottom;
+
+  // Calculate scale factor
+  useEffect(() => {
+    const containerWidth = 280; // Adjust based on your container size
+    const containerHeight = 200; // Adjust based on your container size
+    const widthScale = containerWidth / totalWidth;
+    const heightScale = containerHeight / totalHeight;
+    setScale(Math.min(widthScale, heightScale, 1)); // Ensure scale is not greater than 1
+  }, [totalWidth, totalHeight]);
+
   const containerStyle = {
     width: '100%',
-    height: '200px',
+    height: '220px',
     border: '1px solid #ccc',
     position: 'relative',
     overflow: 'hidden',
     backgroundColor: '#f0f0f0',
   };
 
-  const marginStyle = {
+  const marginColor = 'rgba(246, 178, 107, 0.5)';  // Light orange
+  const paddingColor = 'rgba(147, 196, 125, 0.5)'; // Light green
+  const contentColor = 'rgba(111, 168, 220, 0.5)'; // Light blue
+
+  const boxStyle = {
     position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    border: '2px dashed #4CAF50',
+    top: '50%',
+    left: '50%',
+    transform: `translate(-50%, -50%) scale(${scale})`,
+    width: `${totalWidth}px`,
+    height: `${totalHeight}px`,
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    fontSize: '12px',
-    color: '#4CAF50',
-  };
-
-  const paddingStyle = {
-    backgroundColor: '#E3F2FD',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
     flexDirection: 'column',
-    fontSize: '12px',
-    color: '#1976D2',
   };
 
-  const contentStyle = {
-    backgroundColor: '#FFF',
-    padding: '10px',
-    border: '1px solid #1976D2',
-  };
+  const createLayerStyle = (color) => ({
+    backgroundColor: color,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  });
+
+  const marginStyle = createLayerStyle(marginColor);
+  const paddingStyle = createLayerStyle(paddingColor);
+  const contentStyle = createLayerStyle(contentColor);
 
   const labelStyle = {
     position: 'absolute',
     backgroundColor: 'rgba(255, 255, 255, 0.7)',
     padding: '2px 4px',
     borderRadius: '2px',
-    fontSize: '10px',
+    fontSize: '12px',
+    cursor: 'pointer',
+    userSelect: 'none',
+    whiteSpace: 'nowrap',
   };
 
-  // Parse padding and margin values
-  const parsedPadding = {
-    top: padding.paddingTop || '0px',
-    right: padding.paddingRight || '0px',
-    bottom: padding.paddingBottom || '0px',
-    left: padding.paddingLeft || '0px',
+  const handleDoubleClick = (property, value) => {
+    setEditingValue({ property, value });
   };
 
-  const parsedMargin = {
-    top: margin.marginTop || '0px',
-    right: margin.marginRight || '0px',
-    bottom: margin.marginBottom || '0px',
-    left: margin.marginLeft || '0px',
+  const handleValueChange = (e) => {
+    if (e.key === 'Enter') {
+      onUpdate(editingValue.property, `${e.target.value}px`);
+      setEditingValue(null);
+    }
   };
+
+  const renderLabel = (text, property, style) => (
+    <div
+      style={{...labelStyle, ...style}}
+      onDoubleClick={() => handleDoubleClick(property, text)}
+    >
+      {editingValue && editingValue.property === property ? (
+        <input
+          type="text"
+          defaultValue={editingValue.value}
+          onKeyPress={handleValueChange}
+          onBlur={() => setEditingValue(null)}
+          autoFocus
+          style={{ width: '40px' }}
+        />
+      ) : (
+        text
+      )}
+    </div>
+  );
 
   return (
     <div className="space-y-4">
       <div className="flex items-center">
-        
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="p-1 rounded transition-colors duration-200 text-gray-700 hover:bg-gray-200"
@@ -81,55 +133,45 @@ const SpacingPreview = ({ padding, margin, gap }) => {
       
       {isExpanded && (
         <div style={containerStyle}>
-          {/* Existing preview content */}
-          <div style={{
-            ...marginStyle,
-            top: parsedMargin.top,
-            right: parsedMargin.right,
-            bottom: parsedMargin.bottom,
-            left: parsedMargin.left,
-          }}>
-            <div style={{
-              ...paddingStyle,
-              padding: `${parsedPadding.top} ${parsedPadding.right} ${parsedPadding.bottom} ${parsedPadding.left}`,
-            }}>
-              <div style={contentStyle}>Content</div>
-              {gap && (
-                <div style={{ marginTop: gap, fontSize: '12px', color: '#1976D2' }}>Gap: {gap}</div>
-              )}
+          <div style={boxStyle}>
+            <div style={{...marginStyle, height: parsedMargin.top}}>
+              {renderLabel(`${parsedMargin.top}px`, 'marginTop', {top: '2px', left: '50%', transform: 'translateX(-50%)'})}
             </div>
-          </div>
-          
-          {/* Margin Labels */}
-          <div style={{ ...labelStyle, top: '2px', left: '50%', transform: 'translateX(-50%)' }}>
-            Margin Top: {parsedMargin.top}
-          </div>
-          <div style={{ ...labelStyle, bottom: '2px', left: '50%', transform: 'translateX(-50%)' }}>
-            Margin Bottom: {parsedMargin.bottom}
-          </div>
-          <div style={{ ...labelStyle, left: '2px', top: '50%', transform: 'translateY(-50%)' }}>
-            Margin Left: {parsedMargin.left}
-          </div>
-          <div style={{ ...labelStyle, right: '2px', top: '50%', transform: 'translateY(-50%)' }}>
-            Margin Right: {parsedMargin.right}
-          </div>
-
-          {/* Padding Labels */}
-          <div style={{ ...labelStyle, top: parsedMargin.top, left: '50%', transform: 'translateX(-50%)' }}>
-            Padding Top: {parsedPadding.top}
-          </div>
-          <div style={{ ...labelStyle, bottom: parsedMargin.bottom, left: '50%', transform: 'translateX(-50%)' }}>
-            Padding Bottom: {parsedPadding.bottom}
-          </div>
-          <div style={{ ...labelStyle, left: parsedMargin.left, top: '50%', transform: 'translateY(-50%)' }}>
-            Padding Left: {parsedPadding.left}
-          </div>
-          <div style={{ ...labelStyle, right: parsedMargin.right, top: '50%', transform: 'translateY(-50%)' }}>
-            Padding Right: {parsedPadding.right}
+            <div style={{display: 'flex', flex: 1}}>
+              <div style={{...marginStyle, width: parsedMargin.left}}>
+                {renderLabel(`${parsedMargin.left}px`, 'marginLeft', {left: '2px', top: '50%', transform: 'translateY(-50%) rotate(-90deg)', transformOrigin: 'left center'})}
+              </div>
+              <div style={{flex: 1, display: 'flex', flexDirection: 'column'}}>
+                <div style={{...paddingStyle, height: parsedPadding.top}}>
+                  {renderLabel(`${parsedPadding.top}px`, 'paddingTop', {top: '2px', left: '50%', transform: 'translateX(-50%)'})}
+                </div>
+                <div style={{display: 'flex', flex: 1}}>
+                  <div style={{...paddingStyle, width: parsedPadding.left}}>
+                    {renderLabel(`${parsedPadding.left}px`, 'paddingLeft', {left: '2px', top: '50%', transform: 'translateY(-50%) rotate(-90deg)', transformOrigin: 'left center'})}
+                  </div>
+                  <div style={{...contentStyle, flex: 1, position: 'relative'}}>
+                    {renderLabel(`${parsedDimensions.width}x${parsedDimensions.height}`, 'dimensions', {top: '50%', left: '50%', transform: 'translate(-50%, -50%)'})}
+                  </div>
+                  <div style={{...paddingStyle, width: parsedPadding.right}}>
+                    {renderLabel(`${parsedPadding.right}px`, 'paddingRight', {right: '2px', top: '50%', transform: 'translateY(-50%) rotate(90deg)', transformOrigin: 'right center'})}
+                  </div>
+                </div>
+                <div style={{...paddingStyle, height: parsedPadding.bottom}}>
+                  {renderLabel(`${parsedPadding.bottom}px`, 'paddingBottom', {bottom: '2px', left: '50%', transform: 'translateX(-50%)'})}
+                </div>
+              </div>
+              <div style={{...marginStyle, width: parsedMargin.right}}>
+                {renderLabel(`${parsedMargin.right}px`, 'marginRight', {right: '2px', top: '50%', transform: 'translateY(-50%) rotate(90deg)', transformOrigin: 'right center'})}
+              </div>
+            </div>
+            <div style={{...marginStyle, height: parsedMargin.bottom}}>
+              {renderLabel(`${parsedMargin.bottom}px`, 'marginBottom', {bottom: '2px', left: '50%', transform: 'translateX(-50%)'})}
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 };
+
 export default SpacingPreview;
