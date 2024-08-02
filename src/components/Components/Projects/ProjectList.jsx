@@ -1,32 +1,47 @@
 import React, { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchProjects } from '../../../w3s';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchProjects } from '../../../w3s/w3sSlice';
 import ProjectItem from './ProjectItem';
 
 const ProjectList = () => {
   const dispatch = useDispatch();
-  const { list: projects, status, error } = useSelector((state) => state.w3s.projects);
+  const { list: projects, status, error } = useSelector((state) => {
+    console.log('Current state:', state); // Debug log
+    return state.w3s.projects;
+  });
 
   useEffect(() => {
+    console.log('ProjectList useEffect, status:', status); // Debug log
     if (status === 'idle') {
       dispatch(fetchProjects());
     }
   }, [status, dispatch]);
 
-  if (status === 'loading') return <div>Loading projects...</div>;
-  if (status === 'failed') return <div>Error: {error}</div>;
+  console.log('ProjectList render, projects:', projects, 'status:', status); // Debug log
+
+  if (status === 'loading') {
+    return <div>Loading projects...</div>;
+  }
+
+  if (status === 'failed') {
+    return <div>Error: {error}</div>;
+  }
+
+  if (!projects) {
+    return <div>No projects data available. Please try again later.</div>;
+  }
 
   return (
-    <div className="project-list">
-      <h2 className="text-2xl font-bold mb-4">Projects</h2>
+    <div>
+      <h3 className="text-lg font-semibold mb-2">Your Projects</h3>
       {projects.length === 0 ? (
         <p>No projects found. Create a new one to get started!</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <ul className="space-y-2">
           {projects.map((project) => (
-            <ProjectItem key={project._id} project={project} />
+            <ProjectItem key={project.id} project={project} />
           ))}
-        </div>
+        </ul>
       )}
     </div>
   );

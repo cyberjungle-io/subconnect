@@ -69,7 +69,10 @@ const PropertiesPanel = ({
       }));
     }
   };
-
+  const handleOpenProjectModal = () => {
+    console.log("PropertiesPanel: Attempting to open Project Modal");
+    onOpenProjectModal();
+  };
   const handleSpacingPreviewUpdate = (property, value) => {
     if (selectedComponent) {
       onUpdateComponent(selectedComponent.id, {

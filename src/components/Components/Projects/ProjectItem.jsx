@@ -1,11 +1,9 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { deleteProject } from '../../../w3s';
+import { deleteProject } from '../../../w3s/w3sSlice';
 
 const ProjectItem = ({ project }) => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const handleDelete = () => {
     if (window.confirm('Are you sure you want to delete this project?')) {
@@ -14,24 +12,15 @@ const ProjectItem = ({ project }) => {
   };
 
   return (
-    <div className="project-item border rounded p-4 shadow-sm">
-      <h3 className="text-xl font-semibold mb-2">{project.name}</h3>
-      <p className="text-gray-600 mb-2">Last modified: {new Date(project.lastModified).toLocaleString()}</p>
-      <div className="flex justify-between">
-        <button
-          onClick={() => navigate(`/projects/${project._id}`)}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          View
-        </button>
-        <button
-          onClick={handleDelete}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
+    <li className="flex justify-between items-center bg-white p-3 rounded shadow">
+      <span>{project.name}</span>
+      <button
+        onClick={handleDelete}
+        className="text-red-500 hover:text-red-700"
+      >
+        Delete
+      </button>
+    </li>
   );
 };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -17,183 +17,133 @@ import {
   copyComponents,
   pasteComponents,
   moveComponent,
+  updateGlobalSettings,
   updateComponentSpacing,
   updateGlobalSpacing,
-  updateHeadingProperties,
-  updateResponsiveProperties
 } from '../../features/editorSlice';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
-  const { components, selectedIds } = useSelector(state => state.editor);
-  const [isPanelVisible, setIsPanelVisible] = useState(true);
-  const [isDataModalOpen, setIsDataModalOpen] = useState(false);
+  const components = useSelector((state) => state.editor.components);
+  const selectedIds = useSelector((state) => state.editor.selectedIds);
+  const globalSettings = useSelector((state) => state.editor.globalSettings);
+
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isDataModalOpen, setIsDataModalOpen] = useState(false);
+  const [isPropertiesPanelVisible, setIsPropertiesPanelVisible] = useState(true);
 
-  const handleTogglePanel = () => {
-    setIsPanelVisible(!isPanelVisible);
-  };
-
-  const handleOpenDataModal = () => {
-    setIsDataModalOpen(true);
-  };
-
-  const handleCloseDataModal = () => {
-    setIsDataModalOpen(false);
-  };
-
-  const handleOpenProjectModal = () => {
+  const handleOpenProjectModal = useCallback(() => {
+    console.log('Attempting to open Project Modal');
     setIsProjectModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseProjectModal = () => {
+  const handleCloseProjectModal = useCallback(() => {
+    console.log('Closing Project Modal');
     setIsProjectModalOpen(false);
-  };
+  }, []);
 
-  const handleAddComponent = (componentType, parentId = null, position = null) => {
-    const newComponentData = {
-      type: componentType, 
-      style: { 
-        width: position ? position.width : 350, 
-        height: position ? position.height : 300,
-        left: position ? position.x : 0,
-        top: position ? position.y : 0,
-      },
-      parentId
-    };
+  const handleOpenDataModal = useCallback(() => {
+    setIsDataModalOpen(true);
+  }, []);
 
-    dispatch(addComponent(newComponentData));
-  };
+  const handleCloseDataModal = useCallback(() => {
+    setIsDataModalOpen(false);
+  }, []);
 
-  const handleUpdateGlobalSpacing = (updates) => {
-    dispatch(updateGlobalSpacing(updates));
-  };
+  const handleAddComponent = useCallback((type) => {
+    dispatch(addComponent({ type }));
+  }, [dispatch]);
 
-  const handleUpdateComponent = (id, updates) => {
-    if (updates.props) {
-      const { responsiveHide, responsiveFontSize, ...otherProps } = updates.props;
-      
-      if (responsiveHide || responsiveFontSize) {
-        dispatch(updateResponsiveProperties({ id, responsiveProps: { responsiveHide, responsiveFontSize } }));
-      }
+  const handleUpdateComponent = useCallback((id, updates) => {
+    dispatch(updateComponent({ id, updates }));
+  }, [dispatch]);
 
-      if (Object.keys(otherProps).length > 0) {
-        dispatch(updateHeadingProperties({ id, properties: otherProps }));
-      }
-    }
-
-    if (updates.style) {
-      dispatch(updateComponent({ id, updates: { style: updates.style } }));
-    }
-
-    if (updates.content !== undefined) {
-      dispatch(updateComponent({ id, updates: { content: updates.content } }));
-    }
-  };
-
-  const handleMoveComponent = (componentId, newParentId, newPosition = null) => {
-    dispatch(moveComponent({ componentId, newParentId, newPosition }));
-  };
-
-  const handleDeleteComponent = (id) => {
+  const handleDeleteComponent = useCallback((id) => {
     dispatch(deleteComponent(id));
-  };
+  }, [dispatch]);
 
-  const handleSelectComponent = (id, isMultiSelect) => {
-    if (isMultiSelect) {
-      dispatch(setSelectedIds(selectedIds.includes(id) 
-        ? selectedIds.filter(selectedId => selectedId !== id)
-        : [...selectedIds, id]
-      ));
-    } else {
-      dispatch(setSelectedIds([id]));
-    }
-  };
+  const handleSelectComponent = useCallback((id, isMultiSelect) => {
+    dispatch(setSelectedIds(id, isMultiSelect));
+  }, [dispatch]);
 
-  const handleClearSelection = () => {
-    dispatch(setSelectedIds([]));
-  };
-
-  const handleAlign = (alignment) => {
+  const handleAlignComponents = useCallback((alignment) => {
     dispatch(alignComponents(alignment));
-  };
+  }, [dispatch]);
 
-  const handleDistribute = (direction) => {
+  const handleDistributeComponents = useCallback((direction) => {
     dispatch(distributeComponents(direction));
-  };
+  }, [dispatch]);
 
-  const handleCopy = () => {
+  const handleCopyComponents = useCallback(() => {
     dispatch(copyComponents());
-  };
+  }, [dispatch]);
 
-  const handlePaste = () => {
+  const handlePasteComponents = useCallback(() => {
     dispatch(pasteComponents());
-  };
+  }, [dispatch]);
 
-  const findComponentById = (components, id) => {
-    for (let component of components) {
-      if (component.id === id) {
-        return component;
-      }
-      if (component.children) {
-        const found = findComponentById(component.children, id);
-        if (found) return found;
-      }
-    }
-    return null;
-  };
+  const handleMoveComponent = useCallback((componentId, newParentId, newPosition) => {
+    dispatch(moveComponent({ componentId, newParentId, newPosition }));
+  }, [dispatch]);
+
+  const handleUpdateGlobalSettings = useCallback((updates) => {
+    dispatch(updateGlobalSettings(updates));
+  }, [dispatch]);
+
+  const handleUpdateComponentSpacing = useCallback((id, spacing) => {
+    dispatch(updateComponentSpacing({ id, spacing }));
+  }, [dispatch]);
+
+  const handleUpdateGlobalSpacing = useCallback((spacing) => {
+    dispatch(updateGlobalSpacing(spacing));
+  }, [dispatch]);
+
+  const togglePropertiesPanelVisibility = useCallback(() => {
+    setIsPropertiesPanelVisible((prev) => !prev);
+  }, []);
 
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex h-screen">
-        <div className="flex flex-col flex-grow">
-          <Toolbar 
-            onAlign={handleAlign}
-            onDistribute={handleDistribute}
-            onCopy={handleCopy}
-            onPaste={handlePaste}
+        <div className="flex-grow flex flex-col">
+          <Toolbar
+            onAlign={handleAlignComponents}
+            onDistribute={handleDistributeComponents}
+            onCopy={handleCopyComponents}
+            onPaste={handlePasteComponents}
           />
-          <div className="flex flex-grow overflow-hidden">
-            <div className="flex-grow overflow-auto">
-              <Canvas
-                components={components}
-                selectedIds={selectedIds}
-                onSelectComponent={handleSelectComponent}
-                onClearSelection={handleClearSelection}
-                onUpdateComponent={handleUpdateComponent}
-                onAddComponent={handleAddComponent}
-                onMoveComponent={handleMoveComponent}
-              />
-            </div>
-            <PropertiesPanel
-              selectedComponent={findComponentById(components, selectedIds[0])}
-              onUpdateComponent={handleUpdateComponent}
-              onDeleteComponent={handleDeleteComponent}
-              onAddChildComponent={handleAddComponent}
-              onAddComponent={handleAddComponent}
-              isVisible={isPanelVisible}
-              onToggleVisibility={handleTogglePanel}
-              components={components}
-              onSelectComponent={handleSelectComponent}
-              onOpenDataModal={handleOpenDataModal}
-              onOpenProjectModal={handleOpenProjectModal}
-              onUpdateGlobalSpacing={handleUpdateGlobalSpacing}
-            />
-          </div>
+          <Canvas
+            components={components}
+            selectedIds={selectedIds}
+            onSelectComponent={handleSelectComponent}
+            onUpdateComponent={handleUpdateComponent}
+            onAddComponent={handleAddComponent}
+            onMoveComponent={handleMoveComponent}
+          />
         </div>
-      </div>
-      {isDataModalOpen && (
-        <DataModal
-          isOpen={isDataModalOpen}
-          onClose={handleCloseDataModal}
+        <PropertiesPanel
+          isVisible={isPropertiesPanelVisible}
+          onToggleVisibility={togglePropertiesPanelVisibility}
+          selectedComponent={components.find((c) => selectedIds.includes(c.id))}
+          onUpdateComponent={handleUpdateComponent}
+          onDeleteComponent={handleDeleteComponent}
+          components={components}
+          onSelectComponent={handleSelectComponent}
+          onOpenDataModal={handleOpenDataModal}
+          onOpenProjectModal={handleOpenProjectModal}
+          onUpdateGlobalSpacing={handleUpdateGlobalSpacing}
+          globalSettings={globalSettings}
+          onUpdateGlobalSettings={handleUpdateGlobalSettings}
         />
-      )}
-      {isProjectModalOpen && (
         <ProjectModal
           isOpen={isProjectModalOpen}
           onClose={handleCloseProjectModal}
         />
-      )}
+        <DataModal
+          isOpen={isDataModalOpen}
+          onClose={handleCloseDataModal}
+        />
+      </div>
     </DndProvider>
   );
 };

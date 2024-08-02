@@ -1,23 +1,29 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { createProject, updateProject } from '../../../w3s';
+import { createProject } from '../../../w3s/w3sSlice';
 
-const ProjectForm = ({ project, onSubmit }) => {
-  const [name, setName] = useState(project?.name || '');
+const ProjectForm = ({ onSubmit }) => {
+  const [name, setName] = useState('');
   const dispatch = useDispatch();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (project) {
-      dispatch(updateProject({ id: project._id, projectData: { name } }));
-    } else {
-      dispatch(createProject({ name }));
+    console.log('Form submitted. Project name:', name);
+    
+    try {
+      console.log('Dispatching createProject with:', { name });
+      const result = await dispatch(createProject({ name })).unwrap();
+      console.log('Project created:', result);
+      setName('');
+      onSubmit();
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      // Handle this error appropriately in your UI
     }
-    onSubmit();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="project-form space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label htmlFor="name" className="block text-sm font-medium text-gray-700">
           Project Name
@@ -35,7 +41,7 @@ const ProjectForm = ({ project, onSubmit }) => {
         type="submit"
         className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
       >
-        {project ? 'Update Project' : 'Create Project'}
+        Create Project
       </button>
     </form>
   );

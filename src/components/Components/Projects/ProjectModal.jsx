@@ -4,10 +4,16 @@ import ProjectForm from './ProjectForm';
 import { FaTimes } from 'react-icons/fa';
 
 const ProjectModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
+  console.log('ProjectModal render, isOpen:', isOpen, 'type:', typeof isOpen);
+
+  if (!isOpen) {
+    console.log('ProjectModal not rendering due to !isOpen');
+    return null;
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+      {console.log('ProjectModal rendering content')}
       <div className="bg-white w-3/4 h-3/4 rounded-lg flex flex-col overflow-hidden">
         <div className="p-4 bg-gray-100 flex justify-between items-center">
           <h2 className="text-xl font-bold">Projects</h2>
