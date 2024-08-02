@@ -47,6 +47,7 @@ const ComponentRenderer = React.memo(({
   selectedIds,
   isFlexChild = false,
   parent = null,
+  globalComponentLayout,
 }) => {
   const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild);
 
@@ -126,7 +127,7 @@ const ComponentRenderer = React.memo(({
     
     const componentStyle = {
       ...style,
-      position: isFlexChild ? 'relative' : 'absolute',
+      position: 'relative',
       border: isSelected ? "2px solid blue" : "1px solid #ccc",
       padding: style.padding || "0px",
       margin: style.margin || "0px",
@@ -135,35 +136,42 @@ const ComponentRenderer = React.memo(({
     };
   
     if (type === "FLEX_CONTAINER") {
+      const isRow = props.direction !== "column";
+      
       componentStyle.display = "flex";
       componentStyle.flexDirection = props.direction || "row";
       componentStyle.flexWrap = props.wrap || "nowrap";
       componentStyle.alignItems = props.alignItems || "stretch";
       componentStyle.justifyContent = props.justifyContent || "flex-start";
-      componentStyle.gap = style.gap || "0px";  // Apply gap for flex containers
-      componentStyle.width = style.width || "100%";
-      componentStyle.height = style.height || "100%";
-      componentStyle.minHeight = style.minHeight || "auto";
-    }
-  
-    if (isFlexChild) {
-      const isRowDirection = parent && parent.props.direction !== "column";
+      componentStyle.gap = style.gap || "0px";
       
-      componentStyle.flexGrow = props.flexGrow || 0;
-      componentStyle.flexShrink = props.flexShrink || 1;
-      
-      if (typeof style.width === 'string' && style.width.endsWith('%')) {
-        componentStyle.flexBasis = style.width;
+      if (!isFlexChild) {
+        // Top-level FLEX_CONTAINER
+        if (globalComponentLayout === "horizontal") {
+          componentStyle.width = style.width || "100%";
+          componentStyle.height = style.height || "200px";
+        } else {
+          componentStyle.width = style.width || "200px";
+          componentStyle.height = style.height || "100%";
+        }
       } else {
-        componentStyle.flexBasis = 'auto';
-        componentStyle.width = style.width || (isRowDirection ? 'auto' : '100%');
+        // Nested FLEX_CONTAINER
+        componentStyle.flexGrow = 1;
+        componentStyle.flexShrink = 1;
+        componentStyle.flexBasis = '0%';
+        componentStyle.width = style.width || 'auto';
+        componentStyle.height = style.height || 'auto';
       }
-  
-      if (typeof style.height === 'string' && style.height.endsWith('%')) {
-        componentStyle.height = style.height;
-      } else if (!isRowDirection) {
-        componentStyle.height = style.height || "auto";
-      }
+      
+      componentStyle.minWidth = style.minWidth || "50px";
+      componentStyle.minHeight = style.minHeight || "50px";
+    } else {
+      // For non-FLEX_CONTAINER components
+      componentStyle.flexGrow = 0;
+      componentStyle.flexShrink = 0;
+      componentStyle.flexBasis = 'auto';
+      componentStyle.width = style.width || 'auto';
+      componentStyle.height = style.height || 'auto';
     }
   
     if (type === "CHART") {
@@ -173,6 +181,7 @@ const ComponentRenderer = React.memo(({
       componentStyle.height = style.height || "100%";
     }
   
+    console.log(`Component ${component.id} style:`, componentStyle);
     return componentStyle;
   };
 
@@ -183,7 +192,8 @@ const ComponentRenderer = React.memo(({
       }}
       style={getComponentStyle()}
       onClick={handleClick}
-      className={`relative ${isSelected ? "shadow-lg" : ""} ${isOver ? "bg-blue-100" : ""}`}
+      className={`${isSelected ? "shadow-lg" : ""} ${isOver ? "bg-blue-100" : ""}`}
+      data-id={component.id}
     >
       {renderContent()}
       {isSelected && (
