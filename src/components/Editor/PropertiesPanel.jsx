@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { FaChevronLeft } from "react-icons/fa";
 import PropertyTabs from "./PropertyTabs";
 import ComponentPalette from "../Components/ComponentPalette";
-import { FaChevronLeft } from "react-icons/fa";
 import DimensionControls from "../Components/CommonControls/DimensionControls";
-import { updateGlobalSettings, updateComponent } from "../../features/editorSlice";
-import PanelNavBar from "./PanelNavBar";
-import ComponentTree from "./ComponentTree";
 import SpacingControls from "../Components/CommonControls/SpacingControls";
 import SpacingPreview from "../Components/CommonControls/SpacingPreview";
 import HeadingControls from "../Components/CommonControls/HeadingControls";
+import PanelNavBar from "./PanelNavBar";
+import ComponentTree from "./ComponentTree";
+import { updateGlobalSettings, updateComponent } from "../../features/editorSlice";
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -20,12 +20,14 @@ const PropertiesPanel = ({
   components,
   onSelectComponent,
   onOpenDataModal,
+  onOpenProjectModal,
   onUpdateGlobalSpacing,
 }) => {
   const dispatch = useDispatch();
   const globalSettings = useSelector((state) => state.editor.globalSettings);
   const [activePanel, setActivePanel] = useState("properties");
   const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
+
   useEffect(() => {
     if (selectedComponent) {
       setActivePanel("properties");
@@ -43,15 +45,14 @@ const PropertiesPanel = ({
       props: { ...selectedComponent.props, [name]: newValue },
     });
   };
+
   const handleStyleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'spacingPreset' || name === 'paddingBulk' || name === 'marginBulk') {
-      // Apply all spacing updates at once
       onUpdateComponent(selectedComponent.id, {
         style: { ...selectedComponent.style, ...value },
       });
     } else {
-      // Handle individual style property changes
       onUpdateComponent(selectedComponent.id, {
         style: { ...selectedComponent.style, [name]: value },
       });
@@ -68,24 +69,13 @@ const PropertiesPanel = ({
       }));
     }
   };
-  if (!isVisible) {
-    return (
-      <button
-        onClick={onToggleVisibility}
-        className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-gray-200 p-2 rounded-l-md shadow-md"
-        title="Show Panel"
-      >
-        <FaChevronLeft />
-      </button>
-    );
-  }
+
   const handleSpacingPreviewUpdate = (property, value) => {
     if (selectedComponent) {
       onUpdateComponent(selectedComponent.id, {
         style: { ...selectedComponent.style, [property]: value },
       });
     } else {
-      // Update global settings if no component is selected
       dispatch(updateGlobalSettings({
         style: { ...globalSettings.style, [property]: value },
       }));
@@ -130,6 +120,7 @@ const PropertiesPanel = ({
       </div>
     </PropertyTabs>
   );
+
   const renderLayoutTab = (style, onStyleChange, isGlobal = false) => (
     <div className="space-y-6">
       <SpacingPreview
@@ -225,52 +216,7 @@ const PropertiesPanel = ({
             </div>
           </div>
         );
-      case "CHART":
-        return (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Chart Type</label>
-              <select
-                name="chartType"
-                value={selectedComponent.props.chartType || "bar"}
-                onChange={handlePropChange}
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="bar">Bar Chart</option>
-                <option value="line">Line Chart</option>
-                <option value="pie">Pie Chart</option>
-              </select>
-            </div>
-            {/* Add more chart-specific controls here */}
-          </div>
-        );
-      case "VIDEO":
-        return (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Video URL</label>
-              <input
-                type="text"
-                name="videoUrl"
-                value={selectedComponent.props.videoUrl || ""}
-                onChange={handlePropChange}
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Autoplay</label>
-              <input
-                type="checkbox"
-                name="autoplay"
-                checked={selectedComponent.props.autoplay || false}
-                onChange={handlePropChange}
-                className="mt-1"
-              />
-            </div>
-            {/* Add more video-specific controls here */}
-          </div>
-        );
-        case "HEADING":
+      case "HEADING":
         return (
           <HeadingControls
             component={selectedComponent}
@@ -299,6 +245,7 @@ const PropertiesPanel = ({
       </PropertyTabs>
     );
   };
+
   const renderPanelContent = () => {
     switch (activePanel) {
       case "globalSettings":
@@ -312,6 +259,18 @@ const PropertiesPanel = ({
     }
   };
 
+  if (!isVisible) {
+    return (
+      <button
+        onClick={onToggleVisibility}
+        className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-gray-200 p-2 rounded-l-md shadow-md"
+        title="Show Panel"
+      >
+        <FaChevronLeft />
+      </button>
+    );
+  }
+
   return (
     <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
       <h2 className="text-lg font-bold text-gray-800 mb-4">
@@ -322,6 +281,7 @@ const PropertiesPanel = ({
         onShowGlobalSettings={() => setActivePanel("globalSettings")}
         onShowComponentTree={() => setIsComponentTreeVisible(!isComponentTreeVisible)}
         onOpenDataModal={onOpenDataModal}
+        onOpenProjectModal={onOpenProjectModal}
         onToggleVisibility={onToggleVisibility}
         activePanel={activePanel}
         isComponentTreeVisible={isComponentTreeVisible}

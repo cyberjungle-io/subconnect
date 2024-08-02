@@ -6,6 +6,7 @@ import Canvas from './Canvas';
 import PropertiesPanel from './PropertiesPanel';
 import Toolbar from './Toolbar';
 import DataModal from './DataModal';
+import ProjectModal from '../Components/Projects/ProjectModal';
 import {
   addComponent,
   updateComponent,
@@ -27,15 +28,26 @@ const MainEditor = () => {
   const { components, selectedIds } = useSelector(state => state.editor);
   const [isPanelVisible, setIsPanelVisible] = useState(true);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
 
   const handleTogglePanel = () => {
     setIsPanelVisible(!isPanelVisible);
   };
+
   const handleOpenDataModal = () => {
     setIsDataModalOpen(true);
   };
+
   const handleCloseDataModal = () => {
     setIsDataModalOpen(false);
+  };
+
+  const handleOpenProjectModal = () => {
+    setIsProjectModalOpen(true);
+  };
+
+  const handleCloseProjectModal = () => {
+    setIsProjectModalOpen(false);
   };
 
   const handleAddComponent = (componentType, parentId = null, position = null) => {
@@ -134,7 +146,6 @@ const MainEditor = () => {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex h-screen">
-        
         <div className="flex flex-col flex-grow">
           <Toolbar 
             onAlign={handleAlign}
@@ -143,35 +154,44 @@ const MainEditor = () => {
             onPaste={handlePaste}
           />
           <div className="flex flex-grow overflow-hidden">
-          <div className="flex-grow overflow-auto">
-          <Canvas
-            components={components}
-            selectedIds={selectedIds}
-            onSelectComponent={handleSelectComponent}
-            onClearSelection={handleClearSelection}
-            onUpdateComponent={handleUpdateComponent}
-            onAddComponent={handleAddComponent}
-            onMoveComponent={handleMoveComponent}
-          />
-        </div>
-        <PropertiesPanel
-          selectedComponent={findComponentById(components, selectedIds[0])}
-          onUpdateComponent={handleUpdateComponent}
-          onDeleteComponent={handleDeleteComponent}
-          onAddChildComponent={handleAddComponent}
-          onAddComponent={handleAddComponent}
-          isVisible={isPanelVisible}
-          onToggleVisibility={handleTogglePanel}
+            <div className="flex-grow overflow-auto">
+              <Canvas
+                components={components}
+                selectedIds={selectedIds}
+                onSelectComponent={handleSelectComponent}
+                onClearSelection={handleClearSelection}
+                onUpdateComponent={handleUpdateComponent}
+                onAddComponent={handleAddComponent}
+                onMoveComponent={handleMoveComponent}
+              />
+            </div>
+            <PropertiesPanel
+              selectedComponent={findComponentById(components, selectedIds[0])}
+              onUpdateComponent={handleUpdateComponent}
+              onDeleteComponent={handleDeleteComponent}
+              onAddChildComponent={handleAddComponent}
+              onAddComponent={handleAddComponent}
+              isVisible={isPanelVisible}
+              onToggleVisibility={handleTogglePanel}
               components={components}
               onSelectComponent={handleSelectComponent}
               onOpenDataModal={handleOpenDataModal}
+              onOpenProjectModal={handleOpenProjectModal}
               onUpdateGlobalSpacing={handleUpdateGlobalSpacing}
-        /></div></div>
+            />
+          </div>
+        </div>
       </div>
       {isDataModalOpen && (
         <DataModal
           isOpen={isDataModalOpen}
-          onClose={() => setIsDataModalOpen(false)}
+          onClose={handleCloseDataModal}
+        />
+      )}
+      {isProjectModalOpen && (
+        <ProjectModal
+          isOpen={isProjectModalOpen}
+          onClose={handleCloseProjectModal}
         />
       )}
     </DndProvider>
