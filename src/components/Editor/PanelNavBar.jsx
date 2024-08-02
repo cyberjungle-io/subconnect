@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaThLarge, FaCog, FaTree, FaDatabase } from 'react-icons/fa';
+import { FaThLarge, FaCog, FaTree, FaDatabase, FaProjectDiagram } from 'react-icons/fa';
 import HidePropertiesPanelArrow from '../common/CustomIcons/HidePropertiesPanelArrow';
 
 const PanelNavBar = ({ 
@@ -7,6 +7,7 @@ const PanelNavBar = ({
   onShowGlobalSettings, 
   onShowComponentTree,
   onOpenDataModal,
+  onOpenProjectModal, // New prop for opening project modal
   onToggleVisibility,
   activePanel,
   isComponentTreeVisible
@@ -46,6 +47,14 @@ const PanelNavBar = ({
         title="Toggle Component Tree"
       >
         <FaTree />
+      </button>
+      {/* New button for opening project modal */}
+      <button
+        onClick={onOpenProjectModal}
+        className={getButtonClass('projectModal')}
+        title="Open Projects"
+      >
+        <FaProjectDiagram />
       </button>
       <button
         onClick={onToggleVisibility}
