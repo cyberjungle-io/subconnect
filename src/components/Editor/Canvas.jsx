@@ -27,39 +27,28 @@ const Canvas = ({
       const canvasElement = canvasRef.current;
 
       if (!offset || !canvasElement) {
-        // If we don't have a valid offset or canvas element, add the component at a default position
-        onAddComponent(item.type, null, { x: 0, y: 0 });
+        // If we don't have a valid offset or canvas element, add the component at the end
+        onAddComponent(item.type, null);
         return;
       }
 
       const canvasBounds = canvasElement.getBoundingClientRect();
+      const dropPosition = {
+        x: offset.x - canvasBounds.left,
+        y: offset.y - canvasBounds.top,
+      };
 
-      let position;
-      const lastComponent = components[components.length - 1];
-      const lastPosition = lastComponent ? lastComponent.style : { left: 0, top: 0, width: 0, height: 0 };
-
-      const isVertical = componentLayout === 'vertical';
-
-      if (isVertical) {
-        position = {
-          x: lastPosition.left + (lastPosition.width || 0) + 2, // 2px gap
-          y: 0,
-          width: 200, // Default width
-          height: canvasBounds.height, // Full height
-        };
-      } else { // horizontal layout
-        position = {
-          x: 0,
-          y: lastPosition.top + (lastPosition.height || 0) + 2, // 2px gap
-          width: canvasBounds.width, // Full width
-          height: 200, // Default height
-        };
-      }
+      // Find the index where to insert the new component
+      const insertIndex = components.findIndex(comp => {
+        const compRect = canvasRef.current.querySelector(`[data-id="${comp.id}"]`).getBoundingClientRect();
+        return (componentLayout === 'vertical' && dropPosition.x < compRect.right) ||
+               (componentLayout === 'horizontal' && dropPosition.y < compRect.bottom);
+      });
 
       if (item.id) {
-        onMoveComponent(item.id, null, position);
+        onMoveComponent(item.id, null, insertIndex);
       } else {
-        onAddComponent(item.type, null, position);
+        onAddComponent(item.type, null, insertIndex);
       }
     },
   });
@@ -80,10 +69,15 @@ const Canvas = ({
     gap: style.gap || '0px',
     display: 'flex',
     flexDirection: componentLayout === 'vertical' ? 'row' : 'column',
+    flexWrap: 'nowrap',
+    alignItems: 'stretch',
+    alignContent: 'stretch',
     minHeight: "500px",
     width: '100%',
     height: '100%',
+    position: 'relative',
   };
+
 
   return (
     <div
@@ -91,7 +85,7 @@ const Canvas = ({
         drop(node);
         canvasRef.current = node;
       }}
-      className="canvas-area relative w-full h-full bg-gray-100 overflow-auto"
+      className="canvas-area w-full h-full bg-gray-100 overflow-auto"
       style={canvasStyle}
       onClick={handleCanvasClick}
     >
@@ -107,6 +101,7 @@ const Canvas = ({
             onAddComponent(childType, parentId)
           }
           onMoveComponent={onMoveComponent}
+          globalComponentLayout={componentLayout}
         />
       ))}
     </div>

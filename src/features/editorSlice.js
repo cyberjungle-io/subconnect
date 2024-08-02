@@ -47,26 +47,22 @@ const findComponentById = (components, id) => {
 const updateComponentById = (components, id, updates) => {
   return components.map((component) => {
     if (component.id === id) {
-      return {
+      const updatedComponent = {
         ...component,
         ...updates,
-        name: updates.name !== undefined ? updates.name : component.name,
         style: {
           ...component.style,
-          ...updates.style,
+          ...(updates.style || {}),
         },
         props: {
           ...component.props,
-          ...updates.props,
+          ...(updates.props || {}),
         },
-        responsiveHide: updates.props?.responsiveHide
-        ? { ...component.props.responsiveHide, ...updates.props.responsiveHide }
-        : component.props.responsiveHide,
-      responsiveFontSize: updates.props?.responsiveFontSize
-        ? { ...component.props.responsiveFontSize, ...updates.props.responsiveFontSize }
-        : component.props.responsiveFontSize,
-    };
-  }
+      };
+
+      console.log(`Updating component ${id}:`, updatedComponent);
+      return updatedComponent;
+    }
     if (component.children) {
       return {
         ...component,
@@ -76,7 +72,6 @@ const updateComponentById = (components, id, updates) => {
     return component;
   });
 };
-
 const deleteComponentById = (components, id) => {
   return components.filter((component) => {
     if (component.id === id) {
@@ -95,57 +90,39 @@ export const editorSlice = createSlice({
   reducers: {
     addComponent: (state, action) => {
       const { type, parentId, ...otherProps } = action.payload;
-      let defaultPosition = {};
+      let defaultStyle = {};
 
       if (!parentId) {
-        // Only apply this logic for top-level components
-        const lastComponent = state.components[state.components.length - 1];
-        const offset = 20; // Offset for cascading effect
-
-        if (lastComponent) {
-          if (state.globalSettings.componentLayout === "vertical") {
-            defaultPosition = {
-              style: {
-                top: 0,
-                left:
-                  lastComponent.style.left + lastComponent.style.width + offset,
-                width: 200, // Default width
-                height: "100%", // Full height for vertical layout
-              },
+        if (type === "FLEX_CONTAINER") {
+          if (state.globalSettings.componentLayout === "horizontal") {
+            defaultStyle = {
+              width: '100%',
+              height: '200px',
             };
           } else {
-            // horizontal layout
-            defaultPosition = {
-              style: {
-                top:
-                  lastComponent.style.top + lastComponent.style.height + offset,
-                left: 0,
-                width: "100%", // Full width for horizontal layout
-                height: 200, // Default height
-              },
+            defaultStyle = {
+              width: '200px',
+              height: '100%',
             };
           }
+        } else if (state.globalSettings.componentLayout === "vertical") {
+          defaultStyle = {
+            width: '200px',
+            height: 'auto',
+          };
         } else {
-          // First component
-          defaultPosition = {
-            style: {
-              top: 0,
-              left: 0,
-              width:
-                state.globalSettings.componentLayout === "vertical"
-                  ? 200
-                  : "100%",
-              height:
-                state.globalSettings.componentLayout === "vertical"
-                  ? "100%"
-                  : 200,
-            },
+          defaultStyle = {
+            width: '100%',
+            height: '200px',
           };
         }
       }
 
       const newComponent = createComponent(type, {
-        ...defaultPosition,
+        style: {
+          ...defaultStyle,
+          ...otherProps.style,
+        },
         ...otherProps,
       });
 
@@ -158,16 +135,15 @@ export const editorSlice = createSlice({
         state.components.push(newComponent);
       }
     },
-
     updateComponent: (state, action) => {
       const { id, updates } = action.payload;
-      const updatedComponents = updateComponentById(
-        state.components,
-        id,
-        updates
-      );
+      const updatedComponents = updateComponentById(state.components, id, updates);
       state.components = updatedComponents;
+      console.log(`Updated component ${id}:`, findComponentById(updatedComponents, id));
     },
+
+    
+
     updateComponentSpacing: (state, action) => {
       const { id, spacing } = action.payload;
       const updatedComponents = updateComponentById(state.components, id, {
@@ -234,23 +210,21 @@ export const editorSlice = createSlice({
       const componentToMove = findComponentById(state.components, componentId);
       if (componentToMove) {
         // Remove from old parent
-        state.components = removeComponentFromParent(
-          state.components,
-          componentId
-        );
+        state.components = removeComponentFromParent(state.components, componentId);
         if (newParentId) {
           // Add to new parent
           const newParent = findComponentById(state.components, newParentId);
           if (newParent) {
             if (!newParent.children) newParent.children = [];
-            newParent.children.push(componentToMove); // Fixed typo here
+            newParent.children.push(componentToMove);
           }
         } else {
           // Move to root level
           if (newPosition) {
+            // For flex layout, we don't need to set top and left
             componentToMove.style = {
               ...componentToMove.style,
-              ...newPosition,
+              order: state.components.length, // Use order to control positioning
             };
           }
           state.components.push(componentToMove);

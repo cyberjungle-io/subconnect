@@ -46,9 +46,7 @@ const DimensionControls = ({ style, onStyleChange }) => {
     const newValue = `${numericValue}${unit}`;
     onStyleChange({ target: { name: dimension, value: newValue } });
 
-    
-
-    setActivePreset(null);
+    console.log(`Setting ${dimension} to:`, newValue);
   };
 
   const setPercentage = (dimension, percentage) => {
