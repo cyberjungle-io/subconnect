@@ -97,6 +97,9 @@ const MainEditor = () => {
   const handleUpdateGlobalSpacing = useCallback((spacing) => {
     dispatch(updateGlobalSpacing(spacing));
   }, [dispatch]);
+  const handleClearSelection = () => {
+    dispatch(setSelectedIds([]));
+  };
 
   const togglePropertiesPanelVisibility = useCallback(() => {
     setIsPropertiesPanelVisible((prev) => !prev);
@@ -116,6 +119,7 @@ const MainEditor = () => {
             components={components}
             selectedIds={selectedIds}
             onSelectComponent={handleSelectComponent}
+            onClearSelection={handleClearSelection}
             onUpdateComponent={handleUpdateComponent}
             onAddComponent={handleAddComponent}
             onMoveComponent={handleMoveComponent}
