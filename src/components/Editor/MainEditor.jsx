@@ -164,7 +164,7 @@ const MainEditor = () => {
             selectedIds={selectedIds}
             onSelectComponent={handleSelectComponent}
             onClearSelection={handleClearSelection}
-            onClearSelection={handleClearSelection}
+            
             onUpdateComponent={handleUpdateComponent}
             onAddComponent={handleAddComponent}
             onMoveComponent={handleMoveComponent}

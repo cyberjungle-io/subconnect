@@ -28,28 +28,39 @@ const handleApiError = (error) => {
 };
 
 const w3sService = {
+    register: async (userData) => {
+        try {
+          console.log('Registering user with data:', userData);
+          const response = await api.post('/users/register', userData);
+          console.log('Registration response:', response.data);
+          return response.data;
+        } catch (error) {
+          console.error('Registration error in w3sService:', error.response || error);
+          throw error.response?.data || error.message || 'An unexpected error occurred';
+        }
+      },
   // Authentication
   login: async (credentials) => {
     try {
-      const response = await api.post('/auth/login', credentials);
-      localStorage.setItem('w3s_token', response.data.token);
+      const response = await api.post('/users/login', credentials);
+      if (response.data.token) {
+        localStorage.setItem('w3s_token', response.data.token);
+      }
       return response.data;
     } catch (error) {
-      handleApiError(error);
+      console.error('Login error:', error.response || error);
+      throw error.response?.data || error.message || 'An unexpected error occurred';
     }
   },
-
-  logout: () => {
-    localStorage.removeItem('w3s_token');
-  },
-
-  // Projects
-  getProjects: async () => {
+  logout: async () => {
     try {
-      const response = await api.get('/projects');
-      return response.data;
+      // If your backend requires a logout request, uncomment the next line
+      // await api.post('/users/logout');
+      localStorage.removeItem('w3s_token');
+      return { success: true };
     } catch (error) {
-      handleApiError(error);
+      console.error('Logout error in w3sService:', error.response || error);
+      throw error.response?.data || error.message || 'An unexpected error occurred';
     }
   },
 
