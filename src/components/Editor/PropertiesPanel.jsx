@@ -7,6 +7,7 @@ import DimensionControls from "../Components/CommonControls/DimensionControls";
 import SpacingControls from "../Components/CommonControls/SpacingControls";
 import SpacingPreview from "../Components/CommonControls/SpacingPreview";
 import HeadingControls from "../Components/CommonControls/HeadingControls";
+import WhiteboardControls from "../Components/CommonControls/WhiteboardControls";
 import PanelNavBar from "./PanelNavBar";
 import ComponentTree from "./ComponentTree";
 import { updateGlobalSettings, updateComponent } from "../../features/editorSlice";
@@ -226,7 +227,13 @@ const PropertiesPanel = ({
             onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
           />
         );
-      // Add cases for other component types as needed
+        case "WHITEBOARD":
+          return (
+            <WhiteboardControls
+              component={selectedComponent}
+              onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+            />
+          );
       default:
         return (
           <div className="text-gray-500 italic">

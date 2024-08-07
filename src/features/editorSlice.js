@@ -60,6 +60,11 @@ const updateComponentById = (components, id, updates) => {
         },
       };
 
+      // Handle whiteboard updates
+      if (component.type === 'WHITEBOARD' && updates.props && updates.props.imageData) {
+        updatedComponent.props.imageData = updates.props.imageData;
+      }
+
       console.log(`Updating component ${id}:`, updatedComponent);
       return updatedComponent;
     }
@@ -123,6 +128,7 @@ export const editorSlice = createSlice({
           ...defaultStyle,
           ...otherProps.style,
         },
+        isDraggingDisabled: false, // Add this line
         ...otherProps,
       });
 
@@ -142,7 +148,13 @@ export const editorSlice = createSlice({
       console.log(`Updated component ${id}:`, findComponentById(updatedComponents, id));
     },
 
-    
+    toggleComponentDragging: (state, action) => {
+      const { id, isDraggingDisabled } = action.payload;
+      const updatedComponents = updateComponentById(state.components, id, {
+        isDraggingDisabled: isDraggingDisabled,
+      });
+      state.components = updatedComponents;
+    },
 
     updateComponentSpacing: (state, action) => {
       const { id, spacing } = action.payload;
@@ -293,6 +305,7 @@ export const {
   updateGlobalSpacing,
   updateHeadingProperties,
   updateResponsiveProperties,
+  toggleComponentDragging,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

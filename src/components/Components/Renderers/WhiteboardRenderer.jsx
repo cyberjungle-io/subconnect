@@ -1,19 +1,11 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { FaPen, FaEraser, FaTrash, FaSquare, FaCircle, FaMinus, FaLongArrowAltRight, FaFont, FaUndo, FaRedo, FaSave, FaUpload } from 'react-icons/fa';
+import { useDispatch } from 'react-redux';
+import { updateComponent } from '../../../features/editorSlice';
 
-const debounce = (func, wait) => {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-};
 
-const WhiteboardRenderer = ({ component, onUpdate }) => {
+
+const WhiteboardRenderer = ({ component }) => {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState(null);
@@ -26,60 +18,22 @@ const WhiteboardRenderer = ({ component, onUpdate }) => {
   const [strokeWidth, setStrokeWidth] = useState(component.props.strokeWidth || 2);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const dispatch = useDispatch();
 
+  const saveCanvasState = useCallback(() => {
+    const canvas = canvasRef.current;
+    const imageData = canvas.toDataURL();
+    dispatch(updateComponent({ id: component.id, updates: { props: { imageData } } }));
+  }, [dispatch, component.id]);
+  
   const saveToHistory = useCallback(() => {
     const canvas = canvasRef.current;
     const newHistory = history.slice(0, historyIndex + 1);
     newHistory.push(canvas.toDataURL());
     setHistory(newHistory);
     setHistoryIndex(newHistory.length - 1);
-  }, [history, historyIndex]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    setContext(ctx);
-    ctx.strokeStyle = component.props.strokeColor || '#000000';
-    ctx.lineWidth = component.props.strokeWidth || 2;
-
-    const resizeCanvas = () => {
-      const parent = canvas.parentElement;
-      canvas.width = parent.clientWidth;
-      canvas.height = parent.clientHeight;
-      ctx.strokeStyle = component.props.strokeColor || '#000000';
-      ctx.lineWidth = component.props.strokeWidth || 2;
-    };
-
-    resizeCanvas(); // Initial resize
-    window.addEventListener('resize', resizeCanvas);
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, [component.props.strokeColor, component.props.strokeWidth]);
-
-  useEffect(() => {
-    saveToHistory();
-  }, [saveToHistory]);
-
-  const startDrawing = (e) => {
-    setIsDrawing(true);
-    const rect = canvasRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    setStartPoint({ x, y });
-    if (tool === 'pen' || tool === 'eraser') {
-      draw(e);
-    }
-  };
-
-  const stopDrawing = () => {
-    setIsDrawing(false);
-    context.beginPath();
-    if (['rectangle', 'circle', 'line', 'arrow'].includes(tool)) {
-      drawShape(startPoint, { x: startPoint.x, y: startPoint.y });
-    }
-  };
+    saveCanvasState();
+  }, [history, historyIndex, saveCanvasState]);
 
   const drawShape = useCallback((start, end) => {
     if (!context) return;
@@ -112,26 +66,51 @@ const WhiteboardRenderer = ({ component, onUpdate }) => {
   }, [context, tool, strokeColor, strokeWidth]);
 
   const draw = useCallback((e) => {
-    if (!isDrawing) return;
+    if (component.isDraggingDisabled && isDrawing) {
+      const canvas = canvasRef.current;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const x = (e.clientX - rect.left) * scaleX;
+      const y = (e.clientY - rect.top) * scaleY;
 
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
-
-    if (tool === 'pen' || tool === 'eraser') {
-      context.strokeStyle = tool === 'eraser' ? (component.props.backgroundColor || '#ffffff') : strokeColor;
-      context.lineWidth = tool === 'eraser' ? 20 : strokeWidth;
-      context.lineTo(x, y);
-      context.stroke();
-      context.beginPath();
-      context.moveTo(x, y);
-    } else if (['rectangle', 'circle', 'line', 'arrow'].includes(tool)) {
-      drawShape(startPoint, { x, y });
+      if (tool === 'pen' || tool === 'eraser') {
+        context.strokeStyle = tool === 'eraser' ? (component.props.backgroundColor || '#ffffff') : strokeColor;
+        context.lineWidth = tool === 'eraser' ? 20 : strokeWidth;
+        context.lineTo(x, y);
+        context.stroke();
+        context.beginPath();
+        context.moveTo(x, y);
+      } else if (['rectangle', 'circle', 'line', 'arrow'].includes(tool)) {
+        drawShape(startPoint, { x, y });
+      }
     }
-  }, [isDrawing, tool, component.props, context, startPoint, strokeColor, strokeWidth, drawShape]);
+  }, [component.isDraggingDisabled, isDrawing, tool, context, startPoint, strokeColor, strokeWidth, drawShape, component.props.backgroundColor]);
+
+  const startDrawing = useCallback((e) => {
+    if (component.isDraggingDisabled) {
+      e.preventDefault();
+      setIsDrawing(true);
+      const rect = canvasRef.current.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      setStartPoint({ x, y });
+      if (tool === 'pen' || tool === 'eraser') {
+        draw(e);
+      }
+    }
+  }, [component.isDraggingDisabled, tool, draw]);
+
+  const stopDrawing = useCallback(() => {
+    if (component.isDraggingDisabled) {
+      setIsDrawing(false);
+      context.beginPath();
+      if (['rectangle', 'circle', 'line', 'arrow'].includes(tool)) {
+        drawShape(startPoint, { x: startPoint.x, y: startPoint.y });
+      }
+      saveCanvasState();
+    }
+  }, [component.isDraggingDisabled, context, tool, drawShape, startPoint, saveCanvasState]);
 
   const drawArrow = (start, end) => {
     const headlen = 10;
@@ -161,15 +140,15 @@ const WhiteboardRenderer = ({ component, onUpdate }) => {
     setTextInput(e.target.value);
   };
 
-  const addText = (e) => {
-    if (tool === 'text') {
+  const addText = useCallback((e) => {
+    if (component.isDraggingDisabled && tool === 'text') {
       const rect = canvasRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       setTextPosition({ x, y });
       setIsAddingText(true);
     }
-  };
+  }, [component.isDraggingDisabled, tool]);
 
   const confirmText = () => {
     if (textInput && textPosition) {
@@ -240,6 +219,33 @@ const WhiteboardRenderer = ({ component, onUpdate }) => {
     };
     reader.readAsDataURL(file);
   };
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    setContext(ctx);
+    ctx.strokeStyle = component.props.strokeColor || '#000000';
+    ctx.lineWidth = component.props.strokeWidth || 2;
+
+    const resizeCanvas = () => {
+      const parent = canvas.parentElement;
+      canvas.width = parent.clientWidth;
+      canvas.height = parent.clientHeight;
+      ctx.strokeStyle = component.props.strokeColor || '#000000';
+      ctx.lineWidth = component.props.strokeWidth || 2;
+    };
+
+    resizeCanvas(); // Initial resize
+    window.addEventListener('resize', resizeCanvas);
+
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, [component.props.strokeColor, component.props.strokeWidth]);
+
+  useEffect(() => {
+    saveToHistory();
+  }, [saveToHistory]);
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -312,6 +318,7 @@ const WhiteboardRenderer = ({ component, onUpdate }) => {
             position: 'absolute',
             top: 0,
             left: 0,
+            cursor: component.isDraggingDisabled ? 'crosshair' : 'move',
           }}
           onMouseDown={startDrawing}
           onMouseUp={stopDrawing}

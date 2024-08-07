@@ -16,6 +16,7 @@ const useDragDrop = (component, onMoveComponent, onAddChild) => {
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
+    canDrag: () => !component.isDraggingDisabled, // Add this line to disable dragging
   });
 
   const [{ isOver }, drop] = useDrop({
@@ -191,11 +192,18 @@ const ComponentRenderer = React.memo(({
   return (
     <div
       ref={(node) => {
-        dragRef(dropRef(node));
+        // Only apply drag ref if dragging is not disabled
+        if (!component.isDraggingDisabled) {
+          dragRef(dropRef(node));
+        } else {
+          dropRef(node);
+        }
       }}
       style={getComponentStyle()}
       onClick={handleClick}
-      className={`${isSelected ? "shadow-lg" : ""} ${isOver ? "bg-blue-100" : ""}`}
+      className={`${isSelected ? "shadow-lg" : ""} ${isOver ? "bg-blue-100" : ""} ${
+        component.isDraggingDisabled ? "cursor-default" : "cursor-move"
+      }`}
       data-id={component.id}
     >
       {renderContent()}
