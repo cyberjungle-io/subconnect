@@ -7,6 +7,7 @@ import TextRenderer from "./TextRenderer";
 import ImageRenderer from "./ImageRenderer";
 import ButtonRenderer from "./ButtonRenderer";
 import ChartRenderer from "./ChartRenderer";
+import WhiteboardRenderer from "./WhiteboardRenderer";
 
 const useDragDrop = (component, onMoveComponent, onAddChild) => {
   const [{ isDragging }, drag] = useDrag({
@@ -118,6 +119,8 @@ const ComponentRenderer = React.memo(({
         return <ButtonRenderer {...sharedProps} />;
       case "CHART":
         return <ChartRenderer {...sharedProps} />;
+      case "WHITEBOARD":
+        return <WhiteboardRenderer {...sharedProps} />;
       default:
         return null;
     }

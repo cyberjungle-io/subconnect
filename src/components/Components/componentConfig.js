@@ -1,4 +1,4 @@
-import { FaColumns, FaFont, FaImage, FaChartBar, FaTable, FaPlayCircle, FaSquare, FaHeading } from 'react-icons/fa';
+import { FaColumns, FaFont, FaImage, FaChartBar, FaTable, FaPlayCircle, FaSquare, FaHeading, FaChalkboard } from 'react-icons/fa';
 
 export const componentTypes = {
   FLEX_CONTAINER: 'FLEX_CONTAINER',
@@ -8,7 +8,8 @@ export const componentTypes = {
   BUTTON: 'BUTTON',
   CHART: 'CHART',
   TABLE: 'TABLE',
-  VIDEO: 'VIDEO'
+  VIDEO: 'VIDEO',
+  WHITEBOARD: 'WHITEBOARD',
 };
 
 export const componentConfig = {
@@ -119,5 +120,16 @@ export const componentConfig = {
     acceptsChildren: false,
     defaultSize: { width: 300, height: 200 },
     defaultContent: 'Video Placeholder'
+  },
+  [componentTypes.WHITEBOARD]: {
+    name: 'Whiteboard',
+    icon: FaChalkboard,
+    acceptsChildren: false,
+    defaultSize: { width: 500, height: 300 },
+    defaultProps: {
+      backgroundColor: '#ffffff',
+      strokeColor: '#000000',
+      strokeWidth: 2,
+    }
   },
 };
