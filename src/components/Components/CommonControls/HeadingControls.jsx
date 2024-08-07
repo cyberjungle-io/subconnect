@@ -1,7 +1,7 @@
 import React from 'react';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import ColorPicker from '../../common/ColorPicker';
-
+import ComponentControls from './ComponentControls';
 
 const HeadingControls = ({ component, onUpdate }) => {
   const [expandedSections, setExpandedSections] = React.useState({
@@ -9,7 +9,8 @@ const HeadingControls = ({ component, onUpdate }) => {
     typography: false,
     layout: false,
     advanced: false,
-    responsive: false
+    responsive: false,
+    component: false
   });
 
   const toggleSection = (section) => {
@@ -22,6 +23,15 @@ const HeadingControls = ({ component, onUpdate }) => {
       props: {
         ...component.props,
         [name]: type === 'checkbox' ? checked : value
+      }
+    });
+  };
+
+  const handleStyleChange = (styleUpdates) => {
+    onUpdate({
+      style: {
+        ...component.style,
+        ...styleUpdates
       }
     });
   };
@@ -161,7 +171,7 @@ const HeadingControls = ({ component, onUpdate }) => {
         </>
       ))}
 
-{renderSection("Layout", "layout", (
+      {renderSection("Layout", "layout", (
         <>
           <div className="mb-2">
             <label className="block text-sm font-medium text-gray-700">Text Align</label>
@@ -356,6 +366,13 @@ const HeadingControls = ({ component, onUpdate }) => {
             />
           </div>
         </>
+      ))}
+
+      {renderSection("Component", "component", (
+        <ComponentControls
+          style={component.style}
+          onStyleChange={handleStyleChange}
+        />
       ))}
     </div>
   );

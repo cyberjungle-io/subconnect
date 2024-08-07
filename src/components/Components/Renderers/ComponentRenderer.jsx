@@ -8,6 +8,7 @@ import ImageRenderer from "./ImageRenderer";
 import ButtonRenderer from "./ButtonRenderer";
 import ChartRenderer from "./ChartRenderer";
 import WhiteboardRenderer from "./WhiteboardRenderer";
+import VideoRenderer from "./VideoRenderer";
 
 const useDragDrop = (component, onMoveComponent, onAddChild) => {
   const [{ isDragging }, drag] = useDrag({
@@ -122,6 +123,8 @@ const ComponentRenderer = React.memo(({
         return <ChartRenderer {...sharedProps} />;
       case "WHITEBOARD":
         return <WhiteboardRenderer {...sharedProps} />;
+      case "VIDEO":
+        return <VideoRenderer {...sharedProps} />;
       default:
         return null;
     }
@@ -132,11 +135,21 @@ const ComponentRenderer = React.memo(({
     const componentStyle = {
       ...style,
       position: 'relative',
-      border: isSelected ? "2px solid blue" : "1px solid #ccc",
+      border: isSelected 
+        ? "2px solid blue" 
+        : style.borderWidth && style.borderStyle
+          ? `${style.borderWidth} ${style.borderStyle} ${style.borderColor || '#000'}`
+          : "1px solid #ccc",
+      borderRadius: style.borderRadius || '0px',
       padding: style.padding || "0px",
       margin: style.margin || "0px",
       overflow: "hidden",
       boxSizing: 'border-box',
+      backgroundColor: style.backgroundColor || 'transparent',
+      boxShadow: style.boxShadow || 'none',
+      opacity: style.opacity || 1,
+      transform: style.transform || 'none',
+      transition: style.transition || 'none',
     };
   
     if (type === "FLEX_CONTAINER") {

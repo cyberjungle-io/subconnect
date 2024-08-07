@@ -8,6 +8,8 @@ import SpacingControls from "../Components/CommonControls/SpacingControls";
 import SpacingPreview from "../Components/CommonControls/SpacingPreview";
 import HeadingControls from "../Components/CommonControls/HeadingControls";
 import WhiteboardControls from "../Components/CommonControls/WhiteboardControls";
+import TextControls from "../Components/CommonControls/TextControls";
+import VideoControls from "../Components/CommonControls/VideoControls";
 import PanelNavBar from "./PanelNavBar";
 import ComponentTree from "./ComponentTree";
 import { updateGlobalSettings, updateComponent } from "../../features/editorSlice";
@@ -227,13 +229,27 @@ const PropertiesPanel = ({
             onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
           />
         );
-        case "WHITEBOARD":
-          return (
-            <WhiteboardControls
-              component={selectedComponent}
-              onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
-            />
-          );
+      case "WHITEBOARD":
+        return (
+          <WhiteboardControls
+            component={selectedComponent}
+            onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+          />
+        );
+      case "TEXT":
+        return (
+          <TextControls
+            component={selectedComponent}
+            onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+          />
+        );
+      case "VIDEO":
+        return (
+          <VideoControls
+            component={selectedComponent}
+            onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+          />
+        );
       default:
         return (
           <div className="text-gray-500 italic">

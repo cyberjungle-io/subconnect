@@ -118,8 +118,21 @@ export const componentConfig = {
     name: 'Video',
     icon: FaPlayCircle,
     acceptsChildren: false,
-    defaultSize: { width: 300, height: 200 },
-    defaultContent: 'Video Placeholder'
+    defaultSize: { width: 560, height: 315 },
+    defaultContent: '',
+    defaultProps: {
+      youtubeUrl: '',
+      autoplay: false,
+      controls: true,
+      loop: false,
+      mute: false,
+      startTime: 0,
+      endTime: 0
+    },
+    sanitizeUrl: (url) => {
+      const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+      return youtubeRegex.test(url) ? url : '';
+    }
   },
   [componentTypes.WHITEBOARD]: {
     name: 'Whiteboard',
