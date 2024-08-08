@@ -29,6 +29,7 @@ const initialState = {
       gap: "0px",
     },
   },
+  mode: 'edit', // Added this line
 };
 
 const findComponentById = (components, id) => {
@@ -271,6 +272,9 @@ export const editorSlice = createSlice({
       });
       state.components = updatedComponents;
     },
+    setEditorMode: (state, action) => {
+      state.mode = action.payload;
+    }, // Added this line
   },
 });
 
@@ -306,6 +310,7 @@ export const {
   updateHeadingProperties,
   updateResponsiveProperties,
   toggleComponentDragging,
+  setEditorMode, // Added this line
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

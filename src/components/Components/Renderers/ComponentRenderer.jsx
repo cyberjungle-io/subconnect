@@ -47,10 +47,11 @@ const ComponentRenderer = React.memo(({
   onAddChild,
   onMoveComponent,
   depth = 0,
-  selectedIds,
+  selectedIds = [], // Provide a default empty array
   isFlexChild = false,
   parent = null,
   globalComponentLayout,
+  isViewMode = false,
 }) => {
   const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild);
 
@@ -60,7 +61,7 @@ const ComponentRenderer = React.memo(({
     onSelect(component.id, isMultiSelect);
   }, [component.id, onSelect]);
 
-  const isThisComponentSelected = selectedIds.includes(component.id);
+  const isThisComponentSelected = selectedIds?.includes(component.id) || false;
 
   const getContainerStyles = () => {
     if (component.type !== "FLEX_CONTAINER") return {};
@@ -202,6 +203,14 @@ const ComponentRenderer = React.memo(({
     return componentStyle;
   };
 
+  if (isViewMode) {
+    return (
+      <div style={getComponentStyle()}>
+        {renderContent()}
+      </div>
+    );
+  }
+
   return (
     <div
       ref={(node) => {
@@ -214,13 +223,13 @@ const ComponentRenderer = React.memo(({
       }}
       style={getComponentStyle()}
       onClick={handleClick}
-      className={`${isSelected ? "shadow-lg" : ""} ${isOver ? "bg-blue-100" : ""} ${
+      className={`${isThisComponentSelected ? "shadow-lg" : ""} ${isOver ? "bg-blue-100" : ""} ${
         component.isDraggingDisabled ? "cursor-default" : "cursor-move"
       }`}
       data-id={component.id}
     >
       {renderContent()}
-      {isSelected && (
+      {isThisComponentSelected && (
         <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs px-1 z-10">
           {component.type}
         </div>

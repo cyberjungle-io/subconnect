@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { FaChevronLeft } from "react-icons/fa";
+import { FaEye, FaChevronLeft } from "react-icons/fa";
 import PropertyTabs from "./PropertyTabs";
 import ComponentPalette from "../Components/ComponentPalette";
 import DimensionControls from "../Components/CommonControls/DimensionControls";
@@ -12,7 +12,7 @@ import TextControls from "../Components/CommonControls/TextControls";
 import VideoControls from "../Components/CommonControls/VideoControls";
 import PanelNavBar from "./PanelNavBar";
 import ComponentTree from "./ComponentTree";
-import { updateGlobalSettings, updateComponent } from "../../features/editorSlice";
+import { updateGlobalSettings, updateComponent, setEditorMode } from "../../features/editorSlice";
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -28,6 +28,7 @@ const PropertiesPanel = ({
 }) => {
   const dispatch = useDispatch();
   const globalSettings = useSelector((state) => state.editor.globalSettings);
+  const { mode } = useSelector((state) => state.editor);
   const [activePanel, setActivePanel] = useState("properties");
   const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
 
@@ -91,6 +92,14 @@ const PropertiesPanel = ({
   const handleGlobalSettingChange = (e) => {
     const { name, value } = e.target;
     dispatch(updateGlobalSettings({ [name]: value }));
+  };
+
+  const toggleMode = () => {
+    dispatch(setEditorMode(mode === 'edit' ? 'view' : 'edit'));
+  };
+
+  const handleEnterViewMode = () => {
+    dispatch(setEditorMode('view'));
   };
 
   const renderGlobalSettings = () => (
@@ -299,9 +308,19 @@ const PropertiesPanel = ({
 
   return (
     <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
-      <h2 className="text-lg font-bold text-gray-800 mb-4">
-        {activePanel === "globalSettings" ? "Global Settings" : "Properties"}
-      </h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-bold text-gray-800">
+          {activePanel === "globalSettings" ? "Global Settings" : "Properties"}
+        </h2>
+        <button
+          onClick={handleEnterViewMode}
+          className="px-3 py-1 bg-blue-500 text-white rounded-md flex items-center"
+          title="Switch to View Mode"
+        >
+          <FaEye className="mr-2" />
+          View
+        </button>
+      </div>
       <PanelNavBar
         onShowComponentPalette={() => setActivePanel("componentPalette")}
         onShowGlobalSettings={() => setActivePanel("globalSettings")}

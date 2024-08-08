@@ -7,6 +7,9 @@ import PropertiesPanel from './PropertiesPanel';
 import Toolbar from './Toolbar';
 import DataModal from './DataModal';
 import ProjectModal from '../Components/Projects/ProjectModal';
+import ViewerMode from '../Viewers/ViewerMode';
+import { FaEdit } from 'react-icons/fa';
+import { setEditorMode } from '../../features/editorSlice';
 
 import {
   addComponent,
@@ -26,7 +29,7 @@ import {
 
 const MainEditor = () => {
   const dispatch = useDispatch();
-  const { components, selectedIds } = useSelector(state => state.editor);
+  const { components, selectedIds, mode } = useSelector(state => state.editor);
   const [isPanelVisible, setIsPanelVisible] = useState(true);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
@@ -146,44 +149,66 @@ const MainEditor = () => {
     return null;
   };
 
+  const handleEnterEditMode = () => {
+    dispatch(setEditorMode('edit'));
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="flex h-screen">
-        
+      <div className="flex h-screen relative">
         <div className="flex flex-col flex-grow">
-          <Toolbar 
-            onAlign={handleAlign}
-            onDistribute={handleDistribute}
-            onCopy={handleCopy}
-            onPaste={handlePaste}
-          />
+          {mode === 'edit' && (
+            <Toolbar 
+              onAlign={handleAlign}
+              onDistribute={handleDistribute}
+              onCopy={handleCopy}
+              onPaste={handlePaste}
+            />
+          )}
           <div className="flex flex-grow overflow-hidden">
-          <div className="flex-grow overflow-auto">
-          <Canvas
-            components={components}
-            selectedIds={selectedIds}
-            onSelectComponent={handleSelectComponent}
-            onClearSelection={handleClearSelection}
-            
-            onUpdateComponent={handleUpdateComponent}
-            onAddComponent={handleAddComponent}
-            onMoveComponent={handleMoveComponent}
-          />
+            <div className="flex-grow overflow-auto">
+              {mode === 'edit' ? (
+                <Canvas
+                  components={components}
+                  selectedIds={selectedIds || []}
+                  onSelectComponent={handleSelectComponent}
+                  onClearSelection={handleClearSelection}
+                  onUpdateComponent={handleUpdateComponent}
+                  onAddComponent={handleAddComponent}
+                  onMoveComponent={handleMoveComponent}
+                />
+              ) : (
+                <ViewerMode components={components} />
+              )}
+            </div>
+            {mode === 'edit' && (
+              <PropertiesPanel
+                selectedComponent={findComponentById(components, selectedIds?.[0])}
+                onUpdateComponent={handleUpdateComponent}
+                onDeleteComponent={handleDeleteComponent}
+                onAddChildComponent={handleAddComponent}
+                onOpenProjectModal={handleOpenProjectModal}
+                onAddComponent={handleAddComponent}
+                isVisible={isPanelVisible}
+                onToggleVisibility={handleTogglePanel}
+                components={components}
+                onSelectComponent={handleSelectComponent}
+                onOpenDataModal={handleOpenDataModal}
+                onUpdateGlobalSpacing={handleUpdateGlobalSpacing}
+              />
+            )}
+          </div>
         </div>
-        <PropertiesPanel
-          selectedComponent={findComponentById(components, selectedIds[0])}
-          onUpdateComponent={handleUpdateComponent}
-          onDeleteComponent={handleDeleteComponent}
-          onAddChildComponent={handleAddComponent}
-          onOpenProjectModal={handleOpenProjectModal}
-          onAddComponent={handleAddComponent}
-          isVisible={isPanelVisible}
-          onToggleVisibility={handleTogglePanel}
-              components={components}
-              onSelectComponent={handleSelectComponent}
-              onOpenDataModal={handleOpenDataModal}
-              onUpdateGlobalSpacing={handleUpdateGlobalSpacing}
-        /></div></div>
+        {mode === 'view' && (
+          <button
+            onClick={handleEnterEditMode}
+            className="absolute top-4 right-4 px-3 py-1 bg-blue-500 text-white rounded-md flex items-center"
+            title="Switch to Edit Mode"
+          >
+            <FaEdit className="mr-2" />
+            Edit
+          </button>
+        )}
       </div>
       {isProjectModalOpen && (
       <ProjectModal
