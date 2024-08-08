@@ -1,15 +1,32 @@
-import React from 'react';
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaAlignLeft, FaAlignCenter, FaAlignRight, FaBold, FaItalic, FaUnderline, FaChevronDown, FaChevronRight, FaUndo } from 'react-icons/fa';
+import { TbOverline, TbStrikethrough } from 'react-icons/tb';
 import ColorPicker from '../../common/ColorPicker';
 import ComponentControls from './ComponentControls';
 
+const FONT_OPTIONS = [
+  { value: 'Arial, sans-serif', label: 'Arial' },
+  { value: 'Helvetica, Arial, sans-serif', label: 'Helvetica' },
+  { value: 'Georgia, serif', label: 'Georgia' },
+  { value: '"Times New Roman", Times, serif', label: 'Times New Roman' },
+  { value: '"Courier New", Courier, monospace', label: 'Courier New' },
+  { value: 'Verdana, Geneva, sans-serif', label: 'Verdana' },
+  { value: '"Trebuchet MS", Helvetica, sans-serif', label: 'Trebuchet MS' },
+  { value: '"Arial Black", Gadget, sans-serif', label: 'Arial Black' },
+  { value: '"Palatino Linotype", "Book Antiqua", Palatino, serif', label: 'Palatino' },
+  { value: '"Lucida Sans Unicode", "Lucida Grande", sans-serif', label: 'Lucida Sans' },
+  { value: 'Tahoma, Geneva, sans-serif', label: 'Tahoma' },
+  { value: '"Gill Sans", "Gill Sans MT", sans-serif', label: 'Gill Sans' },
+  { value: 'Impact, Charcoal, sans-serif', label: 'Impact' },
+  { value: '"Century Gothic", sans-serif', label: 'Century Gothic' },
+  { value: 'custom', label: 'Custom Font' },
+];
+
 const HeadingControls = ({ component, onUpdate }) => {
+  const [customFont, setCustomFont] = useState('');
   const [expandedSections, setExpandedSections] = React.useState({
-    basic: true,
-    typography: false,
-    layout: false,
+    general: true,
     advanced: false,
-    responsive: false,
     component: false
   });
 
@@ -27,11 +44,61 @@ const HeadingControls = ({ component, onUpdate }) => {
     });
   };
 
-  const handleStyleChange = (styleUpdates) => {
+  const handleStyleChange = (name, value) => {
     onUpdate({
       style: {
         ...component.style,
-        ...styleUpdates
+        [name]: value
+      }
+    });
+  };
+
+  const handleHeadingChange = (level, fontSize) => {
+    onUpdate({
+      props: {
+        ...component.props,
+        level: level
+      },
+      style: {
+        ...component.style,
+        fontSize: fontSize
+      }
+    });
+  };
+
+  const handleFontStyleChange = (style) => {
+    let newProps = { ...component.props };
+    
+    switch (style) {
+      case 'bold':
+        newProps.fontWeight = newProps.fontWeight === 'bold' ? 'normal' : 'bold';
+        break;
+      case 'italic':
+        newProps.fontStyle = newProps.fontStyle === 'italic' ? 'normal' : 'italic';
+        break;
+      case 'underline':
+      case 'overline':
+      case 'line-through':
+        const currentDecoration = newProps.textDecoration || 'none';
+        if (currentDecoration.includes(style)) {
+          newProps.textDecoration = currentDecoration.replace(style, '').trim();
+          if (newProps.textDecoration === '') newProps.textDecoration = 'none';
+        } else {
+          newProps.textDecoration = currentDecoration === 'none' ? style : `${currentDecoration} ${style}`;
+        }
+        break;
+      default:
+        break;
+    }
+
+    onUpdate({ props: newProps });
+  };
+
+  const handleReset = (property, defaultValue) => {
+    onUpdate({
+      props: {
+        ...component.props,
+        [property]: defaultValue
       }
     });
   };
@@ -53,321 +120,276 @@ const HeadingControls = ({ component, onUpdate }) => {
     </div>
   );
 
+  // General Section
+  const generalContent = (
+    <>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Heading Text</label>
+        <input
+          type="text"
+          name="content"
+          value={component.content}
+          onChange={(e) => onUpdate({ content: e.target.value })}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          placeholder="Enter heading text"
+        />
+      </div>
+
+      <div className="mb-2">
+        <label className="block text-sm font-medium text-gray-700">Font Family</label>
+        <select
+          name="fontFamily"
+          value={component.props.fontFamily}
+          onChange={handleChange}
+          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+        >
+          {FONT_OPTIONS.map(font => (
+            <option key={font.value} value={font.value} style={{fontFamily: font.value}}>
+              {font.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {component.props.fontFamily === 'custom' && (
+        <div className="mt-2">
+          <input
+            type="text"
+            value={customFont}
+            onChange={(e) => {
+              setCustomFont(e.target.value);
+              handleChange({ target: { name: 'fontFamily', value: e.target.value } });
+            }}
+            placeholder="Enter custom font name"
+            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          />
+        </div>
+      )}
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">Font Style</label>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => handleFontStyleChange('bold')}
+            className={`p-2 rounded ${component.props.fontWeight === 'bold' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
+          >
+            <FaBold />
+          </button>
+          <button
+            onClick={() => handleFontStyleChange('italic')}
+            className={`p-2 rounded ${component.props.fontStyle === 'italic' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
+          >
+            <FaItalic />
+          </button>
+          <button
+            onClick={() => handleFontStyleChange('underline')}
+            className={`p-2 rounded ${component.props.textDecoration?.includes('underline') ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
+          >
+            <FaUnderline />
+          </button>
+          <button
+            onClick={() => handleFontStyleChange('overline')}
+            className={`p-2 rounded ${component.props.textDecoration?.includes('overline') ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
+          >
+            <TbOverline />
+          </button>
+          <button
+            onClick={() => handleFontStyleChange('line-through')}
+            className={`p-2 rounded ${component.props.textDecoration?.includes('line-through') ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
+          >
+            <TbStrikethrough />
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">Horizontal Alignment</label>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => handleStyleChange('textAlign', 'left')}
+            className={`p-2 rounded ${component.style.textAlign === 'left' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
+          >
+            <FaAlignLeft />
+          </button>
+          <button
+            onClick={() => handleStyleChange('textAlign', 'center')}
+            className={`p-2 rounded ${component.style.textAlign === 'center' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
+          >
+            <FaAlignCenter />
+          </button>
+          <button
+            onClick={() => handleStyleChange('textAlign', 'right')}
+            className={`p-2 rounded ${component.style.textAlign === 'right' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
+          >
+            <FaAlignRight />
+          </button>
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Heading Size</label>
+        <select
+          value={`${component.props.level}|${component.style.fontSize}`}
+          onChange={(e) => {
+            const [level, fontSize] = e.target.value.split('|');
+            handleHeadingChange(level, fontSize);
+          }}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
+          <option value="h1|2rem">H1 (2rem)</option>
+          <option value="h2|1.5rem">H2 (1.5rem)</option>
+          <option value="h3|1.17rem">H3 (1.17rem)</option>
+          <option value="h4|1rem">H4 (1rem)</option>
+          <option value="h5|0.83rem">H5 (0.83rem)</option>
+          <option value="h6|0.67rem">H6 (0.67rem)</option>
+        </select>
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+        <ColorPicker
+          color={component.props.color}
+          onChange={(color) => handleChange({ target: { name: 'color', value: color } })}
+        />
+      </div>
+    </>
+  );
+
+  // Advanced Section
+  const advancedContent = (
+    <>
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <label className="text-sm font-medium text-gray-700">Line Height</label>
+          <button
+            onClick={() => handleReset('lineHeight', 1.2)}
+            className="text-xs bg-gray-200 hover:bg-gray-300 rounded px-2 py-1"
+          >
+            <FaUndo className="inline mr-1" /> Reset
+          </button>
+        </div>
+        <input
+          type="range"
+          name="lineHeight"
+          min="0.5"
+          max="5"
+          step="0.1"
+          value={component.props.lineHeight || 1.2}
+          onChange={(e) => handleChange({ target: { name: 'lineHeight', value: parseFloat(e.target.value) } })}
+          className="w-full"
+        />
+        <span className="text-sm">{component.props.lineHeight || 1.2}</span>
+      </div>
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <label className="text-sm font-medium text-gray-700">Letter Spacing</label>
+          <button
+            onClick={() => handleReset('letterSpacing', 0)}
+            className="text-xs bg-gray-200 hover:bg-gray-300 rounded px-2 py-1"
+          >
+            <FaUndo className="inline mr-1" /> Reset
+          </button>
+        </div>
+        <input
+          type="range"
+          name="letterSpacing"
+          min="-0.5"
+          max="2"
+          step="0.01"
+          value={parseFloat(component.props.letterSpacing) || 0}
+          onChange={(e) => handleChange({ target: { name: 'letterSpacing', value: e.target.value + 'em' } })}
+          className="w-full"
+        />
+        <span className="text-sm">{component.props.letterSpacing || '0em'}</span>
+      </div>
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <label className="text-sm font-medium text-gray-700">Word Spacing</label>
+          <button
+            onClick={() => handleReset('wordSpacing', 0)}
+            className="text-xs bg-gray-200 hover:bg-gray-300 rounded px-2 py-1"
+          >
+            <FaUndo className="inline mr-1" /> Reset
+          </button>
+        </div>
+        <input
+          type="range"
+          name="wordSpacing"
+          min="-1"
+          max="5"
+          step="0.1"
+          value={parseFloat(component.props.wordSpacing) || 0}
+          onChange={(e) => handleChange({ target: { name: 'wordSpacing', value: e.target.value + 'em' } })}
+          className="w-full"
+        />
+        <span className="text-sm">{component.props.wordSpacing || '0em'}</span>
+      </div>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">Text Shadow</label>
+        <div className="flex space-x-2">
+          <input
+            type="number"
+            placeholder="X"
+            className="w-1/4 px-2 py-1 border rounded"
+            value={component.props.textShadowX || 0}
+            onChange={(e) => handleChange({ target: { name: 'textShadowX', value: e.target.value } })}
+          />
+          <input
+            type="number"
+            placeholder="Y"
+            className="w-1/4 px-2 py-1 border rounded"
+            value={component.props.textShadowY || 0}
+            onChange={(e) => handleChange({ target: { name: 'textShadowY', value: e.target.value } })}
+          />
+          <input
+            type="number"
+            placeholder="Blur"
+            className="w-1/4 px-2 py-1 border rounded"
+            value={component.props.textShadowBlur || 0}
+            onChange={(e) => handleChange({ target: { name: 'textShadowBlur', value: e.target.value } })}
+          />
+          <input
+            type="color"
+            className="w-1/4"
+            value={component.props.textShadowColor || '#000000'}
+            onChange={(e) => handleChange({ target: { name: 'textShadowColor', value: e.target.value } })}
+          />
+        </div>
+      </div>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">Hover Effect</label>
+        <select
+          name="hoverEffect"
+          value={component.props.hoverEffect || 'none'}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
+          <option value="none">None</option>
+          <option value="underline">Underline</option>
+          <option value="color">Color Change</option>
+          <option value="scale">Scale</option>
+        </select>
+      </div>
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">Click Action</label>
+        <select
+          name="clickAction"
+          value={component.props.clickAction || 'none'}
+          onChange={handleChange}
+          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
+          <option value="none">None</option>
+          <option value="smoothScroll">Smooth Scroll</option>
+          <option value="openModal">Open Modal</option>
+        </select>
+      </div>
+    </>
+  );
+
   return (
     <div className="heading-controls">
-      {renderSection("Basic Settings", "basic", (
-        <>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Heading Level</label>
-            <select
-              name="level"
-              value={component.props.level}
-              onChange={handleChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-            >
-              {['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].map(level => (
-                <option key={level} value={level}>{level.toUpperCase()}</option>
-              ))}
-            </select>
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Content</label>
-            <input
-              type="text"
-              name="content"
-              value={component.content}
-              onChange={(e) => onUpdate({ content: e.target.value })}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-        </>
-      ))}
-
-      {renderSection("Typography", "typography", (
-        <>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Font Family</label>
-            <select
-              name="fontFamily"
-              value={component.props.fontFamily}
-              onChange={handleChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-            >
-              {['Arial, sans-serif', 'Helvetica, sans-serif', 'Times New Roman, serif', 'Courier New, monospace'].map(font => (
-                <option key={font} value={font}>{font.split(',')[0]}</option>
-              ))}
-            </select>
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Font Size</label>
-            <input
-              type="text"
-              name="fontSize"
-              value={component.props.fontSize}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Font Weight</label>
-            <select
-              name="fontWeight"
-              value={component.props.fontWeight}
-              onChange={handleChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-            >
-              {['normal', 'bold', '100', '200', '300', '400', '500', '600', '700', '800', '900'].map(weight => (
-                <option key={weight} value={weight}>{weight}</option>
-              ))}
-            </select>
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Font Style</label>
-            <select
-              name="fontStyle"
-              value={component.props.fontStyle}
-              onChange={handleChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-            >
-              <option value="normal">Normal</option>
-              <option value="italic">Italic</option>
-            </select>
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Text Decoration</label>
-            <select
-              name="textDecoration"
-              value={component.props.textDecoration}
-              onChange={handleChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-            >
-              <option value="none">None</option>
-              <option value="underline">Underline</option>
-              <option value="overline">Overline</option>
-              <option value="line-through">Line-through</option>
-            </select>
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Text Transform</label>
-            <select
-              name="textTransform"
-              value={component.props.textTransform}
-              onChange={handleChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-            >
-              <option value="none">None</option>
-              <option value="uppercase">Uppercase</option>
-              <option value="lowercase">Lowercase</option>
-              <option value="capitalize">Capitalize</option>
-            </select>
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Color</label>
-            <ColorPicker
-              color={component.props.color}
-              onChange={(color) => handleChange({ target: { name: 'color', value: color } })}
-            />
-          </div>
-        </>
-      ))}
-
-      {renderSection("Layout", "layout", (
-        <>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Text Align</label>
-            <select
-              name="textAlign"
-              value={component.props.textAlign}
-              onChange={handleChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-            >
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-              <option value="justify">Justify</option>
-            </select>
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Vertical Align</label>
-            <select
-              name="verticalAlign"
-              value={component.props.verticalAlign}
-              onChange={handleChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-            >
-              <option value="top">Top</option>
-              <option value="middle">Middle</option>
-              <option value="bottom">Bottom</option>
-            </select>
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Width</label>
-            <input
-              type="text"
-              name="width"
-              value={component.style.width || component.props.width}
-              onChange={(e) => onUpdate({ style: { ...component.style, width: e.target.value } })}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Height</label>
-            <input
-              type="text"
-              name="height"
-              value={component.style.height || component.props.height}
-              onChange={(e) => onUpdate({ style: { ...component.style, height: e.target.value } })}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-        </>
-      ))}
-
-      {renderSection("Advanced", "advanced", (
-        <>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Line Height</label>
-            <input
-              type="text"
-              name="lineHeight"
-              value={component.props.lineHeight}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Letter Spacing</label>
-            <input
-              type="text"
-              name="letterSpacing"
-              value={component.props.letterSpacing}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Word Spacing</label>
-            <input
-              type="text"
-              name="wordSpacing"
-              value={component.props.wordSpacing}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Text Shadow</label>
-            <input
-              type="text"
-              name="textShadow"
-              value={component.props.textShadow}
-              onChange={handleChange}
-              placeholder="e.g., 2px 2px 2px #000000"
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Background Color</label>
-            <ColorPicker
-              color={component.props.backgroundColor}
-              onChange={(color) => handleChange({ target: { name: 'backgroundColor', value: color } })}
-            />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Hover Effect</label>
-            <select
-              name="hoverEffect"
-              value={component.props.hoverEffect}
-              onChange={handleChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-            >
-              <option value="none">None</option>
-              <option value="underline">Underline</option>
-              <option value="color">Color Change</option>
-              <option value="scale">Scale</option>
-            </select>
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Click Action</label>
-            <select
-              name="clickAction"
-              value={component.props.clickAction}
-              onChange={handleChange}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-            >
-              <option value="none">None</option>
-              <option value="smoothScroll">Smooth Scroll</option>
-              <option value="openModal">Open Modal</option>
-            </select>
-          </div>
-        </>
-      ))}
-
-      {renderSection("Responsive", "responsive", (
-        <>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Hide on Mobile</label>
-            <input
-              type="checkbox"
-              name="responsiveHide.mobile"
-              checked={component.props.responsiveHide.mobile}
-              onChange={handleChange}
-              className="mt-1 focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
-            />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Hide on Tablet</label>
-            <input
-              type="checkbox"
-              name="responsiveHide.tablet"
-              checked={component.props.responsiveHide.tablet}
-              onChange={handleChange}
-              className="mt-1 focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
-            />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Hide on Desktop</label>
-            <input
-              type="checkbox"
-              name="responsiveHide.desktop"
-              checked={component.props.responsiveHide.desktop}
-              onChange={handleChange}
-              className="mt-1 focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
-            />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Mobile Font Size</label>
-            <input
-              type="text"
-              name="responsiveFontSize.mobile"
-              value={component.props.responsiveFontSize.mobile}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Tablet Font Size</label>
-            <input
-              type="text"
-              name="responsiveFontSize.tablet"
-              value={component.props.responsiveFontSize.tablet}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700">Desktop Font Size</label>
-            <input
-              type="text"
-              name="responsiveFontSize.desktop"
-              value={component.props.responsiveFontSize.desktop}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            />
-          </div>
-        </>
-      ))}
-
+      {renderSection("General", "general", generalContent)}
+      {renderSection("Advanced", "advanced", advancedContent)}
       {renderSection("Component", "component", (
         <ComponentControls
           style={component.style}

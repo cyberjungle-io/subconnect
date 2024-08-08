@@ -42,7 +42,6 @@ export const componentConfig = {
       color: '#000000',
       backgroundColor: 'transparent',
       textAlign: 'left',
-      verticalAlign: 'top',
       textIndent: '0px',
       lineHeight: '1.2',
       letterSpacing: 'normal',
@@ -64,6 +63,12 @@ export const componentConfig = {
         tablet: '28px',
         desktop: '32px'
       }
+    },
+    style: {
+      textAlign: 'left',
+      fontSize: '2rem',
+      verticalAlign: 'top',
+      // ... (keep other style properties)
     }
   },
   [componentTypes.TEXT]: {
