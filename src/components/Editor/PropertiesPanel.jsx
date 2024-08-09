@@ -25,6 +25,7 @@ const PropertiesPanel = ({
   onOpenDataModal,
   onOpenProjectModal,
   onUpdateGlobalSpacing,
+  currentProject,
 }) => {
   const dispatch = useDispatch();
   const globalSettings = useSelector((state) => state.editor.globalSettings);
@@ -344,6 +345,12 @@ const PropertiesPanel = ({
       <div className="flex-grow overflow-y-auto">
         {renderPanelContent()}
       </div>
+      {currentProject && (
+        <div className="mt-4 p-2 bg-white rounded shadow">
+          <h3 className="text-md font-semibold">Current Project</h3>
+          <p className="text-sm text-gray-700">{currentProject.name}</p>
+        </div>
+      )}
     </div>
   );
 };

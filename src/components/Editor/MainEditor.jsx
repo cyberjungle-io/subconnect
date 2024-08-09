@@ -30,9 +30,11 @@ import {
 const MainEditor = () => {
   const dispatch = useDispatch();
   const { components, selectedIds, mode } = useSelector(state => state.editor);
+  const currentProject = useSelector(state => state.w3s.currentProject.data); // Fetch current project from Redux
   const [isPanelVisible, setIsPanelVisible] = useState(true);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const globalSettings = useSelector(state => state.editor.globalSettings); // Get globalSettings from Redux
 
   const handleOpenProjectModal = useCallback(() => {
     console.log('Attempting to open Project Modal');
@@ -192,9 +194,11 @@ const MainEditor = () => {
                 isVisible={isPanelVisible}
                 onToggleVisibility={handleTogglePanel}
                 components={components}
+                globalSettings={globalSettings} // Pass globalSettings
                 onSelectComponent={handleSelectComponent}
                 onOpenDataModal={handleOpenDataModal}
                 onUpdateGlobalSpacing={handleUpdateGlobalSpacing}
+                currentProject={currentProject} // Pass current project here
               />
             )}
           </div>

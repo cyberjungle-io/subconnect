@@ -1,19 +1,30 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import ProjectList from './ProjectList';
 import ProjectForm from './ProjectForm';
 import { FaTimes } from 'react-icons/fa';
+import { fetchProjects, setCurrentProject } from '../../../w3s/w3sSlice';
 
 const ProjectModal = ({ isOpen, onClose }) => {
-  console.log('ProjectModal render, isOpen:', isOpen, 'type:', typeof isOpen);
+  const dispatch = useDispatch();
+  const { list: projects, status } = useSelector((state) => state.w3s.projects);
+  const currentProject = useSelector((state) => state.w3s.currentProject.data);
 
-  if (!isOpen) {
-    console.log('ProjectModal not rendering due to !isOpen');
-    return null;
-  }
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(fetchProjects());
+    }
+  }, [status, dispatch]);
+
+  const handleProjectChange = (e) => {
+    const selectedProject = projects.find(project => project._id === e.target.value);
+    dispatch(setCurrentProject(selectedProject));
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
-      {console.log('ProjectModal rendering content')}
       <div className="bg-white w-3/4 h-3/4 rounded-lg flex flex-col overflow-hidden">
         <div className="p-4 bg-gray-100 flex justify-between items-center">
           <h2 className="text-xl font-bold">Projects</h2>
@@ -22,6 +33,24 @@ const ProjectModal = ({ isOpen, onClose }) => {
           </button>
         </div>
         <div className="flex-grow overflow-auto p-4">
+          <div className="mb-4">
+            <label htmlFor="projectSelect" className="block text-sm font-medium text-gray-700">
+              Select Project
+            </label>
+            <select
+              id="projectSelect"
+              value={currentProject?._id || ''}
+              onChange={handleProjectChange}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            >
+              <option value="">Select a project</option>
+              {projects.map((project) => (
+                <option key={project._id} value={project._id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <ProjectList />
           <div className="mt-4">
             <h3 className="text-lg font-semibold mb-2">Create New Project</h3>

@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchProject } from '../../w3s';
 import ProjectForm from './ProjectForm';
+import PageList from './PageList';
 
 const ProjectDetails = () => {
   const { id } = useParams();
@@ -46,7 +47,9 @@ const ProjectDetails = () => {
         </div>
       )}
       
-      {/* Add more project details here */}
+      <div className="mt-8">
+        <PageList projectId={currentProject._id} />
+      </div>
     </div>
   );
 };

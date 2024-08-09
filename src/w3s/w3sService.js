@@ -73,11 +73,28 @@ const w3sService = {
     }
   },
 
+  getProjects: async () => {
+    try {
+      const response = await api.get('/projects');
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
   createProject: async (projectData) => {
     try {
-      const dataWithDefaultCreator = { ...projectData, createdBy: 'default-user-id' };
-      console.log('Attempting to create project with data:', dataWithDefaultCreator);
-      const response = await api.post('/projects', dataWithDefaultCreator);
+      const token = localStorage.getItem('w3s_token');
+      let userId = 'default-user-id';
+      
+      if (token) {
+        const decodedToken = JSON.parse(atob(token.split('.')[1]));
+        userId = decodedToken._id || 'default-user-id';
+      }
+
+      const dataWithCreator = { ...projectData, createdBy: userId };
+      console.log('Attempting to create project with data:', dataWithCreator);
+      const response = await api.post('/projects', dataWithCreator);
       console.log('Project creation response:', response.data);
       return response.data;
     } catch (error) {
@@ -116,7 +133,14 @@ const w3sService = {
   createPage: async (projectId, pageData) => {
     try {
       const response = await api.post(`/projects/${projectId}/pages`, pageData);
-      return response.data;
+      const page = response.data;
+
+      // Update the project to include the new page
+      await api.put(`/projects/${projectId}`, {
+        $push: { pages: page._id }
+      });
+
+      return page;
     } catch (error) {
       handleApiError(error);
     }

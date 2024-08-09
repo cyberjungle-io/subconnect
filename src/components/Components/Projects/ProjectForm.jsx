@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { createProject } from '../../../w3s/w3sSlice';
+import { createProject, setCurrentProject } from '../../../w3s/w3sSlice';
 
 const ProjectForm = ({ onSubmit }) => {
   const [name, setName] = useState('');
@@ -8,18 +8,17 @@ const ProjectForm = ({ onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted. Project name:', name);
-    
     try {
-      console.log('Dispatching createProject with:', { name });
-      const result = await dispatch(createProject({ name })).unwrap();
-      console.log('Project created:', result);
+      await dispatch(createProject({ name })).unwrap();
       setName('');
       onSubmit();
     } catch (error) {
       console.error('Failed to create project:', error);
-      // Handle this error appropriately in your UI
     }
+  };
+
+  const setCurrentProjectHandler = (project) => {
+    dispatch(setCurrentProject(project));
   };
 
   return (

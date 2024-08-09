@@ -1,13 +1,15 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createAction } from '@reduxjs/toolkit';
 import { w3sService } from './w3sService';
 
 // Async Thunks
+
+
 export const fetchProjects = createAsyncThunk(
   'w3s/fetchProjects',
   async (_, { rejectWithValue }) => {
     try {
       const response = await w3sService.getProjects();
-      return response.data;
+      return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to fetch projects');
     }
@@ -27,19 +29,31 @@ export const fetchProject = createAsyncThunk(
 );
 
 export const createProject = createAsyncThunk(
-    'w3s/createProject',
-    async (projectData, { rejectWithValue }) => {
-      try {
-        console.log('createProject thunk called with:', projectData);
-        const response = await w3sService.createProject(projectData);
-        console.log('Project created successfully:', response);
-        return response;
-      } catch (error) {
-        console.error('Error in createProject thunk:', error);
-        return rejectWithValue(error.message || 'Failed to create project');
-      }
+  'w3s/createProject',
+  async (projectData, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await w3sService.createProject(projectData);
+      
+      // Create a default "Main" page for the new project
+      const defaultPage = {
+        name: 'Main',
+        content: {
+          components: [],
+          layout: {}
+        }
+      };
+      
+      const pageResponse = await dispatch(createPage({ projectId: response._id, pageData: defaultPage })).unwrap();
+      
+      // Optionally, update the project in the state to include the new page
+      response.pages = [pageResponse._id];
+      
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to create project');
     }
-  );
+  }
+);
 
 export const updateProject = createAsyncThunk(
   'w3s/updateProject',
@@ -65,6 +79,80 @@ export const deleteProject = createAsyncThunk(
   }
 );
 
+// New async thunks for pages
+export const fetchPages = createAsyncThunk(
+  'w3s/fetchPages',
+  async (projectId, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.getPages(projectId);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to fetch pages');
+    }
+  }
+);
+
+export const createPage = createAsyncThunk(
+  'w3s/createPage',
+  async ({ projectId, pageData }, { getState, dispatch, rejectWithValue }) => {
+    try {
+      const response = await w3sService.createPage(projectId, pageData);
+      
+      // Update the project in the database to include the new page
+      const currentProject = getState().w3s.currentProject.data;
+      if (currentProject) {
+        await w3sService.updateProject(projectId, {
+          pages: [...currentProject.pages, response._id]
+        });
+      }
+
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to create page');
+    }
+  }
+);
+
+export const updatePage = createAsyncThunk(
+  'w3s/updatePage',
+  async ({ projectId, pageId, pageData }, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.updatePage(projectId, pageId, pageData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to update page');
+    }
+  }
+);
+
+export const deletePage = createAsyncThunk(
+  'w3s/deletePage',
+  async ({ projectId, pageId }, { rejectWithValue }) => {
+    try {
+      await w3sService.deletePage(projectId, pageId);
+      return pageId;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to delete page');
+    }
+  }
+);
+
+// Add this new async thunk for savePage
+export const savePage = createAsyncThunk(
+  'w3s/savePage',
+  async ({ projectId, pageId, pageData }, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.updatePage(projectId, pageId, pageData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to save page');
+    }
+  }
+);
+
+// Create the setCurrentProject action
+export const setCurrentProject = createAction('w3s/setCurrentProject');
+
 // Slice
 const w3sSlice = createSlice({
     name: 'w3s',
@@ -88,38 +176,54 @@ const w3sSlice = createSlice({
         error: null,
       };
     },
-    // Add more synchronous reducers if needed
   },
   extraReducers: (builder) => {
     builder
       // Fetch Projects
-      .addCase(createProject.pending, (state) => {
-        state.projects.status = 'loading';
+      .addCase(fetchProjects.fulfilled, (state, action) => {
+        state.projects.status = 'succeeded';
+        state.projects.list = action.payload;
       })
+
+      // Create Project
       .addCase(createProject.fulfilled, (state, action) => {
         state.projects.status = 'succeeded';
-        state.projects.list.push(action.payload);
-      })
-      .addCase(createProject.rejected, (state, action) => {
-        state.projects.status = 'failed';
-        state.projects.error = action.payload;
+        const newProject = { ...action.payload, pages: [] };
+        state.projects.list.push(newProject);
+        state.currentProject.data = newProject;
+        state.currentProject.status = 'succeeded';
       })
 
       // Fetch Single Project
-      .addCase(fetchProject.pending, (state) => {
-        state.currentProject.status = 'loading';
-      })
       .addCase(fetchProject.fulfilled, (state, action) => {
         state.currentProject.status = 'succeeded';
         state.currentProject.data = action.payload;
         state.currentProject.error = null;
       })
-      .addCase(fetchProject.rejected, (state, action) => {
-        state.currentProject.status = 'failed';
-        state.currentProject.error = action.payload;
+
+      // Create Page
+      .addCase(createPage.fulfilled, (state, action) => {
+        if (state.currentProject.data) {
+          state.currentProject.data.pages.push(action.payload);
+        }
       })
 
-      
+      // Update Page
+      .addCase(updatePage.fulfilled, (state, action) => {
+        if (state.currentProject.data) {
+          const pageIndex = state.currentProject.data.pages.findIndex(page => page._id === action.payload._id);
+          if (pageIndex !== -1) {
+            state.currentProject.data.pages[pageIndex] = action.payload;
+          }
+        }
+      })
+
+      // Delete Page
+      .addCase(deletePage.fulfilled, (state, action) => {
+        if (state.currentProject.data) {
+          state.currentProject.data.pages = state.currentProject.data.pages.filter(page => page._id !== action.payload);
+        }
+      })
 
       // Update Project
       .addCase(updateProject.fulfilled, (state, action) => {
@@ -138,6 +242,13 @@ const w3sSlice = createSlice({
         if (state.currentProject.data && state.currentProject.data.id === action.payload) {
           state.currentProject.data = null;
         }
+      })
+
+      // Add a case for setCurrentProject
+      .addCase(setCurrentProject, (state, action) => {
+        state.currentProject.data = action.payload;
+        state.currentProject.status = 'succeeded';
+        state.currentProject.error = null;
       });
   },
 });
