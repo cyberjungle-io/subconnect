@@ -1,33 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchPages, createPage, deletePage } from '../../w3s/w3sSlice';
+import { updateProject } from '../../../w3s/w3sSlice';
 import { FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
 
 const PageList = ({ projectId }) => {
   const dispatch = useDispatch();
-  const { pages } = useSelector((state) => state.w3s.currentProject.data || { pages: [] });
-  const { status, error } = useSelector((state) => state.w3s.currentProject);
+  const currentProject = useSelector((state) => state.w3s.currentProject.data);
   const [newPageName, setNewPageName] = useState('');
 
-  useEffect(() => {
-    dispatch(fetchPages(projectId));
-  }, [dispatch, projectId]);
-
   const handleCreatePage = () => {
-    if (newPageName.trim()) {
-      dispatch(createPage({ projectId, pageData: { name: newPageName.trim() } }));
+    if (newPageName.trim() && currentProject) {
+      const newPage = {
+        name: newPageName.trim(),
+        content: {
+          components: [],
+          layout: {}
+        }
+      };
+      const updatedPages = [...currentProject.pages, newPage];
+      dispatch(updateProject({ ...currentProject, pages: updatedPages }));
       setNewPageName('');
     }
   };
 
-  const handleDeletePage = (pageId) => {
-    if (window.confirm('Are you sure you want to delete this page?')) {
-      dispatch(deletePage({ projectId, pageId }));
+  const handleDeletePage = (pageIndex) => {
+    if (window.confirm('Are you sure you want to delete this page?') && currentProject) {
+      const updatedPages = currentProject.pages.filter((_, index) => index !== pageIndex);
+      dispatch(updateProject({ ...currentProject, pages: updatedPages }));
     }
   };
 
-  if (status === 'loading') return <div>Loading pages...</div>;
-  if (status === 'failed') return <div>Error: {error}</div>;
+  if (!currentProject) return <div>No project selected</div>;
 
   return (
     <div className="page-list">
@@ -47,12 +50,12 @@ const PageList = ({ projectId }) => {
           <FaPlus />
         </button>
       </div>
-      {pages.length === 0 ? (
+      {currentProject.pages.length === 0 ? (
         <p>No pages found. Create a new one to get started!</p>
       ) : (
         <ul className="space-y-2">
-          {pages.map((page) => (
-            <li key={page._id} className="flex items-center justify-between bg-white p-3 rounded shadow">
+          {currentProject.pages.map((page, index) => (
+            <li key={index} className="flex items-center justify-between bg-white p-3 rounded shadow">
               <span>{page.name}</span>
               <div>
                 <button
@@ -62,7 +65,7 @@ const PageList = ({ projectId }) => {
                   <FaEdit />
                 </button>
                 <button
-                  onClick={() => handleDeletePage(page._id)}
+                  onClick={() => handleDeletePage(index)}
                   className="text-red-500 hover:text-red-700"
                 >
                   <FaTrash />
