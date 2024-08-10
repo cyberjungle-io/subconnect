@@ -134,50 +134,7 @@ const w3sService = {
     }
   },
 
-  // Pages
-  getPages: async (projectId) => {
-    try {
-      const response = await api.get(`/projects/${projectId}/pages`);
-      return response.data;
-    } catch (error) {
-      handleApiError(error);
-    }
-  },
-
-  createPage: async (projectId, pageData) => {
-    try {
-      const response = await api.post(`/projects/${projectId}/pages`, pageData);
-      const page = response.data;
-
-      // Update the project to include the new page
-      await api.put(`/projects/${projectId}`, {
-        $push: { pages: page._id }
-      });
-
-      return page;
-    } catch (error) {
-      handleApiError(error);
-    }
-  },
-
-  updatePage: async (projectId, pageId, pageData) => {
-    try {
-      const response = await api.put(`/projects/${projectId}/pages/${pageId}`, pageData);
-      return response.data;
-    } catch (error) {
-      handleApiError(error);
-    }
-  },
-
-  deletePage: async (projectId, pageId) => {
-    try {
-      await api.delete(`/projects/${projectId}/pages/${pageId}`);
-      return true;
-    } catch (error) {
-      handleApiError(error);
-    }
-  },
-
+  
   // Components
   getComponents: async (projectId, pageId) => {
     try {
