@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateProject } from '../../../w3s/w3sSlice';
+import { loadPageContent } from '../../../features/editorSlice';
 import { FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
 
 const PageList = ({ projectId }) => {
@@ -28,6 +29,10 @@ const PageList = ({ projectId }) => {
       const updatedPages = currentProject.pages.filter((_, index) => index !== pageIndex);
       dispatch(updateProject({ ...currentProject, pages: updatedPages }));
     }
+  };
+
+  const handleEditPage = (page) => {
+    dispatch(loadPageContent(page.content));
   };
 
   if (!currentProject) return <div>No project selected</div>;
@@ -59,7 +64,7 @@ const PageList = ({ projectId }) => {
               <span>{page.name}</span>
               <div>
                 <button
-                  onClick={() => {/* TODO: Implement edit functionality */}}
+                  onClick={() => handleEditPage(page)}
                   className="text-blue-500 hover:text-blue-700 mr-2"
                 >
                   <FaEdit />

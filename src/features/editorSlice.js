@@ -29,7 +29,7 @@ const initialState = {
       gap: "0px",
     },
   },
-  mode: 'edit', // Added this line
+  mode: 'edit',
 };
 
 const findComponentById = (components, id) => {
@@ -129,7 +129,7 @@ export const editorSlice = createSlice({
           ...defaultStyle,
           ...otherProps.style,
         },
-        isDraggingDisabled: false, // Add this line
+        isDraggingDisabled: false,
         ...otherProps,
       });
 
@@ -274,7 +274,12 @@ export const editorSlice = createSlice({
     },
     setEditorMode: (state, action) => {
       state.mode = action.payload;
-    }, // Added this line
+    },
+    loadPageContent: (state, action) => {
+      const { components, globalSettings } = action.payload;
+      state.components = components;
+      state.globalSettings = globalSettings;
+    },
   },
 });
 
@@ -310,7 +315,8 @@ export const {
   updateHeadingProperties,
   updateResponsiveProperties,
   toggleComponentDragging,
-  setEditorMode, // Added this line
+  setEditorMode,
+  loadPageContent,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

@@ -14,6 +14,7 @@ import PanelNavBar from "./PanelNavBar";
 import ComponentTree from "./ComponentTree";
 import { updateGlobalSettings, updateComponent, setEditorMode } from "../../features/editorSlice";
 import { updateProject, updateCurrentProject } from '../../w3s/w3sSlice';
+import PageList from '../Components/Projects/PageList';
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -388,6 +389,7 @@ const PropertiesPanel = ({
         <div className="mt-4 p-2 bg-white rounded shadow">
           <h3 className="text-md font-semibold">Current Project</h3>
           <p className="text-sm text-gray-700">{currentProject.name}</p>
+          <PageList projectId={currentProject._id} />
         </div>
       )}
     </div>

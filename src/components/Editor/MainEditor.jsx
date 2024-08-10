@@ -1,4 +1,4 @@
-import React, { useState,useCallback } from 'react';
+import React, { useState,useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -9,9 +9,9 @@ import DataModal from './DataModal';
 import ProjectModal from '../Components/Projects/ProjectModal';
 import ViewerMode from '../Viewers/ViewerMode';
 import { FaEdit } from 'react-icons/fa';
-import { setEditorMode } from '../../features/editorSlice';
-
-import {
+import { 
+  setEditorMode, 
+  updateGlobalSettings,
   addComponent,
   updateComponent,
   deleteComponent,
@@ -24,8 +24,12 @@ import {
   updateComponentSpacing,
   updateGlobalSpacing,
   updateHeadingProperties,
-  updateResponsiveProperties
+  updateResponsiveProperties,
+  loadPageContent
 } from '../../features/editorSlice';
+import { updateProject as updateW3SProject } from '../../w3s/w3sSlice';
+
+
 
 const MainEditor = () => {
   const dispatch = useDispatch();
@@ -35,6 +39,13 @@ const MainEditor = () => {
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const globalSettings = useSelector(state => state.editor.globalSettings); // Get globalSettings from Redux
+  const [currentPage, setCurrentPage] = useState(null);
+
+  useEffect(() => {
+    if (currentProject && currentProject.pages.length > 0) {
+      setCurrentPage(currentProject.pages[0]);
+    }
+  }, [currentProject]);
 
   const handleOpenProjectModal = useCallback(() => {
     console.log('Attempting to open Project Modal');
@@ -46,14 +57,13 @@ const MainEditor = () => {
     setIsProjectModalOpen(false);
   }, []);
 
-
-
   const handleTogglePanel = () => {
     setIsPanelVisible(!isPanelVisible);
   };
   const handleOpenDataModal = () => {
     setIsDataModalOpen(true);
   };
+  // eslint-disable-next-line no-unused-vars
   const handleCloseDataModal = () => {
     setIsDataModalOpen(false);
   };
@@ -155,6 +165,33 @@ const MainEditor = () => {
     dispatch(setEditorMode('edit'));
   };
 
+  const handleSelectPage = (page) => {
+    setCurrentPage(page);
+    if (page.content) {
+      // Clear existing components
+      dispatch(setSelectedIds([]));
+      dispatch(deleteComponent(null)); // Passing null deletes all components
+      
+      // Add new components
+      page.content.components.forEach(component => {
+        dispatch(addComponent(component));
+      });
+      
+      dispatch(updateGlobalSettings(page.content.globalSettings || {}));
+    }
+  };
+
+  const handleDeletePage = (pageIndex) => {
+    if (window.confirm('Are you sure you want to delete this page?') && currentProject) {
+      const updatedPages = currentProject.pages.filter((_, index) => index !== pageIndex);
+      dispatch(updateW3SProject({ ...currentProject, pages: updatedPages }));
+    }
+  };
+
+  const handleLoadPageContent = (pageContent) => {
+    dispatch(loadPageContent(pageContent));
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex h-screen relative">
@@ -199,6 +236,10 @@ const MainEditor = () => {
                 onOpenDataModal={handleOpenDataModal}
                 onUpdateGlobalSpacing={handleUpdateGlobalSpacing}
                 currentProject={currentProject} // Pass current project here
+                currentPage={currentPage}
+                onSelectPage={handleSelectPage}
+                onDeletePage={handleDeletePage}
+                onLoadPageContent={handleLoadPageContent}
               />
             )}
           </div>
