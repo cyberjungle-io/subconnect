@@ -1,6 +1,7 @@
 // src/features/userSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { w3sService } from '../w3s/w3sService';
+import { fetchProjects, setCurrentProject } from '../w3s/w3sSlice'; // Add this import
 
 export const registerUser = createAsyncThunk(
   'user/register',
@@ -16,16 +17,23 @@ export const registerUser = createAsyncThunk(
 );
 
 export const loginUser = createAsyncThunk(
-    'user/login',
-    async (credentials, { rejectWithValue }) => {
-      try {
-        const response = await w3sService.login(credentials);
-        return response.user; // We only need to store the user profile in the Redux state
-      } catch (error) {
-        return rejectWithValue(error.response?.data || 'Failed to login');
+  'user/login',
+  async (credentials, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await w3sService.login(credentials);
+      // Fetch projects after successful login
+      const projects = await w3sService.getProjects();
+      dispatch(fetchProjects.fulfilled(projects));
+      // Set the first project as the current project if available
+      if (projects.length > 0) {
+        dispatch(setCurrentProject(projects[0]));
       }
+      return response.user;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to login');
     }
-  );
+  }
+);
 
 export const logoutUser = createAsyncThunk(
   'user/logout',

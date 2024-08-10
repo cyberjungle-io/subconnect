@@ -1,48 +1,33 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { fetchProjects } from '../../../w3s/w3sSlice';
-import ProjectItem from './ProjectItem';
+import { setCurrentProject } from '../../../w3s/w3sSlice';
 
-const ProjectList = () => {
+const ProjectList = ({ onClose }) => {
   const dispatch = useDispatch();
-  const { list: projects, status, error } = useSelector((state) => {
-    console.log('Current state:', state); // Debug log
-    return state.w3s.projects;
-  });
+  const { list: projects } = useSelector((state) => state.w3s.projects);
+  const currentProject = useSelector((state) => state.w3s.currentProject.data);
 
-  useEffect(() => {
-    console.log('ProjectList useEffect, status:', status); // Debug log
-    if (status === 'idle') {
-      dispatch(fetchProjects());
-    }
-  }, [status, dispatch]);
-
-  console.log('ProjectList render, projects:', projects, 'status:', status); // Debug log
-
-  if (status === 'loading') {
-    return <div>Loading projects...</div>;
-  }
-
-  if (status === 'failed') {
-    return <div>Error: {error}</div>;
-  }
-
-  if (!projects) {
-    return <div>No projects data available. Please try again later.</div>;
-  }
+  const handleSelectProject = (project) => {
+    dispatch(setCurrentProject(project));
+    onClose();
+  };
 
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2">Your Projects</h3>
-      {projects.length === 0 ? (
-        <p>No projects found. Create a new one to get started!</p>
-      ) : (
-        <ul className="space-y-2">
-          {projects.map((project) => (
-            <ProjectItem key={project.id} project={project} />
-          ))}
-        </ul>
-      )}
+      <h3 className="text-lg font-semibold mb-2">Select a Project</h3>
+      <ul className="space-y-2">
+        {projects.map((project) => (
+          <li key={project._id} className="flex justify-between items-center bg-gray-100 p-2 rounded">
+            <span>{project.name}</span>
+            <button
+              onClick={() => handleSelectProject(project)}
+              className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+            >
+              {currentProject?._id === project._id ? 'Selected' : 'Select'}
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

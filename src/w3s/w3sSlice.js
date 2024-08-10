@@ -309,5 +309,4 @@ const w3sSlice = createSlice({
 });
 
 export const { clearCurrentProject, updateCurrentProject } = w3sSlice.actions;
-
 export default w3sSlice.reducer;

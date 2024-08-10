@@ -4,31 +4,23 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../../features/userSlice';
 
 const LoginForm = ({ onClose }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loginMessage, setLoginMessage] = useState('');
   const dispatch = useDispatch();
+  const [credentials, setCredentials] = useState({ email: '', password: '' });
   const { status, error } = useSelector((state) => state.user);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoginMessage('');
     try {
-      const resultAction = await dispatch(loginUser({ email, password }));
-      if (loginUser.fulfilled.match(resultAction)) {
-        setLoginMessage('Login successful!');
-        setTimeout(() => {
-          onClose();
-        }, 1500); // Close the modal after 1.5 seconds
-      } else {
-        setLoginMessage('Login failed. Please check your credentials.');
-      }
+      await dispatch(loginUser(credentials)).unwrap();
+      onClose();
     } catch (err) {
-      setLoginMessage('An error occurred. Please try again.');
+      console.error('Failed to log in:', err);
     }
   };
 
-  const inputClasses = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-900";
+  const handleChange = (e) => {
+    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -36,37 +28,34 @@ const LoginForm = ({ onClose }) => {
         <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
         <input
           type="email"
+          name="email"
           id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
           required
-          className={inputClasses}
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+          value={credentials.email}
+          onChange={handleChange}
         />
       </div>
       <div>
         <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
         <input
           type="password"
+          name="password"
           id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
           required
-          className={inputClasses}
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+          value={credentials.password}
+          onChange={handleChange}
         />
       </div>
+      {error && <p className="text-red-500">{error}</p>}
       <button
         type="submit"
         disabled={status === 'loading'}
-        className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition-colors"
+        className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
       >
-        {status === 'loading' ? 'Logging in...' : 'Login'}
+        {status === 'loading' ? 'Logging in...' : 'Log in'}
       </button>
-      {loginMessage && (
-        <p className={`text-sm ${loginMessage.includes('successful') ? 'text-green-500' : 'text-red-500'}`}>
-          {loginMessage}
-        </p>
-      )}
-      {error && <p className="text-red-500 text-sm">{error}</p>}
     </form>
   );
 };
