@@ -45,10 +45,12 @@ export const createProject = createAsyncThunk(
       
       const pageResponse = await dispatch(createPage({ projectId: response._id, pageData: defaultPage })).unwrap();
       
-      // Optionally, update the project in the state to include the new page
-      response.pages = [pageResponse._id];
-      
-      return response;
+      // Update the project in the database to include the new page
+      const updatedProject = await w3sService.updateProject(response._id, {
+        pages: [pageResponse._id]
+      });
+
+      return updatedProject;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to create project');
     }
@@ -57,10 +59,11 @@ export const createProject = createAsyncThunk(
 
 export const updateProject = createAsyncThunk(
   'w3s/updateProject',
-  async ({ id, projectData }, { rejectWithValue }) => {
+  async (projectData, { rejectWithValue }) => {
     try {
-      const response = await w3sService.updateProject(id, projectData);
-      return response.data;
+      console.log("w3s slice Updating project:", projectData);
+      const response = await w3sService.updateProject(projectData._id, projectData);
+      return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to update project');
     }
@@ -140,18 +143,47 @@ export const deletePage = createAsyncThunk(
 // Add this new async thunk for savePage
 export const savePage = createAsyncThunk(
   'w3s/savePage',
-  async ({ projectId, pageId, pageData }, { rejectWithValue }) => {
+  async ({ projectId, pageId, pageData }, { getState, rejectWithValue }) => {
     try {
       const response = await w3sService.updatePage(projectId, pageId, pageData);
-      return response;
+      
+      // Update the currentProject in the state
+      const state = getState();
+      const currentProject = state.w3s.currentProject.data;
+      if (currentProject) {
+        const updatedPages = currentProject.pages.map(page => 
+          page._id === pageId ? { ...page, ...response } : page
+        );
+        const updatedProject = { ...currentProject, pages: updatedPages };
+        return { updatedProject, updatedPage: response };
+      }
+      
+      return { updatedPage: response };
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to save page');
     }
   }
 );
 
+// New async thunk for saving the entire project
+export const saveProject = createAsyncThunk(
+  'w3s/saveProject',
+  async (projectData, { rejectWithValue }) => {
+    try {
+      console.log("w3s Saving project:", projectData);
+      const response = await w3sService.updateProject(projectData._id, projectData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to save project');
+    }
+  }
+);
+
 // Create the setCurrentProject action
 export const setCurrentProject = createAction('w3s/setCurrentProject');
+
+// Add the updateCurrentProject action
+//export const updateCurrentProject = createAction('w3s/updateCurrentProject');
 
 // Slice
 const w3sSlice = createSlice({
@@ -176,6 +208,16 @@ const w3sSlice = createSlice({
         error: null,
       };
     },
+    updateCurrentProject: (state, action) => {
+      console.log("updateCurrentProject:", action.payload);
+      return {
+        ...state,
+        currentProject: {
+          ...state.currentProject,
+          data: action.payload
+        }
+      };
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -188,7 +230,7 @@ const w3sSlice = createSlice({
       // Create Project
       .addCase(createProject.fulfilled, (state, action) => {
         state.projects.status = 'succeeded';
-        const newProject = { ...action.payload, pages: [] };
+        const newProject = { ...action.payload, pages: action.payload.pages || [] };
         state.projects.list.push(newProject);
         state.currentProject.data = newProject;
         state.currentProject.status = 'succeeded';
@@ -249,10 +291,23 @@ const w3sSlice = createSlice({
         state.currentProject.data = action.payload;
         state.currentProject.status = 'succeeded';
         state.currentProject.error = null;
-      });
+      })
+
+      // Add a case for savePage
+      .addCase(savePage.fulfilled, (state, action) => {
+        if (action.payload.updatedProject) {
+          state.currentProject.data = action.payload.updatedProject;
+        }
+        if (state.currentProject.data) {
+          const pageIndex = state.currentProject.data.pages.findIndex(page => page._id === action.payload.updatedPage._id);
+          if (pageIndex !== -1) {
+            state.currentProject.data.pages[pageIndex] = action.payload.updatedPage;
+          }
+        }
+      })
   },
 });
 
-export const { clearCurrentProject } = w3sSlice.actions;
+export const { clearCurrentProject, updateCurrentProject } = w3sSlice.actions;
 
 export default w3sSlice.reducer;

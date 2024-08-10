@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { FaEye, FaChevronLeft } from "react-icons/fa";
+import { FaEye, FaChevronLeft, FaSave } from "react-icons/fa";
 import PropertyTabs from "./PropertyTabs";
 import ComponentPalette from "../Components/ComponentPalette";
 import DimensionControls from "../Components/CommonControls/DimensionControls";
@@ -13,6 +13,7 @@ import VideoControls from "../Components/CommonControls/VideoControls";
 import PanelNavBar from "./PanelNavBar";
 import ComponentTree from "./ComponentTree";
 import { updateGlobalSettings, updateComponent, setEditorMode } from "../../features/editorSlice";
+import { updateProject, updateCurrentProject } from '../../w3s/w3sSlice';
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -28,8 +29,7 @@ const PropertiesPanel = ({
   currentProject,
 }) => {
   const dispatch = useDispatch();
-  const globalSettings = useSelector((state) => state.editor.globalSettings);
-  const { mode } = useSelector((state) => state.editor);
+  const { mode, globalSettings } = useSelector((state) => state.editor);
   const [activePanel, setActivePanel] = useState("properties");
   const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
 
@@ -101,6 +101,35 @@ const PropertiesPanel = ({
 
   const handleEnterViewMode = () => {
     dispatch(setEditorMode('view'));
+  };
+
+  const handleSaveProject = () => {
+    console.log("Saving Project");
+    
+    if (currentProject && currentProject._id) {
+      console.log("Saving project:", currentProject._id);
+      
+      const updatedProject = {
+        ...currentProject,
+        pages: currentProject.pages.map(page => {
+          if (page.name === "Main") {
+            return {
+              ...page,
+              content: {
+                components: components,
+                globalSettings: globalSettings,
+              },
+            };
+          }
+          return page;
+        }),
+      };
+      
+      console.log("updatedProject:", updatedProject);
+      dispatch(updateProject(updatedProject));
+    } else {
+      console.error('No current project selected');
+    }
   };
 
   const renderGlobalSettings = () => (
@@ -313,14 +342,24 @@ const PropertiesPanel = ({
         <h2 className="text-lg font-bold text-gray-800">
           {activePanel === "globalSettings" ? "Global Settings" : "Properties"}
         </h2>
-        <button
-          onClick={handleEnterViewMode}
-          className="px-3 py-1 bg-blue-500 text-white rounded-md flex items-center"
-          title="Switch to View Mode"
-        >
-          <FaEye className="mr-2" />
-          View
-        </button>
+        <div className="flex space-x-2">
+          <button
+            onClick={handleSaveProject}
+            className="px-3 py-1 bg-green-500 text-white rounded-md flex items-center"
+            title="Save Project"
+          >
+            <FaSave className="mr-2" />
+            Save
+          </button>
+          <button
+            onClick={handleEnterViewMode}
+            className="px-3 py-1 bg-blue-500 text-white rounded-md flex items-center"
+            title="Switch to View Mode"
+          >
+            <FaEye className="mr-2" />
+            View
+          </button>
+        </div>
       </div>
       <PanelNavBar
         onShowComponentPalette={() => setActivePanel("componentPalette")}

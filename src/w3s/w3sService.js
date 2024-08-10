@@ -91,12 +91,25 @@ const w3sService = {
         const decodedToken = JSON.parse(atob(token.split('.')[1]));
         userId = decodedToken._id || 'default-user-id';
       }
-
-      const dataWithCreator = { ...projectData, createdBy: userId };
+      const defaultPages = [{
+              name: 'Main',
+              content: {
+                components: [],
+                layout: {}
+              }
+            }];
+      const dataWithCreator = { ...projectData, createdBy: userId, pages: defaultPages };
       console.log('Attempting to create project with data:', dataWithCreator);
       const response = await api.post('/projects', dataWithCreator);
       console.log('Project creation response:', response.data);
-      return response.data;
+
+      // Create a default "Main" page for the new project
+      
+      
+      
+      // Update the project to include the new page
+      
+      return dataWithCreator;
     } catch (error) {
       handleApiError(error);
     }
@@ -104,6 +117,7 @@ const w3sService = {
 
   updateProject: async (id, projectData) => {
     try {
+      console.log("w3s Request Updating project:", projectData);
       const response = await api.put(`/projects/${id}`, projectData);
       return response.data;
     } catch (error) {
