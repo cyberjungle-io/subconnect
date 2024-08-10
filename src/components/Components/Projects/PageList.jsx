@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateProject } from '../../../w3s/w3sSlice';
-import { loadPageContent } from '../../../features/editorSlice';
 import { FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
 
-const PageList = ({ projectId }) => {
+const PageList = ({ projectId, selectedPageId, onSelectPage, onDeletePage }) => {
   const dispatch = useDispatch();
   const currentProject = useSelector((state) => state.w3s.currentProject.data);
   const [newPageName, setNewPageName] = useState('');
@@ -29,10 +28,6 @@ const PageList = ({ projectId }) => {
       const updatedPages = currentProject.pages.filter((_, index) => index !== pageIndex);
       dispatch(updateProject({ ...currentProject, pages: updatedPages }));
     }
-  };
-
-  const handleEditPage = (page) => {
-    dispatch(loadPageContent(page.content));
   };
 
   if (!currentProject) return <div>No project selected</div>;
@@ -60,17 +55,22 @@ const PageList = ({ projectId }) => {
       ) : (
         <ul className="space-y-2">
           {currentProject.pages.map((page, index) => (
-            <li key={index} className="flex items-center justify-between bg-white p-3 rounded shadow">
+            <li 
+              key={index} 
+              className={`flex items-center justify-between p-3 rounded shadow ${
+                page._id === selectedPageId ? 'bg-blue-100' : 'bg-white'
+              }`}
+            >
               <span>{page.name}</span>
               <div>
                 <button
-                  onClick={() => handleEditPage(page)}
+                  onClick={() => onSelectPage(page)}
                   className="text-blue-500 hover:text-blue-700 mr-2"
                 >
                   <FaEdit />
                 </button>
                 <button
-                  onClick={() => handleDeletePage(index)}
+                  onClick={() => onDeletePage(index)}
                   className="text-red-500 hover:text-red-700"
                 >
                   <FaTrash />

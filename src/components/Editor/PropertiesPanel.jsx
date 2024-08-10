@@ -28,6 +28,9 @@ const PropertiesPanel = ({
   onOpenProjectModal,
   onUpdateGlobalSpacing,
   currentProject,
+  currentPage,
+  onSelectPage,
+  onDeletePage,
 }) => {
   const dispatch = useDispatch();
   const { mode, globalSettings } = useSelector((state) => state.editor);
@@ -389,7 +392,12 @@ const PropertiesPanel = ({
         <div className="mt-4 p-2 bg-white rounded shadow">
           <h3 className="text-md font-semibold">Current Project</h3>
           <p className="text-sm text-gray-700">{currentProject.name}</p>
-          <PageList projectId={currentProject._id} />
+          <PageList
+            projectId={currentProject._id}
+            selectedPageId={currentPage?._id}
+            onSelectPage={onSelectPage}
+            onDeletePage={onDeletePage}
+          />
         </div>
       )}
     </div>

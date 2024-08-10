@@ -168,16 +168,7 @@ const MainEditor = () => {
   const handleSelectPage = (page) => {
     setCurrentPage(page);
     if (page.content) {
-      // Clear existing components
-      dispatch(setSelectedIds([]));
-      dispatch(deleteComponent(null)); // Passing null deletes all components
-      
-      // Add new components
-      page.content.components.forEach(component => {
-        dispatch(addComponent(component));
-      });
-      
-      dispatch(updateGlobalSettings(page.content.globalSettings || {}));
+      dispatch(loadPageContent(page.content));
     }
   };
 
