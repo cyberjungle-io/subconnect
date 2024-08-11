@@ -40,7 +40,7 @@ const PageList = ({
   return (
     <div className="page-list">
       <h3 className="text-lg font-semibold mb-2">Pages</h3>
-      <div className="flex mb-4">
+      <div className=" mb-4">
         <input
           type="text"
           value={newPageName}
