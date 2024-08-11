@@ -25,7 +25,8 @@ import {
   updateGlobalSpacing,
   updateHeadingProperties,
   updateResponsiveProperties,
-  loadPageContent
+  loadPageContent,
+  setCurrentPage
 } from '../../features/editorSlice';
 import { updateProject as updateW3SProject } from '../../w3s/w3sSlice';
 
@@ -33,19 +34,18 @@ import { updateProject as updateW3SProject } from '../../w3s/w3sSlice';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
-  const { components, selectedIds, mode } = useSelector(state => state.editor);
+  const { components, selectedIds, mode, currentPage } = useSelector(state => state.editor);
   const currentProject = useSelector(state => state.w3s.currentProject.data); // Fetch current project from Redux
   const [isPanelVisible, setIsPanelVisible] = useState(true);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const globalSettings = useSelector(state => state.editor.globalSettings); // Get globalSettings from Redux
-  const [currentPage, setCurrentPage] = useState(null);
 
   useEffect(() => {
     if (currentProject && currentProject.pages.length > 0) {
-      setCurrentPage(currentProject.pages[0]);
+      dispatch(setCurrentPage(currentProject.pages[0]));
     }
-  }, [currentProject]);
+  }, [currentProject, dispatch]);
 
   const handleOpenProjectModal = useCallback(() => {
     console.log('Attempting to open Project Modal');
@@ -166,7 +166,7 @@ const MainEditor = () => {
   };
 
   const handleSelectPage = (page) => {
-    setCurrentPage(page);
+    dispatch(setCurrentPage(page));
     if (page.content) {
       dispatch(loadPageContent(page.content));
     }
@@ -227,7 +227,7 @@ const MainEditor = () => {
                 onOpenDataModal={handleOpenDataModal}
                 onUpdateGlobalSpacing={handleUpdateGlobalSpacing}
                 currentProject={currentProject} // Pass current project here
-                currentPage={currentPage}
+                
                 onSelectPage={handleSelectPage}
                 onDeletePage={handleDeletePage}
                 onLoadPageContent={handleLoadPageContent}

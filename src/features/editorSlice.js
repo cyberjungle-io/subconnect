@@ -30,6 +30,7 @@ const initialState = {
     },
   },
   mode: 'edit',
+  currentPage: null,
 };
 
 const findComponentById = (components, id) => {
@@ -280,6 +281,9 @@ export const editorSlice = createSlice({
       state.components = components;
       state.globalSettings = globalSettings;
     },
+    setCurrentPage: (state, action) => {
+      state.currentPage = action.payload;
+    },
   },
 });
 
@@ -317,6 +321,7 @@ export const {
   toggleComponentDragging,
   setEditorMode,
   loadPageContent,
+  setCurrentPage,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

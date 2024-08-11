@@ -28,12 +28,12 @@ const PropertiesPanel = ({
   onOpenProjectModal,
   onUpdateGlobalSpacing,
   currentProject,
-  currentPage,
+ 
   onSelectPage,
   onDeletePage,
 }) => {
   const dispatch = useDispatch();
-  const { mode, globalSettings } = useSelector((state) => state.editor);
+  const { mode, globalSettings, currentPage } = useSelector((state) => state.editor);
   const [activePanel, setActivePanel] = useState("properties");
   const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
 
@@ -116,7 +116,7 @@ const PropertiesPanel = ({
       const updatedProject = {
         ...currentProject,
         pages: currentProject.pages.map(page => {
-          if (page.name === "Main") {
+          if (page.name === currentPage.name) {
             return {
               ...page,
               content: {
