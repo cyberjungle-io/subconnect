@@ -1,12 +1,17 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { updateProject } from '../../../w3s/w3sSlice';
-import { FaPlus, FaTrash, FaEdit } from 'react-icons/fa';
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { updateProject } from "../../../w3s/w3sSlice";
+import { FaPlus, FaTrash } from "react-icons/fa";
 
-const PageList = ({ projectId, selectedPageId, onSelectPage, onDeletePage }) => {
+const PageList = ({
+  projectId,
+  selectedPageId,
+  onSelectPage,
+  onDeletePage,
+}) => {
   const dispatch = useDispatch();
   const currentProject = useSelector((state) => state.w3s.currentProject.data);
-  const [newPageName, setNewPageName] = useState('');
+  const [newPageName, setNewPageName] = useState("");
 
   const handleCreatePage = () => {
     if (newPageName.trim() && currentProject) {
@@ -14,12 +19,12 @@ const PageList = ({ projectId, selectedPageId, onSelectPage, onDeletePage }) => 
         name: newPageName.trim(),
         content: {
           components: [],
-          layout: {}
-        }
+          layout: {},
+        },
       };
       const updatedPages = [...currentProject.pages, newPage];
       dispatch(updateProject({ ...currentProject, pages: updatedPages }));
-      setNewPageName('');
+      setNewPageName("");
     }
   };
 
@@ -55,27 +60,25 @@ const PageList = ({ projectId, selectedPageId, onSelectPage, onDeletePage }) => 
       ) : (
         <ul className="space-y-2">
           {currentProject.pages.map((page, index) => (
-            <li 
-              key={index} 
-              className={`flex items-center justify-between p-3 rounded shadow ${
-                page._id === selectedPageId ? 'bg-blue-100' : 'bg-white'
+            <li
+              key={index}
+              className={`flex items-center justify-between p-3 rounded shadow cursor-pointer transition-colors duration-200 ${
+                page._id === selectedPageId
+                  ? "bg-blue-100"
+                  : "bg-white hover:bg-gray-100"
               }`}
+              onClick={() => onSelectPage(page)}
             >
               <span>{page.name}</span>
-              <div>
-                <button
-                  onClick={() => onSelectPage(page)}
-                  className="text-blue-500 hover:text-blue-700 mr-2"
-                >
-                  <FaEdit />
-                </button>
-                <button
-                  onClick={() => onDeletePage(index)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <FaTrash />
-                </button>
-              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeletePage(index);
+                }}
+                className="text-red-500 hover:text-red-700"
+              >
+                <FaTrash />
+              </button>
             </li>
           ))}
         </ul>
