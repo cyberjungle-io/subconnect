@@ -27,12 +27,13 @@ const RegisterForm = ({ onClose }) => {
     }
   };
 
-  const inputClasses = "mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 text-gray-900";
+  const inputClasses = "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-700";
+  const labelClasses = "block text-sm font-medium text-gray-700 mb-1";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+        <label htmlFor="username" className={labelClasses}>Username</label>
         <input
           type="text"
           id="username"
@@ -43,7 +44,7 @@ const RegisterForm = ({ onClose }) => {
         />
       </div>
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+        <label htmlFor="email" className={labelClasses}>Email</label>
         <input
           type="email"
           id="email"
@@ -54,7 +55,7 @@ const RegisterForm = ({ onClose }) => {
         />
       </div>
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+        <label htmlFor="password" className={labelClasses}>Password</label>
         <input
           type="password"
           id="password"
@@ -65,7 +66,7 @@ const RegisterForm = ({ onClose }) => {
         />
       </div>
       <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+        <label htmlFor="confirmPassword" className={labelClasses}>Confirm Password</label>
         <input
           type="password"
           id="confirmPassword"
@@ -79,7 +80,7 @@ const RegisterForm = ({ onClose }) => {
       <button
         type="submit"
         disabled={status === 'loading'}
-        className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition-colors"
+        className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
       >
         {status === 'loading' ? 'Registering...' : 'Register'}
       </button>

@@ -8,6 +8,9 @@ const LoginForm = ({ onClose }) => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const { status, error } = useSelector((state) => state.user);
 
+  const inputClasses = "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-700";
+  const labelClasses = "block text-sm font-medium text-gray-700 mb-1";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -25,25 +28,25 @@ const LoginForm = ({ onClose }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+        <label htmlFor="email" className={labelClasses}>Email</label>
         <input
           type="email"
           name="email"
           id="email"
           required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+          className={inputClasses}
           value={credentials.email}
           onChange={handleChange}
         />
       </div>
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+        <label htmlFor="password" className={labelClasses}>Password</label>
         <input
           type="password"
           name="password"
           id="password"
           required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm"
+          className={inputClasses}
           value={credentials.password}
           onChange={handleChange}
         />
@@ -52,7 +55,7 @@ const LoginForm = ({ onClose }) => {
       <button
         type="submit"
         disabled={status === 'loading'}
-        className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
       >
         {status === 'loading' ? 'Logging in...' : 'Log in'}
       </button>
