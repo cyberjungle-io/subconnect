@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { FaEye, FaChevronLeft, FaSave } from "react-icons/fa";
+import { FaEye, FaChevronLeft, FaSave, FaChevronDown, FaChevronRight } from "react-icons/fa";
 import PropertyTabs from "./PropertyTabs";
 import ComponentPalette from "../Components/ComponentPalette";
 import DimensionControls from "../Components/CommonControls/DimensionControls";
@@ -15,6 +15,8 @@ import ComponentTree from "./ComponentTree";
 import { updateGlobalSettings, updateComponent, setEditorMode } from "../../features/editorSlice";
 import { updateProject, updateCurrentProject } from '../../w3s/w3sSlice';
 import PageList from '../Components/Projects/PageList';
+import HidePropertiesPanelArrow from '../common/CustomIcons/HidePropertiesPanelArrow';
+import FlexContainerControls from "../Components/CommonControls/FlexContainerControls";
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -36,6 +38,9 @@ const PropertiesPanel = ({
   const { mode, globalSettings, currentPage } = useSelector((state) => state.editor);
   const [activePanel, setActivePanel] = useState("properties");
   const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
+  const [expandedSections, setExpandedSections] = useState({
+    currentProject: false,
+  });
 
   useEffect(() => {
     if (selectedComponent) {
@@ -209,61 +214,10 @@ const PropertiesPanel = ({
     switch (selectedComponent.type) {
       case "FLEX_CONTAINER":
         return (
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Direction</label>
-              <select
-                name="direction"
-                value={selectedComponent.props.direction || "row"}
-                onChange={handlePropChange}
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="row">Row</option>
-                <option value="column">Column</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Wrap</label>
-              <select
-                name="wrap"
-                value={selectedComponent.props.wrap || "nowrap"}
-                onChange={handlePropChange}
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="nowrap">No Wrap</option>
-                <option value="wrap">Wrap</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Align Items</label>
-              <select
-                name="alignItems"
-                value={selectedComponent.props.alignItems || "stretch"}
-                onChange={handlePropChange}
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="stretch">Stretch</option>
-                <option value="flex-start">Start</option>
-                <option value="center">Center</option>
-                <option value="flex-end">End</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Justify Content</label>
-              <select
-                name="justifyContent"
-                value={selectedComponent.props.justifyContent || "flex-start"}
-                onChange={handlePropChange}
-                className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                <option value="flex-start">Start</option>
-                <option value="center">Center</option>
-                <option value="flex-end">End</option>
-                <option value="space-between">Space Between</option>
-                <option value="space-around">Space Around</option>
-              </select>
-            </div>
-          </div>
+          <FlexContainerControls
+            component={selectedComponent}
+            onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+          />
         );
       case "HEADING":
         return (
@@ -342,36 +296,38 @@ const PropertiesPanel = ({
 
   return (
     <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-bold text-gray-800">
-          {activePanel === "globalSettings" ? "Global Settings" : "Properties"}
-        </h2>
-        <div className="flex space-x-2">
-          <button
-            onClick={handleSaveProject}
-            className="px-3 py-1 bg-green-500 text-white rounded-md flex items-center"
-            title="Save Project"
-          >
-            <FaSave className="mr-2" />
-            Save
-          </button>
-          <button
-            onClick={handleEnterViewMode}
-            className="px-3 py-1 bg-blue-500 text-white rounded-md flex items-center"
-            title="Switch to View Mode"
-          >
-            <FaEye className="mr-2" />
-            View
-          </button>
-        </div>
+      <div className="flex justify-end space-x-2 mb-4">
+        <button
+          onClick={handleSaveProject}
+          className="text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200"
+          title="Save Project"
+        >
+          <FaSave />
+        </button>
+        <button
+          onClick={handleEnterViewMode}
+          className="text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200"
+          title="Switch to View Mode"
+        >
+          <FaEye />
+        </button>
+        <button
+          onClick={onToggleVisibility}
+          className="text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200"
+          title="Hide Panel"
+        >
+          <HidePropertiesPanelArrow className="w-5 h-5" />
+        </button>
       </div>
+      <h2 className="text-lg font-bold text-gray-800 mb-4 text-center">
+        {activePanel === "globalSettings" ? "Global Settings" : "Properties"}
+      </h2>
       <PanelNavBar
         onShowComponentPalette={() => setActivePanel("componentPalette")}
         onShowGlobalSettings={() => setActivePanel("globalSettings")}
         onShowComponentTree={() => setIsComponentTreeVisible(!isComponentTreeVisible)}
         onOpenDataModal={onOpenDataModal}
         onOpenProjectModal={onOpenProjectModal}
-        onToggleVisibility={onToggleVisibility}
         activePanel={activePanel}
         isComponentTreeVisible={isComponentTreeVisible}
       />
@@ -389,15 +345,33 @@ const PropertiesPanel = ({
         {renderPanelContent()}
       </div>
       {currentProject && (
-        <div className="mt-4 p-2 bg-white rounded shadow">
-          <h3 className="text-md font-semibold">Current Project</h3>
-          <p className="text-sm text-gray-700">{currentProject.name}</p>
-          <PageList
-            projectId={currentProject._id}
-            selectedPageId={currentPage?._id}
-            onSelectPage={onSelectPage}
-            onDeletePage={onDeletePage}
-          />
+        <div className="mt-4 bg-blue-50 rounded-lg shadow-md">
+          <div
+            className="flex items-center cursor-pointer p-3 bg-blue-100 rounded-t-lg"
+            onClick={() => setExpandedSections(prev => ({ ...prev, currentProject: !prev.currentProject }))}
+          >
+            <div className="flex-grow">
+              <div className="text-sm font-medium text-blue-800">{currentProject.name}</div>
+              {currentPage && (
+                <div className="text-xs text-blue-600 mt-1">Page: {currentPage.name}</div>
+              )}
+            </div>
+            {expandedSections.currentProject ? (
+              <FaChevronDown className="w-3 h-3 text-blue-600" />
+            ) : (
+              <FaChevronRight className="w-3 h-3 text-blue-600" />
+            )}
+          </div>
+          {expandedSections.currentProject && (
+            <div className="p-3">
+              <PageList
+                projectId={currentProject._id}
+                selectedPageId={currentPage?._id}
+                onSelectPage={onSelectPage}
+                onDeletePage={onDeletePage}
+              />
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,25 +1,23 @@
 import React from 'react';
 import { FaThLarge, FaCog, FaTree, FaDatabase, FaProjectDiagram } from 'react-icons/fa';
-import HidePropertiesPanelArrow from '../common/CustomIcons/HidePropertiesPanelArrow';
 
 const PanelNavBar = ({ 
   onShowComponentPalette, 
   onShowGlobalSettings, 
   onShowComponentTree,
   onOpenDataModal,
-  onOpenProjectModal, // New prop for opening project modal
-  onToggleVisibility,
+  onOpenProjectModal,
   activePanel,
   isComponentTreeVisible
 }) => {
   const getButtonClass = (panelName) => {
-    return `text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200 ${
+    return `flex items-center justify-center w-10 h-10 text-gray-700 hover:bg-gray-300 rounded-full focus:outline-none transition-colors duration-200 ${
       activePanel === panelName || (panelName === 'componentTree' && isComponentTreeVisible) ? 'bg-gray-300' : ''
     }`;
   };
 
   return (
-    <div className="flex justify-end space-x-2 mb-4">
+    <div className="flex justify-center items-center space-x-2 mb-4">
       <button
         onClick={onShowComponentPalette}
         className={getButtonClass('componentPalette')}
@@ -48,20 +46,12 @@ const PanelNavBar = ({
       >
         <FaTree />
       </button>
-      {/* New button for opening project modal */}
       <button
         onClick={onOpenProjectModal}
         className={getButtonClass('projectModal')}
         title="Open Projects"
       >
         <FaProjectDiagram />
-      </button>
-      <button
-        onClick={onToggleVisibility}
-        className="text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200"
-        title="Hide Panel"
-      >
-        <HidePropertiesPanelArrow className="w-5 h-5" />
       </button>
     </div>
   );

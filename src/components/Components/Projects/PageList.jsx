@@ -40,20 +40,22 @@ const PageList = ({
   return (
     <div className="page-list">
       <h3 className="text-lg font-semibold mb-2">Pages</h3>
-      <div className=" mb-4">
-        <input
-          type="text"
-          value={newPageName}
-          onChange={(e) => setNewPageName(e.target.value)}
-          placeholder="New page name"
-          className="flex-grow mr-2 px-2 py-1 border rounded"
-        />
-        <button
-          onClick={handleCreatePage}
-          className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600"
-        >
-          <FaPlus />
-        </button>
+      <div className="flex justify-center mt-2">
+        <div className="flex w-full max-w-xs mb-2">
+          <input
+            type="text"
+            value={newPageName}
+            onChange={(e) => setNewPageName(e.target.value)}
+            placeholder="New Page Name"
+            className="w-full px-2 py-1 text-sm border border-gray-300 rounded-l focus:outline-none focus:ring-1 focus:ring-blue-500"
+          />
+          <button
+            onClick={handleCreatePage}
+            className="px-2 py-1 bg-blue-500 text-white rounded-r hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500 flex-shrink-0"
+          >
+            <FaPlus />
+          </button>
+        </div>
       </div>
       {currentProject.pages.length === 0 ? (
         <p>No pages found. Create a new one to get started!</p>

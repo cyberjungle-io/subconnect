@@ -104,16 +104,16 @@ const HeadingControls = ({ component, onUpdate }) => {
   };
 
   const renderSection = (title, sectionKey, content) => (
-    <div className="mb-4">
+    <div className="mb-2">
       <div
-        className="flex items-center cursor-pointer p-2 bg-gray-100 rounded"
+        className="flex items-center cursor-pointer p-1 bg-gray-100 rounded"
         onClick={() => toggleSection(sectionKey)}
       >
-        {expandedSections[sectionKey] ? <FaChevronDown /> : <FaChevronRight />}
-        <span className="ml-2 font-medium">{title}</span>
+        {expandedSections[sectionKey] ? <FaChevronDown className="w-3 h-3" /> : <FaChevronRight className="w-3 h-3" />}
+        <span className="ml-1 text-sm font-medium">{title}</span>
       </div>
       {expandedSections[sectionKey] && (
-        <div className="mt-2 pl-4">
+        <div className="mt-1 pl-2">
           {content}
         </div>
       )}
@@ -123,36 +123,34 @@ const HeadingControls = ({ component, onUpdate }) => {
   // General Section
   const generalContent = (
     <>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Heading Text</label>
+      <div className="mb-2">
+        <label className="block text-xs font-medium text-gray-700 mb-1">Heading Text</label>
         <input
           type="text"
           name="content"
           value={component.content}
           onChange={(e) => onUpdate({ content: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md"
           placeholder="Enter heading text"
         />
       </div>
 
       <div className="mb-2">
-        <label className="block text-sm font-medium text-gray-700">Font Family</label>
+        <label className="block text-xs font-medium text-gray-700 mb-1">Font Family</label>
         <select
           name="fontFamily"
           value={component.props.fontFamily}
           onChange={handleChange}
-          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+          className="w-full px-2 py-1 text-sm border-gray-300 rounded-md"
         >
           {FONT_OPTIONS.map(font => (
-            <option key={font.value} value={font.value} style={{fontFamily: font.value}}>
-              {font.label}
-            </option>
+            <option key={font.value} value={font.value}>{font.label}</option>
           ))}
         </select>
       </div>
 
       {component.props.fontFamily === 'custom' && (
-        <div className="mt-2">
+        <div className="mt-1">
           <input
             type="text"
             value={customFont}
@@ -161,80 +159,56 @@ const HeadingControls = ({ component, onUpdate }) => {
               handleChange({ target: { name: 'fontFamily', value: e.target.value } });
             }}
             placeholder="Enter custom font name"
-            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            className="w-full px-2 py-1 text-sm border-gray-300 rounded-md"
           />
         </div>
       )}
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Font Style</label>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => handleFontStyleChange('bold')}
-            className={`p-2 rounded ${component.props.fontWeight === 'bold' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
-          >
+      <div className="mb-2">
+        <label className="block text-xs font-medium text-gray-700 mb-1">Font Style</label>
+        <div className="flex space-x-1">
+          <button onClick={() => handleFontStyleChange('bold')} className={`p-1 rounded ${component.props.fontWeight === 'bold' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
             <FaBold />
           </button>
-          <button
-            onClick={() => handleFontStyleChange('italic')}
-            className={`p-2 rounded ${component.props.fontStyle === 'italic' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
-          >
+          <button onClick={() => handleFontStyleChange('italic')} className={`p-1 rounded ${component.props.fontStyle === 'italic' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
             <FaItalic />
           </button>
-          <button
-            onClick={() => handleFontStyleChange('underline')}
-            className={`p-2 rounded ${component.props.textDecoration?.includes('underline') ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
-          >
+          <button onClick={() => handleFontStyleChange('underline')} className={`p-1 rounded ${component.props.textDecoration?.includes('underline') ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
             <FaUnderline />
           </button>
-          <button
-            onClick={() => handleFontStyleChange('overline')}
-            className={`p-2 rounded ${component.props.textDecoration?.includes('overline') ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
-          >
+          <button onClick={() => handleFontStyleChange('overline')} className={`p-1 rounded ${component.props.textDecoration?.includes('overline') ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
             <TbOverline />
           </button>
-          <button
-            onClick={() => handleFontStyleChange('line-through')}
-            className={`p-2 rounded ${component.props.textDecoration?.includes('line-through') ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
-          >
+          <button onClick={() => handleFontStyleChange('line-through')} className={`p-1 rounded ${component.props.textDecoration?.includes('line-through') ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
             <TbStrikethrough />
           </button>
         </div>
       </div>
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Horizontal Alignment</label>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => handleStyleChange('textAlign', 'left')}
-            className={`p-2 rounded ${component.style.textAlign === 'left' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
-          >
+      <div className="mb-2">
+        <label className="block text-xs font-medium text-gray-700 mb-1">Horizontal Alignment</label>
+        <div className="flex space-x-1">
+          <button onClick={() => handleStyleChange('textAlign', 'left')} className={`p-1 rounded ${component.style.textAlign === 'left' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
             <FaAlignLeft />
           </button>
-          <button
-            onClick={() => handleStyleChange('textAlign', 'center')}
-            className={`p-2 rounded ${component.style.textAlign === 'center' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
-          >
+          <button onClick={() => handleStyleChange('textAlign', 'center')} className={`p-1 rounded ${component.style.textAlign === 'center' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
             <FaAlignCenter />
           </button>
-          <button
-            onClick={() => handleStyleChange('textAlign', 'right')}
-            className={`p-2 rounded ${component.style.textAlign === 'right' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}
-          >
+          <button onClick={() => handleStyleChange('textAlign', 'right')} className={`p-1 rounded ${component.style.textAlign === 'right' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
             <FaAlignRight />
           </button>
         </div>
       </div>
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Heading Size</label>
+      <div className="mb-2">
+        <label className="block text-xs font-medium text-gray-700 mb-1">Heading Size</label>
         <select
           value={`${component.props.level}|${component.style.fontSize}`}
           onChange={(e) => {
             const [level, fontSize] = e.target.value.split('|');
             handleHeadingChange(level, fontSize);
           }}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="w-full px-2 py-1 text-sm border-gray-300 rounded-md"
         >
           <option value="h1|2rem">H1 (2rem)</option>
           <option value="h2|1.5rem">H2 (1.5rem)</option>
@@ -245,8 +219,8 @@ const HeadingControls = ({ component, onUpdate }) => {
         </select>
       </div>
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+      <div className="mb-2">
+        <label className="block text-xs font-medium text-gray-700 mb-1">Color</label>
         <ColorPicker
           color={component.props.color}
           onChange={(color) => handleChange({ target: { name: 'color', value: color } })}
@@ -258,12 +232,12 @@ const HeadingControls = ({ component, onUpdate }) => {
   // Advanced Section
   const advancedContent = (
     <>
-      <div className="mb-4">
-        <div className="flex justify-between items-center mb-2">
-          <label className="text-sm font-medium text-gray-700">Line Height</label>
+      <div className="mb-2">
+        <div className="flex justify-between items-center mb-1">
+          <label className="text-xs font-medium text-gray-700">Line Height</label>
           <button
             onClick={() => handleReset('lineHeight', 1.2)}
-            className="text-xs bg-gray-200 hover:bg-gray-300 rounded px-2 py-1"
+            className="text-xs bg-gray-200 hover:bg-gray-300 rounded px-1 py-0.5"
           >
             <FaUndo className="inline mr-1" /> Reset
           </button>
@@ -278,14 +252,14 @@ const HeadingControls = ({ component, onUpdate }) => {
           onChange={(e) => handleChange({ target: { name: 'lineHeight', value: parseFloat(e.target.value) } })}
           className="w-full"
         />
-        <span className="text-sm">{component.props.lineHeight || 1.2}</span>
+        <span className="text-xs">{component.props.lineHeight || 1.2}</span>
       </div>
-      <div className="mb-4">
-        <div className="flex justify-between items-center mb-2">
-          <label className="text-sm font-medium text-gray-700">Letter Spacing</label>
+      <div className="mb-2">
+        <div className="flex justify-between items-center mb-1">
+          <label className="text-xs font-medium text-gray-700">Letter Spacing</label>
           <button
             onClick={() => handleReset('letterSpacing', 0)}
-            className="text-xs bg-gray-200 hover:bg-gray-300 rounded px-2 py-1"
+            className="text-xs bg-gray-200 hover:bg-gray-300 rounded px-1 py-0.5"
           >
             <FaUndo className="inline mr-1" /> Reset
           </button>
@@ -300,14 +274,14 @@ const HeadingControls = ({ component, onUpdate }) => {
           onChange={(e) => handleChange({ target: { name: 'letterSpacing', value: e.target.value + 'em' } })}
           className="w-full"
         />
-        <span className="text-sm">{component.props.letterSpacing || '0em'}</span>
+        <span className="text-xs">{component.props.letterSpacing || '0em'}</span>
       </div>
-      <div className="mb-4">
-        <div className="flex justify-between items-center mb-2">
-          <label className="text-sm font-medium text-gray-700">Word Spacing</label>
+      <div className="mb-2">
+        <div className="flex justify-between items-center mb-1">
+          <label className="text-xs font-medium text-gray-700">Word Spacing</label>
           <button
             onClick={() => handleReset('wordSpacing', 0)}
-            className="text-xs bg-gray-200 hover:bg-gray-300 rounded px-2 py-1"
+            className="text-xs bg-gray-200 hover:bg-gray-300 rounded px-1 py-0.5"
           >
             <FaUndo className="inline mr-1" /> Reset
           </button>
@@ -322,29 +296,29 @@ const HeadingControls = ({ component, onUpdate }) => {
           onChange={(e) => handleChange({ target: { name: 'wordSpacing', value: e.target.value + 'em' } })}
           className="w-full"
         />
-        <span className="text-sm">{component.props.wordSpacing || '0em'}</span>
+        <span className="text-xs">{component.props.wordSpacing || '0em'}</span>
       </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Text Shadow</label>
-        <div className="flex space-x-2">
+      <div className="mb-2">
+        <label className="block text-xs font-medium text-gray-700 mb-1">Text Shadow</label>
+        <div className="flex space-x-1">
           <input
             type="number"
             placeholder="X"
-            className="w-1/4 px-2 py-1 border rounded"
+            className="w-1/4 px-2 py-1 text-sm border rounded"
             value={component.props.textShadowX || 0}
             onChange={(e) => handleChange({ target: { name: 'textShadowX', value: e.target.value } })}
           />
           <input
             type="number"
             placeholder="Y"
-            className="w-1/4 px-2 py-1 border rounded"
+            className="w-1/4 px-2 py-1 text-sm border rounded"
             value={component.props.textShadowY || 0}
             onChange={(e) => handleChange({ target: { name: 'textShadowY', value: e.target.value } })}
           />
           <input
             type="number"
             placeholder="Blur"
-            className="w-1/4 px-2 py-1 border rounded"
+            className="w-1/4 px-2 py-1 text-sm border rounded"
             value={component.props.textShadowBlur || 0}
             onChange={(e) => handleChange({ target: { name: 'textShadowBlur', value: e.target.value } })}
           />
@@ -356,13 +330,13 @@ const HeadingControls = ({ component, onUpdate }) => {
           />
         </div>
       </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Hover Effect</label>
+      <div className="mb-2">
+        <label className="block text-xs font-medium text-gray-700 mb-1">Hover Effect</label>
         <select
           name="hoverEffect"
           value={component.props.hoverEffect || 'none'}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="w-full px-2 py-1 text-sm border-gray-300 rounded-md"
         >
           <option value="none">None</option>
           <option value="underline">Underline</option>
@@ -370,13 +344,13 @@ const HeadingControls = ({ component, onUpdate }) => {
           <option value="scale">Scale</option>
         </select>
       </div>
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Click Action</label>
+      <div className="mb-2">
+        <label className="block text-xs font-medium text-gray-700 mb-1">Click Action</label>
         <select
           name="clickAction"
           value={component.props.clickAction || 'none'}
           onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="w-full px-2 py-1 text-sm border-gray-300 rounded-md"
         >
           <option value="none">None</option>
           <option value="smoothScroll">Smooth Scroll</option>
