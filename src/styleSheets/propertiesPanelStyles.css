@@ -7,6 +7,169 @@
   position: relative;
 }
 
+/* Control section styles */
+.control-section {
+  margin-bottom: 1rem;
+}
+
+.control-section-header {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem;
+  background-color: #f3f4f6;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s;
+}
+
+.control-section-header:hover {
+  background-color: #e5e7eb;
+}
+
+.control-section-title {
+  margin-left: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.control-section-content {
+  padding: 0.5rem;
+}
+
+/* Form element styles */
+.control-input,
+.control-select {
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  background-color: white;
+  transition: border-color 0.2s;
+}
+
+.control-input:focus,
+.control-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.control-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.control-button {
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+  background-color: transparent;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.control-button:hover {
+  background-color: #f3f4f6;
+}
+
+.control-button.active {
+  background-color: #e5e7eb;
+  color: #3b82f6;
+}
+
+.control-button-group {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.control-button-group .control-button {
+  flex: 1;
+}
+
+/* Spacing for form elements */
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.mb-4 {
+  margin-bottom: 1rem;
+}
+
+/* Specific styles for SpacingControls and SpacingPreview */
+.space-y-2 > * + * {
+  margin-top: 0.5rem;
+}
+
+/* Styles for checkbox inputs */
+input[type="checkbox"] {
+  margin-right: 0.5rem;
+}
+
+/* Styles for ColorPicker (if needed) */
+.color-picker-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+/* Additional utility classes */
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.text-xs {
+  font-size: 0.75rem;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.rounded {
+  border-radius: 0.25rem;
+}
+
+.transition-colors {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.duration-200 {
+  transition-duration: 200ms;
+}
+
+.bg-gray-200 {
+  background-color: #e5e7eb;
+}
+
+.hover\:bg-gray-300:hover {
+  background-color: #d1d5db;
+}
+
+.text-gray-800 {
+  color: #1f2937;
+}
+
 /* Panel header */
 .panel-header {
   display: flex;
@@ -253,4 +416,66 @@
 
 .page-list-container {
   padding: 0.75rem;
+}
+
+/* Input field theme */
+.properties-input-container {
+  display: flex;
+  align-items: center;
+  background-color: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.properties-input-container:focus-within {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+
+.properties-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  background-color: transparent;
+  border: none;
+  outline: none;
+}
+
+.properties-input::-webkit-inner-spin-button,
+.properties-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.properties-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.properties-select-wrapper {
+  position: relative;
+  min-width: 60px;
+}
+
+.properties-select {
+  width: 100%;
+  padding: 0.375rem 1.5rem 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  background-color: transparent;
+  border: none;
+  border-left: 1px solid #d1d5db;
+  outline: none;
+  appearance: none;
+  cursor: pointer;
+}
+
+.properties-select-arrow {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: #6b7280;
 }

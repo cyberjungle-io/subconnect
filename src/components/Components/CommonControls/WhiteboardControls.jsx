@@ -52,47 +52,50 @@ const WhiteboardControls = ({ component, onUpdate }) => {
   };
 
   return (
-    <div className="whiteboard-controls space-y-4">
-      <h3 className="text-lg font-medium text-gray-900 mb-4">Whiteboard Controls</h3>
-      
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-700">Disable Dragging</span>
-        <label className="switch">
-          <input
-            type="checkbox"
-            checked={component.isDraggingDisabled}
-            onChange={handleDragToggle}
+    <div className="control-section">
+      <div className="control-section-header">
+        <span className="control-section-title">Whiteboard Controls</span>
+      </div>
+      <div className="control-section-content">
+        <div className="mb-2">
+          <label className="control-label">
+            <input
+              type="checkbox"
+              checked={component.isDraggingDisabled}
+              onChange={handleDragToggle}
+              className="mr-2"
+            />
+            Disable Dragging
+          </label>
+        </div>
+
+        <div className="mb-2">
+          <label className="control-label">Background Color</label>
+          <ColorPicker
+            color={component.props.backgroundColor || '#ffffff'}
+            onChange={handleBackgroundColorChange}
           />
-          <span className="slider round"></span>
-        </label>
-      </div>
+        </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Background Color</label>
-        <ColorPicker
-          color={component.props.backgroundColor || '#ffffff'}
-          onChange={handleBackgroundColorChange}
-        />
-      </div>
+        <div className="mb-2">
+          <label className="control-label">Width</label>
+          <input
+            type="text"
+            value={component.style.width || '100%'}
+            onChange={handleWidthChange}
+            className="control-input"
+          />
+        </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Width</label>
-        <input
-          type="text"
-          value={component.style.width || '100%'}
-          onChange={handleWidthChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">Height</label>
-        <input
-          type="text"
-          value={component.style.height || '300px'}
-          onChange={handleHeightChange}
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        />
+        <div className="mb-2">
+          <label className="control-label">Height</label>
+          <input
+            type="text"
+            value={component.style.height || '300px'}
+            onChange={handleHeightChange}
+            className="control-input"
+          />
+        </div>
       </div>
     </div>
   );

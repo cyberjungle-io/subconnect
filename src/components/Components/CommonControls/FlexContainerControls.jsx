@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 
 const FlexContainerControls = ({ component, onUpdate }) => {
+  const [isExpanded, setIsExpanded] = useState(true);
+
   const handlePropChange = (e) => {
     const { name, value } = e.target;
     onUpdate({
@@ -50,86 +53,94 @@ const FlexContainerControls = ({ component, onUpdate }) => {
   };
 
   return (
-    <div className="flex flex-col space-y-2 text-sm">
-      {renderButtonControl("Direction", "direction", [
-        { value: "row", label: "Row" },
-        { value: "column", label: "Column" }
-      ])}
-      {renderButtonControl("Wrap", "wrap", [
-        { value: "nowrap", label: "No Wrap" },
-        { value: "wrap", label: "Wrap" },
-        { value: "wrap-reverse", label: "Wrap Reverse" }
-      ])}
-      <div className="mb-2">
-        <label className={labelClass}>Justify Content</label>
-        <div className="flex flex-col gap-2">
-          <div className="flex gap-2">
-            {["flex-start", "center", "flex-end"].map(value => (
-              <button
-                key={value}
-                onClick={() => handlePropChange({ target: { name: "justifyContent", value } })}
-                className={component.props.justifyContent === value ? activeButtonClass : buttonClass}
-              >
-                {value === "flex-start" ? "Start" : value === "flex-end" ? "End" : "Center"}
-              </button>
-            ))}
+    <div className="control-section">
+      <div className="control-section-header" onClick={() => setIsExpanded(!isExpanded)}>
+        {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
+        <span className="control-section-title">Flex Container</span>
+      </div>
+      {isExpanded && (
+        <div className="control-section-content">
+          {renderButtonControl("Direction", "direction", [
+            { value: "row", label: "Row" },
+            { value: "column", label: "Column" }
+          ])}
+          {renderButtonControl("Wrap", "wrap", [
+            { value: "nowrap", label: "No Wrap" },
+            { value: "wrap", label: "Wrap" },
+            { value: "wrap-reverse", label: "Wrap Reverse" }
+          ])}
+          <div className="mb-2">
+            <label className={labelClass}>Justify Content</label>
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2">
+                {["flex-start", "center", "flex-end"].map(value => (
+                  <button
+                    key={value}
+                    onClick={() => handlePropChange({ target: { name: "justifyContent", value } })}
+                    className={component.props.justifyContent === value ? activeButtonClass : buttonClass}
+                  >
+                    {value === "flex-start" ? "Start" : value === "flex-end" ? "End" : "Center"}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                {["space-between", "space-around", "space-evenly"].map(value => (
+                  <button
+                    key={value}
+                    onClick={() => handlePropChange({ target: { name: "justifyContent", value } })}
+                    className={component.props.justifyContent === value ? activeButtonClass : buttonClass}
+                  >
+                    {value.split('-')[1]}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="flex gap-2">
-            {["space-between", "space-around", "space-evenly"].map(value => (
-              <button
-                key={value}
-                onClick={() => handlePropChange({ target: { name: "justifyContent", value } })}
-                className={component.props.justifyContent === value ? activeButtonClass : buttonClass}
+          {renderButtonControl("Align Items", "alignItems", [
+            { value: "stretch", label: "Stretch" },
+            { value: "flex-start", label: "Start" },
+            { value: "center", label: "Center" },
+            { value: "flex-end", label: "End" },
+            { value: "baseline", label: "Baseline" }
+          ])}
+          {renderButtonControl("Align Content", "alignContent", [
+            { value: "stretch", label: "Stretch" },
+            { value: "flex-start", label: "Start" },
+            { value: "center", label: "Center" },
+            { value: "flex-end", label: "End" },
+            { value: "space-between", label: "Between" },
+            { value: "space-around", label: "Around" }
+          ])}
+          <div className="mb-2">
+            <label className={labelClass}>Gap</label>
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min="0"
+                value={gapValue}
+                onChange={(e) => {
+                  setGapValue(e.target.value);
+                  handleGapChange();
+                }}
+                className="flex-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+              <select
+                value={gapUnit}
+                onChange={(e) => {
+                  setGapUnit(e.target.value);
+                  handleGapChange();
+                }}
+                className="text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               >
-                {value.split('-')[1]}
-              </button>
-            ))}
+                <option value="px">px</option>
+                <option value="rem">rem</option>
+                <option value="em">em</option>
+                <option value="%">%</option>
+              </select>
+            </div>
           </div>
         </div>
-      </div>
-      {renderButtonControl("Align Items", "alignItems", [
-        { value: "stretch", label: "Stretch" },
-        { value: "flex-start", label: "Start" },
-        { value: "center", label: "Center" },
-        { value: "flex-end", label: "End" },
-        { value: "baseline", label: "Baseline" }
-      ])}
-      {renderButtonControl("Align Content", "alignContent", [
-        { value: "stretch", label: "Stretch" },
-        { value: "flex-start", label: "Start" },
-        { value: "center", label: "Center" },
-        { value: "flex-end", label: "End" },
-        { value: "space-between", label: "Between" },
-        { value: "space-around", label: "Around" }
-      ])}
-      <div className="mb-2">
-        <label className={labelClass}>Gap</label>
-        <div className="flex gap-2">
-          <input
-            type="number"
-            min="0"
-            value={gapValue}
-            onChange={(e) => {
-              setGapValue(e.target.value);
-              handleGapChange();
-            }}
-            className="flex-1 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-          <select
-            value={gapUnit}
-            onChange={(e) => {
-              setGapUnit(e.target.value);
-              handleGapChange();
-            }}
-            className="text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="px">px</option>
-            <option value="rem">rem</option>
-            <option value="em">em</option>
-            <option value="%">%</option>
-          </select>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

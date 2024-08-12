@@ -9,11 +9,6 @@ const DimensionControls = ({ style, onStyleChange }) => {
   const [heightUnit, setHeightUnit] = useState('px');
   const [activePreset, setActivePreset] = useState(null);
   
-  const [expandedSections, setExpandedSections] = useState({
-    width: false,
-    height: false,
-  });
-
   useEffect(() => {
     if (style.width && style.height) {
       const widthValue = parseFloat(style.width);
@@ -63,11 +58,6 @@ const DimensionControls = ({ style, onStyleChange }) => {
 
   const isActiveSize = (dimension, value, unit) => {
     return style[dimension] === `${value}${unit}`;
-  };
-
-  const toggleSection = (section, event) => {
-    event.stopPropagation();
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
   const renderSizeButtons = (dimension) => {
@@ -125,23 +115,23 @@ const DimensionControls = ({ style, onStyleChange }) => {
     const units = ['px', '%', 'em', 'rem'];
   
     return (
-      <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center bg-gray-100 bg-opacity-50 rounded-sm overflow-hidden border border-b-gray-400">
+      <div className="flex items-center justify-center w-full" onClick={(e) => e.stopPropagation()}>
+        <div className="properties-input-container flex-grow">
           <input
             type="number"
             value={number}
             onChange={(e) => setDimension(name, e.target.value, unit)}
-            className="w-16 py-1 px-2 text-right bg-transparent focus:outline-none focus:border-indigo-500 transition-colors duration-200"
+            className="properties-input w-full text-right"
             placeholder={name.charAt(0).toUpperCase() + name.slice(1)}
           />
-          <div className="relative group">
+          <div className="properties-select-wrapper">
             <select
               value={unit}
               onChange={(e) => {
                 setUnit(e.target.value);
                 setDimension(name, number, e.target.value);
               }}
-              className="py-1 pl-2 pr-6 bg-transparent focus:outline-none text-gray-700 appearance-none cursor-pointer"
+              className="properties-select"
             >
               {units.map((u) => (
                 <option key={u} value={u}>
@@ -149,8 +139,8 @@ const DimensionControls = ({ style, onStyleChange }) => {
                 </option>
               ))}
             </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-              <FaChevronDown className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+            <div className="properties-select-arrow">
+              <FaChevronDown className="w-3 h-3" />
             </div>
           </div>
         </div>
@@ -173,63 +163,29 @@ const DimensionControls = ({ style, onStyleChange }) => {
   };
 
   const renderSection = (title, name, value, unit, setUnit) => {
-    const isExpanded = expandedSections[name];
     return (
       <div className="mb-4">
-        <div className="flex items-center p-2 rounded-md transition-colors duration-200">
-          <button
-            onClick={(e) => toggleSection(name, e)}
-            className={`mr-2 w-6 h-6 flex items-center justify-center rounded-full transition-colors duration-200 
-              focus:outline-none
-              ${isExpanded 
-                ? 'bg-gray-300 text-gray-700' 
-                : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
-              }`}
-          >
-            {isExpanded ? (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-              </svg>
-            )}
-          </button>
-          <span className="text-sm font-bold text-gray-700 flex-grow mr-4">{title}</span>
+        <span className="text-sm font-bold text-gray-700 mb-2 block">{title}</span>
+        {renderSizeButtons(name)}
+        <div className="flex items-center">
           {renderInput(name, value, unit, setUnit)}
         </div>
-        {isExpanded && (
-          <div className="mt-2 pl-6">
-            {renderSizeButtons(name)}
-            {/* Space for future advanced features */}
-          </div>
-        )}
       </div>
     );
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center">
-        
-        <div className="flex items-center">
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1 rounded transition-colors duration-200 text-gray-700 hover:bg-gray-200"
-            title={isExpanded ? "Collapse dimensions" : "Expand dimensions"}
-          >
-            {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
-          </button><h3 className="text-lg font-medium text-gray-900 ml-3">Dimensions</h3>
-          
-        </div>
+    <div className="control-section">
+      <div className="control-section-header" onClick={() => setIsExpanded(!isExpanded)}>
+        {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
+        <span className="control-section-title">Dimensions</span>
       </div>
       {isExpanded && (
-        <>
+        <div className="control-section-content">
           {renderPresetButtons()}
           {renderSection('Width', 'width', style.width, widthUnit, setWidthUnit)}
           {renderSection('Height', 'height', style.height, heightUnit, setHeightUnit)}
-        </>
+        </div>
       )}
     </div>
   );

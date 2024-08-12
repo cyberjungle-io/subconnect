@@ -303,6 +303,9 @@ const PropertiesPanel = ({
 
   return (
     <div className="properties-panel">
+      <h2 className="properties-panel-title">
+        {activePanel === "globalSettings" ? "Global Settings" : "Properties"}
+      </h2>
       <div className="properties-panel-header">
         <button
           onClick={handleSaveProject}
@@ -326,9 +329,6 @@ const PropertiesPanel = ({
           <HidePropertiesPanelArrow className="panel-button-icon" />
         </button>
       </div>
-      <h2 className="properties-panel-title">
-        {activePanel === "globalSettings" ? "Global Settings" : "Properties"}
-      </h2>
       <PanelNavBar
         onShowComponentPalette={() => setActivePanel("componentPalette")}
         onShowGlobalSettings={() => setActivePanel("globalSettings")}

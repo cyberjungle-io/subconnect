@@ -104,16 +104,16 @@ const HeadingControls = ({ component, onUpdate }) => {
   };
 
   const renderSection = (title, sectionKey, content) => (
-    <div className="mb-2">
+    <div className="control-section">
       <div
-        className="flex items-center cursor-pointer p-1 bg-gray-100 rounded"
+        className="control-section-header"
         onClick={() => toggleSection(sectionKey)}
       >
-        {expandedSections[sectionKey] ? <FaChevronDown className="w-3 h-3" /> : <FaChevronRight className="w-3 h-3" />}
-        <span className="ml-1 text-sm font-medium">{title}</span>
+        {expandedSections[sectionKey] ? <FaChevronDown /> : <FaChevronRight />}
+        <span className="control-section-title">{title}</span>
       </div>
       {expandedSections[sectionKey] && (
-        <div className="mt-1 pl-2">
+        <div className="control-section-content">
           {content}
         </div>
       )}
@@ -124,24 +124,24 @@ const HeadingControls = ({ component, onUpdate }) => {
   const generalContent = (
     <>
       <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Heading Text</label>
+        <label className="control-label">Heading Text</label>
         <input
           type="text"
           name="content"
           value={component.content}
           onChange={(e) => onUpdate({ content: e.target.value })}
-          className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md"
+          className="control-input"
           placeholder="Enter heading text"
         />
       </div>
 
       <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Font Family</label>
+        <label className="control-label">Font Family</label>
         <select
           name="fontFamily"
           value={component.props.fontFamily}
           onChange={handleChange}
-          className="w-full px-2 py-1 text-sm border-gray-300 rounded-md"
+          className="control-select"
         >
           {FONT_OPTIONS.map(font => (
             <option key={font.value} value={font.value}>{font.label}</option>
@@ -159,56 +159,56 @@ const HeadingControls = ({ component, onUpdate }) => {
               handleChange({ target: { name: 'fontFamily', value: e.target.value } });
             }}
             placeholder="Enter custom font name"
-            className="w-full px-2 py-1 text-sm border-gray-300 rounded-md"
+            className="control-input"
           />
         </div>
       )}
 
       <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Font Style</label>
-        <div className="flex space-x-1">
-          <button onClick={() => handleFontStyleChange('bold')} className={`p-1 rounded ${component.props.fontWeight === 'bold' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
+        <label className="control-label">Font Style</label>
+        <div className="control-button-group">
+          <button onClick={() => handleFontStyleChange('bold')} className={`control-button ${component.props.fontWeight === 'bold' ? 'active' : ''}`}>
             <FaBold />
           </button>
-          <button onClick={() => handleFontStyleChange('italic')} className={`p-1 rounded ${component.props.fontStyle === 'italic' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
+          <button onClick={() => handleFontStyleChange('italic')} className={`control-button ${component.props.fontStyle === 'italic' ? 'active' : ''}`}>
             <FaItalic />
           </button>
-          <button onClick={() => handleFontStyleChange('underline')} className={`p-1 rounded ${component.props.textDecoration?.includes('underline') ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
+          <button onClick={() => handleFontStyleChange('underline')} className={`control-button ${component.props.textDecoration?.includes('underline') ? 'active' : ''}`}>
             <FaUnderline />
           </button>
-          <button onClick={() => handleFontStyleChange('overline')} className={`p-1 rounded ${component.props.textDecoration?.includes('overline') ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
+          <button onClick={() => handleFontStyleChange('overline')} className={`control-button ${component.props.textDecoration?.includes('overline') ? 'active' : ''}`}>
             <TbOverline />
           </button>
-          <button onClick={() => handleFontStyleChange('line-through')} className={`p-1 rounded ${component.props.textDecoration?.includes('line-through') ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
+          <button onClick={() => handleFontStyleChange('line-through')} className={`control-button ${component.props.textDecoration?.includes('line-through') ? 'active' : ''}`}>
             <TbStrikethrough />
           </button>
         </div>
       </div>
 
       <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Horizontal Alignment</label>
-        <div className="flex space-x-1">
-          <button onClick={() => handleStyleChange('textAlign', 'left')} className={`p-1 rounded ${component.style.textAlign === 'left' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
+        <label className="control-label">Horizontal Alignment</label>
+        <div className="control-button-group">
+          <button onClick={() => handleStyleChange('textAlign', 'left')} className={`control-button ${component.style.textAlign === 'left' ? 'active' : ''}`}>
             <FaAlignLeft />
           </button>
-          <button onClick={() => handleStyleChange('textAlign', 'center')} className={`p-1 rounded ${component.style.textAlign === 'center' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
+          <button onClick={() => handleStyleChange('textAlign', 'center')} className={`control-button ${component.style.textAlign === 'center' ? 'active' : ''}`}>
             <FaAlignCenter />
           </button>
-          <button onClick={() => handleStyleChange('textAlign', 'right')} className={`p-1 rounded ${component.style.textAlign === 'right' ? 'bg-indigo-500 text-white' : 'bg-gray-200'}`}>
+          <button onClick={() => handleStyleChange('textAlign', 'right')} className={`control-button ${component.style.textAlign === 'right' ? 'active' : ''}`}>
             <FaAlignRight />
           </button>
         </div>
       </div>
 
       <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Heading Size</label>
+        <label className="control-label">Heading Size</label>
         <select
           value={`${component.props.level}|${component.style.fontSize}`}
           onChange={(e) => {
             const [level, fontSize] = e.target.value.split('|');
             handleHeadingChange(level, fontSize);
           }}
-          className="w-full px-2 py-1 text-sm border-gray-300 rounded-md"
+          className="control-select"
         >
           <option value="h1|2rem">H1 (2rem)</option>
           <option value="h2|1.5rem">H2 (1.5rem)</option>
@@ -220,7 +220,7 @@ const HeadingControls = ({ component, onUpdate }) => {
       </div>
 
       <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Color</label>
+        <label className="control-label">Color</label>
         <ColorPicker
           color={component.props.color}
           onChange={(color) => handleChange({ target: { name: 'color', value: color } })}
@@ -234,10 +234,10 @@ const HeadingControls = ({ component, onUpdate }) => {
     <>
       <div className="mb-2">
         <div className="flex justify-between items-center mb-1">
-          <label className="text-xs font-medium text-gray-700">Line Height</label>
+          <label className="control-label">Line Height</label>
           <button
             onClick={() => handleReset('lineHeight', 1.2)}
-            className="text-xs bg-gray-200 hover:bg-gray-300 rounded px-1 py-0.5"
+            className="control-button bg-gray-200 hover:bg-gray-300"
           >
             <FaUndo className="inline mr-1" /> Reset
           </button>
@@ -256,10 +256,10 @@ const HeadingControls = ({ component, onUpdate }) => {
       </div>
       <div className="mb-2">
         <div className="flex justify-between items-center mb-1">
-          <label className="text-xs font-medium text-gray-700">Letter Spacing</label>
+          <label className="control-label">Letter Spacing</label>
           <button
             onClick={() => handleReset('letterSpacing', 0)}
-            className="text-xs bg-gray-200 hover:bg-gray-300 rounded px-1 py-0.5"
+            className="control-button bg-gray-200 hover:bg-gray-300"
           >
             <FaUndo className="inline mr-1" /> Reset
           </button>
@@ -278,10 +278,10 @@ const HeadingControls = ({ component, onUpdate }) => {
       </div>
       <div className="mb-2">
         <div className="flex justify-between items-center mb-1">
-          <label className="text-xs font-medium text-gray-700">Word Spacing</label>
+          <label className="control-label">Word Spacing</label>
           <button
             onClick={() => handleReset('wordSpacing', 0)}
-            className="text-xs bg-gray-200 hover:bg-gray-300 rounded px-1 py-0.5"
+            className="control-button bg-gray-200 hover:bg-gray-300"
           >
             <FaUndo className="inline mr-1" /> Reset
           </button>
@@ -299,26 +299,26 @@ const HeadingControls = ({ component, onUpdate }) => {
         <span className="text-xs">{component.props.wordSpacing || '0em'}</span>
       </div>
       <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Text Shadow</label>
+        <label className="control-label">Text Shadow</label>
         <div className="flex space-x-1">
           <input
             type="number"
             placeholder="X"
-            className="w-1/4 px-2 py-1 text-sm border rounded"
+            className="control-input"
             value={component.props.textShadowX || 0}
             onChange={(e) => handleChange({ target: { name: 'textShadowX', value: e.target.value } })}
           />
           <input
             type="number"
             placeholder="Y"
-            className="w-1/4 px-2 py-1 text-sm border rounded"
+            className="control-input"
             value={component.props.textShadowY || 0}
             onChange={(e) => handleChange({ target: { name: 'textShadowY', value: e.target.value } })}
           />
           <input
             type="number"
             placeholder="Blur"
-            className="w-1/4 px-2 py-1 text-sm border rounded"
+            className="control-input"
             value={component.props.textShadowBlur || 0}
             onChange={(e) => handleChange({ target: { name: 'textShadowBlur', value: e.target.value } })}
           />
@@ -331,12 +331,12 @@ const HeadingControls = ({ component, onUpdate }) => {
         </div>
       </div>
       <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Hover Effect</label>
+        <label className="control-label">Hover Effect</label>
         <select
           name="hoverEffect"
           value={component.props.hoverEffect || 'none'}
           onChange={handleChange}
-          className="w-full px-2 py-1 text-sm border-gray-300 rounded-md"
+          className="control-select"
         >
           <option value="none">None</option>
           <option value="underline">Underline</option>
@@ -345,12 +345,12 @@ const HeadingControls = ({ component, onUpdate }) => {
         </select>
       </div>
       <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Click Action</label>
+        <label className="control-label">Click Action</label>
         <select
           name="clickAction"
           value={component.props.clickAction || 'none'}
           onChange={handleChange}
-          className="w-full px-2 py-1 text-sm border-gray-300 rounded-md"
+          className="control-select"
         >
           <option value="none">None</option>
           <option value="smoothScroll">Smooth Scroll</option>

@@ -119,53 +119,48 @@ const SpacingPreview = ({ padding, margin, dimensions, onUpdate }) => {
   );
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center">
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="p-1 rounded transition-colors duration-200 text-gray-700 hover:bg-gray-200"
-          title={isExpanded ? "Collapse spacing preview" : "Expand spacing preview"}
-        >
-          {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
-        </button>
-        <h3 className="text-lg font-medium text-gray-900 ml-3">Preview</h3>
+    <div className="control-section">
+      <div className="control-section-header" onClick={() => setIsExpanded(!isExpanded)}>
+        {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
+        <span className="control-section-title">Spacing Preview</span>
       </div>
-      
       {isExpanded && (
-        <div style={containerStyle}>
-          <div style={boxStyle}>
-            <div style={{...marginStyle, height: parsedMargin.top}}>
-              {renderLabel(`${parsedMargin.top}px`, 'marginTop', {top: '2px', left: '50%', transform: 'translateX(-50%)'})}
-            </div>
-            <div style={{display: 'flex', flex: 1}}>
-              <div style={{...marginStyle, width: parsedMargin.left}}>
-                {renderLabel(`${parsedMargin.left}px`, 'marginLeft', {left: '2px', top: '50%', transform: 'translateY(-50%) rotate(-90deg)', transformOrigin: 'left center'})}
+        <div className="control-section-content">
+          <div style={containerStyle}>
+            <div style={boxStyle}>
+              <div style={{...marginStyle, height: parsedMargin.top}}>
+                {renderLabel(`${parsedMargin.top}px`, 'marginTop', {top: '2px', left: '50%', transform: 'translateX(-50%)'})}
               </div>
-              <div style={{flex: 1, display: 'flex', flexDirection: 'column'}}>
-                <div style={{...paddingStyle, height: parsedPadding.top}}>
-                  {renderLabel(`${parsedPadding.top}px`, 'paddingTop', {top: '2px', left: '50%', transform: 'translateX(-50%)'})}
+              <div style={{display: 'flex', flex: 1}}>
+                <div style={{...marginStyle, width: parsedMargin.left}}>
+                  {renderLabel(`${parsedMargin.left}px`, 'marginLeft', {left: '2px', top: '50%', transform: 'translateY(-50%) rotate(-90deg)', transformOrigin: 'left center'})}
                 </div>
-                <div style={{display: 'flex', flex: 1}}>
-                  <div style={{...paddingStyle, width: parsedPadding.left}}>
-                    {renderLabel(`${parsedPadding.left}px`, 'paddingLeft', {left: '2px', top: '50%', transform: 'translateY(-50%) rotate(-90deg)', transformOrigin: 'left center'})}
+                <div style={{flex: 1, display: 'flex', flexDirection: 'column'}}>
+                  <div style={{...paddingStyle, height: parsedPadding.top}}>
+                    {renderLabel(`${parsedPadding.top}px`, 'paddingTop', {top: '2px', left: '50%', transform: 'translateX(-50%)'})}
                   </div>
-                  <div style={{...contentStyle, flex: 1, position: 'relative'}}>
-                    {renderLabel(`${parsedDimensions.width}x${parsedDimensions.height}`, 'dimensions', {top: '50%', left: '50%', transform: 'translate(-50%, -50%)'})}
+                  <div style={{display: 'flex', flex: 1}}>
+                    <div style={{...paddingStyle, width: parsedPadding.left}}>
+                      {renderLabel(`${parsedPadding.left}px`, 'paddingLeft', {left: '2px', top: '50%', transform: 'translateY(-50%) rotate(-90deg)', transformOrigin: 'left center'})}
+                    </div>
+                    <div style={{...contentStyle, flex: 1, position: 'relative'}}>
+                      {renderLabel(`${parsedDimensions.width}x${parsedDimensions.height}`, 'dimensions', {top: '50%', left: '50%', transform: 'translate(-50%, -50%)'})}
+                    </div>
+                    <div style={{...paddingStyle, width: parsedPadding.right}}>
+                      {renderLabel(`${parsedPadding.right}px`, 'paddingRight', {right: '2px', top: '50%', transform: 'translateY(-50%) rotate(90deg)', transformOrigin: 'right center'})}
+                    </div>
                   </div>
-                  <div style={{...paddingStyle, width: parsedPadding.right}}>
-                    {renderLabel(`${parsedPadding.right}px`, 'paddingRight', {right: '2px', top: '50%', transform: 'translateY(-50%) rotate(90deg)', transformOrigin: 'right center'})}
+                  <div style={{...paddingStyle, height: parsedPadding.bottom}}>
+                    {renderLabel(`${parsedPadding.bottom}px`, 'paddingBottom', {bottom: '2px', left: '50%', transform: 'translateX(-50%)'})}
                   </div>
                 </div>
-                <div style={{...paddingStyle, height: parsedPadding.bottom}}>
-                  {renderLabel(`${parsedPadding.bottom}px`, 'paddingBottom', {bottom: '2px', left: '50%', transform: 'translateX(-50%)'})}
+                <div style={{...marginStyle, width: parsedMargin.right}}>
+                  {renderLabel(`${parsedMargin.right}px`, 'marginRight', {right: '2px', top: '50%', transform: 'translateY(-50%) rotate(90deg)', transformOrigin: 'right center'})}
                 </div>
               </div>
-              <div style={{...marginStyle, width: parsedMargin.right}}>
-                {renderLabel(`${parsedMargin.right}px`, 'marginRight', {right: '2px', top: '50%', transform: 'translateY(-50%) rotate(90deg)', transformOrigin: 'right center'})}
+              <div style={{...marginStyle, height: parsedMargin.bottom}}>
+                {renderLabel(`${parsedMargin.bottom}px`, 'marginBottom', {bottom: '2px', left: '50%', transform: 'translateX(-50%)'})}
               </div>
-            </div>
-            <div style={{...marginStyle, height: parsedMargin.bottom}}>
-              {renderLabel(`${parsedMargin.bottom}px`, 'marginBottom', {bottom: '2px', left: '50%', transform: 'translateX(-50%)'})}
             </div>
           </div>
         </div>

@@ -37,58 +37,58 @@ const VideoControls = ({ component, onUpdate }) => {
         />
       </div>
 
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          id="autoplay"
-          name="autoplay"
-          checked={component.props.autoplay || false}
-          onChange={handleChange}
-          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-        />
-        <label htmlFor="autoplay" className="ml-2 block text-sm text-gray-900">
+      <div className="mb-2">
+        <label className="control-label">
+          <input
+            type="checkbox"
+            id="autoplay"
+            name="autoplay"
+            checked={component.props.autoplay || false}
+            onChange={handleChange}
+            className="mr-2"
+          />
           Autoplay
         </label>
       </div>
 
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          id="controls"
-          name="controls"
-          checked={component.props.controls || false}
-          onChange={handleChange}
-          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-        />
-        <label htmlFor="controls" className="ml-2 block text-sm text-gray-900">
+      <div className="mb-2">
+        <label className="control-label">
+          <input
+            type="checkbox"
+            id="controls"
+            name="controls"
+            checked={component.props.controls || false}
+            onChange={handleChange}
+            className="mr-2"
+          />
           Show Controls
         </label>
       </div>
 
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          id="loop"
-          name="loop"
-          checked={component.props.loop || false}
-          onChange={handleChange}
-          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-        />
-        <label htmlFor="loop" className="ml-2 block text-sm text-gray-900">
+      <div className="mb-2">
+        <label className="control-label">
+          <input
+            type="checkbox"
+            id="loop"
+            name="loop"
+            checked={component.props.loop || false}
+            onChange={handleChange}
+            className="mr-2"
+          />
           Loop
         </label>
       </div>
 
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          id="mute"
-          name="mute"
-          checked={component.props.mute || false}
-          onChange={handleChange}
-          className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-        />
-        <label htmlFor="mute" className="ml-2 block text-sm text-gray-900">
+      <div className="mb-2">
+        <label className="control-label">
+          <input
+            type="checkbox"
+            id="mute"
+            name="mute"
+            checked={component.props.mute || false}
+            onChange={handleChange}
+            className="mr-2"
+          />
           Mute
         </label>
       </div>
