@@ -17,6 +17,8 @@ import { updateProject, updateCurrentProject } from '../../w3s/w3sSlice';
 import PageList from '../Components/Projects/PageList';
 import HidePropertiesPanelArrow from '../common/CustomIcons/HidePropertiesPanelArrow';
 import FlexContainerControls from "../Components/CommonControls/FlexContainerControls";
+import { showToast, hideToast } from '../../features/toastSlice';
+import Toast from '../common/Toast';
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -136,8 +138,11 @@ const PropertiesPanel = ({
       
       console.log("updatedProject:", updatedProject);
       dispatch(updateProject(updatedProject));
+      console.log("Dispatching showToast");
+      dispatch(showToast({ message: 'Project saved successfully!', type: 'success' }));
     } else {
-      console.error('No current project selected');
+      console.log("No current project selected");
+      dispatch(showToast({ message: 'Error: No project selected', type: 'error' }));
     }
   };
 
@@ -374,6 +379,7 @@ const PropertiesPanel = ({
           )}
         </div>
       )}
+      <Toast />
     </div>
   );
 };

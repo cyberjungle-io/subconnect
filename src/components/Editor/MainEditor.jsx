@@ -29,6 +29,7 @@ import {
   setCurrentPage
 } from '../../features/editorSlice';
 import { updateProject as updateW3SProject } from '../../w3s/w3sSlice';
+import Toast from '../common/Toast';
 
 
 
@@ -258,6 +259,7 @@ const MainEditor = () => {
           onClose={() => setIsDataModalOpen(false)}
         />
       )}
+      <Toast />
     </DndProvider>
   );
 };

@@ -77,7 +77,7 @@ const PageList = ({
                   e.stopPropagation();
                   onDeletePage(index);
                 }}
-                className="text-red-500 hover:text-red-700"
+                className="text-gray-600 hover:text-red-700"
               >
                 <FaTrash />
               </button>
