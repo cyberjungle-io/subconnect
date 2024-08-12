@@ -20,6 +20,9 @@ import FlexContainerControls from "../Components/CommonControls/FlexContainerCon
 import { showToast, hideToast } from '../../features/toastSlice';
 import Toast from '../common/Toast';
 
+// Import the CSS file
+import '../../styleSheets/propertiesPanelStyles.css';
+
 const PropertiesPanel = ({
   selectedComponent,
   onUpdateComponent,
@@ -138,10 +141,9 @@ const PropertiesPanel = ({
       
       console.log("updatedProject:", updatedProject);
       dispatch(updateProject(updatedProject));
-      console.log("Dispatching showToast");
       dispatch(showToast({ message: 'Project saved successfully!', type: 'success' }));
     } else {
-      console.log("No current project selected");
+      console.error('No current project selected');
       dispatch(showToast({ message: 'Error: No project selected', type: 'error' }));
     }
   };
@@ -291,7 +293,7 @@ const PropertiesPanel = ({
     return (
       <button
         onClick={onToggleVisibility}
-        className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-gray-200 p-2 rounded-l-md shadow-md"
+        className="properties-panel-toggle"
         title="Show Panel"
       >
         <FaChevronLeft />
@@ -300,31 +302,31 @@ const PropertiesPanel = ({
   }
 
   return (
-    <div className="w-64 bg-gray-200 p-4 overflow-y-auto relative">
-      <div className="flex justify-end space-x-2 mb-4">
+    <div className="properties-panel">
+      <div className="properties-panel-header">
         <button
           onClick={handleSaveProject}
-          className="text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200"
+          className="panel-button"
           title="Save Project"
         >
           <FaSave />
         </button>
         <button
           onClick={handleEnterViewMode}
-          className="text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200"
+          className="panel-button"
           title="Switch to View Mode"
         >
           <FaEye />
         </button>
         <button
           onClick={onToggleVisibility}
-          className="text-gray-700 hover:bg-gray-300 p-2 rounded-full focus:outline-none transition-colors duration-200"
+          className="panel-button"
           title="Hide Panel"
         >
-          <HidePropertiesPanelArrow className="w-5 h-5" />
+          <HidePropertiesPanelArrow className="panel-button-icon" />
         </button>
       </div>
-      <h2 className="text-lg font-bold text-gray-800 mb-4 text-center">
+      <h2 className="properties-panel-title">
         {activePanel === "globalSettings" ? "Global Settings" : "Properties"}
       </h2>
       <PanelNavBar
@@ -337,7 +339,7 @@ const PropertiesPanel = ({
         isComponentTreeVisible={isComponentTreeVisible}
       />
       {isComponentTreeVisible && (
-        <div className="mb-4 border-b border-gray-300 pb-4">
+        <div className="component-tree-container">
           <ComponentTree
             components={components}
             onSelectComponent={onSelectComponent}
@@ -346,29 +348,29 @@ const PropertiesPanel = ({
           />
         </div>
       )}
-      <div className="flex-grow overflow-y-auto">
+      <div className="panel-content">
         {renderPanelContent()}
       </div>
       {currentProject && (
-        <div className="mt-4 bg-blue-50 rounded-lg shadow-md">
+        <div className="current-project-container">
           <div
-            className="flex items-center cursor-pointer p-3 bg-blue-100 rounded-t-lg"
+            className="current-project-header"
             onClick={() => setExpandedSections(prev => ({ ...prev, currentProject: !prev.currentProject }))}
           >
-            <div className="flex-grow">
-              <div className="text-sm font-medium text-blue-800">{currentProject.name}</div>
+            <div className="current-project-info">
+              <div className="current-project-name">{currentProject.name}</div>
               {currentPage && (
-                <div className="text-xs text-blue-600 mt-1">Page: {currentPage.name}</div>
+                <div className="current-page-name">Page: {currentPage.name}</div>
               )}
             </div>
             {expandedSections.currentProject ? (
-              <FaChevronDown className="w-3 h-3 text-blue-600" />
+              <FaChevronDown className="current-project-icon" />
             ) : (
-              <FaChevronRight className="w-3 h-3 text-blue-600" />
+              <FaChevronRight className="current-project-icon" />
             )}
           </div>
           {expandedSections.currentProject && (
-            <div className="p-3">
+            <div className="page-list-container">
               <PageList
                 projectId={currentProject._id}
                 selectedPageId={currentPage?._id}

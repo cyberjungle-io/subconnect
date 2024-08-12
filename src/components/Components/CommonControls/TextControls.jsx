@@ -24,13 +24,13 @@ const TextControls = ({ component, onUpdate }) => {
 
   return (
     <div className="text-controls space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Content</label>
+      <div className="control-container">
+        <label className="control-label">Content</label>
         <textarea
           name="content"
           value={component.content || ''}
           onChange={(e) => onUpdate({ content: e.target.value })}
-          className="w-full p-2 border rounded"
+          className="control-input"
           rows="4"
         />
       </div>

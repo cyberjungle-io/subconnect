@@ -1,0 +1,256 @@
+/* PropertiesPanel container */
+.properties-panel {
+  width: 16rem;
+  background-color: #e5e7eb;
+  padding: 1rem;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* Panel header */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.panel-title {
+  font-size: 1.125rem;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+/* Button styles */
+.panel-button {
+  color: #4b5563;
+  padding: 0.5rem;
+  border-radius: 9999px;
+  transition: background-color 0.2s;
+}
+
+.panel-button:hover {
+  background-color: #e5e7eb;
+}
+
+/* PanelNavBar styles */
+.panel-nav-bar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+/* ComponentTree styles */
+.component-tree {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #d1d5db;
+  padding-bottom: 1rem;
+}
+
+/* PropertyTabs styles */
+.property-tabs {
+  margin-bottom: 1rem;
+}
+
+.tab-list {
+  display: flex;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+  border-bottom-color: #3b82f6;
+  color: #3b82f6;
+}
+
+/* Control styles */
+.control-container {
+  margin-bottom: 1rem;
+}
+
+.control-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+  margin-bottom: 0.25rem;
+}
+
+.control-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+/* SpacingPreview styles */
+.spacing-preview {
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Project info styles */
+.project-info {
+  margin-top: 1rem;
+  background-color: #eff6ff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.project-header {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.75rem;
+  background-color: #dbeafe;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+.project-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e40af;
+}
+
+.page-name {
+  font-size: 0.75rem;
+  color: #3b82f6;
+  margin-top: 0.25rem;
+}
+
+/* Toast styles */
+.toast {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.25rem;
+  color: #ffffff;
+  font-size: 0.875rem;
+}
+
+.toast-success {
+  background-color: #10b981;
+}
+
+.toast-error {
+  background-color: #ef4444;
+}
+
+/* PropertiesPanel styles */
+.properties-panel {
+  width: 16rem;
+  background-color: #e5e7eb;
+  padding: 1rem;
+  overflow-y: auto;
+  position: relative;
+}
+
+.properties-panel-toggle {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: #e5e7eb;
+  padding: 0.5rem;
+  border-top-left-radius: 0.375rem;
+  border-bottom-left-radius: 0.375rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.properties-panel-header {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.panel-button {
+  color: #4b5563;
+  background-color: transparent;
+  padding: 0.5rem;
+  border-radius: 9999px;
+  transition: background-color 0.2s;
+}
+
+.panel-button:hover {
+  background-color: #d1d5db;
+}
+
+.panel-button-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.properties-panel-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* ... existing styles ... */
+
+.component-tree-container {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #d1d5db;
+  padding-bottom: 1rem;
+}
+
+.panel-content {
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.current-project-container {
+  margin-top: 1rem;
+  background-color: #eff6ff;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.current-project-header {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.75rem;
+  background-color: #dbeafe;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+}
+
+.current-project-info {
+  flex-grow: 1;
+}
+
+.current-project-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #1e40af;
+}
+
+.current-page-name {
+  font-size: 0.75rem;
+  color: #3b82f6;
+  margin-top: 0.25rem;
+}
+
+.current-project-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: #3b82f6;
+}
+
+.page-list-container {
+  padding: 0.75rem;
+}
