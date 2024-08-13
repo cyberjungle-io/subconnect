@@ -10,20 +10,20 @@ import ChartRenderer from "./ChartRenderer";
 import WhiteboardRenderer from "./WhiteboardRenderer";
 import VideoRenderer from "./VideoRenderer";
 
-const useDragDrop = (component, onMoveComponent, onAddChild) => {
+const useDragDrop = (component, onMoveComponent, onAddChild, isViewMode) => {
   const [{ isDragging }, drag] = useDrag({
     type: "COMPONENT",
     item: { id: component.id, type: component.type },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
-    canDrag: () => !component.isDraggingDisabled, // Add this line to disable dragging
+    canDrag: () => !isViewMode && !component.isDraggingDisabled,
   });
 
   const [{ isOver }, drop] = useDrop({
     accept: "COMPONENT",
     drop: (item, monitor) => {
-      if (monitor.didDrop()) return;
+      if (isViewMode || monitor.didDrop()) return;
       
       if (item.id) {
         onMoveComponent(item.id, component.id);
@@ -53,7 +53,7 @@ const ComponentRenderer = React.memo(({
   globalComponentLayout,
   isViewMode = false,
 }) => {
-  const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild);
+  const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild, isViewMode);
 
   const handleClick = useCallback((event) => {
     event.stopPropagation();
@@ -93,6 +93,7 @@ const ComponentRenderer = React.memo(({
         depth={depth + 1}
         isFlexChild={component.type === "FLEX_CONTAINER"}
         parent={component}
+        isViewMode={isViewMode}
       />
     ));
   };
@@ -106,7 +107,8 @@ const ComponentRenderer = React.memo(({
       onMoveComponent,
       selectedIds,
       depth: depth + 1,
-      parent,  // Add this line
+      parent,
+      isViewMode,
     };
   
     switch (component.type) {
@@ -214,7 +216,10 @@ const ComponentRenderer = React.memo(({
   return (
     <div
       ref={(node) => {
-        // Only apply drag ref if dragging is not disabled
+        if (isViewMode) {
+          // Don't apply any refs in view mode
+          return;
+        }
         if (!component.isDraggingDisabled) {
           dragRef(dropRef(node));
         } else {
@@ -222,14 +227,16 @@ const ComponentRenderer = React.memo(({
         }
       }}
       style={getComponentStyle()}
-      onClick={handleClick}
-      className={`${isThisComponentSelected ? "shadow-lg" : ""} ${isOver ? "bg-blue-100" : ""} ${
-        component.isDraggingDisabled ? "cursor-default" : "cursor-move"
-      }`}
+      onClick={isViewMode ? undefined : handleClick}
+      className={`
+        ${isViewMode ? "" : isThisComponentSelected ? "shadow-lg" : ""}
+        ${isViewMode ? "" : isOver ? "bg-blue-100" : ""}
+        ${isViewMode ? "" : component.isDraggingDisabled ? "cursor-default" : "cursor-move"}
+      `}
       data-id={component.id}
     >
       {renderContent()}
-      {isThisComponentSelected && (
+      {!isViewMode && isThisComponentSelected && (
         <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs px-1 z-10">
           {component.type}
         </div>

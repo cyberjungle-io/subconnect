@@ -35,7 +35,6 @@ const PropertiesPanel = ({
   onOpenProjectModal,
   onUpdateGlobalSpacing,
   currentProject,
- 
   onSelectPage,
   onDeletePage,
 }) => {
@@ -146,6 +145,11 @@ const PropertiesPanel = ({
       console.error('No current project selected');
       dispatch(showToast({ message: 'Error: No project selected', type: 'error' }));
     }
+  };
+
+  const handleShowComponentPalette = () => {
+    setActivePanel("componentPalette");
+    onSelectComponent(null);  // Clear the selected component
   };
 
   const renderGlobalSettings = () => (
@@ -330,7 +334,7 @@ const PropertiesPanel = ({
         </button>
       </div>
       <PanelNavBar
-        onShowComponentPalette={() => setActivePanel("componentPalette")}
+        onShowComponentPalette={handleShowComponentPalette}
         onShowGlobalSettings={() => setActivePanel("globalSettings")}
         onShowComponentTree={() => setIsComponentTreeVisible(!isComponentTreeVisible)}
         onOpenDataModal={onOpenDataModal}

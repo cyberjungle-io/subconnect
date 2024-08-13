@@ -5,7 +5,7 @@ import ComponentRenderer from '../Components/Renderers/ComponentRenderer';
 
 const ViewerMode = ({ components }) => {
   return (
-    <div className="viewer-mode">
+    <div className="viewer-mode" style={{ height: '100%', width: '100%', position: 'relative' }}>
       {components.map(component => (
         <ComponentRenderer
           key={component.id}
