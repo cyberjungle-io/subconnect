@@ -5,7 +5,11 @@ const ImageControls = ({ component, updateComponent }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    updateComponent({ ...component, props: { ...component.props, [name]: value } });
+    updateComponent({ 
+      ...component, 
+      props: { ...component.props, [name]: value },
+      style: { ...component.style, [name]: value }
+    });
   };
 
   const handleFileChange = (e) => {
@@ -94,6 +98,28 @@ const ImageControls = ({ component, updateComponent }) => {
           <option value="fill">Fill</option>
           <option value="none">None</option>
         </select>
+      </div>
+      <div>
+        <label htmlFor="width">Width:</label>
+        <input
+          type="text"
+          id="width"
+          name="width"
+          value={component.style.width || ""}
+          onChange={handleChange}
+          placeholder="e.g., 100%, 200px"
+        />
+      </div>
+      <div>
+        <label htmlFor="height">Height:</label>
+        <input
+          type="text"
+          id="height"
+          name="height"
+          value={component.style.height || ""}
+          onChange={handleChange}
+          placeholder="e.g., 100%, 200px"
+        />
       </div>
       <div className="border-radius-control">
         <label htmlFor="borderRadius">Border Radius:</label>
