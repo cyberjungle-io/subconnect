@@ -19,6 +19,7 @@ import HidePropertiesPanelArrow from '../common/CustomIcons/HidePropertiesPanelA
 import FlexContainerControls from "../Components/CommonControls/FlexContainerControls";
 import { showToast, hideToast } from '../../features/toastSlice';
 import Toast from '../common/Toast';
+import ImageControls from "../Components/CommonControls/ImageControls";
 
 // Import the CSS file
 import '../../styleSheets/propertiesPanelStyles.css';
@@ -256,6 +257,13 @@ const PropertiesPanel = ({
           <VideoControls
             component={selectedComponent}
             onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+          />
+        );
+      case "IMAGE":
+        return (
+          <ImageControls
+            component={selectedComponent}
+            updateComponent={(updates) => onUpdateComponent(selectedComponent.id, updates)}
           />
         );
       default:
