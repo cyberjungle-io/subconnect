@@ -1,0 +1,31 @@
+export const defaultGlobalSettings = {
+    backgroundColor: '#f0f0f0',
+    componentLayout: 'horizontal',
+    style: {
+      paddingTop: '20px',
+      paddingRight: '20px',
+      paddingBottom: '20px',
+      paddingLeft: '20px',
+      marginTop: '0px',
+      marginRight: '0px',
+      marginBottom: '0px',
+      marginLeft: '0px',
+      gap: '20px',
+    },
+    chartStyle: {
+      colors: ['#4e79a7', '#f28e2c', '#e15759', '#76b7b2', '#59a14f', '#edc949', '#af7aa1', '#ff9da7', '#9c755f', '#bab0ab'],
+      fontFamily: 'Arial, sans-serif',
+      fontSize: 12,
+      backgroundColor: 'transparent',
+      borderRadius: '8px',
+      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    },
+    generalComponentStyle: {
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '16px',
+      color: '#333333',
+      backgroundColor: 'transparent',
+      borderRadius: '4px',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    },
+  };

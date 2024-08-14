@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-const HeadingRenderer = ({ component }) => {
+const HeadingRenderer = ({ component, globalSettings }) => {
   const [isHovered, setIsHovered] = useState(false);
   const { props = {}, style = {} } = component;
   const HeadingTag = `h${props.level.charAt(1)}`;
@@ -24,13 +24,13 @@ const HeadingRenderer = ({ component }) => {
   const headingStyle = {
     ...style,
     textAlign: style.textAlign || 'left',
-    fontSize: style.fontSize || '2rem',
+    fontSize: style.fontSize || globalSettings.generalComponentStyle.fontSize,
     margin: 0,
-    fontFamily: props.fontFamily,
+    fontFamily: props.fontFamily || globalSettings.generalComponentStyle.fontFamily,
     fontWeight: props.fontWeight,
     fontStyle: props.fontStyle,
     textDecoration: props.textDecoration,
-    color: props.color,
+    color: props.color || globalSettings.generalComponentStyle.color,
     lineHeight: props.lineHeight,
     letterSpacing: props.letterSpacing,
     wordSpacing: props.wordSpacing,

@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import { useDrop, useDrag } from "react-dnd";
+import { useSelector } from 'react-redux';
 
 import ContainerRenderer from "./ContainerRenderer";
 import HeadingRenderer from "./HeadingRenderer";
@@ -54,6 +55,7 @@ const ComponentRenderer = React.memo(({
   isViewMode = false,
 }) => {
   const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild, isViewMode);
+  const globalSettings = useSelector(state => state.editor.globalSettings);
 
   const handleClick = useCallback((event) => {
     event.stopPropagation();
@@ -109,6 +111,7 @@ const ComponentRenderer = React.memo(({
       depth: depth + 1,
       parent,
       isViewMode,
+      globalSettings, // Pass the entire globalSettings object
     };
   
     switch (component.type) {
@@ -123,7 +126,7 @@ const ComponentRenderer = React.memo(({
       case "BUTTON":
         return <ButtonRenderer {...sharedProps} />;
       case "CHART":
-        return <ChartRenderer {...sharedProps} />;
+        return <ChartRenderer {...sharedProps} globalChartStyle={globalSettings.chartStyle} />;
       case "WHITEBOARD":
         return <WhiteboardRenderer {...sharedProps} />;
       case "VIDEO":
@@ -156,8 +159,6 @@ const ComponentRenderer = React.memo(({
     };
   
     if (type === "FLEX_CONTAINER") {
-      const isRow = props.direction !== "column";
-      
       componentStyle.display = "flex";
       componentStyle.flexDirection = props.direction || "row";
       componentStyle.flexWrap = props.wrap || "nowrap";
@@ -169,27 +170,29 @@ const ComponentRenderer = React.memo(({
         // Top-level FLEX_CONTAINER
         if (globalComponentLayout === "horizontal") {
           componentStyle.width = style.width || "100%";
-          componentStyle.height = style.height || "200px";
+          componentStyle.height = "auto"; // Allow vertical growth
+          componentStyle.minHeight = style.height || "300px"; // Increased from 200px
         } else {
-          componentStyle.width = style.width || "200px";
+          componentStyle.width = "auto"; // Allow horizontal growth
+          componentStyle.minWidth = style.width || "300px"; // Increased from 200px
           componentStyle.height = style.height || "100%";
         }
       } else {
         // Nested FLEX_CONTAINER
         componentStyle.flexGrow = 1;
         componentStyle.flexShrink = 1;
-        componentStyle.flexBasis = '0%';
-        componentStyle.width = style.width || 'auto';
-        componentStyle.height = style.height || 'auto';
+        componentStyle.flexBasis = "auto";
+        componentStyle.width = style.width || "300px"; // Added default width
+        componentStyle.height = style.height || "300px"; // Added default height
       }
       
-      componentStyle.minWidth = style.minWidth || "50px";
-      componentStyle.minHeight = style.minHeight || "50px";
+      componentStyle.minWidth = style.minWidth || "200px"; // Increased from 50px
+      componentStyle.minHeight = style.minHeight || "200px"; // Increased from 50px
     } else {
       // For non-FLEX_CONTAINER components
-      componentStyle.flexGrow = 0;
-      componentStyle.flexShrink = 0;
-      componentStyle.flexBasis = 'auto';
+      componentStyle.flexGrow = style.flexGrow || 0;
+      componentStyle.flexShrink = style.flexShrink || 0;
+      componentStyle.flexBasis = style.flexBasis || 'auto';
       componentStyle.width = style.width || 'auto';
       componentStyle.height = style.height || 'auto';
     }
@@ -205,24 +208,13 @@ const ComponentRenderer = React.memo(({
     return componentStyle;
   };
 
-  if (isViewMode) {
-    return (
-      <div style={getComponentStyle()}>
-        {renderContent()}
-      </div>
-    );
-  }
-
+  // Use the same rendering logic for both view and edit modes
   return (
     <div
       ref={(node) => {
-        if (isViewMode) {
-          // Don't apply any refs in view mode
-          return;
-        }
-        if (!component.isDraggingDisabled) {
+        if (!isViewMode && !component.isDraggingDisabled) {
           dragRef(dropRef(node));
-        } else {
+        } else if (!isViewMode) {
           dropRef(node);
         }
       }}

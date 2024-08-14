@@ -1,6 +1,6 @@
 import React from "react";
 
-const VideoRenderer = ({ component }) => {
+const VideoRenderer = ({ component, globalSettings }) => {
   const { youtubeUrl, autoplay, controls, loop, mute } = component.props;
 
   const getYouTubeEmbedUrl = (url) => {
@@ -20,8 +20,28 @@ const VideoRenderer = ({ component }) => {
 
   const finalUrl = `${embedUrl}?autoplay=${autoplayParam}&controls=${controlsParam}&loop=${loopParam}&mute=${muteParam}`;
 
+  const containerStyle = {
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: globalSettings.generalComponentStyle.backgroundColor,
+    borderRadius: globalSettings.generalComponentStyle.borderRadius,
+    boxShadow: globalSettings.generalComponentStyle.boxShadow,
+  };
+
+  const placeholderStyle = {
+    padding: '20px',
+    backgroundColor: globalSettings.generalComponentStyle.backgroundColor,
+    borderRadius: globalSettings.generalComponentStyle.borderRadius,
+    fontFamily: globalSettings.generalComponentStyle.fontFamily,
+    fontSize: globalSettings.generalComponentStyle.fontSize,
+    color: globalSettings.generalComponentStyle.color,
+  };
+
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+    <div style={containerStyle}>
       {embedUrl ? (
         <iframe
           width="100%"
@@ -32,7 +52,7 @@ const VideoRenderer = ({ component }) => {
           allowFullScreen
         ></iframe>
       ) : (
-        <div style={{ padding: '20px', backgroundColor: '#f0f0f0', borderRadius: '5px' }}>
+        <div style={placeholderStyle}>
           Please enter a valid YouTube URL
         </div>
       )}

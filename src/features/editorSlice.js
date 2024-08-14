@@ -5,30 +5,14 @@ import {
   distributeComponentsUtil,
 } from "../utils/alignmentUtils";
 import { componentConfig } from "../components/Components/componentConfig";
-import {
-  createComponent,
-  updateComponent as updateComponentUtil,
-} from "../components/Components/componentFactory";
+import { createComponent, updateComponent as updateComponentUtil } from "../components/Components/componentFactory";
+import { defaultGlobalSettings } from '../utils/defaultGlobalSettings';
 
 const initialState = {
   components: [],
   selectedIds: [],
   clipboard: null,
-  globalSettings: {
-    backgroundColor: "#ffffff",
-    componentLayout: "horizontal",
-    style: {
-      paddingTop: "0px",
-      paddingRight: "0px",
-      paddingBottom: "0px",
-      paddingLeft: "0px",
-      marginTop: "0px",
-      marginRight: "0px",
-      marginBottom: "0px",
-      marginLeft: "0px",
-      gap: "0px",
-    },
-  },
+  globalSettings: defaultGlobalSettings,
   mode: 'edit',
   currentPage: null,
 };

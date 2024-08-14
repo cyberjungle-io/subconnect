@@ -3,9 +3,7 @@ import { FaPen, FaEraser, FaTrash, FaSquare, FaCircle, FaMinus, FaLongArrowAltRi
 import { useDispatch } from 'react-redux';
 import { updateComponent } from '../../../features/editorSlice';
 
-
-
-const WhiteboardRenderer = ({ component }) => {
+const WhiteboardRenderer = ({ component, globalSettings }) => {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState(null);
@@ -14,7 +12,7 @@ const WhiteboardRenderer = ({ component }) => {
   const [textInput, setTextInput] = useState('');
   const [textPosition, setTextPosition] = useState(null);
   const [isAddingText, setIsAddingText] = useState(false);
-  const [strokeColor, setStrokeColor] = useState(component.props.strokeColor || '#000000');
+  const [strokeColor, setStrokeColor] = useState(component.props.strokeColor || globalSettings.generalComponentStyle.color || '#000000');
   const [strokeWidth, setStrokeWidth] = useState(component.props.strokeWidth || 2);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -75,7 +73,7 @@ const WhiteboardRenderer = ({ component }) => {
       const y = (e.clientY - rect.top) * scaleY;
 
       if (tool === 'pen' || tool === 'eraser') {
-        context.strokeStyle = tool === 'eraser' ? (component.props.backgroundColor || '#ffffff') : strokeColor;
+        context.strokeStyle = tool === 'eraser' ? (component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff') : strokeColor;
         context.lineWidth = tool === 'eraser' ? 20 : strokeWidth;
         context.lineTo(x, y);
         context.stroke();
@@ -85,7 +83,7 @@ const WhiteboardRenderer = ({ component }) => {
         drawShape(startPoint, { x, y });
       }
     }
-  }, [component.isDraggingDisabled, isDrawing, tool, context, startPoint, strokeColor, strokeWidth, drawShape, component.props.backgroundColor]);
+  }, [component.isDraggingDisabled, isDrawing, tool, context, startPoint, strokeColor, strokeWidth, drawShape, component.props.backgroundColor, globalSettings]);
 
   const startDrawing = useCallback((e) => {
     if (component.isDraggingDisabled) {
@@ -152,8 +150,8 @@ const WhiteboardRenderer = ({ component }) => {
 
   const confirmText = () => {
     if (textInput && textPosition) {
-      context.font = `${component.props.fontSize || 16}px ${component.props.fontFamily || 'Arial'}`;
-      context.fillStyle = component.props.textColor || '#000000';
+      context.font = `${component.props.fontSize || globalSettings.generalComponentStyle.fontSize || '16px'} ${component.props.fontFamily || globalSettings.generalComponentStyle.fontFamily || 'Arial'}`;
+      context.fillStyle = component.props.textColor || globalSettings.generalComponentStyle.color || '#000000';
       context.fillText(textInput, textPosition.x, textPosition.y);
       setIsAddingText(false);
       setTextInput('');
@@ -224,14 +222,14 @@ const WhiteboardRenderer = ({ component }) => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     setContext(ctx);
-    ctx.strokeStyle = component.props.strokeColor || '#000000';
+    ctx.strokeStyle = component.props.strokeColor || globalSettings.generalComponentStyle.color || '#000000';
     ctx.lineWidth = component.props.strokeWidth || 2;
 
     const resizeCanvas = () => {
       const parent = canvas.parentElement;
       canvas.width = parent.clientWidth;
       canvas.height = parent.clientHeight;
-      ctx.strokeStyle = component.props.strokeColor || '#000000';
+      ctx.strokeStyle = component.props.strokeColor || globalSettings.generalComponentStyle.color || '#000000';
       ctx.lineWidth = component.props.strokeWidth || 2;
     };
 
@@ -241,7 +239,7 @@ const WhiteboardRenderer = ({ component }) => {
     return () => {
       window.removeEventListener('resize', resizeCanvas);
     };
-  }, [component.props.strokeColor, component.props.strokeWidth]);
+  }, [component.props.strokeColor, component.props.strokeWidth, globalSettings]);
 
   useEffect(() => {
     saveToHistory();
@@ -314,7 +312,7 @@ const WhiteboardRenderer = ({ component }) => {
             width: '100%',
             height: '100%',
             border: '1px solid #000',
-            backgroundColor: component.props.backgroundColor || '#ffffff',
+            backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff',
             position: 'absolute',
             top: 0,
             left: 0,

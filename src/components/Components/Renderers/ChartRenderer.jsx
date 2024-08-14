@@ -16,7 +16,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const ChartRenderer = ({ component }) => {
+const ChartRenderer = ({ component, globalChartStyle }) => {
   const { chartConfig } = component;
   const {
     chartType,
@@ -78,7 +78,7 @@ const ChartRenderer = ({ component }) => {
             <Line
               type="monotone"
               dataKey={dataKey}
-              stroke={lineColor || "#8884d8"}
+              stroke={lineColor || globalChartStyle.colors[0]}
               strokeWidth={lineWidth || 2}
               dot={{ r: dataPointSize || 5 }}
             />
@@ -95,7 +95,7 @@ const ChartRenderer = ({ component }) => {
             {renderLegend()}
             <Bar
               dataKey={dataKey}
-              fill={lineColor || "#8884d8"}
+              fill={lineColor || globalChartStyle.colors[0]}
               radius={[dataPointSize || 0, dataPointSize || 0, 0, 0]}
             />
           </BarChart>
@@ -112,8 +112,8 @@ const ChartRenderer = ({ component }) => {
             <Area
               type="monotone"
               dataKey={dataKey}
-              stroke={lineColor || "#8884d8"}
-              fill={lineColor || "#8884d8"}
+              stroke={lineColor || globalChartStyle.colors[0]}
+              fill={lineColor || globalChartStyle.colors[0]}
               fillOpacity={0.3}
               strokeWidth={lineWidth || 2}
             />
@@ -130,7 +130,7 @@ const ChartRenderer = ({ component }) => {
               cx="50%"
               cy="50%"
               outerRadius={dataPointSize ? 50 + dataPointSize * 5 : 80}
-              fill={lineColor || "#8884d8"}
+              fill={lineColor || globalChartStyle.colors[0]}
               label
             />
             <Tooltip />
