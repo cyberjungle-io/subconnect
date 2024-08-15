@@ -1,13 +1,15 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { FaPen, FaEraser, FaTrash, FaSquare, FaCircle, FaMinus, FaLongArrowAltRight, FaFont, FaUndo, FaRedo, FaSave, FaUpload } from 'react-icons/fa';
+import { FaPen, FaEraser, FaTrash, FaSquare, FaCircle, FaMinus, FaLongArrowAltRight, FaFont, FaUndo, FaEye, FaTrashAlt, FaChevronDown, FaEyeSlash, FaRedo, FaSave, FaUpload, FaPlus, FaLayerGroup, FaChevronRight } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { updateComponent } from '../../../features/editorSlice';
+import TextareaAutosize from 'react-textarea-autosize';
 
 const WhiteboardRenderer = ({ component, globalSettings }) => {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState(null);
   const [tool, setTool] = useState('pen');
+  const [activeTool, setActiveTool] = useState('pen');
   const [startPoint, setStartPoint] = useState(null);
   const [textInput, setTextInput] = useState('');
   const [textPosition, setTextPosition] = useState(null);
@@ -16,7 +18,16 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const [strokeWidth, setStrokeWidth] = useState(component.props.strokeWidth || 2);
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [showGrid, setShowGrid] = useState(component.props.showGrid || false);
   const dispatch = useDispatch();
+  const [scale, setScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [selectedShape, setSelectedShape] = useState(null);
+  const [layers, setLayers] = useState([{ id: 1, name: 'Layer 1', visible: true }]);
+  const [activeLayer, setActiveLayer] = useState(1);
+  const [layersDropdownOpen, setLayersDropdownOpen] = useState(false);
+  const [activeShape, setActiveShape] = useState('pen');
+  const [shapesDropdownOpen, setShapesDropdownOpen] = useState(false);
 
   const saveCanvasState = useCallback(() => {
     const canvas = canvasRef.current;
@@ -132,6 +143,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
 
   const handleToolChange = (newTool) => {
     setTool(newTool);
+    setActiveTool(newTool);
   };
 
   const handleTextInput = (e) => {
@@ -218,6 +230,70 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     reader.readAsDataURL(file);
   };
 
+  const handleZoom = (delta) => {
+    setScale(prevScale => Math.max(0.5, Math.min(3, prevScale + delta * 0.1)));
+  };
+
+  const handlePan = (dx, dy) => {
+    setOffset(prev => ({ x: prev.x + dx, y: prev.y + dy }));
+  };
+
+  const selectShape = (shape) => {
+    setSelectedShape(shape);
+  };
+
+  const moveShape = (dx, dy) => {
+    if (selectedShape) {
+      // Update shape position
+    }
+  };
+
+  const addLayer = () => {
+    const newLayer = { id: layers.length + 1, name: `Layer ${layers.length + 1}`, visible: true };
+    setLayers([...layers, newLayer]);
+    setActiveLayer(newLayer.id);
+  };
+
+  const insertImage = (file) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        context.drawImage(img, 0, 0);
+        saveToHistory();
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const Minimap = () => {
+    const minimapRef = useRef(null);
+
+    useEffect(() => {
+      const minimap = minimapRef.current;
+      const ctx = minimap.getContext('2d');
+      ctx.drawImage(canvasRef.current, 0, 0, minimap.width, minimap.height);
+    }, [history]);
+
+    return <canvas ref={minimapRef} width={100} height={100} />;
+  };
+
+  const handleWheel = useCallback((e) => {
+    if (e.ctrlKey) {
+      e.preventDefault();
+      handleZoom(e.deltaY > 0 ? -1 : 1);
+    } else {
+      handlePan(-e.deltaX, -e.deltaY);
+    }
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    return () => canvas.removeEventListener('wheel', handleWheel);
+  }, [handleWheel]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -245,48 +321,146 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     saveToHistory();
   }, [saveToHistory]);
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    if (showGrid) {
+      drawGrid(ctx);
+    }
+  }, [component.props, globalSettings, showGrid]);
+
+  const drawGrid = (ctx) => {
+    const gridSize = 20;
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 0.5;
+
+    for (let x = 0; x <= canvasRef.current.width; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvasRef.current.height);
+      ctx.stroke();
+    }
+
+    for (let y = 0; y <= canvasRef.current.height; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvasRef.current.width, y);
+      ctx.stroke();
+    }
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      loadCanvas(e);
+      insertImage(file);
+    }
+  };
+
+  const toggleLayersDropdown = () => setLayersDropdownOpen(prevState => !prevState);
+
+  const toggleLayerVisibility = (layerId) => {
+    setLayers(layers.map(layer => 
+      layer.id === layerId ? { ...layer, visible: !layer.visible } : layer
+    ));
+  };
+
+  const deleteLayer = (layerId) => {
+    if (layers.length > 1) {
+      setLayers(layers.filter(layer => layer.id !== layerId));
+      if (activeLayer === layerId) {
+        setActiveLayer(layers[0].id);
+      }
+    }
+  };
+
+  const toggleShapesDropdown = () => setShapesDropdownOpen(prevState => !prevState);
+
+  const shapes = [
+    { name: 'Pen', icon: FaPen, value: 'pen' },
+    { name: 'Square', icon: FaSquare, value: 'square' },
+    { name: 'Circle', icon: FaCircle, value: 'circle' },
+    { name: 'Line', icon: FaMinus, value: 'line' },
+    { name: 'Arrow', icon: FaLongArrowAltRight, value: 'arrow' },
+  ];
+
+  const getShapeIcon = (value) => {
+    const shape = shapes.find(s => s.value === value);
+    return shape ? shape.icon : FaPen;
+  };
+
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div className="whiteboard-toolbar">
-        <button onClick={() => handleToolChange('pen')} className={tool === 'pen' ? 'active' : ''}>
-          <FaPen />
-        </button>
-        <button onClick={() => handleToolChange('eraser')} className={tool === 'eraser' ? 'active' : ''}>
+        <div className="dropdown shapes-dropdown">
+          <button onClick={toggleShapesDropdown} className="toolbar-button">
+            {React.createElement(getShapeIcon(activeShape))}
+            <FaChevronRight />
+          </button>
+          {shapesDropdownOpen && (
+            <div className="dropdown-menu">
+              {shapes.map(shape => (
+                <button
+                  key={shape.value}
+                  onClick={() => {
+                    setActiveShape(shape.value);
+                    toggleShapesDropdown();
+                  }}
+                  className={`toolbar-button ${activeShape === shape.value ? 'active' : ''}`}
+                >
+                  <shape.icon /> {shape.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+        <button className="toolbar-button">
           <FaEraser />
         </button>
-        <button onClick={() => handleToolChange('rectangle')} className={tool === 'rectangle' ? 'active' : ''}>
-          <FaSquare />
-        </button>
-        <button onClick={() => handleToolChange('circle')} className={tool === 'circle' ? 'active' : ''}>
-          <FaCircle />
-        </button>
-        <button onClick={() => handleToolChange('line')} className={tool === 'line' ? 'active' : ''}>
-          <FaMinus />
-        </button>
-        <button onClick={() => handleToolChange('arrow')} className={tool === 'arrow' ? 'active' : ''}>
-          <FaLongArrowAltRight />
-        </button>
-        <button onClick={() => handleToolChange('text')} className={tool === 'text' ? 'active' : ''}>
+        <button className="toolbar-button">
           <FaFont />
         </button>
-        <input type="color" value={strokeColor} onChange={handleColorChange} />
-        <input type="range" min="1" max="20" value={strokeWidth} onChange={handleWidthChange} />
-        <button onClick={undo} disabled={historyIndex <= 0}>
+        <button className="toolbar-button">
           <FaUndo />
         </button>
-        <button onClick={redo} disabled={historyIndex >= history.length - 1}>
+        <button className="toolbar-button">
           <FaRedo />
         </button>
-        <button onClick={clearCanvas}>
-          <FaTrash />
-        </button>
-        <button onClick={saveCanvas}>
+        <button className="toolbar-button">
           <FaSave />
         </button>
-        <label>
+        <label className="toolbar-button">
           <FaUpload />
-          <input type="file" accept="image/*" onChange={loadCanvas} style={{ display: 'none' }} />
+          <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
         </label>
+        <div className="dropdown layers-dropdown">
+          <button onClick={toggleLayersDropdown} className="toolbar-button">
+            <FaLayerGroup />
+            <FaChevronRight />
+          </button>
+          {layersDropdownOpen && (
+            <div className="dropdown-menu">
+              {layers.map(layer => (
+                <div key={layer.id} className="layer-item">
+                  <span 
+                    onClick={() => setActiveLayer(layer.id)}
+                    style={{ fontWeight: activeLayer === layer.id ? 'bold' : 'normal' }}
+                  >
+                    {layer.name}
+                  </span>
+                  <button onClick={() => toggleLayerVisibility(layer.id)}>
+                    {layer.visible ? <FaEye /> : <FaEyeSlash />}
+                  </button>
+                  <button onClick={() => deleteLayer(layer.id)}>
+                    <FaTrashAlt />
+                  </button>
+                </div>
+              ))}
+              <button onClick={addLayer}>Add New Layer</button>
+            </div>
+          )}
+        </div>
       </div>
       {isAddingText && (
         <div
@@ -294,37 +468,42 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
             position: 'absolute',
             left: textPosition.x,
             top: textPosition.y,
+            zIndex: 1000,
           }}
         >
-          <input
-            type="text"
+          <TextareaAutosize
             value={textInput}
             onChange={handleTextInput}
             onBlur={confirmText}
             autoFocus
+            style={{
+              background: 'transparent',
+              border: 'none',
+              outline: 'none',
+              resize: 'none',
+              font: `${component.props.fontSize || globalSettings.generalComponentStyle.fontSize || '16px'} ${component.props.fontFamily || globalSettings.generalComponentStyle.fontFamily || 'Arial'}`,
+              color: component.props.textColor || globalSettings.generalComponentStyle.color || '#000000',
+            }}
           />
         </div>
       )}
-      <div style={{ flex: 1, position: 'relative' }}>
-        <canvas
-          ref={canvasRef}
-          style={{
-            width: '100%',
-            height: '100%',
-            border: '1px solid #000',
-            backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            cursor: component.isDraggingDisabled ? 'crosshair' : 'move',
-          }}
-          onMouseDown={startDrawing}
-          onMouseUp={stopDrawing}
-          onMouseMove={draw}
-          onMouseOut={stopDrawing}
-          onClick={addText}
-        />
-      </div>
+      <canvas
+        ref={canvasRef}
+        style={{
+          width: '100%',
+          height: '100%',
+          border: '1px solid #000',
+          backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff',
+          cursor: component.isDraggingDisabled ? 'crosshair' : 'move',
+          transform: `scale(${scale}) translate(${offset.x}px, ${offset.y}px)`,
+        }}
+        onMouseDown={startDrawing}
+        onMouseUp={stopDrawing}
+        onMouseMove={draw}
+        onMouseOut={stopDrawing}
+        onClick={addText}
+      />
+      <Minimap />
     </div>
   );
 };
