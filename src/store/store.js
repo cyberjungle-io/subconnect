@@ -3,6 +3,7 @@ import editorReducer from '../features/editorSlice';
 import { w3sReducer } from '../w3s';
 import userReducer from '../features/userSlice';
 import toastReducer from '../features/toastSlice';
+import graphQLReducer from '../features/graphQLSlice';
 
 const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ const store = configureStore({
     w3s: w3sReducer,
     user: userReducer,
     toast: toastReducer,
+    graphQL: graphQLReducer,
   },
 });
 

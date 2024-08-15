@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { FaTimes, FaDatabase, FaCode, FaGlobe, FaSave } from 'react-icons/fa';
+import GraphQLQueryTab from './GraphQLQueryTab'; // Import the new component
 
 const DataModal = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState('Query');
+  const [activeTab, setActiveTab] = useState('GraphQL Query');
 
   const tabs = [
-    { name: 'Query', icon: FaDatabase },
+    { name: 'GraphQL Query', icon: FaCode }, // Updated tab name
     { name: 'Data', icon: FaDatabase },
     { name: 'JSON', icon: FaCode },
     { name: 'REST', icon: FaGlobe },
@@ -42,18 +43,7 @@ const DataModal = ({ isOpen, onClose }) => {
             <FaTimes />
           </button>
           <h2 className="text-2xl font-bold mb-4">{activeTab}</h2>
-          {/* Dummy content for each tab */}
-          {activeTab === 'Query' && (
-            <div>
-              <textarea
-                className="w-full h-32 p-2 border rounded"
-                placeholder="Enter your SQL query here..."
-              />
-              <button className="mt-2 px-4 py-2 bg-blue-500 text-white rounded">
-                Run Query
-              </button>
-            </div>
-          )}
+          {activeTab === 'GraphQL Query' && <GraphQLQueryTab />}
           {activeTab === 'Data' && (
             <div>
               <select className="w-full p-2 border rounded mb-2">

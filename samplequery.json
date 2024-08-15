@@ -1,0 +1,3995 @@
+{
+    "types": [
+        {
+            "name": "Query",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "globalStates",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "globalStateById",
+                    "type": {
+                        "name": "GlobalState",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "globalStatesConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "GlobalStatesConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "accounts",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "accountById",
+                    "type": {
+                        "name": "Account",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "accountsConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "AccountsConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "basePools",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "basePoolById",
+                    "type": {
+                        "name": "BasePool",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "basePoolsConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BasePoolsConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "vaults",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "vaultById",
+                    "type": {
+                        "name": "Vault",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "vaultsConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "VaultsConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "stakePools",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "stakePoolById",
+                    "type": {
+                        "name": "StakePool",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "stakePoolsConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "StakePoolsConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "delegations",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "delegationById",
+                    "type": {
+                        "name": "Delegation",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "delegationsConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "DelegationsConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "nfts",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "nftById",
+                    "type": {
+                        "name": "Nft",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "nftsConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "NftsConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "basePoolWhitelists",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "basePoolWhitelistById",
+                    "type": {
+                        "name": "BasePoolWhitelist",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "basePoolWhitelistsConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BasePoolWhitelistsConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "workers",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "workerById",
+                    "type": {
+                        "name": "Worker",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "workersConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "WorkersConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "sessions",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "sessionById",
+                    "type": {
+                        "name": "Session",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "sessionsConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "SessionsConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "accountSnapshots",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "accountSnapshotById",
+                    "type": {
+                        "name": "AccountSnapshot",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "accountSnapshotsConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "AccountSnapshotsConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "basePoolSnapshots",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "basePoolSnapshotById",
+                    "type": {
+                        "name": "BasePoolSnapshot",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "basePoolSnapshotsConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BasePoolSnapshotsConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "globalStateSnapshots",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "globalStateSnapshotById",
+                    "type": {
+                        "name": "GlobalStateSnapshot",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "globalStateSnapshotsConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "GlobalStateSnapshotsConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "delegationSnapshots",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "delegationSnapshotById",
+                    "type": {
+                        "name": "DelegationSnapshot",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "delegationSnapshotsConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "DelegationSnapshotsConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "workerSnapshots",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "workerSnapshotById",
+                    "type": {
+                        "name": "WorkerSnapshot",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "workerSnapshotsConnection",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "WorkerSnapshotsConnection",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "squidStatus",
+                    "type": {
+                        "name": "SquidStatus",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Int",
+            "kind": "SCALAR",
+            "description": "The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.",
+            "fields": null
+        },
+        {
+            "name": "String",
+            "kind": "SCALAR",
+            "description": "The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.",
+            "fields": null
+        },
+        {
+            "name": "GlobalState",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "totalValue",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "averageBlockTimeUpdatedHeight",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "averageBlockTimeUpdatedTime",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "DateTime",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "snapshotUpdatedTime",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "DateTime",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "averageBlockTime",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "averageAprMultiplier",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "averageApr",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "idleWorkerShares",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "cumulativeRewards",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "phaRate",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "budgetPerBlock",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "vMax",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "treasuryRatio",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "re",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "k",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "workerCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "idleWorkerCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "budgetPerShare",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "delegatorCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "withdrawalDustCleared",
+                    "type": {
+                        "name": "Boolean",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Boolean",
+            "kind": "SCALAR",
+            "description": "The `Boolean` scalar type represents `true` or `false`.",
+            "fields": null
+        },
+        {
+            "name": "BigDecimal",
+            "kind": "SCALAR",
+            "description": "Big number decimal",
+            "fields": null
+        },
+        {
+            "name": "DateTime",
+            "kind": "SCALAR",
+            "description": "A date-time string in simplified extended ISO 8601 format (YYYY-MM-DDTHH:mm:ss.sssZ)",
+            "fields": null
+        },
+        {
+            "name": "GlobalStateWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "GlobalStateOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "WhereIdInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "GlobalStatesConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GlobalStateEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "GlobalState",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "PageInfo",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "hasNextPage",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Boolean",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "hasPreviousPage",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Boolean",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "startCursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "endCursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Account",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "basePool",
+                    "type": {
+                        "name": "BasePool",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "identityDisplay",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "identityLevel",
+                    "type": {
+                        "name": "IdentityJudgement",
+                        "kind": "ENUM",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "identityJudgements",
+                    "type": {
+                        "name": null,
+                        "kind": "LIST",
+                        "ofType": {
+                            "name": null,
+                            "kind": "NON_NULL"
+                        }
+                    }
+                },
+                {
+                    "name": "stakePoolValue",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "stakePoolNftCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "stakePoolAvgAprMultiplier",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "vaultValue",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "vaultNftCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "vaultAvgAprMultiplier",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "ownedPools",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "cumulativeStakePoolOwnerRewards",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "cumulativeVaultOwnerRewards",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "BasePool",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "pid",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigInt",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "cid",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "owner",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Account",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "account",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Account",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "kind",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BasePoolKind",
+                            "kind": "ENUM"
+                        }
+                    }
+                },
+                {
+                    "name": "commission",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "vault",
+                    "type": {
+                        "name": "Vault",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "stakePool",
+                    "type": {
+                        "name": "StakePool",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "aprMultiplier",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "totalShares",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "totalValue",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "sharePrice",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "freeValue",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "releasingValue",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "withdrawingValue",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "withdrawingShares",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "delegatorCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "whitelistEnabled",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Boolean",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "whitelists",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "delegations",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "cumulativeOwnerRewards",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "BigInt",
+            "kind": "SCALAR",
+            "description": "Big number integer",
+            "fields": null
+        },
+        {
+            "name": "BasePoolKind",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "Vault",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "basePool",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BasePool",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "lastSharePriceCheckpoint",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "claimableOwnerShares",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "StakePool",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "basePool",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BasePool",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "capacity",
+                    "type": {
+                        "name": "BigDecimal",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "delegable",
+                    "type": {
+                        "name": "BigDecimal",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "ownerReward",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "workerCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "idleWorkerCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "idleWorkerShares",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "workers",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Worker",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "stakePool",
+                    "type": {
+                        "name": "StakePool",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "session",
+                    "type": {
+                        "name": "Session",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "confidenceLevel",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "initialScore",
+                    "type": {
+                        "name": "Int",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "shares",
+                    "type": {
+                        "name": "BigDecimal",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Session",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "isBound",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Boolean",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "stakePool",
+                    "type": {
+                        "name": "StakePool",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "worker",
+                    "type": {
+                        "name": "Worker",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "stake",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "state",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "WorkerState",
+                            "kind": "ENUM"
+                        }
+                    }
+                },
+                {
+                    "name": "v",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "ve",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "pInit",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "pInstant",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "totalReward",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "coolingDownStartTime",
+                    "type": {
+                        "name": "DateTime",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                }
+            ]
+        },
+        {
+            "name": "WorkerState",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "WorkerWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "StakePoolWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "BasePoolWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "AccountWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "IdentityJudgement",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "VaultWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "BasePoolWhitelistWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "DelegationWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "NftWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "DelegationSnapshotWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "SessionWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "WorkerOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "BasePoolWhitelist",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "account",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Account",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "basePool",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BasePool",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "createTime",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "DateTime",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "BasePoolWhitelistOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "Delegation",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "account",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Account",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "basePool",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BasePool",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "value",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "cost",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "shares",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "withdrawingValue",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "withdrawingShares",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "withdrawalStartTime",
+                    "type": {
+                        "name": "DateTime",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "delegationNft",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Nft",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "withdrawalNft",
+                    "type": {
+                        "name": "Nft",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "snapshots",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Nft",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "owner",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Account",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cid",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "nftId",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "burned",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Boolean",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "mintTime",
+                    "type": {
+                        "name": "DateTime",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "delegation",
+                    "type": {
+                        "name": "Delegation",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DelegationSnapshot",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "updatedTime",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "DateTime",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "delegation",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Delegation",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cost",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "value",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DelegationSnapshotOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "DelegationOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "BasePoolOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "AccountOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "AccountsConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "AccountEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Account",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "BasePoolsConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "BasePoolEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BasePool",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "VaultOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "VaultsConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "VaultEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Vault",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "StakePoolOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "StakePoolsConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "StakePoolEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "StakePool",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DelegationsConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DelegationEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Delegation",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "NftOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "NftsConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "NftEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Nft",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "BasePoolWhitelistsConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "BasePoolWhitelistEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BasePoolWhitelist",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "WorkersConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "WorkerEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Worker",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "SessionOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "SessionsConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "SessionEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Session",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "AccountSnapshot",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "updatedTime",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "DateTime",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "account",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Account",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "delegationValue",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "cumulativeStakePoolOwnerRewards",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "cumulativeVaultOwnerRewards",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "AccountSnapshotWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "AccountSnapshotOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "AccountSnapshotsConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "AccountSnapshotEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "AccountSnapshot",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "BasePoolSnapshot",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "updatedTime",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "DateTime",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "basePool",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BasePool",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "commission",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "apr",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "totalValue",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "delegatorCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "sharePrice",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "workerCount",
+                    "type": {
+                        "name": "Int",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "idleWorkerCount",
+                    "type": {
+                        "name": "Int",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "stakePoolCount",
+                    "type": {
+                        "name": "Int",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "cumulativeOwnerRewards",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "BasePoolSnapshotWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "BasePoolSnapshotOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "BasePoolSnapshotsConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "BasePoolSnapshotEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BasePoolSnapshot",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GlobalStateSnapshot",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "updatedTime",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "DateTime",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "totalValue",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "averageBlockTime",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "averageApr",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "idleWorkerShares",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "cumulativeRewards",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "budgetPerBlock",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "workerCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "idleWorkerCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "budgetPerShare",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "BigDecimal",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "delegatorCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GlobalStateSnapshotWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "GlobalStateSnapshotOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "GlobalStateSnapshotsConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "GlobalStateSnapshotEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "GlobalStateSnapshot",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DelegationSnapshotsConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "DelegationSnapshotEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "DelegationSnapshot",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "WorkerSnapshot",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "id",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "updatedTime",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "DateTime",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "worker",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Worker",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "stakePoolId",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "sessionId",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "confidenceLevel",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "initialScore",
+                    "type": {
+                        "name": "Int",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "stake",
+                    "type": {
+                        "name": "BigDecimal",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "state",
+                    "type": {
+                        "name": "WorkerState",
+                        "kind": "ENUM",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "v",
+                    "type": {
+                        "name": "BigDecimal",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "ve",
+                    "type": {
+                        "name": "BigDecimal",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "pInit",
+                    "type": {
+                        "name": "Int",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "pInstant",
+                    "type": {
+                        "name": "Int",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "totalReward",
+                    "type": {
+                        "name": "BigDecimal",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                }
+            ]
+        },
+        {
+            "name": "WorkerSnapshotWhereInput",
+            "kind": "INPUT_OBJECT",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "WorkerSnapshotOrderByInput",
+            "kind": "ENUM",
+            "description": null,
+            "fields": null
+        },
+        {
+            "name": "WorkerSnapshotsConnection",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "edges",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "pageInfo",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "PageInfo",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "totalCount",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Int",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "WorkerSnapshotEdge",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "node",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "WorkerSnapshot",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "cursor",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "SquidStatus",
+            "kind": "OBJECT",
+            "description": null,
+            "fields": [
+                {
+                    "name": "height",
+                    "type": {
+                        "name": "Int",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                }
+            ]
+        },
+        {
+            "name": "__Schema",
+            "kind": "OBJECT",
+            "description": "A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.",
+            "fields": [
+                {
+                    "name": "description",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "types",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "queryType",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "__Type",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "mutationType",
+                    "type": {
+                        "name": "__Type",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "subscriptionType",
+                    "type": {
+                        "name": "__Type",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "directives",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "__Type",
+            "kind": "OBJECT",
+            "description": "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByUrl`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.",
+            "fields": [
+                {
+                    "name": "kind",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "__TypeKind",
+                            "kind": "ENUM"
+                        }
+                    }
+                },
+                {
+                    "name": "name",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "description",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "specifiedByUrl",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "fields",
+                    "type": {
+                        "name": null,
+                        "kind": "LIST",
+                        "ofType": {
+                            "name": null,
+                            "kind": "NON_NULL"
+                        }
+                    }
+                },
+                {
+                    "name": "interfaces",
+                    "type": {
+                        "name": null,
+                        "kind": "LIST",
+                        "ofType": {
+                            "name": null,
+                            "kind": "NON_NULL"
+                        }
+                    }
+                },
+                {
+                    "name": "possibleTypes",
+                    "type": {
+                        "name": null,
+                        "kind": "LIST",
+                        "ofType": {
+                            "name": null,
+                            "kind": "NON_NULL"
+                        }
+                    }
+                },
+                {
+                    "name": "enumValues",
+                    "type": {
+                        "name": null,
+                        "kind": "LIST",
+                        "ofType": {
+                            "name": null,
+                            "kind": "NON_NULL"
+                        }
+                    }
+                },
+                {
+                    "name": "inputFields",
+                    "type": {
+                        "name": null,
+                        "kind": "LIST",
+                        "ofType": {
+                            "name": null,
+                            "kind": "NON_NULL"
+                        }
+                    }
+                },
+                {
+                    "name": "ofType",
+                    "type": {
+                        "name": "__Type",
+                        "kind": "OBJECT",
+                        "ofType": null
+                    }
+                }
+            ]
+        },
+        {
+            "name": "__TypeKind",
+            "kind": "ENUM",
+            "description": "An enum describing what kind of type a given `__Type` is.",
+            "fields": null
+        },
+        {
+            "name": "__Field",
+            "kind": "OBJECT",
+            "description": "Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, and a return type.",
+            "fields": [
+                {
+                    "name": "name",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "description",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "args",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "type",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "__Type",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "isDeprecated",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Boolean",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "deprecationReason",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                }
+            ]
+        },
+        {
+            "name": "__InputValue",
+            "kind": "OBJECT",
+            "description": "Arguments provided to Fields or Directives and the input fields of an InputObject are represented as Input Values which describe their type and optionally a default value.",
+            "fields": [
+                {
+                    "name": "name",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "description",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "type",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "__Type",
+                            "kind": "OBJECT"
+                        }
+                    }
+                },
+                {
+                    "name": "defaultValue",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "isDeprecated",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Boolean",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "deprecationReason",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                }
+            ]
+        },
+        {
+            "name": "__EnumValue",
+            "kind": "OBJECT",
+            "description": "One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. However an Enum value is returned in a JSON response as a string.",
+            "fields": [
+                {
+                    "name": "name",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "description",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "isDeprecated",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Boolean",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "deprecationReason",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                }
+            ]
+        },
+        {
+            "name": "__Directive",
+            "kind": "OBJECT",
+            "description": "A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.\n\nIn some cases, you need to provide options to alter GraphQL's execution behavior in ways field arguments will not suffice, such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor.",
+            "fields": [
+                {
+                    "name": "name",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "String",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "description",
+                    "type": {
+                        "name": "String",
+                        "kind": "SCALAR",
+                        "ofType": null
+                    }
+                },
+                {
+                    "name": "isRepeatable",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": "Boolean",
+                            "kind": "SCALAR"
+                        }
+                    }
+                },
+                {
+                    "name": "locations",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                },
+                {
+                    "name": "args",
+                    "type": {
+                        "name": null,
+                        "kind": "NON_NULL",
+                        "ofType": {
+                            "name": null,
+                            "kind": "LIST"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "__DirectiveLocation",
+            "kind": "ENUM",
+            "description": "A Directive can be adjacent to many parts of the GraphQL language, a __DirectiveLocation describes one such possible adjacencies.",
+            "fields": null
+        }
+    ]
+}
