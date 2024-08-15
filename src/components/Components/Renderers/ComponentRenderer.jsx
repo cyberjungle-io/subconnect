@@ -166,40 +166,39 @@ const ComponentRenderer = React.memo(({
       componentStyle.justifyContent = props.justifyContent || "flex-start";
       componentStyle.gap = style.gap || "0px";
       
+      // Always allow the FLEX_CONTAINER to grow based on its content
+      componentStyle.minWidth = style.minWidth || "300px";
+      componentStyle.minHeight = style.minHeight || "300px";
+      componentStyle.width = style.width || "auto";
+      componentStyle.height = style.height || "auto";
+
       if (!isFlexChild) {
         // Top-level FLEX_CONTAINER
         if (globalComponentLayout === "horizontal") {
           componentStyle.width = style.width || "100%";
-          componentStyle.height = "auto"; // Allow vertical growth
-          componentStyle.minHeight = style.height || "300px"; // Increased from 200px
         } else {
-          componentStyle.width = "auto"; // Allow horizontal growth
-          componentStyle.minWidth = style.width || "300px"; // Increased from 200px
           componentStyle.height = style.height || "100%";
         }
       } else {
         // Nested FLEX_CONTAINER
-        componentStyle.flexGrow = 1;
-        componentStyle.flexShrink = 1;
-        componentStyle.flexBasis = "auto";
-        componentStyle.width = style.width || "300px"; // Added default width
-        componentStyle.height = style.height || "300px"; // Added default height
+        componentStyle.flexGrow = style.flexGrow || 1;
+        componentStyle.flexShrink = style.flexShrink || 1;
+        componentStyle.flexBasis = style.flexBasis || 'auto';
       }
-      
-      componentStyle.minWidth = style.minWidth || "200px"; // Increased from 50px
-      componentStyle.minHeight = style.minHeight || "200px"; // Increased from 50px
     } else {
       // For non-FLEX_CONTAINER components
-      componentStyle.flexGrow = style.flexGrow || 0;
-      componentStyle.flexShrink = style.flexShrink || 0;
-      componentStyle.flexBasis = style.flexBasis || 'auto';
+      if (isFlexChild) {
+        componentStyle.flexGrow = style.flexGrow || 0;
+        componentStyle.flexShrink = style.flexShrink || 0;
+        componentStyle.flexBasis = style.flexBasis || 'auto';
+      }
       componentStyle.width = style.width || 'auto';
       componentStyle.height = style.height || 'auto';
     }
   
     if (type === "CHART") {
-      componentStyle.minWidth = style.width || "200px";
-      componentStyle.minHeight = style.height || "150px";
+      componentStyle.minWidth = style.minWidth || "200px";
+      componentStyle.minHeight = style.minHeight || "150px";
       componentStyle.width = style.width || "100%";
       componentStyle.height = style.height || "100%";
     }

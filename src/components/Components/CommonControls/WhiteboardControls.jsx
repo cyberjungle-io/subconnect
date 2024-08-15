@@ -51,6 +51,30 @@ const WhiteboardControls = ({ component, onUpdate }) => {
     }));
   };
 
+  const handleGridToggle = () => {
+    dispatch(updateComponent({
+      id: component.id,
+      updates: {
+        props: {
+          ...component.props,
+          showGrid: !component.props.showGrid
+        }
+      }
+    }));
+  };
+
+  const handlePropChange = (prop, value) => {
+    dispatch(updateComponent({
+      id: component.id,
+      updates: {
+        props: {
+          ...component.props,
+          [prop]: value
+        }
+      }
+    }));
+  };
+
   return (
     <div className="control-section">
       <div className="control-section-header">
@@ -94,6 +118,38 @@ const WhiteboardControls = ({ component, onUpdate }) => {
             value={component.style.height || '300px'}
             onChange={handleHeightChange}
             className="control-input"
+          />
+        </div>
+
+        <div className="mb-2">
+          <label className="control-label">
+            <input
+              type="checkbox"
+              checked={component.props.showGrid}
+              onChange={handleGridToggle}
+              className="mr-2"
+            />
+            Show Grid
+          </label>
+        </div>
+
+        <div className="mb-2">
+          <label className="control-label">Default Stroke Color</label>
+          <ColorPicker
+            color={component.props.strokeColor || '#000000'}
+            onChange={(color) => handlePropChange('strokeColor', color)}
+          />
+        </div>
+
+        <div className="mb-2">
+          <label className="control-label">Default Stroke Width</label>
+          <input
+            type="number"
+            value={component.props.strokeWidth || 2}
+            onChange={(e) => handlePropChange('strokeWidth', e.target.value)}
+            className="control-input"
+            min="1"
+            max="20"
           />
         </div>
       </div>
