@@ -38,11 +38,27 @@ export const fetchGraphQLSchema = createAsyncThunk(
   }
 );
 
+// New executeQuery thunk
+export const executeQuery = createAsyncThunk(
+  'graphQL/executeQuery',
+  async ({ endpoint, query }, { rejectWithValue }) => {
+    try {
+      const response = await axios.post(endpoint, { query });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response ? error.response.data : error.message);
+    }
+  }
+);
+
 const initialState = {
   schema: null,
   schemaLoading: false,
   schemaError: null,
   endpoint: 'https://khala-computation.cyberjungle.io/graphql',
+  queryResult: null,
+  queryLoading: false,
+  queryError: null,
 };
 
 const graphQLSlice = createSlice({
@@ -66,6 +82,19 @@ const graphQLSlice = createSlice({
       .addCase(fetchGraphQLSchema.rejected, (state, action) => {
         state.schemaLoading = false;
         state.schemaError = action.payload;
+      })
+      .addCase(executeQuery.pending, (state) => {
+        state.queryLoading = true;
+        state.queryError = null;
+        state.queryResult = null;
+      })
+      .addCase(executeQuery.fulfilled, (state, action) => {
+        state.queryLoading = false;
+        state.queryResult = action.payload;
+      })
+      .addCase(executeQuery.rejected, (state, action) => {
+        state.queryLoading = false;
+        state.queryError = action.payload;
       });
   },
 });

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setEndpoint, fetchGraphQLSchema } from '../../features/graphQLSlice';
+import { setEndpoint, fetchGraphQLSchema, executeQuery } from '../../features/graphQLSlice';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 
 const SchemaItem = ({ item, onSelect, selectedFields, depth = 0, path = [] }) => {
@@ -23,31 +23,36 @@ const SchemaItem = ({ item, onSelect, selectedFields, depth = 0, path = [] }) =>
     f && Array.isArray(f.path) && f.path.join('.') === currentPath.join('.')
   );
 
+  const isObject = item.fields && item.fields.length > 0;
+
   return (
     <li className="mt-2">
       <div className="flex items-center" style={{ marginLeft: `${depth * 20}px` }}>
-        {item.fields && item.fields.length > 0 && (
+        {isObject ? (
           <button onClick={toggleExpand} className="mr-2">
             {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
           </button>
+        ) : (
+          <>
+            <span className="mr-6"></span>
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => onSelect(currentPath, item.query_field)}
+              className="mr-2"
+            />
+          </>
         )}
-        {!item.fields && <span className="mr-6"></span>}
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => onSelect(currentPath, item.query_field)}
-          className="mr-2"
-        />
-        <span className="font-semibold">{item.name}</span>
+        <span className={`font-semibold ${isObject ? 'text-blue-600' : ''}`}>{item.name}</span>
         <span className="ml-2 text-gray-500">({item.kind})</span>
         {item.type && <span className="ml-2 text-gray-500">: {getTypeName(item.type)}</span>}
       </div>
-      {isExpanded && item.fields && (
+      {isExpanded && isObject && (
         <ul className="ml-6 mt-1">
           {item.fields.map(field => (
             <SchemaItem
               key={field.name}
-              item={field}
+              item={{...field, query_field: item.query_field}}
               onSelect={onSelect}
               selectedFields={selectedFields}
               depth={depth + 1}
@@ -62,10 +67,11 @@ const SchemaItem = ({ item, onSelect, selectedFields, depth = 0, path = [] }) =>
 
 const GraphQLQueryTab = () => {
   const dispatch = useDispatch();
-  const { endpoint, schema, schemaLoading, schemaError } = useSelector(state => state.graphQL);
+  const { endpoint, schema, schemaLoading, schemaError, queryResult, queryLoading, queryError } = useSelector(state => state.graphQL);
 
   const [localSchema, setLocalSchema] = useState([]);
   const [selectedFields, setSelectedFields] = useState([]);
+  const [queryLimit, setQueryLimit] = useState(10);
 
   useEffect(() => {
     dispatch(fetchGraphQLSchema(endpoint));
@@ -121,7 +127,10 @@ const GraphQLQueryTab = () => {
       if (exists) {
         return prev.filter(f => f && Array.isArray(f.path) && f.path.join('.') !== pathString);
       } else {
-        const newField = { path: fieldPath, queryField: queryField || fieldPath[0] };
+        const newField = { 
+          path: fieldPath, 
+          queryField: queryField // This should be the query_field from the schema
+        };
         return [...prev.filter(f => f && Array.isArray(f.path) && !fieldPath.every((p, i) => p === f.path[i])), newField];
       }
     });
@@ -139,8 +148,8 @@ const GraphQLQueryTab = () => {
       const groupedFields = fields.reduce((acc, field) => {
         if (!field || !field.path || !Array.isArray(field.path)) return acc;
         
-        const [first, ...rest] = field.path;
-        const queryField = field.queryField || first;
+        const [dataset, ...rest] = field.path;
+        const queryField = field.queryField || dataset;
         
         if (!acc[queryField]) {
           acc[queryField] = [];
@@ -156,11 +165,12 @@ const GraphQLQueryTab = () => {
       }, {});
 
       return Object.entries(groupedFields).map(([key, subFields]) => {
+        const limitArg = depth === 1 ? `(limit: ${queryLimit})` : '';
         if (subFields.length === 0 || subFields.every(f => f.path.length === 0)) {
-          return `${indent}${key}`;
+          return `${indent}${key}${limitArg}`;
         } else {
           const fieldString = buildQueryString(subFields, depth + 1, maxDepth);
-          return fieldString ? `${indent}${key} {\n${fieldString}\n${indent}}` : `${indent}${key}`;
+          return fieldString ? `${indent}${key}${limitArg} {\n${fieldString}\n${indent}}` : `${indent}${key}${limitArg}`;
         }
       }).join('\n');
     };
@@ -172,6 +182,16 @@ ${buildQueryString(selectedFields)}
 
   const handleEndpointChange = (e) => {
     dispatch(setEndpoint(e.target.value));
+  };
+
+  const handleExecuteQuery = () => {
+    const query = generateQuery();
+    dispatch(executeQuery({ endpoint, query }));
+  };
+
+  const handleLimitChange = (e) => {
+    const value = parseInt(e.target.value, 10);
+    setQueryLimit(isNaN(value) ? 10 : Math.max(1, value));
   };
 
   return (
@@ -214,7 +234,34 @@ ${buildQueryString(selectedFields)}
                   value={generateQuery()}
                   readOnly
                 />
+                <div className="flex items-center mb-2">
+                  <label htmlFor="queryLimit" className="mr-2">Limit:</label>
+                  <input
+                    type="number"
+                    id="queryLimit"
+                    className="border rounded p-1 w-20"
+                    value={queryLimit}
+                    onChange={handleLimitChange}
+                    min="1"
+                  />
+                </div>
+                <button
+                  onClick={handleExecuteQuery}
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  disabled={queryLoading}
+                >
+                  {queryLoading ? 'Executing...' : 'Execute Query'}
+                </button>
               </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold mb-2">Query Result</h3>
+              {queryError && <p className="text-red-500 mb-2">Error: {queryError}</p>}
+              <textarea
+                className="w-full h-64 p-2 border rounded mb-2"
+                value={queryResult ? JSON.stringify(queryResult, null, 2) : ''}
+                readOnly
+              />
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">Raw Local Schema</h3>
