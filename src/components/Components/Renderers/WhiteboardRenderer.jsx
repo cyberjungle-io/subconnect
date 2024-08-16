@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { FaPen, FaEraser, FaTrash, FaSquare, FaCircle, FaMinus, FaLongArrowAltRight, FaFont, FaUndo, FaEye, FaTrashAlt, FaChevronDown, FaEyeSlash, FaRedo, FaSave, FaUpload, FaPlus, FaLayerGroup, FaChevronRight } from 'react-icons/fa';
-import { useDispatch } from 'react-redux';
-import { updateComponent } from '../../../features/editorSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateComponent, undoWhiteboard, redoWhiteboard } from '../../../features/editorSlice';
 import TextareaAutosize from 'react-textarea-autosize';
 
 const WhiteboardRenderer = ({ component, globalSettings }) => {
@@ -16,12 +16,9 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const [isAddingText, setIsAddingText] = useState(false);
   const [strokeColor, setStrokeColor] = useState(component.props.strokeColor || globalSettings.generalComponentStyle.color || '#000000');
   const [strokeWidth, setStrokeWidth] = useState(component.props.strokeWidth || 2);
-  const [history, setHistory] = useState([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
   const [showGrid, setShowGrid] = useState(component.props.showGrid || false);
   const dispatch = useDispatch();
-  const [scale, setScale] = useState(1);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const whiteboardState = useSelector(state => state.editor.whiteboardState);
   const [selectedShape, setSelectedShape] = useState(null);
   const [layers, setLayers] = useState([{ id: 1, name: 'Layer 1', visible: true }]);
   const [activeLayer, setActiveLayer] = useState(1);
@@ -29,20 +26,19 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const [activeShape, setActiveShape] = useState('pen');
   const [shapesDropdownOpen, setShapesDropdownOpen] = useState(false);
 
-  const saveCanvasState = useCallback(() => {
-    const canvas = canvasRef.current;
-    const imageData = canvas.toDataURL();
-    dispatch(updateComponent({ id: component.id, updates: { props: { imageData } } }));
-  }, [dispatch, component.id]);
-  
   const saveToHistory = useCallback(() => {
     const canvas = canvasRef.current;
-    const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push(canvas.toDataURL());
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-    saveCanvasState();
-  }, [history, historyIndex, saveCanvasState]);
+    const newImageData = canvas.toDataURL();
+    dispatch(updateComponent({ id: component.id, updates: { props: { imageData: newImageData } } }));
+  }, [dispatch, component.id]);
+
+  const undo = useCallback(() => {
+    dispatch(undoWhiteboard());
+  }, [dispatch]);
+
+  const redo = useCallback(() => {
+    dispatch(redoWhiteboard());
+  }, [dispatch]);
 
   const drawShape = useCallback((start, end) => {
     if (!context) return;
@@ -117,9 +113,9 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
       if (['rectangle', 'circle', 'line', 'arrow'].includes(tool)) {
         drawShape(startPoint, { x: startPoint.x, y: startPoint.y });
       }
-      saveCanvasState();
+      saveToHistory();
     }
-  }, [component.isDraggingDisabled, context, tool, drawShape, startPoint, saveCanvasState]);
+  }, [component.isDraggingDisabled, context, tool, drawShape, startPoint, saveToHistory]);
 
   const drawArrow = (start, end) => {
     const headlen = 10;
@@ -160,7 +156,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     }
   }, [component.isDraggingDisabled, tool]);
 
-  const confirmText = () => {
+  const confirmText = useCallback(() => {
     if (textInput && textPosition) {
       context.font = `${component.props.fontSize || globalSettings.generalComponentStyle.fontSize || '16px'} ${component.props.fontFamily || globalSettings.generalComponentStyle.fontFamily || 'Arial'}`;
       context.fillStyle = component.props.textColor || globalSettings.generalComponentStyle.color || '#000000';
@@ -168,8 +164,9 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
       setIsAddingText(false);
       setTextInput('');
       setTextPosition(null);
+      saveToHistory();
     }
-  };
+  }, [textInput, textPosition, context, component.props, globalSettings, saveToHistory]);
 
   const handleColorChange = (e) => {
     setStrokeColor(e.target.value);
@@ -177,31 +174,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
 
   const handleWidthChange = (e) => {
     setStrokeWidth(parseInt(e.target.value, 10));
-  };
-
-  const undo = () => {
-    if (historyIndex > 0) {
-      setHistoryIndex(historyIndex - 1);
-      loadFromHistory(historyIndex - 1);
-    }
-  };
-
-  const redo = () => {
-    if (historyIndex < history.length - 1) {
-      setHistoryIndex(historyIndex + 1);
-      loadFromHistory(historyIndex + 1);
-    }
-  };
-
-  const loadFromHistory = (index) => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.onload = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 0, 0);
-    };
-    img.src = history[index];
   };
 
   const saveCanvas = () => {
@@ -228,14 +200,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
       img.src = event.target.result;
     };
     reader.readAsDataURL(file);
-  };
-
-  const handleZoom = (delta) => {
-    setScale(prevScale => Math.max(0.5, Math.min(3, prevScale + delta * 0.1)));
-  };
-
-  const handlePan = (dx, dy) => {
-    setOffset(prev => ({ x: prev.x + dx, y: prev.y + dy }));
   };
 
   const selectShape = (shape) => {
@@ -274,25 +238,10 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
       const minimap = minimapRef.current;
       const ctx = minimap.getContext('2d');
       ctx.drawImage(canvasRef.current, 0, 0, minimap.width, minimap.height);
-    }, [history]);
+    }, [whiteboardState.history]);
 
     return <canvas ref={minimapRef} width={100} height={100} />;
   };
-
-  const handleWheel = useCallback((e) => {
-    if (e.ctrlKey) {
-      e.preventDefault();
-      handleZoom(e.deltaY > 0 ? -1 : 1);
-    } else {
-      handlePan(-e.deltaX, -e.deltaY);
-    }
-  }, []);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    canvas.addEventListener('wheel', handleWheel, { passive: false });
-    return () => canvas.removeEventListener('wheel', handleWheel);
-  }, [handleWheel]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -318,8 +267,17 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   }, [component.props.strokeColor, component.props.strokeWidth, globalSettings]);
 
   useEffect(() => {
-    saveToHistory();
-  }, [saveToHistory]);
+    if (component.props.imageData) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      img.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+      };
+      img.src = component.props.imageData;
+    }
+  }, [component.props.imageData]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -391,7 +349,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   };
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', borderRadius: component.props.borderRadius || '4px', overflow: 'hidden', position: 'relative' }}>
       <div className="whiteboard-toolbar">
         <div className="dropdown shapes-dropdown">
           <button onClick={toggleShapesDropdown} className="toolbar-button">
@@ -421,10 +379,10 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
         <button className="toolbar-button">
           <FaFont />
         </button>
-        <button className="toolbar-button">
+        <button className="toolbar-button" onClick={undo} disabled={whiteboardState.historyIndex <= 0}>
           <FaUndo />
         </button>
-        <button className="toolbar-button">
+        <button className="toolbar-button" onClick={redo} disabled={whiteboardState.historyIndex >= whiteboardState.history.length - 1}>
           <FaRedo />
         </button>
         <button className="toolbar-button">
@@ -495,7 +453,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           border: '1px solid #000',
           backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff',
           cursor: component.isDraggingDisabled ? 'crosshair' : 'move',
-          transform: `scale(${scale}) translate(${offset.x}px, ${offset.y}px)`,
+          borderRadius: 'inherit',
         }}
         onMouseDown={startDrawing}
         onMouseUp={stopDrawing}

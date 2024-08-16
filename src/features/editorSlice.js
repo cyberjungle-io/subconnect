@@ -15,6 +15,10 @@ const initialState = {
   globalSettings: defaultGlobalSettings,
   mode: 'edit',
   currentPage: null,
+  whiteboardState: {
+    history: [],
+    historyIndex: -1,
+  },
 };
 
 const findComponentById = (components, id) => {
@@ -70,6 +74,18 @@ const deleteComponentById = (components, id) => {
     }
     if (component.children) {
       component.children = deleteComponentById(component.children, id);
+    }
+    return true;
+  });
+};
+
+const deleteComponentsDeep = (components, idsToDelete) => {
+  return components.filter(component => {
+    if (idsToDelete.includes(component.id)) {
+      return false;
+    }
+    if (component.children) {
+      component.children = deleteComponentsDeep(component.children, idsToDelete);
     }
     return true;
   });
@@ -131,7 +147,20 @@ export const editorSlice = createSlice({
       const { id, updates } = action.payload;
       const updatedComponents = updateComponentById(state.components, id, updates);
       state.components = updatedComponents;
-      console.log(`Updated component ${id}:`, findComponentById(updatedComponents, id));
+
+      // If it's a whiteboard component, update the whiteboard state
+      const updatedComponent = findComponentById(updatedComponents, id);
+      if (updatedComponent && updatedComponent.type === 'WHITEBOARD') {
+        if (updates.props && updates.props.imageData) {
+          state.whiteboardState.history = [
+            ...state.whiteboardState.history.slice(0, state.whiteboardState.historyIndex + 1),
+            updates.props.imageData
+          ];
+          state.whiteboardState.historyIndex = state.whiteboardState.history.length - 1;
+        }
+      }
+
+      console.log(`Updated component ${id}:`, updatedComponent);
     },
 
     toggleComponentDragging: (state, action) => {
@@ -162,6 +191,11 @@ export const editorSlice = createSlice({
       state.selectedIds = state.selectedIds.filter(
         (id) => id !== action.payload
       );
+    },
+    deleteComponents: (state, action) => {
+      const componentIds = action.payload;
+      state.components = deleteComponentsDeep(state.components, componentIds);
+      state.selectedIds = state.selectedIds.filter((id) => !componentIds.includes(id));
     },
     setSelectedIds: (state, action) => {
       state.selectedIds = action.payload;
@@ -207,25 +241,50 @@ export const editorSlice = createSlice({
       const { componentId, newParentId, newPosition } = action.payload;
       const componentToMove = findComponentById(state.components, componentId);
       if (componentToMove) {
+        const oldParent = findParentComponent(state.components, componentId);
+        const newParent = newParentId ? findComponentById(state.components, newParentId) : null;
+
+        // Create a copy of the current state
+        const originalState = JSON.parse(JSON.stringify(state.components));
+
         // Remove from old parent
-        state.components = removeComponentFromParent(state.components, componentId);
-        if (newParentId) {
-          // Add to new parent
-          const newParent = findComponentById(state.components, newParentId);
-          if (newParent) {
-            if (!newParent.children) newParent.children = [];
-            newParent.children.push(componentToMove);
-          }
+        if (oldParent) {
+          oldParent.children = oldParent.children.filter(child => child.id !== componentId);
         } else {
-          // Move to root level
+          state.components = state.components.filter(component => component.id !== componentId);
+        }
+
+        // Check if new parent is a container
+        const isNewParentContainer = newParent && (newParent.type === 'FLEX_CONTAINER' || newParent.type === 'GRID_CONTAINER');
+
+        if (isNewParentContainer) {
+          // Add to new parent if it's a container
+          if (!newParent.children) newParent.children = [];
+          newParent.children.push(componentToMove);
+        } else {
+          // If new parent is not a container or doesn't exist, add to root level
           if (newPosition) {
-            // For flex layout, we don't need to set top and left
             componentToMove.style = {
               ...componentToMove.style,
-              order: state.components.length, // Use order to control positioning
+              top: newPosition.top,
+              left: newPosition.left,
             };
           }
-          state.components.push(componentToMove);
+          
+          if (newParent) {
+            // Find the index of the non-container component and insert the moved component after it
+            const newParentIndex = state.components.findIndex(c => c.id === newParent.id);
+            state.components.splice(newParentIndex + 1, 0, componentToMove);
+          } else {
+            state.components.push(componentToMove);
+          }
+        }
+
+        // Check if the component still exists after the move
+        const componentStillExists = findComponentById(state.components, componentId);
+        if (!componentStillExists) {
+          // If the component doesn't exist, revert to the original state
+          state.components = originalState;
         }
       }
     },
@@ -268,29 +327,48 @@ export const editorSlice = createSlice({
     setCurrentPage: (state, action) => {
       state.currentPage = action.payload;
     },
+    undoWhiteboard: (state) => {
+      if (state.whiteboardState.historyIndex > 0) {
+        state.whiteboardState.historyIndex -= 1;
+        const previousState = state.whiteboardState.history[state.whiteboardState.historyIndex];
+        const whiteboardComponent = state.components.find(c => c.type === 'WHITEBOARD');
+        if (whiteboardComponent) {
+          whiteboardComponent.props.imageData = previousState;
+        }
+      }
+    },
+
+    redoWhiteboard: (state) => {
+      if (state.whiteboardState.historyIndex < state.whiteboardState.history.length - 1) {
+        state.whiteboardState.historyIndex += 1;
+        const nextState = state.whiteboardState.history[state.whiteboardState.historyIndex];
+        const whiteboardComponent = state.components.find(c => c.type === 'WHITEBOARD');
+        if (whiteboardComponent) {
+          whiteboardComponent.props.imageData = nextState;
+        }
+      }
+    },
   },
 });
 
-const removeComponentFromParent = (components, componentId) => {
-  return components
-    .map((component) => {
-      if (component.children) {
-        return {
-          ...component,
-          children: component.children.filter(
-            (child) => child.id !== componentId
-          ),
-        };
-      }
+const findParentComponent = (components, childId) => {
+  for (let component of components) {
+    if (component.children && component.children.some(child => child.id === childId)) {
       return component;
-    })
-    .filter((component) => component.id !== componentId);
+    }
+    if (component.children) {
+      const found = findParentComponent(component.children, childId);
+      if (found) return found;
+    }
+  }
+  return null;
 };
 
 export const {
   addComponent,
   updateComponent,
   deleteComponent,
+  deleteComponents,
   setSelectedIds,
   alignComponents,
   distributeComponents,
@@ -306,6 +384,8 @@ export const {
   setEditorMode,
   loadPageContent,
   setCurrentPage,
+  undoWhiteboard,
+  redoWhiteboard,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

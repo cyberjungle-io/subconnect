@@ -23,7 +23,8 @@ export const componentConfig = {
       wrap: 'nowrap',
       alignItems: 'stretch',
       justifyContent: 'flex-start',
-      gap: '0px'
+      gap: '0px',
+      borderRadius: '4px'
     }
   },
   [componentTypes.HEADING]: {
@@ -62,7 +63,8 @@ export const componentConfig = {
         mobile: '24px',
         tablet: '28px',
         desktop: '32px'
-      }
+      },
+      borderRadius: '4px'
     },
     style: {
       textAlign: 'left',
@@ -75,7 +77,10 @@ export const componentConfig = {
     name: 'Text',
     icon: FaFont,
     acceptsChildren: false,
-    defaultContent: 'Enter your text here'
+    defaultContent: 'Enter your text here',
+    defaultProps: {
+      borderRadius: '4px'
+    }
   },
   
   [componentTypes.IMAGE]: {
@@ -89,7 +94,7 @@ export const componentConfig = {
       alt: 'Image description',
       shape: 'rectangle',
       keepAspectRatio: true,
-      borderRadius: '0',
+      borderRadius: '4px',
       borderRadiusUnit: 'px',
       boxShadowX: '0',
       boxShadowY: '0',
@@ -114,7 +119,10 @@ export const componentConfig = {
     name: 'Button',
     icon: FaSquare,
     acceptsChildren: false,
-    defaultContent: 'Click me'
+    defaultContent: 'Click me',
+    defaultProps: {
+      borderRadius: '4px'
+    }
   },
   [componentTypes.CHART]: {
     name: 'Chart',
@@ -135,14 +143,20 @@ export const componentConfig = {
         { name: 'E', value: 189 },
       ]
     },
-    chartTypes: ['line', 'bar', 'area', 'pie']
+    chartTypes: ['line', 'bar', 'area', 'pie'],
+    defaultProps: {
+      borderRadius: '4px'
+    }
   },
   [componentTypes.TABLE]: {
     name: 'Table',
     icon: FaTable,
     acceptsChildren: false,
     defaultSize: { width: 300, height: 200 },
-    defaultContent: 'Table Placeholder'
+    defaultContent: 'Table Placeholder',
+    defaultProps: {
+      borderRadius: '4px'
+    }
   },
   [componentTypes.VIDEO]: {
     name: 'Video',
@@ -157,7 +171,8 @@ export const componentConfig = {
       loop: false,
       mute: false,
       startTime: 0,
-      endTime: 0
+      endTime: 0,
+      borderRadius: '4px'
     },
     sanitizeUrl: (url) => {
       const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
@@ -173,6 +188,7 @@ export const componentConfig = {
       backgroundColor: '#ffffff',
       strokeColor: '#000000',
       strokeWidth: 2,
+      borderRadius: '4px'
     }
   },
 };

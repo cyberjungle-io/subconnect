@@ -1,6 +1,7 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { useDrop, useDrag } from "react-dnd";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { deleteComponents } from '../../../features/editorSlice'; // Update this import
 
 import ContainerRenderer from "./ContainerRenderer";
 import HeadingRenderer from "./HeadingRenderer";
@@ -54,6 +55,8 @@ const ComponentRenderer = React.memo(({
   globalComponentLayout,
   isViewMode = false,
 }) => {
+  const dispatch = useDispatch();
+  const componentRef = useRef(null);
   const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild, isViewMode);
   const globalSettings = useSelector(state => state.editor.globalSettings);
 
@@ -62,6 +65,25 @@ const ComponentRenderer = React.memo(({
     const isMultiSelect = event.ctrlKey || event.metaKey;
     onSelect(component.id, isMultiSelect);
   }, [component.id, onSelect]);
+
+  // Add this effect to handle the delete key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Delete' && !isViewMode && selectedIds.includes(component.id)) {
+        e.preventDefault();
+        dispatch(deleteComponents([component.id]));
+      }
+    };
+
+    const currentRef = componentRef.current;
+    if (currentRef) {
+      currentRef.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        currentRef.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [dispatch, component.id, selectedIds, isViewMode]);
 
   const isThisComponentSelected = selectedIds?.includes(component.id) || false;
 
@@ -146,7 +168,7 @@ const ComponentRenderer = React.memo(({
         : style.borderWidth && style.borderStyle
           ? `${style.borderWidth} ${style.borderStyle} ${style.borderColor || '#000'}`
           : "1px solid #ccc",
-      borderRadius: style.borderRadius || '0px',
+      borderRadius: style.borderRadius || props.borderRadius || '4px', // Updated this line
       padding: style.padding || "0px",
       margin: style.margin || "0px",
       overflow: "hidden",
@@ -211,6 +233,7 @@ const ComponentRenderer = React.memo(({
   return (
     <div
       ref={(node) => {
+        componentRef.current = node;
         if (!isViewMode && !component.isDraggingDisabled) {
           dragRef(dropRef(node));
         } else if (!isViewMode) {
@@ -225,6 +248,7 @@ const ComponentRenderer = React.memo(({
         ${isViewMode ? "" : component.isDraggingDisabled ? "cursor-default" : "cursor-move"}
       `}
       data-id={component.id}
+      tabIndex={0} // Make the div focusable
     >
       {renderContent()}
       {!isViewMode && isThisComponentSelected && (
