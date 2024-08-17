@@ -72,6 +72,7 @@ const GraphQLQueryTab = () => {
   const [localSchema, setLocalSchema] = useState([]);
   const [selectedFields, setSelectedFields] = useState([]);
   const [queryLimit, setQueryLimit] = useState(10);
+  const [editableQuery, setEditableQuery] = useState('');
 
   useEffect(() => {
     dispatch(fetchGraphQLSchema(endpoint));
@@ -79,6 +80,7 @@ const GraphQLQueryTab = () => {
 
   useEffect(() => {
     if (schema) {
+      console.log('GraphQL Schema:', schema); // Add this line to log the schema
       const queryType = schema.types.find(type => type.name === 'Query');
       const queryFields = queryType ? queryType.fields : [];
 
@@ -116,6 +118,10 @@ const GraphQLQueryTab = () => {
       setLocalSchema(processedSchema);
     }
   }, [schema]);
+
+  useEffect(() => {
+    setEditableQuery(generateQuery());
+  }, [selectedFields, queryLimit]);
 
   const handleSelect = (fieldPath, queryField) => {
     setSelectedFields(prev => {
@@ -185,13 +191,16 @@ ${buildQueryString(selectedFields)}
   };
 
   const handleExecuteQuery = () => {
-    const query = generateQuery();
-    dispatch(executeQuery({ endpoint, query }));
+    dispatch(executeQuery({ endpoint, query: editableQuery }));
   };
 
   const handleLimitChange = (e) => {
     const value = parseInt(e.target.value, 10);
     setQueryLimit(isNaN(value) ? 10 : Math.max(1, value));
+  };
+
+  const handleQueryChange = (e) => {
+    setEditableQuery(e.target.value);
   };
 
   return (
@@ -228,11 +237,11 @@ ${buildQueryString(selectedFields)}
                 </div>
               </div>
               <div className="w-1/2 pl-4">
-                <h3 className="text-lg font-semibold mb-2">Generated Query</h3>
+                <h3 className="text-lg font-semibold mb-2">Query Editor</h3>
                 <textarea
                   className="w-full h-64 p-2 border rounded mb-2"
-                  value={generateQuery()}
-                  readOnly
+                  value={editableQuery}
+                  onChange={handleQueryChange}
                 />
                 <div className="flex items-center mb-2">
                   <label htmlFor="queryLimit" className="mr-2">Limit:</label>

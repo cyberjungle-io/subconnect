@@ -1,6 +1,8 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_W3S_API_URL || 'https://w3s.cyberjungle.io/api';
+const API_URL = process.env.REACT_APP_W3S_API_URL || 'https://localhost:5010/api';
+
+console.log('W3S API URL:', API_URL);
 
 // Create an axios instance with default config
 const api = axios.create({
