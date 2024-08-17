@@ -2,69 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchQueries, createQuery, updateQuery, deleteQuery } from '../../w3s/w3sSlice';
 import { setEndpoint, fetchGraphQLSchema, executeQuery } from '../../features/graphQLSlice';
-import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
-
-const SchemaItem = ({ item, onSelect, selectedFields, depth = 0, path = [] }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-
-  const toggleExpand = () => setIsExpanded(!isExpanded);
-
-  const getTypeName = (type) => {
-    if (type.kind === 'NON_NULL') {
-      return `${getTypeName(type.ofType)}!`;
-    } else if (type.kind === 'LIST') {
-      return `[${getTypeName(type.ofType)}]`;
-    } else {
-      return type.name;
-    }
-  };
-
-  const currentPath = [...path, item.name];
-  const isSelected = selectedFields.some(f => 
-    f && Array.isArray(f.path) && f.path.join('.') === currentPath.join('.')
-  );
-
-  const isObject = item.fields && item.fields.length > 0;
-
-  return (
-    <li className="mt-2">
-      <div className="flex items-center" style={{ marginLeft: `${depth * 20}px` }}>
-        {isObject ? (
-          <button onClick={toggleExpand} className="mr-2">
-            {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
-          </button>
-        ) : (
-          <>
-            <span className="mr-6"></span>
-            <input
-              type="checkbox"
-              checked={isSelected}
-              onChange={() => onSelect(currentPath, item.query_field)}
-              className="mr-2"
-            />
-          </>
-        )}
-        <span className={`font-semibold ${isObject ? 'text-blue-600' : ''}`}>{item.name}</span>
-        <span className="ml-2 text-gray-500">({item.kind})</span>
-        {item.type && <span className="ml-2 text-gray-500">: {getTypeName(item.type)}</span>}
-      </div>
-      {isExpanded && isObject && (
-        <ul className="ml-6 mt-1">
-          {item.fields.map(field => (
-            <SchemaItem
-              key={field.name}
-              item={{...field, query_field: item.query_field}}
-              onSelect={onSelect}
-              selectedFields={selectedFields}
-              depth={depth + 1}
-              path={currentPath}
-            />
-          ))}
-        </ul>
-      )}
-    </li>
-  );
-};
+import GraphQLQueryBuilder from './GraphQLQueryBuilder';
+import GraphQLQueryManual from './GraphQLQueryManual';
 
 const GraphQLQueryTab = () => {
   const dispatch = useDispatch();
@@ -127,10 +66,6 @@ const GraphQLQueryTab = () => {
   }, [schema]);
 
   useEffect(() => {
-    setEditableQuery(generateQuery());
-  }, [selectedFields, queryLimit]);
-
-  useEffect(() => {
     if (querySource === 'manual') {
       const fields = parseQueryString(editableQuery);
       setParsedFields(fields);
@@ -182,8 +117,8 @@ const GraphQLQueryTab = () => {
             }
           }
           fields.push({
-            name: fieldName,
-            subfields: extractFields(subfields, fieldName)
+            name: prefix ? `${prefix}.${fieldName}` : fieldName,
+            subfields: extractFields(subfields, prefix ? `${prefix}.${fieldName}` : fieldName)
           });
         } else {
           fields.push({
@@ -256,12 +191,11 @@ const GraphQLQueryTab = () => {
       }, {});
 
       return Object.entries(groupedFields).map(([key, subFields]) => {
-        const limitArg = depth === 1 ? `(limit: ${queryLimit})` : '';
         if (subFields.length === 0 || subFields.every(f => f.path.length === 0)) {
-          return `${indent}${key}${limitArg}`;
+          return `${indent}${key}`;
         } else {
           const fieldString = buildQueryString(subFields, depth + 1, maxDepth);
-          return fieldString ? `${indent}${key}${limitArg} {\n${fieldString}\n${indent}}` : `${indent}${key}${limitArg}`;
+          return fieldString ? `${indent}${key} {\n${fieldString}\n${indent}}` : `${indent}${key}`;
         }
       }).join('\n');
     };
@@ -277,15 +211,6 @@ ${buildQueryString(selectedFields)}
 
   const handleExecuteQuery = () => {
     dispatch(executeQuery({ endpoint, query: editableQuery }));
-  };
-
-  const handleLimitChange = (e) => {
-    const value = parseInt(e.target.value, 10);
-    setQueryLimit(isNaN(value) ? 10 : Math.max(1, value));
-  };
-
-  const handleQueryChange = (e) => {
-    setEditableQuery(e.target.value);
   };
 
   const handleSaveQuery = () => {
@@ -357,39 +282,6 @@ ${buildQueryString(selectedFields)}
     );
   };
 
-  const renderParsedFields = (fields) => {
-    const dataTypes = ['String', 'Int', 'Float', 'Boolean', 'ID']; // Add more GraphQL types as needed
-
-    return (
-      <table className="w-full border-collapse border border-gray-300">
-        <thead>
-          <tr className="bg-gray-100">
-            <th className="border border-gray-300 px-4 py-2">Field Name</th>
-            <th className="border border-gray-300 px-4 py-2">Data Type</th>
-          </tr>
-        </thead>
-        <tbody>
-          {fields.map((field, index) => (
-            <tr key={index}>
-              <td className="border border-gray-300 px-4 py-2">{field.name}</td>
-              <td className="border border-gray-300 px-4 py-2">
-                <select
-                  value={field.dataType}
-                  onChange={(e) => handleDataTypeChange(index, e.target.value)}
-                  className="w-full p-1 border rounded"
-                >
-                  {dataTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
-  };
-
   return (
     <div className="graphql-query-tab h-full flex flex-col">
       <div className="flex-grow overflow-y-auto p-4">
@@ -408,7 +300,7 @@ ${buildQueryString(selectedFields)}
         {localSchema.length > 0 && (
           <div className="mt-4 flex flex-col">
             <div className="flex mb-4">
-              <div className="w-1/2 pr-4">
+              <div className="w-full">
                 <h3 className="text-lg font-semibold mb-2">Query Source</h3>
                 <div className="flex items-center mb-4">
                   <label className="mr-4">
@@ -433,76 +325,25 @@ ${buildQueryString(selectedFields)}
                   </label>
                 </div>
                 {querySource === 'builder' ? (
-                  <>
-                    <h3 className="text-lg font-semibold mb-2">Schema Hierarchy</h3>
-                    <div className="border rounded p-2 h-64 overflow-y-auto">
-                      <ul>
-                        {localSchema.map(item => (
-                          <SchemaItem
-                            key={item.name}
-                            item={item}
-                            onSelect={handleSelect}
-                            selectedFields={selectedFields}
-                          />
-                        ))}
-                      </ul>
-                    </div>
-                  </>
+                  <GraphQLQueryBuilder
+                    localSchema={localSchema}
+                    selectedFields={selectedFields}
+                    handleSelect={handleSelect}
+                  />
                 ) : (
-                  <>
-                    <h3 className="text-lg font-semibold mb-2">Query Fields</h3>
-                    <div className="border rounded p-2 h-64 overflow-y-auto">
-                      {renderParsedFields(parsedFields)}
-                    </div>
-                  </>
+                  <GraphQLQueryManual
+                    parsedFields={parsedFields}
+                    handleDataTypeChange={handleDataTypeChange}
+                    editableQuery={editableQuery}
+                    setEditableQuery={setEditableQuery}
+                    handleExecuteQuery={handleExecuteQuery}
+                    handleSaveQuery={handleSaveQuery}
+                  />
                 )}
-              </div>
-              <div className="w-1/2 pl-4">
-                <h3 className="text-lg font-semibold mb-2">Query Editor</h3>
-                <textarea
-                  className="w-full h-64 p-2 border rounded mb-2"
-                  value={editableQuery}
-                  onChange={handleQueryChange}
-                />
-                <div className="flex items-center mb-2">
-                  <label htmlFor="queryLimit" className="mr-2">Limit:</label>
-                  <input
-                    type="number"
-                    id="queryLimit"
-                    className="border rounded p-1 w-20"
-                    value={queryLimit}
-                    onChange={handleLimitChange}
-                    min="1"
-                  />
-                </div>
-                <div className="flex items-center mb-2">
-                  <label htmlFor="queryName" className="mr-2">Query Name:</label>
-                  <input
-                    type="text"
-                    id="queryName"
-                    className="border rounded p-1 w-64"
-                    value={queryName}
-                    onChange={(e) => setQueryName(e.target.value)}
-                    placeholder="Enter query name"
-                  />
-                </div>
-                <button
-                  onClick={handleExecuteQuery}
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
-                  disabled={queryLoading}
-                >
-                  {queryLoading ? 'Executing...' : 'Execute Query'}
-                </button>
-                <button
-                  onClick={handleSaveQuery}
-                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-                >
-                  {currentQueryId ? 'Update Query' : 'Save Query'}
-                </button>
               </div>
             </div>
             
-            <div>
+            <div className="mt-4">
               <h3 className="text-lg font-semibold mb-2">Query Result</h3>
               {queryError && <p className="text-red-500 mb-2">Error: {queryError}</p>}
               <textarea
@@ -512,7 +353,7 @@ ${buildQueryString(selectedFields)}
               />
             </div>
             
-            <div>
+            <div className="mt-4">
               <h3 className="text-lg font-semibold mb-2">Saved Queries</h3>
               {queriesStatus === 'loading' && <p>Loading queries...</p>}
               {queriesError && <p className="text-red-500 mb-2">Error loading queries: {queriesError}</p>}
