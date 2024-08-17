@@ -148,11 +148,11 @@ const GraphQLQueryTab = () => {
     const queryBody = match[1].trim();
     const fields = extractFields(queryBody);
 
-    // Remove the top-level field (dataset name)
-    return fields.length > 0 && fields[0].subfields ? fields[0].subfields : [];
+    // Remove the top-level field (dataset name) and flatten the field structure
+    return fields.length > 0 ? flattenFields(fields[0].subfields || []) : [];
   };
 
-  const extractFields = (queryBody, depth = 0) => {
+  const extractFields = (queryBody, prefix = '') => {
     const fields = [];
     const lines = queryBody.split('\n');
 
@@ -163,7 +163,7 @@ const GraphQLQueryTab = () => {
       const fieldMatch = line.match(/^(\w+)(\s*[\(\{])?/);
       if (fieldMatch) {
         const fieldName = fieldMatch[1];
-        const hasSubfields = !!fieldMatch[2];
+        const hasSubfields = line.includes('{');
 
         if (hasSubfields) {
           // Find the closing brace
@@ -180,11 +180,13 @@ const GraphQLQueryTab = () => {
           }
           fields.push({
             name: fieldName,
-            depth: depth,
-            subfields: extractFields(subfields, depth + 1)
+            subfields: extractFields(subfields, fieldName)
           });
         } else {
-          fields.push({ name: fieldName, depth: depth });
+          fields.push({
+            name: prefix ? `${prefix}.${fieldName}` : fieldName,
+            dataType: 'String' // Default data type
+          });
         }
       }
     }
@@ -192,17 +194,23 @@ const GraphQLQueryTab = () => {
     return fields;
   };
 
+  const flattenFields = (fields) => {
+    if (!Array.isArray(fields)) return [];
+    
+    return fields.reduce((acc, field) => {
+      if (field.subfields) {
+        return [...acc, ...flattenFields(field.subfields)];
+      }
+      return [...acc, field];
+    }, []);
+  };
+
   const renderParsedFields = (fields) => {
     return (
       <ul className="list-disc pl-5">
         {fields.map((field, index) => (
-          <li 
-            key={index} 
-            className={`mb-1 ${field.subfields ? 'font-semibold' : ''}`}
-            style={{ marginLeft: `${field.depth * 20}px` }}
-          >
-            {field.name}
-            {field.subfields && renderParsedFields(field.subfields)}
+          <li key={index} className="mb-1">
+            {field.name} ({field.dataType})
           </li>
         ))}
       </ul>
@@ -305,25 +313,20 @@ ${buildQueryString(selectedFields)}
             name: field.path[field.path.length - 1],
             dataType: 'String' // You might want to infer this from the schema
           }))
-        : parsedFields.map(field => ({
-            name: field.name,
-            dataType: 'String' // You might want to infer this or allow user input
-          })),
+        : parsedFields, // These are already in the correct format for manual mode
       querySource: querySource
     };
 
-    console.log('Saving query data:', queryData); // Add this log
-
     if (currentQueryId) {
       dispatch(updateQuery({ ...queryData, _id: currentQueryId }))
-        .then((result) => {
-          console.log('Query update result:', result); // Add this log
+        .then(() => {
+          console.log('Query updated successfully');
           dispatch(fetchQueries());
         });
     } else {
       dispatch(createQuery(queryData))
-        .then((result) => {
-          console.log('Query create result:', result); // Add this log
+        .then(() => {
+          console.log('Query created successfully');
           dispatch(fetchQueries());
         });
     }
