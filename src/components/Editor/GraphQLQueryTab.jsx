@@ -77,17 +77,11 @@ const GraphQLQueryTab = () => {
   const [editableQuery, setEditableQuery] = useState('');
   const [queryName, setQueryName] = useState('');
   const [currentQueryId, setCurrentQueryId] = useState(null);
+  const [querySource, setQuerySource] = useState('builder');
 
   useEffect(() => {
     dispatch(fetchGraphQLSchema(endpoint));
-    console.log('GraphQLQueryTab: Dispatching fetchQueries'); // Log 10
-    dispatch(fetchQueries())
-      .then((result) => {
-        console.log('GraphQLQueryTab: fetchQueries result', result); // Log 11
-      })
-      .catch((error) => {
-        console.error('GraphQLQueryTab: fetchQueries error', error); // Log 12
-      });
+    dispatch(fetchQueries());
   }, [endpoint, dispatch]);
 
   useEffect(() => {
@@ -229,20 +223,21 @@ ${buildQueryString(selectedFields)}
       fields: selectedFields.map(field => ({
         name: field.path[field.path.length - 1],
         dataType: 'String' // You might want to infer this from the schema
-      }))
+      })),
+      querySource: querySource
     };
 
     if (currentQueryId) {
       dispatch(updateQuery({ ...queryData, _id: currentQueryId }))
         .then(() => {
           console.log('Query updated successfully');
-          dispatch(fetchQueries()); // Refresh the list of queries
+          dispatch(fetchQueries());
         });
     } else {
       dispatch(createQuery(queryData))
         .then(() => {
           console.log('Query created successfully');
-          dispatch(fetchQueries()); // Refresh the list of queries
+          dispatch(fetchQueries());
         });
     }
 
@@ -255,7 +250,7 @@ ${buildQueryString(selectedFields)}
       dispatch(deleteQuery(queryId))
         .then(() => {
           console.log('Query deleted successfully');
-          dispatch(fetchQueries()); // Refresh the list of queries
+          dispatch(fetchQueries());
         });
     }
   };
@@ -265,6 +260,7 @@ ${buildQueryString(selectedFields)}
     setEndpoint(query.endpoint);
     setQueryName(query.name);
     setCurrentQueryId(query._id);
+    setQuerySource(query.querySource || 'builder');
     // You might want to update selectedFields here as well
   };
 
@@ -287,19 +283,46 @@ ${buildQueryString(selectedFields)}
           <div className="mt-4 flex flex-col">
             <div className="flex mb-4">
               <div className="w-1/2 pr-4">
-                <h3 className="text-lg font-semibold mb-2">Schema Hierarchy</h3>
-                <div className="border rounded p-2 h-64 overflow-y-auto">
-                  <ul>
-                    {localSchema.map(item => (
-                      <SchemaItem
-                        key={item.name}
-                        item={item}
-                        onSelect={handleSelect}
-                        selectedFields={selectedFields}
-                      />
-                    ))}
-                  </ul>
+                <h3 className="text-lg font-semibold mb-2">Query Source</h3>
+                <div className="flex items-center mb-4">
+                  <label className="mr-4">
+                    <input
+                      type="radio"
+                      value="builder"
+                      checked={querySource === 'builder'}
+                      onChange={() => setQuerySource('builder')}
+                      className="mr-2"
+                    />
+                    Builder
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      value="manual"
+                      checked={querySource === 'manual'}
+                      onChange={() => setQuerySource('manual')}
+                      className="mr-2"
+                    />
+                    Manual
+                  </label>
                 </div>
+                {querySource === 'builder' && (
+                  <>
+                    <h3 className="text-lg font-semibold mb-2">Schema Hierarchy</h3>
+                    <div className="border rounded p-2 h-64 overflow-y-auto">
+                      <ul>
+                        {localSchema.map(item => (
+                          <SchemaItem
+                            key={item.name}
+                            item={item}
+                            onSelect={handleSelect}
+                            selectedFields={selectedFields}
+                          />
+                        ))}
+                      </ul>
+                    </div>
+                  </>
+                )}
               </div>
               <div className="w-1/2 pl-4">
                 <h3 className="text-lg font-semibold mb-2">Query Editor</h3>
@@ -359,18 +382,13 @@ ${buildQueryString(selectedFields)}
             <div>
               <h3 className="text-lg font-semibold mb-2">Saved Queries</h3>
               {queriesStatus === 'loading' && <p>Loading queries...</p>}
-              {queriesError && (
-                <p className="text-red-500 mb-2">
-                  Error loading queries: {queriesError}
-                  <br />
-                  Status: {queriesStatus}
-                </p>
-              )}
+              {queriesError && <p className="text-red-500 mb-2">Error loading queries: {queriesError}</p>}
               <ul>
                 {queries.map(query => (
                   <li key={query._id} className="mb-4 p-4 border rounded">
                     <h4 className="font-bold">{query.name}</h4>
                     <p>Result Type: {query.resultType}</p>
+                    <p>Query Source: {query.querySource || 'N/A'}</p>
                     <p className="mb-2">Endpoint: {query.endpoint}</p>
                     <pre className="bg-gray-100 p-2 rounded">{query.queryString}</pre>
                     <div className="mt-2">
