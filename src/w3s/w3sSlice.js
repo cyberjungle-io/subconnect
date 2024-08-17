@@ -3,7 +3,6 @@ import { w3sService } from './w3sService';
 
 // Async Thunks
 
-
 export const fetchProjects = createAsyncThunk(
   'w3s/fetchProjects',
   async (_, { rejectWithValue }) => {
@@ -82,8 +81,6 @@ export const deleteProject = createAsyncThunk(
   }
 );
 
-
-
 // Add this new async thunk for savePage
 export const savePage = createAsyncThunk(
   'w3s/savePage',
@@ -123,6 +120,71 @@ export const saveProject = createAsyncThunk(
   }
 );
 
+// New async thunks for GraphQL queries
+export const fetchQueries = createAsyncThunk(
+  'w3s/fetchQueries',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.getQueries();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to fetch queries');
+    }
+  }
+);
+
+export const fetchQuery = createAsyncThunk(
+  'w3s/fetchQuery',
+  async (id, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.getQuery(id);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to fetch query');
+    }
+  }
+);
+
+export const createQuery = createAsyncThunk(
+  'w3s/createQuery',
+  async (queryData, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.createQuery(queryData);
+      console.log('Create query response:', response); // Debug log
+      return response;
+    } catch (error) {
+      console.error('Error creating query:', error); // Debug log
+      return rejectWithValue(error.response?.data || 'Failed to create query');
+    }
+  }
+);
+
+export const updateQuery = createAsyncThunk(
+  'w3s/updateQuery',
+  async (queryData, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.updateQuery(queryData._id, queryData);
+      console.log('Update query response:', response); // Debug log
+      return response;
+    } catch (error) {
+      console.error('Error updating query:', error); // Debug log
+      return rejectWithValue(error.response?.data || 'Failed to update query');
+    }
+  }
+);
+
+export const deleteQuery = createAsyncThunk(
+  'w3s/deleteQuery',
+  async (id, { rejectWithValue }) => {
+    try {
+      await w3sService.deleteQuery(id);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to delete query');
+    }
+  }
+);
+
 // Create the setCurrentProject action
 export const setCurrentProject = createAction('w3s/setCurrentProject');
 
@@ -139,6 +201,16 @@ const w3sSlice = createSlice({
         error: null,
       },
       currentProject: {
+        data: null,
+        status: 'idle',
+        error: null,
+      },
+      queries: {
+        list: [],
+        status: 'idle',
+        error: null,
+      },
+      currentQuery: {
         data: null,
         status: 'idle',
         error: null,
@@ -160,6 +232,13 @@ const w3sSlice = createSlice({
           ...state.currentProject,
           data: action.payload
         }
+      };
+    },
+    clearCurrentQuery: (state) => {
+      state.currentQuery = {
+        data: null,
+        status: 'idle',
+        error: null,
       };
     },
   },
@@ -186,8 +265,6 @@ const w3sSlice = createSlice({
         state.currentProject.data = action.payload;
         state.currentProject.error = null;
       })
-
-     
 
       // Update Project
       .addCase(updateProject.fulfilled, (state, action) => {
@@ -227,8 +304,58 @@ const w3sSlice = createSlice({
           }
         }
       })
+
+      // Fetch Queries
+      .addCase(fetchQueries.pending, (state) => {
+        state.queries.status = 'loading';
+      })
+      .addCase(fetchQueries.fulfilled, (state, action) => {
+        state.queries.status = 'succeeded';
+        state.queries.list = action.payload;
+      })
+      .addCase(fetchQueries.rejected, (state, action) => {
+        state.queries.status = 'failed';
+        state.queries.error = action.payload;
+      })
+
+      // Fetch Single Query
+      .addCase(fetchQuery.pending, (state) => {
+        state.currentQuery.status = 'loading';
+      })
+      .addCase(fetchQuery.fulfilled, (state, action) => {
+        state.currentQuery.status = 'succeeded';
+        state.currentQuery.data = action.payload;
+      })
+      .addCase(fetchQuery.rejected, (state, action) => {
+        state.currentQuery.status = 'failed';
+        state.currentQuery.error = action.payload;
+      })
+
+      // Create Query
+      .addCase(createQuery.fulfilled, (state, action) => {
+        state.queries.list.push(action.payload);
+      })
+
+      // Update Query
+      .addCase(updateQuery.fulfilled, (state, action) => {
+        const index = state.queries.list.findIndex(query => query._id === action.payload._id);
+        if (index !== -1) {
+          state.queries.list[index] = action.payload;
+        }
+        if (state.currentQuery.data && state.currentQuery.data._id === action.payload._id) {
+          state.currentQuery.data = action.payload;
+        }
+      })
+
+      // Delete Query
+      .addCase(deleteQuery.fulfilled, (state, action) => {
+        state.queries.list = state.queries.list.filter(query => query._id !== action.payload);
+        if (state.currentQuery.data && state.currentQuery.data._id === action.payload) {
+          state.currentQuery.data = null;
+        }
+      });
   },
 });
 
-export const { clearCurrentProject, updateCurrentProject } = w3sSlice.actions;
+export const { clearCurrentProject, updateCurrentProject, clearCurrentQuery } = w3sSlice.actions;
 export default w3sSlice.reducer;

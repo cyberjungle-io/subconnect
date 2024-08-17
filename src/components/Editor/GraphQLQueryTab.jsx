@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { fetchQueries, createQuery, updateQuery, deleteQuery } from '../../w3s/w3sSlice';
 import { setEndpoint, fetchGraphQLSchema, executeQuery } from '../../features/graphQLSlice';
 import { FaChevronRight, FaChevronDown } from 'react-icons/fa';
 
@@ -68,14 +69,18 @@ const SchemaItem = ({ item, onSelect, selectedFields, depth = 0, path = [] }) =>
 const GraphQLQueryTab = () => {
   const dispatch = useDispatch();
   const { endpoint, schema, schemaLoading, schemaError, queryResult, queryLoading, queryError } = useSelector(state => state.graphQL);
+  const { list: queries, status: queriesStatus, error: queriesError } = useSelector(state => state.w3s.queries);
 
   const [localSchema, setLocalSchema] = useState([]);
   const [selectedFields, setSelectedFields] = useState([]);
   const [queryLimit, setQueryLimit] = useState(10);
   const [editableQuery, setEditableQuery] = useState('');
+  const [queryName, setQueryName] = useState('');
+  const [currentQueryId, setCurrentQueryId] = useState(null);
 
   useEffect(() => {
     dispatch(fetchGraphQLSchema(endpoint));
+    dispatch(fetchQueries());
   }, [endpoint, dispatch]);
 
   useEffect(() => {
@@ -203,6 +208,68 @@ ${buildQueryString(selectedFields)}
     setEditableQuery(e.target.value);
   };
 
+  const handleSaveQuery = () => {
+    if (!queryName.trim()) {
+      alert('Please enter a name for the query');
+      return;
+    }
+
+    const queryData = {
+      name: queryName,
+      resultType: 'object', // You might want to make this dynamic
+      queryString: editableQuery,
+      endpoint: endpoint,
+      fields: selectedFields.map(field => ({
+        name: field.path[field.path.length - 1],
+        dataType: 'String' // You might want to infer this from the schema
+      }))
+    };
+
+    console.log('Saving query:', queryData); // Debug log
+
+    if (currentQueryId) {
+      console.log('Updating existing query:', currentQueryId); // Debug log
+      dispatch(updateQuery({ ...queryData, _id: currentQueryId }))
+        .then(result => {
+          console.log('Update result:', result); // Debug log
+          if (result.error) {
+            console.error('Error updating query:', result.error);
+          } else {
+            console.log('Query updated successfully');
+            setQueryName('');
+            setCurrentQueryId(null);
+          }
+        });
+    } else {
+      console.log('Creating new query'); // Debug log
+      dispatch(createQuery(queryData))
+        .then(result => {
+          console.log('Create result:', result); // Debug log
+          if (result.error) {
+            console.error('Error creating query:', result.error);
+          } else {
+            console.log('Query created successfully');
+            setQueryName('');
+            setCurrentQueryId(null);
+          }
+        });
+    }
+  };
+
+  const handleDeleteQuery = (queryId) => {
+    if (window.confirm('Are you sure you want to delete this query?')) {
+      dispatch(deleteQuery(queryId));
+    }
+  };
+
+  const handleLoadQuery = (query) => {
+    setEditableQuery(query.queryString);
+    setEndpoint(query.endpoint);
+    setQueryName(query.name);
+    setCurrentQueryId(query._id);
+    // You might want to update selectedFields here as well
+  };
+
   return (
     <div className="graphql-query-tab h-full flex flex-col">
       <div className="flex-grow overflow-y-auto p-4">
@@ -241,7 +308,7 @@ ${buildQueryString(selectedFields)}
                 <textarea
                   className="w-full h-64 p-2 border rounded mb-2"
                   value={editableQuery}
-                  onChange={handleQueryChange}
+                  onChange={(e) => setEditableQuery(e.target.value)}
                 />
                 <div className="flex items-center mb-2">
                   <label htmlFor="queryLimit" className="mr-2">Limit:</label>
@@ -250,19 +317,37 @@ ${buildQueryString(selectedFields)}
                     id="queryLimit"
                     className="border rounded p-1 w-20"
                     value={queryLimit}
-                    onChange={handleLimitChange}
+                    onChange={(e) => setQueryLimit(e.target.value)}
                     min="1"
                   />
                 </div>
+                <div className="flex items-center mb-2">
+                  <label htmlFor="queryName" className="mr-2">Query Name:</label>
+                  <input
+                    type="text"
+                    id="queryName"
+                    className="border rounded p-1 w-64"
+                    value={queryName}
+                    onChange={(e) => setQueryName(e.target.value)}
+                    placeholder="Enter query name"
+                  />
+                </div>
                 <button
-                  onClick={handleExecuteQuery}
-                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  onClick={() => dispatch(executeQuery({ endpoint, query: editableQuery }))}
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
                   disabled={queryLoading}
                 >
                   {queryLoading ? 'Executing...' : 'Execute Query'}
                 </button>
+                <button
+                  onClick={handleSaveQuery}
+                  className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+                >
+                  {currentQueryId ? 'Update Query' : 'Save Query'}
+                </button>
               </div>
             </div>
+            
             <div>
               <h3 className="text-lg font-semibold mb-2">Query Result</h3>
               {queryError && <p className="text-red-500 mb-2">Error: {queryError}</p>}
@@ -272,13 +357,35 @@ ${buildQueryString(selectedFields)}
                 readOnly
               />
             </div>
+            
             <div>
-              <h3 className="text-lg font-semibold mb-2">Raw Local Schema</h3>
-              <div className="border rounded p-2 h-64 overflow-y-auto">
-                <pre className="text-sm">
-                  {JSON.stringify(localSchema, null, 2)}
-                </pre>
-              </div>
+              <h3 className="text-lg font-semibold mb-2">Saved Queries</h3>
+              {queriesStatus === 'loading' && <p>Loading queries...</p>}
+              {queriesError && <p className="text-red-500 mb-2">Error loading queries: {queriesError}</p>}
+              <ul>
+                {queries.map(query => (
+                  <li key={query._id} className="mb-4 p-4 border rounded">
+                    <h4 className="font-bold">{query.name}</h4>
+                    <p>Result Type: {query.resultType}</p>
+                    <p className="mb-2">Endpoint: {query.endpoint}</p>
+                    <pre className="bg-gray-100 p-2 rounded">{query.queryString}</pre>
+                    <div className="mt-2">
+                      <button 
+                        onClick={() => handleLoadQuery(query)}
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2"
+                      >
+                        Load
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteQuery(query._id)}
+                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         )}

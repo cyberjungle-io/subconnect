@@ -173,6 +173,58 @@ const w3sService = {
       handleApiError(error);
     }
   },
+
+  // New methods for GraphQL queries
+  getQueries: async () => {
+    try {
+      const response = await api.get('/queries');
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  getQuery: async (id) => {
+    try {
+      const response = await api.get(`/queries/${id}`);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  createQuery: async (queryData) => {
+    try {
+      console.log('Sending create query request:', queryData); // Debug log
+      const response = await api.post('/queries', queryData);
+      console.log('Create query response:', response.data); // Debug log
+      return response.data;
+    } catch (error) {
+      console.error('Error in createQuery:', error); // Debug log
+      handleApiError(error);
+    }
+  },
+
+  updateQuery: async (id, queryData) => {
+    try {
+      console.log('Sending update query request:', id, queryData); // Debug log
+      const response = await api.put(`/queries/${id}`, queryData);
+      console.log('Update query response:', response.data); // Debug log
+      return response.data;
+    } catch (error) {
+      console.error('Error in updateQuery:', error); // Debug log
+      handleApiError(error);
+    }
+  },
+
+  deleteQuery: async (id) => {
+    try {
+      await api.delete(`/queries/${id}`);
+      return true;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
 };
 
 export { w3sService };
