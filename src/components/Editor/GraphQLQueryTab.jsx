@@ -149,7 +149,10 @@ const GraphQLQueryTab = () => {
     const fields = extractFields(queryBody);
 
     // Remove the top-level field (dataset name) and flatten the field structure
-    return fields.length > 0 ? flattenFields(fields[0].subfields || []) : [];
+    return fields.length > 0 ? flattenFields(fields[0].subfields || []).map(field => ({
+      ...field,
+      dataType: field.dataType || 'String' // Ensure each field has a dataType
+    })) : [];
   };
 
   const extractFields = (queryBody, prefix = '') => {
@@ -203,18 +206,6 @@ const GraphQLQueryTab = () => {
       }
       return [...acc, field];
     }, []);
-  };
-
-  const renderParsedFields = (fields) => {
-    return (
-      <ul className="list-disc pl-5">
-        {fields.map((field, index) => (
-          <li key={index} className="mb-1">
-            {field.name} ({field.dataType})
-          </li>
-        ))}
-      </ul>
-    );
   };
 
   const handleSelect = (fieldPath, queryField) => {
@@ -313,7 +304,7 @@ ${buildQueryString(selectedFields)}
             name: field.path[field.path.length - 1],
             dataType: 'String' // You might want to infer this from the schema
           }))
-        : parsedFields, // These are already in the correct format for manual mode
+        : parsedFields, // These now include the user-selected data types
       querySource: querySource
     };
 
@@ -356,6 +347,47 @@ ${buildQueryString(selectedFields)}
     } else {
       setSelectedFields(query.fields.map(field => ({ path: [field.name] })));
     }
+  };
+
+  const handleDataTypeChange = (index, newDataType) => {
+    setParsedFields(prevFields => 
+      prevFields.map((field, i) => 
+        i === index ? { ...field, dataType: newDataType } : field
+      )
+    );
+  };
+
+  const renderParsedFields = (fields) => {
+    const dataTypes = ['String', 'Int', 'Float', 'Boolean', 'ID']; // Add more GraphQL types as needed
+
+    return (
+      <table className="w-full border-collapse border border-gray-300">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="border border-gray-300 px-4 py-2">Field Name</th>
+            <th className="border border-gray-300 px-4 py-2">Data Type</th>
+          </tr>
+        </thead>
+        <tbody>
+          {fields.map((field, index) => (
+            <tr key={index}>
+              <td className="border border-gray-300 px-4 py-2">{field.name}</td>
+              <td className="border border-gray-300 px-4 py-2">
+                <select
+                  value={field.dataType}
+                  onChange={(e) => handleDataTypeChange(index, e.target.value)}
+                  className="w-full p-1 border rounded"
+                >
+                  {dataTypes.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
   };
 
   return (
