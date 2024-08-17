@@ -152,6 +152,7 @@ export const createQuery = createAsyncThunk(
   'w3s/createQuery',
   async (queryData, { rejectWithValue }) => {
     try {
+      console.log('Creating query with data:', queryData); // Add this log
       const response = await w3sService.createQuery(queryData);
       console.log('Create query response:', response); // Debug log
       return response;
@@ -166,6 +167,7 @@ export const updateQuery = createAsyncThunk(
   'w3s/updateQuery',
   async (queryData, { rejectWithValue }) => {
     try {
+      console.log('Updating query with data:', queryData); // Add this log
       const response = await w3sService.updateQuery(queryData._id, queryData);
       console.log('Update query response:', response); // Debug log
       return response;

@@ -227,16 +227,18 @@ ${buildQueryString(selectedFields)}
       querySource: querySource
     };
 
+    console.log('Saving query data:', queryData); // Add this log
+
     if (currentQueryId) {
       dispatch(updateQuery({ ...queryData, _id: currentQueryId }))
-        .then(() => {
-          console.log('Query updated successfully');
+        .then((result) => {
+          console.log('Query update result:', result); // Add this log
           dispatch(fetchQueries());
         });
     } else {
       dispatch(createQuery(queryData))
-        .then(() => {
-          console.log('Query created successfully');
+        .then((result) => {
+          console.log('Query create result:', result); // Add this log
           dispatch(fetchQueries());
         });
     }
