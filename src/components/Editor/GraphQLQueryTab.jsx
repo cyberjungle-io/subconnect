@@ -78,6 +78,7 @@ const GraphQLQueryTab = () => {
   const [queryName, setQueryName] = useState('');
   const [currentQueryId, setCurrentQueryId] = useState(null);
   const [querySource, setQuerySource] = useState('builder');
+  const [parsedFields, setParsedFields] = useState([]);
 
   useEffect(() => {
     dispatch(fetchGraphQLSchema(endpoint));
@@ -128,6 +129,85 @@ const GraphQLQueryTab = () => {
   useEffect(() => {
     setEditableQuery(generateQuery());
   }, [selectedFields, queryLimit]);
+
+  useEffect(() => {
+    if (querySource === 'manual') {
+      const fields = parseQueryString(editableQuery);
+      setParsedFields(fields);
+    }
+  }, [editableQuery, querySource]);
+
+  const parseQueryString = (queryString) => {
+    // Remove comments and whitespace
+    queryString = queryString.replace(/#.*$/gm, '').trim();
+
+    // Extract the query body
+    const match = queryString.match(/(?:query\s*\w*\s*)?{([\s\S]*)}/);
+    if (!match) return [];
+
+    const queryBody = match[1].trim();
+    const fields = extractFields(queryBody);
+
+    // Remove the top-level field (dataset name)
+    return fields.length > 0 && fields[0].subfields ? fields[0].subfields : [];
+  };
+
+  const extractFields = (queryBody, depth = 0) => {
+    const fields = [];
+    const lines = queryBody.split('\n');
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+
+      const fieldMatch = line.match(/^(\w+)(\s*[\(\{])?/);
+      if (fieldMatch) {
+        const fieldName = fieldMatch[1];
+        const hasSubfields = !!fieldMatch[2];
+
+        if (hasSubfields) {
+          // Find the closing brace
+          let subfields = '';
+          let braceCount = 1;
+          for (let j = i + 1; j < lines.length; j++) {
+            if (lines[j].includes('{')) braceCount++;
+            if (lines[j].includes('}')) braceCount--;
+            if (braceCount === 0) {
+              subfields = lines.slice(i + 1, j).join('\n');
+              i = j;
+              break;
+            }
+          }
+          fields.push({
+            name: fieldName,
+            depth: depth,
+            subfields: extractFields(subfields, depth + 1)
+          });
+        } else {
+          fields.push({ name: fieldName, depth: depth });
+        }
+      }
+    }
+
+    return fields;
+  };
+
+  const renderParsedFields = (fields) => {
+    return (
+      <ul className="list-disc pl-5">
+        {fields.map((field, index) => (
+          <li 
+            key={index} 
+            className={`mb-1 ${field.subfields ? 'font-semibold' : ''}`}
+            style={{ marginLeft: `${field.depth * 20}px` }}
+          >
+            {field.name}
+            {field.subfields && renderParsedFields(field.subfields)}
+          </li>
+        ))}
+      </ul>
+    );
+  };
 
   const handleSelect = (fieldPath, queryField) => {
     setSelectedFields(prev => {
@@ -220,10 +300,15 @@ ${buildQueryString(selectedFields)}
       resultType: 'object', // You might want to make this dynamic
       queryString: editableQuery,
       endpoint: endpoint,
-      fields: selectedFields.map(field => ({
-        name: field.path[field.path.length - 1],
-        dataType: 'String' // You might want to infer this from the schema
-      })),
+      fields: querySource === 'builder' 
+        ? selectedFields.map(field => ({
+            name: field.path[field.path.length - 1],
+            dataType: 'String' // You might want to infer this from the schema
+          }))
+        : parsedFields.map(field => ({
+            name: field.name,
+            dataType: 'String' // You might want to infer this or allow user input
+          })),
       querySource: querySource
     };
 
@@ -263,7 +348,11 @@ ${buildQueryString(selectedFields)}
     setQueryName(query.name);
     setCurrentQueryId(query._id);
     setQuerySource(query.querySource || 'builder');
-    // You might want to update selectedFields here as well
+    if (query.querySource === 'manual') {
+      setParsedFields(parseQueryString(query.queryString));
+    } else {
+      setSelectedFields(query.fields.map(field => ({ path: [field.name] })));
+    }
   };
 
   return (
@@ -308,7 +397,7 @@ ${buildQueryString(selectedFields)}
                     Manual
                   </label>
                 </div>
-                {querySource === 'builder' && (
+                {querySource === 'builder' ? (
                   <>
                     <h3 className="text-lg font-semibold mb-2">Schema Hierarchy</h3>
                     <div className="border rounded p-2 h-64 overflow-y-auto">
@@ -324,6 +413,13 @@ ${buildQueryString(selectedFields)}
                       </ul>
                     </div>
                   </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-semibold mb-2">Query Fields</h3>
+                    <div className="border rounded p-2 h-64 overflow-y-auto">
+                      {renderParsedFields(parsedFields)}
+                    </div>
+                  </>
                 )}
               </div>
               <div className="w-1/2 pl-4">
@@ -331,7 +427,7 @@ ${buildQueryString(selectedFields)}
                 <textarea
                   className="w-full h-64 p-2 border rounded mb-2"
                   value={editableQuery}
-                  onChange={(e) => setEditableQuery(e.target.value)}
+                  onChange={handleQueryChange}
                 />
                 <div className="flex items-center mb-2">
                   <label htmlFor="queryLimit" className="mr-2">Limit:</label>
@@ -340,7 +436,7 @@ ${buildQueryString(selectedFields)}
                     id="queryLimit"
                     className="border rounded p-1 w-20"
                     value={queryLimit}
-                    onChange={(e) => setQueryLimit(e.target.value)}
+                    onChange={handleLimitChange}
                     min="1"
                   />
                 </div>
@@ -356,7 +452,7 @@ ${buildQueryString(selectedFields)}
                   />
                 </div>
                 <button
-                  onClick={() => dispatch(executeQuery({ endpoint, query: editableQuery }))}
+                  onClick={handleExecuteQuery}
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
                   disabled={queryLoading}
                 >
