@@ -80,7 +80,14 @@ const GraphQLQueryTab = () => {
 
   useEffect(() => {
     dispatch(fetchGraphQLSchema(endpoint));
-    dispatch(fetchQueries());
+    console.log('GraphQLQueryTab: Dispatching fetchQueries'); // Log 10
+    dispatch(fetchQueries())
+      .then((result) => {
+        console.log('GraphQLQueryTab: fetchQueries result', result); // Log 11
+      })
+      .catch((error) => {
+        console.error('GraphQLQueryTab: fetchQueries error', error); // Log 12
+      });
   }, [endpoint, dispatch]);
 
   useEffect(() => {
@@ -225,40 +232,31 @@ ${buildQueryString(selectedFields)}
       }))
     };
 
-    console.log('Saving query:', queryData); // Debug log
-
     if (currentQueryId) {
-      console.log('Updating existing query:', currentQueryId); // Debug log
       dispatch(updateQuery({ ...queryData, _id: currentQueryId }))
-        .then(result => {
-          console.log('Update result:', result); // Debug log
-          if (result.error) {
-            console.error('Error updating query:', result.error);
-          } else {
-            console.log('Query updated successfully');
-            setQueryName('');
-            setCurrentQueryId(null);
-          }
+        .then(() => {
+          console.log('Query updated successfully');
+          dispatch(fetchQueries()); // Refresh the list of queries
         });
     } else {
-      console.log('Creating new query'); // Debug log
       dispatch(createQuery(queryData))
-        .then(result => {
-          console.log('Create result:', result); // Debug log
-          if (result.error) {
-            console.error('Error creating query:', result.error);
-          } else {
-            console.log('Query created successfully');
-            setQueryName('');
-            setCurrentQueryId(null);
-          }
+        .then(() => {
+          console.log('Query created successfully');
+          dispatch(fetchQueries()); // Refresh the list of queries
         });
     }
+
+    setQueryName('');
+    setCurrentQueryId(null);
   };
 
   const handleDeleteQuery = (queryId) => {
     if (window.confirm('Are you sure you want to delete this query?')) {
-      dispatch(deleteQuery(queryId));
+      dispatch(deleteQuery(queryId))
+        .then(() => {
+          console.log('Query deleted successfully');
+          dispatch(fetchQueries()); // Refresh the list of queries
+        });
     }
   };
 
@@ -361,7 +359,13 @@ ${buildQueryString(selectedFields)}
             <div>
               <h3 className="text-lg font-semibold mb-2">Saved Queries</h3>
               {queriesStatus === 'loading' && <p>Loading queries...</p>}
-              {queriesError && <p className="text-red-500 mb-2">Error loading queries: {queriesError}</p>}
+              {queriesError && (
+                <p className="text-red-500 mb-2">
+                  Error loading queries: {queriesError}
+                  <br />
+                  Status: {queriesStatus}
+                </p>
+              )}
               <ul>
                 {queries.map(query => (
                   <li key={query._id} className="mb-4 p-4 border rounded">

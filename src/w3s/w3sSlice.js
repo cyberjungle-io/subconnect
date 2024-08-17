@@ -125,9 +125,12 @@ export const fetchQueries = createAsyncThunk(
   'w3s/fetchQueries',
   async (_, { rejectWithValue }) => {
     try {
+      console.log('Fetching queries...'); // Log 1
       const response = await w3sService.getQueries();
+      console.log('Queries fetched successfully:', response); // Log 2
       return response;
     } catch (error) {
+      console.error('Error fetching queries:', error); // Log 3
       return rejectWithValue(error.response?.data || 'Failed to fetch queries');
     }
   }
@@ -307,13 +310,16 @@ const w3sSlice = createSlice({
 
       // Fetch Queries
       .addCase(fetchQueries.pending, (state) => {
+        console.log('fetchQueries: pending'); // Log 4
         state.queries.status = 'loading';
       })
       .addCase(fetchQueries.fulfilled, (state, action) => {
+        console.log('fetchQueries: fulfilled', action.payload); // Log 5
         state.queries.status = 'succeeded';
         state.queries.list = action.payload;
       })
       .addCase(fetchQueries.rejected, (state, action) => {
+        console.log('fetchQueries: rejected', action.payload); // Log 6
         state.queries.status = 'failed';
         state.queries.error = action.payload;
       })

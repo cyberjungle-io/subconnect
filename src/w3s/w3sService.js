@@ -177,9 +177,12 @@ const w3sService = {
   // New methods for GraphQL queries
   getQueries: async () => {
     try {
+      console.log('w3sService: Sending GET request to /queries'); // Log 7
       const response = await api.get('/queries');
+      console.log('w3sService: Received response from /queries', response.data); // Log 8
       return response.data;
     } catch (error) {
+      console.error('w3sService: Error in getQueries', error); // Log 9
       handleApiError(error);
     }
   },
