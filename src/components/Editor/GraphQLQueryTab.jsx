@@ -338,6 +338,8 @@ ${buildQueryString(selectedFields)}
                     setEditableQuery={setEditableQuery}
                     handleExecuteQuery={handleExecuteQuery}
                     handleSaveQuery={handleSaveQuery}
+                    queryName={queryName}
+                    setQueryName={setQueryName}
                   />
                 )}
               </div>

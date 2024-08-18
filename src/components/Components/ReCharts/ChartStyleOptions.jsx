@@ -9,6 +9,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
   const queriesStatus = useSelector(state => state.w3s.queries.status);
   const [selectedQuery, setSelectedQuery] = useState(null);
   const [availableFields, setAvailableFields] = useState([]);
+  const [localChartConfig, setLocalChartConfig] = useState(chartConfig);
 
   useEffect(() => {
     console.log('Dispatching fetchQueries'); // Log 7
@@ -21,37 +22,50 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
   }, [queries, queriesStatus]);
 
   useEffect(() => {
-    if (chartConfig.selectedQueryId) {
-      const query = queries.find(q => q._id === chartConfig.selectedQueryId);
+    setLocalChartConfig(chartConfig);
+  }, [chartConfig]);
+
+  useEffect(() => {
+    if (localChartConfig.selectedQueryId) {
+      const query = queries.find(q => q._id === localChartConfig.selectedQueryId);
       setSelectedQuery(query);
       if (query && query.fields) {
         setAvailableFields(query.fields);
       }
     }
-  }, [chartConfig.selectedQueryId, queries]);
+  }, [localChartConfig.selectedQueryId, queries]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+
+    setLocalChartConfig(prev => ({
+      ...prev,
+      [name]: newValue
+    }));
+
+    onChartConfigChange({
+      target: {
+        name,
+        value: newValue,
+      },
+    });
+
     if (name === 'selectedQueryId') {
       const query = queries.find(q => q._id === value);
       setSelectedQuery(query);
       if (query && query.fields) {
         setAvailableFields(query.fields);
         // Reset dataKey and nameKey when changing the query
-        onChartConfigChange({
-          target: { name: 'dataKey', value: '' }
-        });
-        onChartConfigChange({
-          target: { name: 'nameKey', value: '' }
-        });
+        setLocalChartConfig(prev => ({
+          ...prev,
+          dataKey: '',
+          nameKey: ''
+        }));
+        onChartConfigChange({ target: { name: 'dataKey', value: '' } });
+        onChartConfigChange({ target: { name: 'nameKey', value: '' } });
       }
     }
-    onChartConfigChange({
-      target: {
-        name,
-        value: type === 'checkbox' ? checked : value,
-      },
-    });
   };
 
   const legendPositionIcons = [
@@ -77,7 +91,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
         <label className="block text-sm font-medium text-gray-700">Select Query</label>
         <select
           name="selectedQueryId"
-          value={chartConfig.selectedQueryId || ''}
+          value={localChartConfig.selectedQueryId || ''}
           onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         >
@@ -98,7 +112,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
             <label className="block text-sm font-medium text-gray-700">Data Key (Y-axis)</label>
             <select
               name="dataKey"
-              value={chartConfig.dataKey || ''}
+              value={localChartConfig.dataKey || ''}
               onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             >
@@ -112,7 +126,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
             <label className="block text-sm font-medium text-gray-700">Name Key (X-axis)</label>
             <select
               name="nameKey"
-              value={chartConfig.nameKey || ''}
+              value={localChartConfig.nameKey || ''}
               onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             >
@@ -132,7 +146,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
         <input
           type="text"
           name="title"
-          value={chartConfig.title || ''}
+          value={localChartConfig.title || ''}
           onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
@@ -142,7 +156,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
         <input
           type="number"
           name="titleFontSize"
-          value={chartConfig.titleFontSize || 16}
+          value={localChartConfig.titleFontSize || 16}
           onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
@@ -152,7 +166,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
         <input
           type="color"
           name="titleColor"
-          value={chartConfig.titleColor || '#000000'}
+          value={localChartConfig.titleColor || '#000000'}
           onChange={handleChange}
           className="mt-1 block w-full"
         />
@@ -161,7 +175,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
         <label className="block text-sm font-medium text-gray-700">Title Alignment</label>
         <select
           name="titleAlign"
-          value={chartConfig.titleAlign || 'center'}
+          value={localChartConfig.titleAlign || 'center'}
           onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         >
@@ -178,7 +192,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
         <input
           type="number"
           name="width"
-          value={chartConfig.width || 500}
+          value={localChartConfig.width || 500}
           onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
@@ -188,14 +202,14 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
         <input
           type="number"
           name="height"
-          value={chartConfig.height || 300}
+          value={localChartConfig.height || 300}
           onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
 
       {/* Chart Type Specific Styling */}
-      {chartConfig.chartType === 'line' && (
+      {localChartConfig.chartType === 'line' && (
         <>
           <h4 className="text-md font-medium text-gray-900 mt-2">Line Customization</h4>
           <div>
@@ -203,7 +217,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
             <input
               type="color"
               name="lineColor"
-              value={chartConfig.lineColor || '#8884d8'}
+              value={localChartConfig.lineColor || '#8884d8'}
               onChange={handleChange}
               className="mt-1 block w-full"
             />
@@ -213,7 +227,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
             <input
               type="number"
               name="lineWidth"
-              value={chartConfig.lineWidth || 2}
+              value={localChartConfig.lineWidth || 2}
               onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             />
@@ -223,7 +237,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
             <input
               type="number"
               name="dataPointSize"
-              value={chartConfig.dataPointSize || 5}
+              value={localChartConfig.dataPointSize || 5}
               onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             />
@@ -231,7 +245,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
         </>
       )}
 
-      {chartConfig.chartType === 'bar' && (
+      {localChartConfig.chartType === 'bar' && (
         <>
           <h4 className="text-md font-medium text-gray-900 mt-2">Bar Customization</h4>
           <div>
@@ -239,7 +253,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
             <input
               type="color"
               name="barColor"
-              value={chartConfig.barColor || '#8884d8'}
+              value={localChartConfig.barColor || '#8884d8'}
               onChange={handleChange}
               className="mt-1 block w-full"
             />
@@ -252,7 +266,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
               min="0"
               max="1"
               step="0.1"
-              value={chartConfig.barOpacity || 1}
+              value={localChartConfig.barOpacity || 1}
               onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             />
@@ -267,12 +281,12 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
         <input
           type="checkbox"
           name="showLegend"
-          checked={chartConfig.showLegend || false}
+          checked={localChartConfig.showLegend || false}
           onChange={handleChange}
           className="mt-1"
         />
       </div>
-      {chartConfig.showLegend && (
+      {localChartConfig.showLegend && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Legend Position</label>
           <div className="flex justify-center space-x-2">
@@ -281,7 +295,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
                 key={position}
                 onClick={() => handleChange({ target: { name: 'legendPosition', value: position } })}
                 className={`p-2 rounded-md ${
-                  chartConfig.legendPosition === position
+                  localChartConfig.legendPosition === position
                     ? 'bg-blue-100 text-blue-600'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}

@@ -1,11 +1,22 @@
 import React from 'react';
 
-const GraphQLQueryManual = ({ parsedFields, handleDataTypeChange, editableQuery, setEditableQuery, handleExecuteQuery, handleSaveQuery }) => {
+const GraphQLQueryManual = ({ parsedFields, handleDataTypeChange, editableQuery, setEditableQuery, handleExecuteQuery, handleSaveQuery, queryName, setQueryName }) => {
   const dataTypes = ['String', 'Int', 'Float', 'Boolean', 'ID'];
 
   return (
     <div>
       <h3 className="text-lg font-semibold mb-2">Query Editor</h3>
+      <div className="mb-4">
+        <label htmlFor="queryName" className="block text-sm font-medium text-gray-700">Query Name</label>
+        <input
+          type="text"
+          id="queryName"
+          value={queryName}
+          onChange={(e) => setQueryName(e.target.value)}
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          placeholder="Enter query name"
+        />
+      </div>
       <textarea
         className="w-full h-64 p-2 border rounded mb-2"
         value={editableQuery}
