@@ -137,7 +137,7 @@ export const componentConfig = {
       legendPosition: 'bottom',
       data: [
         { name: 'A', value: 400 },
-        { name: 'B', value: 300 },
+        { name: 'B', value: 900 },
         { name: 'C', value: 200 },
         { name: 'D', value: 278 },
         { name: 'E', value: 189 },

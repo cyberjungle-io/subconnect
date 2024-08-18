@@ -21,7 +21,7 @@ const ChartRenderer = ({ component, globalChartStyle }) => {
   const { chartConfig } = component;
   const {
     chartType,
-    selectedQueryId,
+    data,
     dataKey,
     nameKey,
     title,
@@ -36,20 +36,10 @@ const ChartRenderer = ({ component, globalChartStyle }) => {
     legendPosition,
   } = chartConfig || {};
 
-  const [chartData, setChartData] = useState([]);
-  const queries = useSelector(state => state.w3s.queries.list);
-
-  useEffect(() => {
-    if (selectedQueryId) {
-      const selectedQuery = queries.find(query => query._id === selectedQueryId);
-      if (selectedQuery && selectedQuery.queryResult) {
-        setChartData(selectedQuery.queryResult);
-      }
-    }
-  }, [selectedQueryId, queries]);
+  console.log("ChartRenderer data:", data); // Add this log to check the data
 
   const CommonProps = {
-    data: chartData,
+    data: Array.isArray(data) ? data : [],
     margin: { top: 20, right: 30, left: 20, bottom: 5 },
     width: width || 500,
     height: height || 300,
@@ -78,7 +68,7 @@ const ChartRenderer = ({ component, globalChartStyle }) => {
     );
 
   const renderChart = () => {
-    if (!chartData || chartData.length === 0 || !dataKey || !nameKey) {
+    if (!CommonProps.data || CommonProps.data.length === 0 || !dataKey || !nameKey) {
       return <div>No data available or fields not selected</div>;
     }
 
@@ -141,7 +131,7 @@ const ChartRenderer = ({ component, globalChartStyle }) => {
           <PieChart width={CommonProps.width} height={CommonProps.height}>
             {renderTitle()}
             <Pie
-              data={chartData}
+              data={CommonProps.data}
               dataKey={dataKey}
               nameKey={nameKey}
               cx="50%"

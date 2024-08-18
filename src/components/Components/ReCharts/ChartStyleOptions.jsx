@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchQueries } from '../../../w3s/w3sSlice'; // Adjust the import path as needed
+import { fetchQueries } from '../../../w3s/w3sSlice';
+import { executeQuery } from '../../../features/graphQLSlice';
 import { FaChevronUp, FaChevronRight, FaChevronDown, FaChevronLeft } from 'react-icons/fa';
 
 const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
@@ -12,14 +13,8 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
   const [localChartConfig, setLocalChartConfig] = useState(chartConfig);
 
   useEffect(() => {
-    console.log('Dispatching fetchQueries'); // Log 7
     dispatch(fetchQueries());
   }, [dispatch]);
-
-  useEffect(() => {
-    console.log('Queries in ChartStyleOptions:', queries); // Log 8
-    console.log('Queries status:', queriesStatus); // Log 9
-  }, [queries, queriesStatus]);
 
   useEffect(() => {
     setLocalChartConfig(chartConfig);
@@ -35,7 +30,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
     }
   }, [localChartConfig.selectedQueryId, queries]);
 
-  const handleChange = (e) => {
+  const handleChange = async (e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
 
@@ -56,7 +51,6 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
       setSelectedQuery(query);
       if (query && query.fields) {
         setAvailableFields(query.fields);
-        // Reset dataKey and nameKey when changing the query
         setLocalChartConfig(prev => ({
           ...prev,
           dataKey: '',
@@ -64,6 +58,32 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
         }));
         onChartConfigChange({ target: { name: 'dataKey', value: '' } });
         onChartConfigChange({ target: { name: 'nameKey', value: '' } });
+      }
+    }
+
+    // Execute query when both dataKey and nameKey are selected
+    if ((name === 'dataKey' || name === 'nameKey') && selectedQuery) {
+      const updatedConfig = {
+        ...localChartConfig,
+        [name]: newValue
+      };
+      if (updatedConfig.dataKey && updatedConfig.nameKey) {
+        try {
+          const result = await dispatch(executeQuery({
+            endpoint: selectedQuery.endpoint,
+            query: selectedQuery.queryString
+          })).unwrap();
+          
+          // Update the chart data in the parent component
+          onChartConfigChange({
+            target: {
+              name: 'data',
+              value: result.data[Object.keys(result.data)[0]]
+            }
+          });
+        } catch (error) {
+          console.error('Error executing query:', error);
+        }
       }
     }
   };
