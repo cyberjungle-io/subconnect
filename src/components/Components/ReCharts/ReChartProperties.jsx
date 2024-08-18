@@ -3,8 +3,15 @@ import { componentConfig, componentTypes } from '../componentConfig';
 import ChartStyleOptions from './ChartStyleOptions';
 
 const ReChartProperties = ({ chartConfig, onChartConfigChange }) => {
+  console.log('ReChartProperties rendered with:', chartConfig);
+
+  if (!chartConfig) {
+    return <div>No chart configuration available.</div>;
+  }
+
   return (
-    <>
+    <div>
+      <h4>Chart Properties</h4>
       <div>
         <label className="block text-sm font-medium text-gray-700">Chart Type</label>
         <select
@@ -38,17 +45,8 @@ const ReChartProperties = ({ chartConfig, onChartConfigChange }) => {
           className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Data (JSON)</label>
-        <textarea
-          name="data"
-          value={JSON.stringify(chartConfig?.data || [], null, 2)}
-          onChange={onChartConfigChange}
-          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          rows="5"
-        />
-      </div>
-    </>
+      <ChartStyleOptions chartConfig={chartConfig} onChartConfigChange={onChartConfigChange} />
+    </div>
   );
 };
 

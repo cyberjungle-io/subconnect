@@ -51,6 +51,20 @@ export const executeQuery = createAsyncThunk(
   }
 );
 
+export const fetchQueries = createAsyncThunk(
+  'graphQL/fetchQueries',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get('https://khala-computation.cyberjungle.io/graphql/queries');
+      console.log('Fetched queries:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching queries:', error);
+      return rejectWithValue(error.response?.data || 'Failed to fetch queries');
+    }
+  }
+);
+
 const initialState = {
   schema: null,
   schemaLoading: false,
@@ -59,6 +73,9 @@ const initialState = {
   queryResult: null,
   queryLoading: false,
   queryError: null,
+  queries: [],
+  status: 'idle',
+  error: null,
 };
 
 const graphQLSlice = createSlice({
@@ -95,6 +112,19 @@ const graphQLSlice = createSlice({
       .addCase(executeQuery.rejected, (state, action) => {
         state.queryLoading = false;
         state.queryError = action.payload;
+      })
+      .addCase(fetchQueries.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchQueries.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.queries = action.payload;
+        console.log('Queries stored in state:', state.queries);
+      })
+      .addCase(fetchQueries.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+        console.error('Failed to fetch queries:', action.payload);
       });
   },
 });

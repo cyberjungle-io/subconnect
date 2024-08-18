@@ -1,9 +1,51 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchQueries } from '../../../w3s/w3sSlice'; // Adjust the import path as needed
 import { FaChevronUp, FaChevronRight, FaChevronDown, FaChevronLeft } from 'react-icons/fa';
 
 const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
+  const dispatch = useDispatch();
+  const queries = useSelector(state => state.w3s.queries.list);
+  const queriesStatus = useSelector(state => state.w3s.queries.status);
+  const [selectedQuery, setSelectedQuery] = useState(null);
+  const [availableFields, setAvailableFields] = useState([]);
+
+  useEffect(() => {
+    console.log('Dispatching fetchQueries'); // Log 7
+    dispatch(fetchQueries());
+  }, [dispatch]);
+
+  useEffect(() => {
+    console.log('Queries in ChartStyleOptions:', queries); // Log 8
+    console.log('Queries status:', queriesStatus); // Log 9
+  }, [queries, queriesStatus]);
+
+  useEffect(() => {
+    if (chartConfig.selectedQueryId) {
+      const query = queries.find(q => q._id === chartConfig.selectedQueryId);
+      setSelectedQuery(query);
+      if (query && query.fields) {
+        setAvailableFields(query.fields);
+      }
+    }
+  }, [chartConfig.selectedQueryId, queries]);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    if (name === 'selectedQueryId') {
+      const query = queries.find(q => q._id === value);
+      setSelectedQuery(query);
+      if (query && query.fields) {
+        setAvailableFields(query.fields);
+        // Reset dataKey and nameKey when changing the query
+        onChartConfigChange({
+          target: { name: 'dataKey', value: '' }
+        });
+        onChartConfigChange({
+          target: { name: 'nameKey', value: '' }
+        });
+      }
+    }
     onChartConfigChange({
       target: {
         name,
@@ -13,54 +55,76 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
   };
 
   const legendPositionIcons = [
-    {
-      position: 'top',
-      icon: (selected) => (
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
-          <rect x="2" y="2" width="20" height="20" rx="2" stroke="currentColor" strokeOpacity="0.3" strokeWidth="1" />
-          <path d="M2 2 H22" stroke="currentColor" strokeWidth="2" />
-          {selected && <path d="M2 2 H22" stroke="currentColor" strokeOpacity="0.2" strokeWidth="4" />}
-        </svg>
-      ),
-      tooltip: 'Top'
-    },
-    {
-      position: 'right',
-      icon: (selected) => (
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
-          <rect x="2" y="2" width="20" height="20" rx="2" stroke="currentColor" strokeOpacity="0.3" strokeWidth="1" />
-          <path d="M22 2 V22" stroke="currentColor" strokeWidth="2" />
-          {selected && <path d="M22 2 V22" stroke="currentColor" strokeOpacity="0.2" strokeWidth="4" />}
-        </svg>
-      ),
-      tooltip: 'Right'
-    },
-    {
-      position: 'bottom',
-      icon: (selected) => (
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
-          <rect x="2" y="2" width="20" height="20" rx="2" stroke="currentColor" strokeOpacity="0.3" strokeWidth="1" />
-          <path d="M2 22 H22" stroke="currentColor" strokeWidth="2" />
-          {selected && <path d="M2 22 H22" stroke="currentColor" strokeOpacity="0.2" strokeWidth="4" />}
-        </svg>
-      ),
-      tooltip: 'Bottom'
-    },
-    {
-      position: 'left',
-      icon: (selected) => (
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
-          <rect x="2" y="2" width="20" height="20" rx="2" stroke="currentColor" strokeOpacity="0.3" strokeWidth="1" />
-          <path d="M2 2 V22" stroke="currentColor" strokeWidth="2" />
-          {selected && <path d="M2 2 V22" stroke="currentColor" strokeOpacity="0.2" strokeWidth="4" />}
-        </svg>
-      ),
-      tooltip: 'Left'
-    },
+    { position: 'top', icon: FaChevronUp, tooltip: 'Top' },
+    { position: 'right', icon: FaChevronRight, tooltip: 'Right' },
+    { position: 'bottom', icon: FaChevronDown, tooltip: 'Bottom' },
+    { position: 'left', icon: FaChevronLeft, tooltip: 'Left' },
   ];
 
   return (
     <div className="chart-style-options">
+      {/* Debug render */}
+      <div style={{background: '#f0f0f0', padding: '10px', marginBottom: '10px'}}>
+        <h4>Debug Info</h4>
+        <p>Queries Status: {queriesStatus}</p>
+        <p>Queries Count: {queries.length}</p>
+        <p>Selected Query ID: {chartConfig.selectedQueryId}</p>
+      </div>
+
+      {/* Query Selection */}
+      <h4 className="text-md font-medium text-gray-900 mt-2">Data Source</h4>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Select Query</label>
+        <select
+          name="selectedQueryId"
+          value={chartConfig.selectedQueryId || ''}
+          onChange={handleChange}
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          <option value="">Select a query</option>
+          {queries.map(query => (
+            <option key={query._id} value={query._id}>{query.name}</option>
+          ))}
+        </select>
+      </div>
+      {queriesStatus === 'loading' && <p>Loading queries...</p>}
+      {queriesStatus === 'failed' && <p>Failed to load queries</p>}
+      {queriesStatus === 'succeeded' && queries.length === 0 && <p>No queries available</p>}
+
+      {/* Field Selection */}
+      {selectedQuery && (
+        <>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Data Key (Y-axis)</label>
+            <select
+              name="dataKey"
+              value={chartConfig.dataKey || ''}
+              onChange={handleChange}
+              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="">Select a field</option>
+              {availableFields.map(field => (
+                <option key={field._id} value={field.name}>{field.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Name Key (X-axis)</label>
+            <select
+              name="nameKey"
+              value={chartConfig.nameKey || ''}
+              onChange={handleChange}
+              className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="">Select a field</option>
+              {availableFields.map(field => (
+                <option key={field._id} value={field.name}>{field.name}</option>
+              ))}
+            </select>
+          </div>
+        </>
+      )}
+
       {/* Chart Title */}
       <h4 className="text-md font-medium text-gray-900 mt-2">Title Styling</h4>
       <div>
@@ -108,6 +172,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
       </div>
 
       {/* Chart Dimensions */}
+      <h4 className="text-md font-medium text-gray-900 mt-2">Chart Dimensions</h4>
       <div>
         <label className="block text-sm font-medium text-gray-700">Chart Width</label>
         <input
@@ -211,7 +276,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">Legend Position</label>
           <div className="flex justify-center space-x-2">
-            {legendPositionIcons.map(({ position, icon, tooltip }) => (
+            {legendPositionIcons.map(({ position, icon: Icon, tooltip }) => (
               <button
                 key={position}
                 onClick={() => handleChange({ target: { name: 'legendPosition', value: position } })}
@@ -222,7 +287,7 @@ const ChartStyleOptions = ({ chartConfig, onChartConfigChange }) => {
                 }`}
                 title={tooltip}
               >
-                {icon(chartConfig.legendPosition === position)}
+                <Icon />
               </button>
             ))}
           </div>
