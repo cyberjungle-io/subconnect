@@ -7,6 +7,7 @@ import {
 } from "recharts";
 import { format } from 'date-fns';
 import numeral from 'numeral';
+import { extent, max } from 'd3-array'; // Add this import
 
 const ChartRenderer = ({ component }) => {
   const { props } = component;
@@ -35,6 +36,7 @@ const ChartRenderer = ({ component }) => {
     yAxisDataType = 'number',
     dateFormat = 'MM/dd/yyyy',
     numberFormat = '0,0.[00]', // Using Numeral.js format
+    lineColor = '#8884d8', // Add this line
   } = props || {};
 
   const formatXAxis = (tickItem) => {
@@ -54,23 +56,35 @@ const ChartRenderer = ({ component }) => {
     return tickItem;
   };
 
+  const calculateDomain = (data, keys) => {
+    const allValues = data.flatMap(item => keys.map(key => item[key]));
+    const minValue = Math.min(...allValues);
+    const maxValue = Math.max(...allValues);
+    const padding = (maxValue - minValue) * 0.1; // Add 10% padding
+    return [minValue - padding, maxValue + padding];
+  };
+
   const renderChart = () => {
     const CommonProps = {
       data,
-      margin: { top: 20, right: 30, left: 20, bottom: 5 },
+      margin: { top: 20, right: 30, left: 50, bottom: 50 }, // Increased left and bottom margins
     };
+
+    const domain = calculateDomain(data, dataKeys);
 
     const CommonAxisProps = {
       XAxis: {
         dataKey: nameKey,
         angle: xAxisAngle,
         tickFormatter: formatXAxis,
-        children: xAxisLabel && <Label value={xAxisLabel} offset={-5} position="insideBottom" />
+        height: 60, // Increased height for x-axis
+        children: xAxisLabel && <Label value={xAxisLabel} offset={-10} position="insideBottom" />
       },
       YAxis: {
         angle: yAxisAngle,
         tickFormatter: formatYAxis,
-        children: yAxisLabel && <Label value={yAxisLabel} angle={-90} position="insideLeft" />
+        domain: domain,
+        children: yAxisLabel && <Label value={yAxisLabel} angle={-90} position="insideLeft" offset={-40} />
       }
     };
 
@@ -88,7 +102,7 @@ const ChartRenderer = ({ component }) => {
                 key={key}
                 type="monotone"
                 dataKey={key}
-                stroke={lineColors[key] || colors[index % colors.length]}
+                stroke={lineColors[key] || lineColor || colors[index % colors.length]}
                 strokeWidth={lineWidth}
                 dot={{ r: dataPointSize }}
               />

@@ -64,16 +64,6 @@ const ReChartControls = ({ component, onUpdate }) => {
       }
     }
 
-    if (name === 'lineColor') {
-      const [dataKey, color] = value.split('|');
-      updatedProps.lineColors = {
-        ...component.props.lineColors,
-        [dataKey]: color
-      };
-    } else {
-      updatedProps[name] = newValue;
-    }
-
     onUpdate({ props: updatedProps });
 
     // Execute query when both dataKeys and nameKey are selected
@@ -271,25 +261,16 @@ const ReChartControls = ({ component, onUpdate }) => {
       {component.props.chartType === 'line' && (
         <>
           <h4 className="text-md font-medium text-gray-900 mt-2">Line Customization</h4>
-          {component.props.dataKeys.map((dataKey) => (
-            <div key={dataKey}>
-              <label className="block text-sm font-medium text-gray-700">
-                {dataKey} Color
-              </label>
-              <input
-                type="color"
-                name="lineColor"
-                value={component.props.lineColors?.[dataKey] || '#8884d8'}
-                onChange={(e) => handleChange({
-                  target: {
-                    name: 'lineColor',
-                    value: `${dataKey}|${e.target.value}`
-                  }
-                })}
-                className="mt-1 block w-full"
-              />
-            </div>
-          ))}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Line Color</label>
+            <input
+              type="color"
+              name="lineColor"
+              value={component.props.lineColor || '#8884d8'}
+              onChange={handleChange}
+              className="mt-1 block w-full"
+            />
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Line Width</label>
             <input
