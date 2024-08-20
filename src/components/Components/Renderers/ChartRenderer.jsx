@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   LineChart,
   BarChart,
@@ -28,7 +28,6 @@ const ChartRenderer = ({ component }) => {
   const { props } = component;
   const {
     chartType = 'line',
-    data = defaultData,
     dataKeys = ['uv', 'pv', 'amt'],
     nameKey = 'name',
     title,
@@ -44,8 +43,16 @@ const ChartRenderer = ({ component }) => {
     legendPosition = 'bottom',
   } = props || {};
 
+  const [chartData, setChartData] = useState(defaultData);
+
+  useEffect(() => {
+    if (props.data && Array.isArray(props.data) && props.data.length > 0) {
+      setChartData(props.data);
+    }
+  }, [props.data]);
+
   const CommonProps = {
-    data: Array.isArray(data) && data.length > 0 ? data : defaultData,
+    data: chartData,
     margin: { top: 20, right: 30, left: 20, bottom: 5 },
     width,
     height,

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchQueries, createQuery, updateQuery, deleteQuery } from '../../w3s/w3sSlice';
-import { setEndpoint, fetchGraphQLSchema, executeQuery } from '../../features/graphQLSlice';
+import { setEndpoint, fetchGraphQLSchema, executeQuery, setQueryResult } from '../../features/graphQLSlice';
 import GraphQLQueryBuilder from './GraphQLQueryBuilder';
 import GraphQLQueryManual from './GraphQLQueryManual';
 
@@ -209,8 +209,35 @@ ${buildQueryString(selectedFields)}
     dispatch(setEndpoint(e.target.value));
   };
 
+  const parseQueryResult = (result) => {
+    if (!result || typeof result !== 'object') return [];
+
+    const dataKey = Object.keys(result)[0];
+    const data = result[dataKey];
+
+    if (!Array.isArray(data)) return [];
+
+    return data.map(item => {
+      const parsedItem = {};
+      for (const key in item) {
+        const value = item[key];
+        parsedItem[key] = isNaN(value) ? value : parseFloat(value);
+      }
+      return parsedItem;
+    });
+  };
+
   const handleExecuteQuery = () => {
-    dispatch(executeQuery({ endpoint, query: editableQuery }));
+    dispatch(executeQuery({ endpoint, query: editableQuery }))
+      .then((result) => {
+        if (result.payload && result.payload.data) {
+          const parsedData = parseQueryResult(result.payload.data);
+          dispatch(setQueryResult({
+            rawData: result.payload.data,
+            parsedData: parsedData
+          }));
+        }
+      });
   };
 
   const handleSaveQuery = () => {

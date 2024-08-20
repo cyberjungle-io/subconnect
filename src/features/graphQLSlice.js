@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createAction } from '@reduxjs/toolkit';
 import axios from 'axios';
 
 // Async thunk for fetching the GraphQL schema
@@ -65,6 +65,8 @@ export const fetchQueries = createAsyncThunk(
   }
 );
 
+export const setQueryResult = createAction('graphQL/setQueryResult');
+
 const initialState = {
   schema: null,
   schemaLoading: false,
@@ -84,6 +86,9 @@ const graphQLSlice = createSlice({
   reducers: {
     setEndpoint: (state, action) => {
       state.endpoint = action.payload;
+    },
+    [setQueryResult]: (state, action) => {
+      state.queryResult = action.payload;
     },
   },
   extraReducers: (builder) => {

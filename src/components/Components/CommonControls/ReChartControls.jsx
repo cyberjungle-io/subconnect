@@ -9,8 +9,10 @@ const ReChartControls = ({ component, onUpdate }) => {
   const dispatch = useDispatch();
   const queries = useSelector(state => state.w3s.queries.list);
   const queriesStatus = useSelector(state => state.w3s.queries.status);
+  const queryResult = useSelector(state => state.graphQL.queryResult);
   const [selectedQuery, setSelectedQuery] = useState(null);
   const [availableFields, setAvailableFields] = useState([]);
+  const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
     dispatch(fetchQueries());
@@ -21,10 +23,19 @@ const ReChartControls = ({ component, onUpdate }) => {
       const query = queries.find(q => q._id === component.props.selectedQueryId);
       setSelectedQuery(query);
       if (query && query.fields) {
-        setAvailableFields(query.fields);
+        setAvailableFields(query.fields.map(field => ({
+          ...field,
+          name: field.name.split('.').pop() // Remove the high-level dataset name
+        })));
       }
     }
   }, [component.props.selectedQueryId, queries]);
+
+  useEffect(() => {
+    if (queryResult && queryResult.parsedData) {
+      setChartData(queryResult.parsedData);
+    }
+  }, [queryResult]);
 
   const handleChange = async (e) => {
     const { name, value, type, checked } = e.target;
@@ -43,7 +54,10 @@ const ReChartControls = ({ component, onUpdate }) => {
       const query = queries.find(q => q._id === value);
       setSelectedQuery(query);
       if (query && query.fields) {
-        setAvailableFields(query.fields);
+        setAvailableFields(query.fields.map(field => ({
+          ...field,
+          name: field.name.split('.').pop() // Remove the high-level dataset name
+        })));
         updatedProps.dataKeys = [];
         updatedProps.nameKey = '';
       }
@@ -60,13 +74,19 @@ const ReChartControls = ({ component, onUpdate }) => {
             query: selectedQuery.queryString
           })).unwrap();
           
-          // Update the chart data in the parent component
-          onUpdate({
-            props: {
-              ...updatedProps,
-              data: result.data[Object.keys(result.data)[0]]
-            }
-          });
+          if (result.data) {
+            const dataKey = Object.keys(result.data)[0];
+            const newChartData = result.data[dataKey];
+            setChartData(newChartData);
+            
+            // Update the chart data in the parent component
+            onUpdate({
+              props: {
+                ...updatedProps,
+                data: newChartData
+              }
+            });
+          }
         } catch (error) {
           console.error('Error executing query:', error);
         }
