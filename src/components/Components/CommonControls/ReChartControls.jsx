@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchQueries } from '../../../w3s/w3sSlice';
 import { executeQuery } from '../../../features/graphQLSlice';
@@ -51,17 +51,9 @@ const ReChartControls = ({ component, onUpdate }) => {
       [name]: newValue
     };
 
-    if (name === 'selectedQueryId') {
-      const query = queries.find(q => q._id === value);
-      setSelectedQuery(query);
-      if (query && query.fields) {
-        setAvailableFields(query.fields.map(field => ({
-          ...field,
-          name: field.name.split('.').pop() // Remove the high-level dataset name
-        })));
-        updatedProps.dataKeys = [];
-        updatedProps.nameKey = '';
-      }
+    // Force update for chartType changes
+    if (name === 'chartType') {
+      updatedProps.key = Date.now();
     }
 
     onUpdate({ props: updatedProps });
@@ -84,7 +76,8 @@ const ReChartControls = ({ component, onUpdate }) => {
             onUpdate({
               props: {
                 ...updatedProps,
-                data: newChartData
+                data: newChartData,
+                key: Date.now() // Force re-render
               }
             });
           }
