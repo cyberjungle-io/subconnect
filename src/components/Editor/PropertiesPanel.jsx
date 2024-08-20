@@ -20,7 +20,7 @@ import FlexContainerControls from "../Components/CommonControls/FlexContainerCon
 import { showToast, hideToast } from '../../features/toastSlice';
 import Toast from '../common/Toast';
 import ImageControls from "../Components/CommonControls/ImageControls";
-import ReChartProperties from '../Components/ReCharts/ReChartProperties';
+import ReChartControls from '../Components/CommonControls/ReChartControls';
 
 // Import the CSS file
 import '../../styleSheets/propertiesPanelStyles.css';
@@ -269,9 +269,9 @@ const PropertiesPanel = ({
         );
       case "CHART":
         return (
-          <ReChartProperties
-            chartConfig={selectedComponent.chartConfig}
-            onChartConfigChange={(e) => handlePropChange(e)}
+          <ReChartControls
+            component={selectedComponent}
+            onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
           />
         );
       default:

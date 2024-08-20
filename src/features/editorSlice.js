@@ -247,35 +247,42 @@ export const editorSlice = createSlice({
         // Create a copy of the current state
         const originalState = JSON.parse(JSON.stringify(state.components));
 
-        // Remove from old parent
-        if (oldParent) {
-          oldParent.children = oldParent.children.filter(child => child.id !== componentId);
-        } else {
-          state.components = state.components.filter(component => component.id !== componentId);
-        }
-
-        // Check if new parent is a container
-        const isNewParentContainer = newParent && (newParent.type === 'FLEX_CONTAINER' || newParent.type === 'GRID_CONTAINER');
-
-        if (isNewParentContainer) {
-          // Add to new parent if it's a container
-          if (!newParent.children) newParent.children = [];
-          newParent.children.push(componentToMove);
-        } else {
-          // If new parent is not a container or doesn't exist, add to root level
-          if (newPosition) {
-            componentToMove.style = {
-              ...componentToMove.style,
-              top: newPosition.top,
-              left: newPosition.left,
-            };
-          }
+        // If moving within the same container
+        if (oldParent && (oldParent.id === newParentId || oldParent.children.some(child => child.id === newParentId))) {
+          const siblingId = oldParent.id === newParentId ? componentId : newParentId;
+          const siblingIndex = oldParent.children.findIndex(child => child.id === siblingId);
           
-          if (newParent) {
-            // Find the index of the non-container component and insert the moved component after it
-            const newParentIndex = state.components.findIndex(c => c.id === newParent.id);
-            state.components.splice(newParentIndex + 1, 0, componentToMove);
+          // Remove the component from its current position
+          oldParent.children = oldParent.children.filter(child => child.id !== componentId);
+          
+          // Insert it at the new position
+          if (oldParent.id === newParentId) {
+            // If dropped on the parent, add to the end
+            oldParent.children.push(componentToMove);
           } else {
+            // If dropped on a sibling, insert before that sibling
+            oldParent.children.splice(siblingIndex, 0, componentToMove);
+          }
+        } else {
+          // Remove from old parent
+          if (oldParent) {
+            oldParent.children = oldParent.children.filter(child => child.id !== componentId);
+          } else {
+            state.components = state.components.filter(component => component.id !== componentId);
+          }
+
+          // Add to new parent or root level
+          if (newParent && (newParent.type === 'FLEX_CONTAINER' || newParent.type === 'GRID_CONTAINER')) {
+            if (!newParent.children) newParent.children = [];
+            newParent.children.push(componentToMove);
+          } else {
+            if (newPosition) {
+              componentToMove.style = {
+                ...componentToMove.style,
+                top: newPosition.top,
+                left: newPosition.left,
+              };
+            }
             state.components.push(componentToMove);
           }
         }

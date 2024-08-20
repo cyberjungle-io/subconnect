@@ -296,7 +296,7 @@ ${buildQueryString(selectedFields)}
           />
         </div>
         {schemaLoading && <p>Loading schema...</p>}
-        {schemaError && <p className="text-red-500">Error loading schema: {schemaError}</p>}
+        {schemaError && <p className="text-red-500">Error loading schema: {schemaError.message || JSON.stringify(schemaError)}</p>}
         {localSchema.length > 0 && (
           <div className="mt-4 flex flex-col">
             <div className="flex mb-4">
@@ -347,7 +347,7 @@ ${buildQueryString(selectedFields)}
             
             <div className="mt-4">
               <h3 className="text-lg font-semibold mb-2">Query Result</h3>
-              {queryError && <p className="text-red-500 mb-2">Error: {queryError}</p>}
+              {queryError && <p className="text-red-500 mb-2">Error: {queryError.message || JSON.stringify(queryError)}</p>}
               <textarea
                 className="w-full h-64 p-2 border rounded mb-2"
                 value={queryResult ? JSON.stringify(queryResult, null, 2) : ''}
@@ -358,7 +358,7 @@ ${buildQueryString(selectedFields)}
             <div className="mt-4">
               <h3 className="text-lg font-semibold mb-2">Saved Queries</h3>
               {queriesStatus === 'loading' && <p>Loading queries...</p>}
-              {queriesError && <p className="text-red-500 mb-2">Error loading queries: {queriesError}</p>}
+              {queriesError && <p className="text-red-500 mb-2">Error loading queries: {queriesError.message || JSON.stringify(queriesError)}</p>}
               <ul>
                 {queries.map(query => (
                   <li key={query._id} className="mb-4 p-4 border rounded">

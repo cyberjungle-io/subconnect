@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import React from "react";
 import {
   LineChart,
   BarChart,
@@ -17,37 +16,44 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const ChartRenderer = ({ component, globalChartStyle }) => {
-  const { chartConfig } = component;
+const defaultData = [
+  { name: 'Page A', uv: 4000, pv: 2400, amt: 2400 },
+  { name: 'Page B', uv: 3000, pv: 1398, amt: 2210 },
+  { name: 'Page C', uv: 2000, pv: 9800, amt: 2290 },
+  { name: 'Page D', uv: 2780, pv: 3908, amt: 2000 },
+  { name: 'Page E', uv: 1890, pv: 4800, amt: 2181 },
+];
+
+const ChartRenderer = ({ component }) => {
+  const { props } = component;
   const {
-    chartType,
-    data,
-    dataKey,
-    nameKey,
+    chartType = 'line',
+    data = defaultData,
+    dataKeys = ['uv', 'pv', 'amt'],
+    nameKey = 'name',
     title,
     titleFontSize,
     titleColor,
-    width,
-    height,
-    lineColor,
-    lineWidth,
-    dataPointSize,
-    showLegend,
-    legendPosition,
-  } = chartConfig || {};
-
-  console.log("ChartRenderer data:", data); // Add this log to check the data
+    titleAlign,
+    width = 500,
+    height = 300,
+    lineColors = ['#8884d8', '#82ca9d', '#ffc658'],
+    lineWidth = 2,
+    dataPointSize = 5,
+    showLegend = true,
+    legendPosition = 'bottom',
+  } = props || {};
 
   const CommonProps = {
-    data: Array.isArray(data) ? data : [],
+    data: Array.isArray(data) && data.length > 0 ? data : defaultData,
     margin: { top: 20, right: 30, left: 20, bottom: 5 },
-    width: width || 500,
-    height: height || 300,
+    width,
+    height,
   };
 
   const renderTitle = () => (
     <text
-      x={CommonProps.width / 2}
+      x={width / 2}
       y={20}
       textAnchor="middle"
       fill={titleColor || "#000"}
@@ -68,10 +74,6 @@ const ChartRenderer = ({ component, globalChartStyle }) => {
     );
 
   const renderChart = () => {
-    if (!CommonProps.data || CommonProps.data.length === 0 || !dataKey || !nameKey) {
-      return <div>No data available or fields not selected</div>;
-    }
-
     switch (chartType) {
       case "line":
         return (
@@ -82,13 +84,16 @@ const ChartRenderer = ({ component, globalChartStyle }) => {
             <YAxis />
             <Tooltip />
             {renderLegend()}
-            <Line
-              type="monotone"
-              dataKey={dataKey}
-              stroke={lineColor || globalChartStyle.colors[0]}
-              strokeWidth={lineWidth || 2}
-              dot={{ r: dataPointSize || 5 }}
-            />
+            {dataKeys.map((key, index) => (
+              <Line
+                key={key}
+                type="monotone"
+                dataKey={key}
+                stroke={lineColors[index % lineColors.length]}
+                strokeWidth={lineWidth}
+                dot={{ r: dataPointSize }}
+              />
+            ))}
           </LineChart>
         );
       case "bar":
@@ -100,11 +105,14 @@ const ChartRenderer = ({ component, globalChartStyle }) => {
             <YAxis />
             <Tooltip />
             {renderLegend()}
-            <Bar
-              dataKey={dataKey}
-              fill={lineColor || globalChartStyle.colors[0]}
-              radius={[dataPointSize || 0, dataPointSize || 0, 0, 0]}
-            />
+            {dataKeys.map((key, index) => (
+              <Bar
+                key={key}
+                dataKey={key}
+                fill={lineColors[index % lineColors.length]}
+                radius={[dataPointSize, dataPointSize, 0, 0]}
+              />
+            ))}
           </BarChart>
         );
       case "area":
@@ -116,30 +124,36 @@ const ChartRenderer = ({ component, globalChartStyle }) => {
             <YAxis />
             <Tooltip />
             {renderLegend()}
-            <Area
-              type="monotone"
-              dataKey={dataKey}
-              stroke={lineColor || globalChartStyle.colors[0]}
-              fill={lineColor || globalChartStyle.colors[0]}
-              fillOpacity={0.3}
-              strokeWidth={lineWidth || 2}
-            />
+            {dataKeys.map((key, index) => (
+              <Area
+                key={key}
+                type="monotone"
+                dataKey={key}
+                stroke={lineColors[index % lineColors.length]}
+                fill={lineColors[index % lineColors.length]}
+                fillOpacity={0.3}
+                strokeWidth={lineWidth}
+              />
+            ))}
           </AreaChart>
         );
       case "pie":
         return (
           <PieChart width={CommonProps.width} height={CommonProps.height}>
             {renderTitle()}
-            <Pie
-              data={CommonProps.data}
-              dataKey={dataKey}
-              nameKey={nameKey}
-              cx="50%"
-              cy="50%"
-              outerRadius={dataPointSize ? 50 + dataPointSize * 5 : 80}
-              fill={lineColor || globalChartStyle.colors[0]}
-              label
-            />
+            {dataKeys.map((key, index) => (
+              <Pie
+                key={key}
+                data={CommonProps.data}
+                dataKey={key}
+                nameKey={nameKey}
+                cx="50%"
+                cy="50%"
+                outerRadius={50 + index * 20}
+                fill={lineColors[index % lineColors.length]}
+                label
+              />
+            ))}
             <Tooltip />
             {renderLegend()}
           </PieChart>
