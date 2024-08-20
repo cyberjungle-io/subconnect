@@ -4,6 +4,7 @@ import { fetchQueries } from '../../../w3s/w3sSlice';
 import { executeQuery } from '../../../features/graphQLSlice';
 import { FaChevronUp, FaChevronRight, FaChevronDown, FaChevronLeft } from 'react-icons/fa';
 import { componentConfig, componentTypes } from '../componentConfig';
+import { format } from 'date-fns';
 
 const ReChartControls = ({ component, onUpdate }) => {
   const dispatch = useDispatch();
@@ -63,6 +64,16 @@ const ReChartControls = ({ component, onUpdate }) => {
       }
     }
 
+    if (name === 'lineColor') {
+      const [dataKey, color] = value.split('|');
+      updatedProps.lineColors = {
+        ...component.props.lineColors,
+        [dataKey]: color
+      };
+    } else {
+      updatedProps[name] = newValue;
+    }
+
     onUpdate({ props: updatedProps });
 
     // Execute query when both dataKeys and nameKey are selected
@@ -118,9 +129,10 @@ const ReChartControls = ({ component, onUpdate }) => {
           onChange={handleChange}
           className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         >
-          {componentConfig[componentTypes.CHART].chartTypes.map(type => (
-            <option key={type} value={type}>{type.charAt(0).toUpperCase() + type.slice(1)} Chart</option>
-          ))}
+          <option value="line">Line Chart</option>
+          <option value="bar">Bar Chart</option>
+          <option value="area">Area Chart</option>
+          <option value="pie">Pie Chart</option>
         </select>
       </div>
 
@@ -259,16 +271,25 @@ const ReChartControls = ({ component, onUpdate }) => {
       {component.props.chartType === 'line' && (
         <>
           <h4 className="text-md font-medium text-gray-900 mt-2">Line Customization</h4>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Line Color</label>
-            <input
-              type="color"
-              name="lineColor"
-              value={component.props.lineColor || '#8884d8'}
-              onChange={handleChange}
-              className="mt-1 block w-full"
-            />
-          </div>
+          {component.props.dataKeys.map((dataKey) => (
+            <div key={dataKey}>
+              <label className="block text-sm font-medium text-gray-700">
+                {dataKey} Color
+              </label>
+              <input
+                type="color"
+                name="lineColor"
+                value={component.props.lineColors?.[dataKey] || '#8884d8'}
+                onChange={(e) => handleChange({
+                  target: {
+                    name: 'lineColor',
+                    value: `${dataKey}|${e.target.value}`
+                  }
+                })}
+                className="mt-1 block w-full"
+              />
+            </div>
+          ))}
           <div>
             <label className="block text-sm font-medium text-gray-700">Line Width</label>
             <input
@@ -352,6 +373,108 @@ const ReChartControls = ({ component, onUpdate }) => {
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Axis Labels */}
+      <h4 className="text-md font-medium text-gray-900 mt-2">Axis Labels</h4>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">X-Axis Label</label>
+        <input
+          type="text"
+          name="xAxisLabel"
+          value={component.props.xAxisLabel || ''}
+          onChange={handleChange}
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Y-Axis Label</label>
+        <input
+          type="text"
+          name="yAxisLabel"
+          value={component.props.yAxisLabel || ''}
+          onChange={handleChange}
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+
+      {/* Axis Angles */}
+      <h4 className="text-md font-medium text-gray-900 mt-2">Axis Tick Angles</h4>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">X-Axis Angle</label>
+        <input
+          type="number"
+          name="xAxisAngle"
+          value={component.props.xAxisAngle || 0}
+          onChange={handleChange}
+          min="-90"
+          max="90"
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Y-Axis Angle</label>
+        <input
+          type="number"
+          name="yAxisAngle"
+          value={component.props.yAxisAngle || 0}
+          onChange={handleChange}
+          min="-90"
+          max="90"
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+
+      {/* Data Type and Formatting */}
+      <h4 className="text-md font-medium text-gray-900 mt-2">Data Type and Formatting</h4>
+      <div>
+        <label className="block text-sm font-medium text-gray-700">X-Axis Data Type</label>
+        <select
+          name="xAxisDataType"
+          value={component.props.xAxisDataType || 'category'}
+          onChange={handleChange}
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          <option value="category">Category</option>
+          <option value="number">Number</option>
+          <option value="date">Date</option>
+        </select>
+      </div>
+      {component.props.xAxisDataType === 'date' && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Date Format</label>
+          <input
+            type="text"
+            name="dateFormat"
+            value={component.props.dateFormat || 'MM/dd/yyyy'}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+      )}
+      <div>
+        <label className="block text-sm font-medium text-gray-700">Y-Axis Data Type</label>
+        <select
+          name="yAxisDataType"
+          value={component.props.yAxisDataType || 'number'}
+          onChange={handleChange}
+          className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          <option value="number">Number</option>
+          <option value="category">Category</option>
+        </select>
+      </div>
+      {component.props.yAxisDataType === 'number' && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Number Format</label>
+          <input
+            type="text"
+            name="numberFormat"
+            value={component.props.numberFormat || '0,0.[00]'}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
         </div>
       )}
 
