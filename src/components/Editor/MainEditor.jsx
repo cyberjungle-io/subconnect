@@ -171,6 +171,25 @@ const MainEditor = () => {
     dispatch(setCurrentPage(page));
     if (page.content) {
       dispatch(loadPageContent(page.content));
+    } else {
+      dispatch(loadPageContent({
+        components: [],
+        globalSettings: {
+          backgroundColor: '#ffffff',
+          componentLayout: 'vertical',
+          style: {
+            paddingTop: '0px',
+            paddingRight: '0px',
+            paddingBottom: '0px',
+            paddingLeft: '0px',
+            marginTop: '0px',
+            marginRight: '0px',
+            marginBottom: '0px',
+            marginLeft: '0px',
+            gap: '0px'
+          }
+        }
+      }));
     }
   };
 

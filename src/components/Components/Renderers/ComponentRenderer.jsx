@@ -176,24 +176,33 @@ const ComponentRenderer = React.memo(({
   const getComponentStyle = () => {
     const { style, type, props } = component;
     
+    // Start with global styles
     const componentStyle = {
+      ...globalSettings.generalComponentStyle,
       ...style,
       position: 'relative',
-      border: style.showBorder !== false
-        ? `${style.borderWidth || '1px'} ${style.borderStyle || 'solid'} ${style.borderColor || '#000'}`
-        : "none",
-      borderRadius: style.borderRadius || props.borderRadius || '4px',
-      padding: style.padding || "0px",
-      margin: style.margin || "0px",
       overflow: "hidden",
       boxSizing: 'border-box',
-      backgroundColor: style.backgroundColor || 'transparent',
-      boxShadow: style.boxShadow || 'none',
-      opacity: style.opacity || 1,
-      transform: style.transform || 'none',
-      transition: style.transition || 'none',
     };
-  
+
+    // Override with component-specific styles
+    if (style.showBorder === false) {
+      componentStyle.border = "none";
+    } else {
+      componentStyle.borderWidth = style.borderWidth || '1px';
+      componentStyle.borderStyle = style.borderStyle || 'solid';
+      componentStyle.borderColor = style.borderColor || '#000';
+    }
+    
+    componentStyle.borderRadius = style.borderRadius || props.borderRadius || '4px';
+    componentStyle.padding = style.padding || "0px";
+    componentStyle.margin = style.margin || "0px";
+    componentStyle.backgroundColor = style.backgroundColor || 'transparent';
+    componentStyle.boxShadow = style.boxShadow || 'none';
+    componentStyle.opacity = style.opacity || 1;
+    componentStyle.transform = style.transform || 'none';
+    componentStyle.transition = style.transition || 'none';
+
     if (type === "FLEX_CONTAINER") {
       componentStyle.display = "flex";
       componentStyle.flexDirection = props.direction || "row";

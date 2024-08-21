@@ -333,6 +333,23 @@ export const editorSlice = createSlice({
     },
     setCurrentPage: (state, action) => {
       state.currentPage = action.payload;
+      if (!state.globalSettings) {
+        state.globalSettings = {
+          backgroundColor: '#ffffff',
+          componentLayout: 'vertical',
+          style: {
+            paddingTop: '0px',
+            paddingRight: '0px',
+            paddingBottom: '0px',
+            paddingLeft: '0px',
+            marginTop: '0px',
+            marginRight: '0px',
+            marginBottom: '0px',
+            marginLeft: '0px',
+            gap: '0px'
+          }
+        };
+      }
     },
     undoWhiteboard: (state) => {
       if (state.whiteboardState.historyIndex > 0) {

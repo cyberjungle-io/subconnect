@@ -12,10 +12,10 @@ const Canvas = ({
   onUpdateComponent,
   onAddComponent,
   onMoveComponent,
-  globalSettings,
+  globalSettings = {},
 }) => {
+  const { backgroundColor = '#ffffff', componentLayout = 'vertical', style = {} } = useSelector(state => state.editor.globalSettings || {});
   const canvasRef = useRef(null);
-  const { backgroundColor, componentLayout, style } = useSelector(state => state.editor.globalSettings);
   const [, drop] = useDrop({
     accept: "COMPONENT",
     drop: (item, monitor) => {

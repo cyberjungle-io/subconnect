@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import ColorPicker from '../../common/ColorPicker';
+import { updateComponent } from '../../../features/editorSlice';
 
-const ComponentControls = ({ style, onStyleChange }) => {
+const ComponentControls = ({ style, onStyleChange, componentId, dispatch }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const handleChange = (e) => {
@@ -12,6 +14,15 @@ const ComponentControls = ({ style, onStyleChange }) => {
 
   const handleColorChange = (color, property) => {
     onStyleChange({ [property]: color });
+  };
+
+  const handleBorderChange = (e) => {
+    const { name, checked, value } = e.target;
+    if (name === 'showBorder') {
+      onStyleChange({ showBorder: checked });
+    } else {
+      onStyleChange({ [name]: value });
+    }
   };
 
   return (
@@ -34,8 +45,9 @@ const ComponentControls = ({ style, onStyleChange }) => {
             <label className="control-label">
               <input
                 type="checkbox"
+                name="showBorder"
                 checked={style.showBorder !== false}
-                onChange={(e) => onStyleChange({ showBorder: e.target.checked })}
+                onChange={handleBorderChange}
                 className="mr-2"
               />
               Show Border
@@ -57,28 +69,28 @@ const ComponentControls = ({ style, onStyleChange }) => {
                 <select
                   name="borderStyle"
                   value={style.borderStyle || 'solid'}
-                  onChange={(e) => onStyleChange({ borderStyle: e.target.value })}
+                  onChange={handleBorderChange}
                   className="control-select"
                 >
-                  <option value="none">None</option>
                   <option value="solid">Solid</option>
                   <option value="dashed">Dashed</option>
                   <option value="dotted">Dotted</option>
                 </select>
               </div>
+
+              <div className="mb-2">
+                <label className="control-label">Border Width (px)</label>
+                <input
+                  type="number"
+                  name="borderWidth"
+                  value={parseInt(style.borderWidth) || 1}
+                  onChange={(e) => onStyleChange({ borderWidth: `${e.target.value}px` })}
+                  className="control-input"
+                  min="0"
+                />
+              </div>
             </>
           )}
-
-          <div className="mb-2">
-            <label className="control-label">Border Width (px)</label>
-            <input
-              type="number"
-              name="borderWidth"
-              value={parseInt(style.borderWidth) || 0}
-              onChange={(e) => onStyleChange({ borderWidth: `${e.target.value}px` })}
-              className="control-input"
-            />
-          </div>
 
           <div className="mb-2">
             <label className="control-label">Border Radius (px)</label>

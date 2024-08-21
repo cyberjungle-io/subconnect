@@ -44,11 +44,11 @@ const HeadingControls = ({ component, onUpdate }) => {
     });
   };
 
-  const handleStyleChange = (name, value) => {
+  const handleStyleChange = (updates) => {
     onUpdate({
       style: {
         ...component.style,
-        [name]: value
+        ...updates
       }
     });
   };
@@ -368,6 +368,8 @@ const HeadingControls = ({ component, onUpdate }) => {
         <ComponentControls
           style={component.style}
           onStyleChange={handleStyleChange}
+          componentId={component.id}
+          dispatch={onUpdate}
         />
       ))}
     </div>
