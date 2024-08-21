@@ -200,6 +200,7 @@ const MainEditor = () => {
                 onUpdateComponent={handleUpdateComponent}
                 onAddComponent={handleAddComponent}
                 onMoveComponent={handleMoveComponent}
+                globalSettings={globalSettings}
               />
             ) : (
               <ViewerMode components={components} />

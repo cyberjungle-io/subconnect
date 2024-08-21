@@ -31,12 +31,43 @@ const ComponentControls = ({ style, onStyleChange }) => {
           </div>
 
           <div className="mb-2">
-            <label className="control-label">Border Color</label>
-            <ColorPicker
-              color={style.borderColor || '#000000'}
-              onChange={(color) => handleColorChange(color, 'borderColor')}
-            />
+            <label className="control-label">
+              <input
+                type="checkbox"
+                checked={style.showBorder !== false}
+                onChange={(e) => onStyleChange({ showBorder: e.target.checked })}
+                className="mr-2"
+              />
+              Show Border
+            </label>
           </div>
+
+          {style.showBorder !== false && (
+            <>
+              <div className="mb-2">
+                <label className="control-label">Border Color</label>
+                <ColorPicker
+                  color={style.borderColor || '#000000'}
+                  onChange={(color) => onStyleChange({ borderColor: color })}
+                />
+              </div>
+
+              <div className="mb-2">
+                <label className="control-label">Border Style</label>
+                <select
+                  name="borderStyle"
+                  value={style.borderStyle || 'solid'}
+                  onChange={(e) => onStyleChange({ borderStyle: e.target.value })}
+                  className="control-select"
+                >
+                  <option value="none">None</option>
+                  <option value="solid">Solid</option>
+                  <option value="dashed">Dashed</option>
+                  <option value="dotted">Dotted</option>
+                </select>
+              </div>
+            </>
+          )}
 
           <div className="mb-2">
             <label className="control-label">Border Width (px)</label>
@@ -58,21 +89,6 @@ const ComponentControls = ({ style, onStyleChange }) => {
               onChange={(e) => onStyleChange({ borderRadius: `${e.target.value}px` })}
               className="control-input"
             />
-          </div>
-
-          <div className="mb-2">
-            <label className="control-label">Border Style</label>
-            <select
-              name="borderStyle"
-              value={style.borderStyle || 'none'}
-              onChange={handleChange}
-              className="control-select"
-            >
-              <option value="none">None</option>
-              <option value="solid">Solid</option>
-              <option value="dashed">Dashed</option>
-              <option value="dotted">Dotted</option>
-            </select>
           </div>
 
           <div className="mb-2">

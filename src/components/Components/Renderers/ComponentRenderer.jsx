@@ -12,6 +12,14 @@ import ChartRenderer from "./ChartRenderer";
 import WhiteboardRenderer from "./WhiteboardRenderer";
 import VideoRenderer from "./VideoRenderer";
 
+const defaultGlobalSettings = {
+  generalComponentStyle: {
+    fontSize: '16px',
+    color: '#000000',
+    backgroundColor: '#ffffff',
+  }
+};
+
 const useDragDrop = (component, onMoveComponent, onAddChild, isViewMode) => {
   const [{ isDragging }, drag] = useDrag({
     type: "COMPONENT",
@@ -49,16 +57,16 @@ const ComponentRenderer = React.memo(({
   onAddChild,
   onMoveComponent,
   depth = 0,
-  selectedIds = [], // Provide a default empty array
+  selectedIds = [],
   isFlexChild = false,
   parent = null,
   globalComponentLayout,
   isViewMode = false,
+  globalSettings = defaultGlobalSettings,
 }) => {
   const dispatch = useDispatch();
   const componentRef = useRef(null);
   const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild, isViewMode);
-  const globalSettings = useSelector(state => state.editor.globalSettings);
 
   const handleClick = useCallback((event) => {
     event.stopPropagation();
@@ -118,6 +126,7 @@ const ComponentRenderer = React.memo(({
         isFlexChild={component.type === "FLEX_CONTAINER"}
         parent={component}
         isViewMode={isViewMode}
+        globalSettings={globalSettings}
       />
     ));
   };
@@ -133,7 +142,14 @@ const ComponentRenderer = React.memo(({
       depth: depth + 1,
       parent,
       isViewMode,
-      globalSettings, // Pass the entire globalSettings object
+      globalSettings: {
+        ...defaultGlobalSettings,
+        ...globalSettings,
+        generalComponentStyle: {
+          ...defaultGlobalSettings.generalComponentStyle,
+          ...globalSettings.generalComponentStyle,
+        },
+      },
     };
   
     switch (component.type) {
@@ -163,12 +179,10 @@ const ComponentRenderer = React.memo(({
     const componentStyle = {
       ...style,
       position: 'relative',
-      border: isSelected 
-        ? "2px solid blue" 
-        : style.borderWidth && style.borderStyle
-          ? `${style.borderWidth} ${style.borderStyle} ${style.borderColor || '#000'}`
-          : "1px solid #ccc",
-      borderRadius: style.borderRadius || props.borderRadius || '4px', // Updated this line
+      border: style.showBorder !== false
+        ? `${style.borderWidth || '1px'} ${style.borderStyle || 'solid'} ${style.borderColor || '#000'}`
+        : "none",
+      borderRadius: style.borderRadius || props.borderRadius || '4px',
       padding: style.padding || "0px",
       margin: style.margin || "0px",
       overflow: "hidden",

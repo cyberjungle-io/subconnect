@@ -12,6 +12,7 @@ const Canvas = ({
   onUpdateComponent,
   onAddComponent,
   onMoveComponent,
+  globalSettings,
 }) => {
   const canvasRef = useRef(null);
   const { backgroundColor, componentLayout, style } = useSelector(state => state.editor.globalSettings);
@@ -102,6 +103,7 @@ const Canvas = ({
           }
           onMoveComponent={onMoveComponent}
           globalComponentLayout={componentLayout}
+          globalSettings={globalSettings}
         />
       ))}
     </div>
