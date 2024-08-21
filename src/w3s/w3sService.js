@@ -65,6 +65,19 @@ const w3sService = {
       throw error.response?.data || error.message || 'An unexpected error occurred';
     }
   },
+  verifyToken: async (token) => {
+    try {
+      const response = await api.get('/users/verify-token', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Token verification error:', error.response || error);
+      throw error.response?.data || error.message || 'An unexpected error occurred';
+    }
+  },
 
   getProject: async (id) => {
     try {

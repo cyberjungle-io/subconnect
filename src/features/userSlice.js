@@ -21,6 +21,8 @@ export const loginUser = createAsyncThunk(
   async (credentials, { rejectWithValue, dispatch }) => {
     try {
       const response = await w3sService.login(credentials);
+      // Save token to local storage
+      localStorage.setItem('w3s_token', response.token);
       // Fetch projects after successful login
       const projects = await w3sService.getProjects();
       dispatch(fetchProjects.fulfilled(projects));
@@ -44,6 +46,31 @@ export const logoutUser = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to logout');
     }
+  }
+);
+
+export const checkAuthStatus = createAsyncThunk(
+  'user/checkAuthStatus',
+  async (_, { dispatch }) => {
+    const token = localStorage.getItem('w3s_token');
+    if (token) {
+      try {
+        // Implement a method in w3sService to verify the token and return user data
+        const userData = await w3sService.verifyToken(token);
+        // Fetch projects
+        const projects = await w3sService.getProjects();
+        dispatch(fetchProjects.fulfilled(projects));
+        // Set the first project as the current project if available
+        if (projects.length > 0) {
+          dispatch(setCurrentProject(projects[0]));
+        }
+        return userData;
+      } catch (error) {
+        localStorage.removeItem('w3s_token');
+        throw error;
+      }
+    }
+    throw new Error('No token found');
   }
 );
 
