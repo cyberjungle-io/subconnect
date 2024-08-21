@@ -323,31 +323,35 @@ const PropertiesPanel = ({
 
   return (
     <div className="properties-panel">
-      <h2 className="properties-panel-title">
-        {activePanel === "globalSettings" ? "Global Settings" : "Properties"}
-      </h2>
       <div className="properties-panel-header">
-        <button
-          onClick={handleSaveProject}
-          className="panel-button"
-          title="Save Project"
-        >
-          <FaSave />
-        </button>
-        <button
-          onClick={handleEnterViewMode}
-          className="panel-button"
-          title="Switch to View Mode"
-        >
-          <FaEye />
-        </button>
-        <button
-          onClick={onToggleVisibility}
-          className="panel-button"
-          title="Hide Panel"
-        >
-          <HidePropertiesPanelArrow className="panel-button-icon" />
-        </button>
+        <div className="properties-panel-title-container">
+          <h2 className="properties-panel-title ">
+            {activePanel === "globalSettings" ? "Global Settings" : "Properties"}
+          </h2>
+        </div>
+        <div className="properties-panel-buttons-container ">
+          <button
+            onClick={handleSaveProject}
+            className="panel-button"
+            title="Save Project"
+          >
+            <FaSave />
+          </button>
+          <button
+            onClick={handleEnterViewMode}
+            className="panel-button"
+            title="Switch to View Mode"
+          >
+            <FaEye />
+          </button>
+          <button
+            onClick={onToggleVisibility}
+            className="panel-button"
+            title="Hide Panel"
+          >
+            <HidePropertiesPanelArrow />
+          </button>
+        </div>
       </div>
       <PanelNavBar
         onShowComponentPalette={handleShowComponentPalette}
