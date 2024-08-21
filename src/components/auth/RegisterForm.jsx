@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '../../features/userSlice';
+import { useNavigate } from 'react-router-dom';
 
 const RegisterForm = ({ onClose }) => {
   const [username, setUsername] = useState('');
@@ -11,6 +12,7 @@ const RegisterForm = ({ onClose }) => {
   const [passwordError, setPasswordError] = useState('');
   const dispatch = useDispatch();
   const { status, error } = useSelector((state) => state.user);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,7 +23,7 @@ const RegisterForm = ({ onClose }) => {
     setPasswordError('');
     try {
       await dispatch(registerUser({ username, email, password })).unwrap();
-      onClose();
+      navigate('/editor');
     } catch (err) {
       // Error is handled by the Redux slice
     }

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { FaSignOutAlt } from 'react-icons/fa';
+import { FaSignOutAlt, FaEdit } from 'react-icons/fa';
 import Modal from '../common/Modal';
 import RegisterForm from '../auth/RegisterForm';
 import LoginForm from '../auth/LoginForm';
 import { logoutUser } from '../../features/userSlice';
+import { setEditorMode } from '../../features/editorSlice';
 import HamburgerMenu from '../common/HamburgerMenu';
 
 const Toolbar = () => {
@@ -12,25 +13,36 @@ const Toolbar = () => {
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.user);
+  const { mode } = useSelector((state) => state.editor);
 
   const handleLogout = () => {
     dispatch(logoutUser());
   };
 
+  const handleEnterEditMode = () => {
+    dispatch(setEditorMode('edit'));
+  };
+
   return (
     <div className="bg-gray-800 text-white p-2 flex justify-between items-center">
-      {/* Hamburger menu */}
       <HamburgerMenu />
 
-      {/* Center content */}
       <div className="flex items-center space-x-4">
         {currentUser && (
           <span className="text-sm">Welcome, {currentUser.username}</span>
         )}
       </div>
 
-      {/* Right-aligned buttons */}
       <div className="flex items-center space-x-4">
+        {currentUser && mode === 'view' && (
+          <button
+            onClick={handleEnterEditMode}
+            className="flex items-center space-x-2 bg-blue-500 px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+          >
+            <FaEdit />
+            <span>Edit</span>
+          </button>
+        )}
         {currentUser ? (
           <button
             onClick={handleLogout}

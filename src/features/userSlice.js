@@ -2,6 +2,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { w3sService } from '../w3s/w3sService';
 import { fetchProjects, setCurrentProject } from '../w3s/w3sSlice'; // Add this import
+import { setEditorMode } from './editorSlice'; // Added this import
 
 export const registerUser = createAsyncThunk(
   'user/register',
@@ -39,12 +40,14 @@ export const loginUser = createAsyncThunk(
 
 export const logoutUser = createAsyncThunk(
   'user/logout',
-  async (_, { rejectWithValue }) => {
+  async (_, { dispatch }) => {
     try {
       await w3sService.logout();
+      dispatch(setEditorMode('view')); // Switch to view mode
       return null;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Failed to logout');
+      console.error('Logout error:', error);
+      throw error;
     }
   }
 );
@@ -55,12 +58,9 @@ export const checkAuthStatus = createAsyncThunk(
     const token = localStorage.getItem('w3s_token');
     if (token) {
       try {
-        // Implement a method in w3sService to verify the token and return user data
         const userData = await w3sService.verifyToken(token);
-        // Fetch projects
         const projects = await w3sService.getProjects();
         dispatch(fetchProjects.fulfilled(projects));
-        // Set the first project as the current project if available
         if (projects.length > 0) {
           dispatch(setCurrentProject(projects[0]));
         }
@@ -70,7 +70,7 @@ export const checkAuthStatus = createAsyncThunk(
         throw error;
       }
     }
-    throw new Error('No token found');
+    return null;
   }
 );
 
