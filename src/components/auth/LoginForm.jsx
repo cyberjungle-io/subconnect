@@ -6,9 +6,9 @@ import { useNavigate } from 'react-router-dom';
 
 const LoginForm = ({ onClose }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const { status, error } = useSelector((state) => state.user);
-  const navigate = useNavigate();
 
   const inputClasses = "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-700";
   const labelClasses = "block text-sm font-medium text-gray-700 mb-1";
@@ -18,7 +18,7 @@ const LoginForm = ({ onClose }) => {
     try {
       await dispatch(loginUser(credentials)).unwrap();
       onClose(); // Close the modal on successful login
-      navigate('/editor');
+      navigate('/editor'); // Redirect to the editor page
     } catch (err) {
       console.error('Failed to log in:', err);
     }
