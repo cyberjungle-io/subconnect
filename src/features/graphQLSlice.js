@@ -65,6 +65,15 @@ export const fetchQueries = createAsyncThunk(
   }
 );
 
+export const loadSavedQuery = createAsyncThunk(
+  'graphQL/loadSavedQuery',
+  async (query, { dispatch }) => {
+    dispatch(setEndpoint(query.endpoint));
+    dispatch(setEditableQuery(query.queryString));
+    return query;
+  }
+);
+
 export const setQueryResult = createAction('graphQL/setQueryResult');
 
 const initialState = {
@@ -78,6 +87,7 @@ const initialState = {
   queries: [],
   status: 'idle',
   error: null,
+  editableQuery: '',
 };
 
 const graphQLSlice = createSlice({
@@ -86,6 +96,9 @@ const graphQLSlice = createSlice({
   reducers: {
     setEndpoint: (state, action) => {
       state.endpoint = action.payload;
+    },
+    setEditableQuery: (state, action) => {
+      state.editableQuery = action.payload;
     },
     [setQueryResult]: (state, action) => {
       state.queryResult = action.payload;
@@ -130,10 +143,13 @@ const graphQLSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload;
         console.error('Failed to fetch queries:', action.payload);
+      })
+      .addCase(loadSavedQuery.fulfilled, (state, action) => {
+        // You can add any additional state updates here if needed
       });
   },
 });
 
-export const { setEndpoint } = graphQLSlice.actions;
+export const { setEndpoint, setEditableQuery } = graphQLSlice.actions;
 
 export default graphQLSlice.reducer;

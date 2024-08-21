@@ -1,28 +1,39 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchQueries, createQuery, updateQuery, deleteQuery } from '../../w3s/w3sSlice';
-import { setEndpoint, fetchGraphQLSchema, executeQuery, setQueryResult } from '../../features/graphQLSlice';
-import GraphQLQueryBuilder from './GraphQLQueryBuilder';
+import { setEndpoint, fetchGraphQLSchema, executeQuery, setQueryResult, setEditableQuery } from '../../features/graphQLSlice';
 import GraphQLQueryManual from './GraphQLQueryManual';
 
 const GraphQLQueryTab = () => {
   const dispatch = useDispatch();
-  const { endpoint, schema, schemaLoading, schemaError, queryResult, queryLoading, queryError } = useSelector(state => state.graphQL);
-  const { list: queries, status: queriesStatus, error: queriesError } = useSelector(state => state.w3s.queries);
+  const { 
+    endpoint, 
+    schema, 
+    schemaLoading, 
+    schemaError, 
+    queryResult, 
+    queryLoading, 
+    queryError,
+    editableQuery
+  } = useSelector(state => state.graphQL);
 
   const [localSchema, setLocalSchema] = useState([]);
   const [selectedFields, setSelectedFields] = useState([]);
   const [queryLimit, setQueryLimit] = useState(10);
-  const [editableQuery, setEditableQuery] = useState('');
   const [queryName, setQueryName] = useState('');
   const [currentQueryId, setCurrentQueryId] = useState(null);
-  const [querySource, setQuerySource] = useState('manual');
   const [parsedFields, setParsedFields] = useState([]);
 
   useEffect(() => {
     dispatch(fetchGraphQLSchema(endpoint));
-    dispatch(fetchQueries());
   }, [endpoint, dispatch]);
+
+  useEffect(() => {
+    if (editableQuery) {
+      const fields = parseQueryString(editableQuery);
+      setParsedFields(fields);
+    }
+  }, [editableQuery]);
 
   useEffect(() => {
     if (schema) {
@@ -64,13 +75,6 @@ const GraphQLQueryTab = () => {
       setLocalSchema(processedSchema);
     }
   }, [schema]);
-
-  useEffect(() => {
-    if (querySource === 'manual') {
-      const fields = parseQueryString(editableQuery);
-      setParsedFields(fields);
-    }
-  }, [editableQuery, querySource]);
 
   const parseQueryString = (queryString) => {
     // Remove comments and whitespace
@@ -209,6 +213,10 @@ ${buildQueryString(selectedFields)}
     dispatch(setEndpoint(e.target.value));
   };
 
+  const handleEditableQueryChange = (newQuery) => {
+    dispatch(setEditableQuery(newQuery));
+  };
+
   const parseQueryResult = (result) => {
     if (!result || typeof result !== 'object') return [];
 
@@ -251,13 +259,8 @@ ${buildQueryString(selectedFields)}
       resultType: 'object', // You might want to make this dynamic
       queryString: editableQuery,
       endpoint: endpoint,
-      fields: querySource === 'builder' 
-        ? selectedFields.map(field => ({
-            name: field.path[field.path.length - 1],
-            dataType: 'String' // You might want to infer this from the schema
-          }))
-        : parsedFields, // These now include the user-selected data types
-      querySource: querySource
+      fields: parsedFields, // These now include the user-selected data types
+      querySource: 'manual'
     };
 
     if (currentQueryId) {
@@ -276,29 +279,6 @@ ${buildQueryString(selectedFields)}
 
     setQueryName('');
     setCurrentQueryId(null);
-  };
-
-  const handleDeleteQuery = (queryId) => {
-    if (window.confirm('Are you sure you want to delete this query?')) {
-      dispatch(deleteQuery(queryId))
-        .then(() => {
-          console.log('Query deleted successfully');
-          dispatch(fetchQueries());
-        });
-    }
-  };
-
-  const handleLoadQuery = (query) => {
-    setEditableQuery(query.queryString);
-    setEndpoint(query.endpoint);
-    setQueryName(query.name);
-    setCurrentQueryId(query._id);
-    setQuerySource(query.querySource || 'builder');
-    if (query.querySource === 'manual') {
-      setParsedFields(parseQueryString(query.queryString));
-    } else {
-      setSelectedFields(query.fields.map(field => ({ path: [field.name] })));
-    }
   };
 
   const handleDataTypeChange = (index, newDataType) => {
@@ -355,7 +335,7 @@ ${buildQueryString(selectedFields)}
                   parsedFields={parsedFields}
                   handleDataTypeChange={handleDataTypeChange}
                   editableQuery={editableQuery}
-                  setEditableQuery={setEditableQuery}
+                  setEditableQuery={handleEditableQueryChange}
                   handleExecuteQuery={handleExecuteQuery}
                   handleSaveQuery={handleSaveQuery}
                   queryName={queryName}
@@ -372,37 +352,6 @@ ${buildQueryString(selectedFields)}
                 value={queryResult ? JSON.stringify(queryResult, null, 2) : ''}
                 readOnly
               />
-            </div>
-            
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold mb-2">Saved Queries</h3>
-              {queriesStatus === 'loading' && <p>Loading queries...</p>}
-              {queriesError && <p className="text-red-500 mb-2">Error loading queries: {queriesError.message || JSON.stringify(queriesError)}</p>}
-              <ul>
-                {queries.map(query => (
-                  <li key={query._id} className="mb-4 p-4 border rounded">
-                    <h4 className="font-bold">{query.name}</h4>
-                    <p>Result Type: {query.resultType}</p>
-                    <p>Query Source: {query.querySource || 'N/A'}</p>
-                    <p className="mb-2">Endpoint: {query.endpoint}</p>
-                    <pre className="bg-gray-100 p-2 rounded">{query.queryString}</pre>
-                    <div className="mt-2">
-                      <button 
-                        onClick={() => handleLoadQuery(query)}
-                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2"
-                      >
-                        Load
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteQuery(query._id)}
-                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
             </div>
           </div>
         )}
