@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { FaTimes, FaDatabase, FaCode, FaGlobe, FaSave } from 'react-icons/fa';
-import GraphQLQueryTab from './GraphQLQueryTab'; // Import the new component
+import GraphQLQueryTab from './GraphQLQueryTab';
 
 const DataModal = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState('GraphQL Query');
 
   const tabs = [
-    { name: 'GraphQL Query', icon: FaCode }, // Updated tab name
-    { name: 'Data', icon: FaDatabase },
-    { name: 'JSON', icon: FaCode },
-    { name: 'REST', icon: FaGlobe },
-    { name: 'Saved', icon: FaSave },
+    { name: 'GraphQL Query', icon: FaCode, disabled: false },
+    { name: 'Data', icon: FaDatabase, disabled: true },
+    { name: 'JSON', icon: FaCode, disabled: true },
+    { name: 'REST', icon: FaGlobe, disabled: true },
+    { name: 'Saved', icon: FaSave, disabled: false },
   ];
 
   if (!isOpen) return null;
@@ -24,12 +24,18 @@ const DataModal = ({ isOpen, onClose }) => {
             <button
               key={tab.name}
               className={`flex items-center w-full p-2 mb-2 rounded ${
-                activeTab === tab.name ? 'bg-blue-500 text-white' : 'hover:bg-gray-200'
+                activeTab === tab.name
+                  ? 'bg-blue-500 text-white'
+                  : tab.disabled
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : 'hover:bg-gray-200'
               }`}
-              onClick={() => setActiveTab(tab.name)}
+              onClick={() => !tab.disabled && setActiveTab(tab.name)}
+              disabled={tab.disabled}
             >
               <tab.icon className="mr-2" />
               {tab.name}
+              {tab.disabled && <span className="ml-1 text-xs">(Coming Soon)</span>}
             </button>
           ))}
         </div>
@@ -44,34 +50,18 @@ const DataModal = ({ isOpen, onClose }) => {
           </button>
           <h2 className="text-2xl font-bold mb-4">{activeTab}</h2>
           {activeTab === 'GraphQL Query' && <GraphQLQueryTab />}
-          {activeTab === 'Data' && (
-            <div>
-              <select className="w-full p-2 border rounded mb-2">
-                <option>Select a data source...</option>
-                <option>Database 1</option>
-                <option>Database 2</option>
-              </select>
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-gray-200">
-                    <th className="border p-2">Column 1</th>
-                    <th className="border p-2">Column 2</th>
-                    <th className="border p-2">Column 3</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td className="border p-2">Data 1</td>
-                    <td className="border p-2">Data 2</td>
-                    <td className="border p-2">Data 3</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          )}
-          {/* Add similar dummy content for JSON, REST, and Saved tabs */}
+          {activeTab === 'Saved' && <SavedQueriesTab />}
         </div>
       </div>
+    </div>
+  );
+};
+
+const SavedQueriesTab = () => {
+  return (
+    <div>
+      <h3>Saved Queries</h3>
+      {/* Add your saved queries content here */}
     </div>
   );
 };

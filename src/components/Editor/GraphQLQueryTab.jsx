@@ -16,7 +16,7 @@ const GraphQLQueryTab = () => {
   const [editableQuery, setEditableQuery] = useState('');
   const [queryName, setQueryName] = useState('');
   const [currentQueryId, setCurrentQueryId] = useState(null);
-  const [querySource, setQuerySource] = useState('builder');
+  const [querySource, setQuerySource] = useState('manual');
   const [parsedFields, setParsedFields] = useState([]);
 
   useEffect(() => {
@@ -330,45 +330,37 @@ ${buildQueryString(selectedFields)}
               <div className="w-full">
                 <h3 className="text-lg font-semibold mb-2">Query Source</h3>
                 <div className="flex items-center mb-4">
-                  <label className="mr-4">
+                  <label className="mr-4 text-gray-400 cursor-not-allowed">
                     <input
                       type="radio"
                       value="builder"
-                      checked={querySource === 'builder'}
-                      onChange={() => setQuerySource('builder')}
-                      className="mr-2"
+                      checked={false}
+                      disabled={true}
+                      className="mr-2 cursor-not-allowed"
                     />
-                    Builder
+                    Builder (Coming Soon)
                   </label>
                   <label>
                     <input
                       type="radio"
                       value="manual"
-                      checked={querySource === 'manual'}
-                      onChange={() => setQuerySource('manual')}
+                      checked={true}
+                      onChange={() => {}}
                       className="mr-2"
                     />
                     Manual
                   </label>
                 </div>
-                {querySource === 'builder' ? (
-                  <GraphQLQueryBuilder
-                    localSchema={localSchema}
-                    selectedFields={selectedFields}
-                    handleSelect={handleSelect}
-                  />
-                ) : (
-                  <GraphQLQueryManual
-                    parsedFields={parsedFields}
-                    handleDataTypeChange={handleDataTypeChange}
-                    editableQuery={editableQuery}
-                    setEditableQuery={setEditableQuery}
-                    handleExecuteQuery={handleExecuteQuery}
-                    handleSaveQuery={handleSaveQuery}
-                    queryName={queryName}
-                    setQueryName={setQueryName}
-                  />
-                )}
+                <GraphQLQueryManual
+                  parsedFields={parsedFields}
+                  handleDataTypeChange={handleDataTypeChange}
+                  editableQuery={editableQuery}
+                  setEditableQuery={setEditableQuery}
+                  handleExecuteQuery={handleExecuteQuery}
+                  handleSaveQuery={handleSaveQuery}
+                  queryName={queryName}
+                  setQueryName={setQueryName}
+                />
               </div>
             </div>
             
