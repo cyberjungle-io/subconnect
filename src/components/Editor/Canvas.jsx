@@ -77,6 +77,8 @@ const Canvas = ({
     width: '100%',
     height: '100%',
     position: 'relative',
+    padding: '20px', // Uniform padding on all sides
+    gap: '20px', // Gap between components
   };
 
 
@@ -104,6 +106,7 @@ const Canvas = ({
           onMoveComponent={onMoveComponent}
           globalComponentLayout={componentLayout}
           globalSettings={globalSettings}
+          isTopLevel={true}
         />
       ))}
     </div>

@@ -19,9 +19,16 @@ const ComponentControls = ({ style, onStyleChange, componentId, dispatch }) => {
   const handleBorderChange = (e) => {
     const { name, checked, value } = e.target;
     if (name === 'showBorder') {
-      onStyleChange({ showBorder: checked });
+      onStyleChange({
+        showBorder: checked,
+        border: checked ? `${style.borderWidth || '1px'} ${style.borderStyle || 'solid'} ${style.borderColor || '#000000'}` : 'none'
+      });
     } else {
-      onStyleChange({ [name]: value });
+      const newValue = name === 'borderWidth' ? `${value}px` : value;
+      onStyleChange({ 
+        [name]: newValue,
+        border: `${name === 'borderWidth' ? newValue : style.borderWidth || '1px'} ${name === 'borderStyle' ? newValue : style.borderStyle || 'solid'} ${name === 'borderColor' ? newValue : style.borderColor || '#000000'}` 
+      });
     }
   };
 
@@ -54,43 +61,39 @@ const ComponentControls = ({ style, onStyleChange, componentId, dispatch }) => {
             </label>
           </div>
 
-          {style.showBorder !== false && (
-            <>
-              <div className="mb-2">
-                <label className="control-label">Border Color</label>
-                <ColorPicker
-                  color={style.borderColor || '#000000'}
-                  onChange={(color) => onStyleChange({ borderColor: color })}
-                />
-              </div>
+          <div className="mb-2">
+            <label className="control-label">Border Color</label>
+            <ColorPicker
+              color={style.borderColor || '#000000'}
+              onChange={(color) => handleBorderChange({ target: { name: 'borderColor', value: color } })}
+            />
+          </div>
 
-              <div className="mb-2">
-                <label className="control-label">Border Style</label>
-                <select
-                  name="borderStyle"
-                  value={style.borderStyle || 'solid'}
-                  onChange={handleBorderChange}
-                  className="control-select"
-                >
-                  <option value="solid">Solid</option>
-                  <option value="dashed">Dashed</option>
-                  <option value="dotted">Dotted</option>
-                </select>
-              </div>
+          <div className="mb-2">
+            <label className="control-label">Border Style</label>
+            <select
+              name="borderStyle"
+              value={style.borderStyle || 'solid'}
+              onChange={handleBorderChange}
+              className="control-select"
+            >
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+            </select>
+          </div>
 
-              <div className="mb-2">
-                <label className="control-label">Border Width (px)</label>
-                <input
-                  type="number"
-                  name="borderWidth"
-                  value={parseInt(style.borderWidth) || 1}
-                  onChange={(e) => onStyleChange({ borderWidth: `${e.target.value}px` })}
-                  className="control-input"
-                  min="0"
-                />
-              </div>
-            </>
-          )}
+          <div className="mb-2">
+            <label className="control-label">Border Width (px)</label>
+            <input
+              type="number"
+              name="borderWidth"
+              value={parseInt(style.borderWidth) || 1}
+              onChange={handleBorderChange}
+              className="control-input"
+              min="0"
+            />
+          </div>
 
           <div className="mb-2">
             <label className="control-label">Border Radius (px)</label>

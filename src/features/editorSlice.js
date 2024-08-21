@@ -91,6 +91,13 @@ const deleteComponentsDeep = (components, idsToDelete) => {
   });
 };
 
+const createComponentWithDepth = (type, props, depth = 0) => {
+  return createComponent(type, {
+    ...props,
+    depth,
+  });
+};
+
 export const editorSlice = createSlice({
   name: "editor",
   initialState,
@@ -98,6 +105,14 @@ export const editorSlice = createSlice({
     addComponent: (state, action) => {
       const { type, parentId, ...otherProps } = action.payload;
       let defaultStyle = {};
+      let depth = 0;
+
+      if (parentId) {
+        const parent = findComponentById(state.components, parentId);
+        if (parent) {
+          depth = (parent.depth || 0) + 1;
+        }
+      }
 
       if (!parentId) {
         if (type === "FLEX_CONTAINER") {
@@ -125,14 +140,15 @@ export const editorSlice = createSlice({
         }
       }
 
-      const newComponent = createComponent(type, {
+      const newComponent = createComponentWithDepth(type, {
         style: {
           ...defaultStyle,
           ...otherProps.style,
         },
         isDraggingDisabled: false,
+        name: `${type} ${uuidv4().substr(0, 4)}`, // Add a default name
         ...otherProps,
-      });
+      }, depth);
 
       if (parentId) {
         const parent = findComponentById(state.components, parentId);
@@ -161,6 +177,14 @@ export const editorSlice = createSlice({
       }
 
       console.log(`Updated component ${id}:`, updatedComponent);
+    },
+
+    renameComponent: (state, action) => {
+      const { id, newName } = action.payload;
+      const updatedComponents = updateComponentById(state.components, id, {
+        name: newName,
+      });
+      state.components = updatedComponents;
     },
 
     toggleComponentDragging: (state, action) => {
@@ -410,6 +434,7 @@ export const {
   setCurrentPage,
   undoWhiteboard,
   redoWhiteboard,
+  renameComponent,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

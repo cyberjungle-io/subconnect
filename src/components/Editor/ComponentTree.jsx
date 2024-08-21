@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { componentConfig } from '../Components/componentConfig';
+import { useDispatch } from 'react-redux';
+import { renameComponent } from '../../features/editorSlice';
 
 // Custom monotone SVG icons
 const ChevronRight = () => (
@@ -16,7 +18,8 @@ const ChevronDown = () => (
 
 
 
-const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId, onRenameComponent }) => {
+const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) => {
+  const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(component.name || component.type);
@@ -34,7 +37,7 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId, on
 
   const handleRename = () => {
     if (editedName.trim() !== '' && editedName !== (component.name || component.type)) {
-      onRenameComponent(component.id, editedName.trim());
+      dispatch(renameComponent({ id: component.id, newName: editedName.trim() }));
     }
     setIsEditing(false);
   };
@@ -101,7 +104,6 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId, on
               depth={depth + 1} 
               onSelectComponent={onSelectComponent}
               selectedComponentId={selectedComponentId}
-              onRenameComponent={onRenameComponent}
             />
           ))}
         </div>
@@ -110,7 +112,7 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId, on
   );
 };
 
-const ComponentTree = ({ components, onSelectComponent, selectedComponentId, onRenameComponent }) => {
+const ComponentTree = ({ components, onSelectComponent, selectedComponentId }) => {
   return (
     <div className="component-tree bg-white rounded-lg shadow p-3 max-h-64 overflow-y-auto">
       <h3 className="text-sm font-semibold mb-2 text-gray-700">Component Tree</h3>
@@ -122,7 +124,6 @@ const ComponentTree = ({ components, onSelectComponent, selectedComponentId, onR
             depth={0} 
             onSelectComponent={onSelectComponent}
             selectedComponentId={selectedComponentId}
-            onRenameComponent={onRenameComponent}
           />
         ))}
       </div>

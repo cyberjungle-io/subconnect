@@ -222,7 +222,7 @@ const MainEditor = () => {
                 globalSettings={globalSettings}
               />
             ) : (
-              <ViewerMode components={components} />
+              <ViewerMode components={components} globalSettings={globalSettings} />
             )}
           </div>
           {mode === 'edit' && currentUser && (
@@ -244,6 +244,7 @@ const MainEditor = () => {
               onSelectPage={handleSelectPage}
               onDeletePage={handleDeletePage}
               onLoadPageContent={handleLoadPageContent}
+              onUpdateGlobalSettings={(updates) => dispatch(updateGlobalSettings(updates))}
             />
           )}
         </div>

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import { useDrop, useDrag } from "react-dnd";
 import { useSelector, useDispatch } from 'react-redux';
-import { deleteComponents } from '../../../features/editorSlice'; // Update this import
+import { deleteComponents, renameComponent } from '../../../features/editorSlice'; // Update this import
 
 import ContainerRenderer from "./ContainerRenderer";
 import HeadingRenderer from "./HeadingRenderer";
@@ -11,12 +11,14 @@ import ButtonRenderer from "./ButtonRenderer";
 import ChartRenderer from "./ChartRenderer";
 import WhiteboardRenderer from "./WhiteboardRenderer";
 import VideoRenderer from "./VideoRenderer";
+import { getHighlightColor } from '../../../utils/highlightColors'; // We'll create this utility function
 
 const defaultGlobalSettings = {
   generalComponentStyle: {
     fontSize: '16px',
     color: '#000000',
     backgroundColor: '#ffffff',
+    borderRadius: '4px', // Add default border radius
   }
 };
 
@@ -56,13 +58,14 @@ const ComponentRenderer = React.memo(({
   isSelected,
   onAddChild,
   onMoveComponent,
-  depth = 0,
+  depth = 0, // Add depth prop with default value 0
   selectedIds = [],
   isFlexChild = false,
   parent = null,
   globalComponentLayout,
   isViewMode = false,
   globalSettings = defaultGlobalSettings,
+  isTopLevel = false, // Add this prop
 }) => {
   const dispatch = useDispatch();
   const componentRef = useRef(null);
@@ -94,6 +97,7 @@ const ComponentRenderer = React.memo(({
   }, [dispatch, component.id, selectedIds, isViewMode]);
 
   const isThisComponentSelected = selectedIds?.includes(component.id) || false;
+  const highlightColor = getHighlightColor(depth);
 
   const getContainerStyles = () => {
     if (component.type !== "FLEX_CONTAINER") return {};
@@ -176,14 +180,20 @@ const ComponentRenderer = React.memo(({
   const getComponentStyle = () => {
     const { style, type, props } = component;
     
-    // Start with global styles
+    const generalComponentStyle = globalSettings?.generalComponentStyle || defaultGlobalSettings.generalComponentStyle;
+    
     const componentStyle = {
-      ...globalSettings.generalComponentStyle,
+      ...generalComponentStyle,
       ...style,
       position: 'relative',
       overflow: "hidden",
       boxSizing: 'border-box',
     };
+
+    // Apply border radius if not explicitly set in component style
+    if (!style.borderRadius) {
+      componentStyle.borderRadius = generalComponentStyle.borderRadius || '4px';
+    }
 
     // Override with component-specific styles
     if (style.showBorder === false) {
@@ -230,6 +240,14 @@ const ComponentRenderer = React.memo(({
         componentStyle.flexShrink = style.flexShrink || 1;
         componentStyle.flexBasis = style.flexBasis || 'auto';
       }
+
+      // Apply ComponentControls styles
+      componentStyle.backgroundColor = style.backgroundColor || 'transparent';
+      componentStyle.borderColor = style.borderColor || '#000';
+      componentStyle.borderStyle = style.borderStyle || 'solid';
+      componentStyle.borderWidth = style.borderWidth || '1px';
+      componentStyle.borderRadius = style.borderRadius || '0px';
+      componentStyle.boxShadow = style.boxShadow || 'none';
     } else {
       // For non-FLEX_CONTAINER components
       if (isFlexChild) {
@@ -263,7 +281,10 @@ const ComponentRenderer = React.memo(({
           dropRef(node);
         }
       }}
-      style={getComponentStyle()}
+      style={{
+        ...getComponentStyle(),
+        ...(isThisComponentSelected && !isViewMode ? { outline: `2px solid ${highlightColor}` } : {}),
+      }}
       onClick={isViewMode ? undefined : handleClick}
       className={`
         ${isViewMode ? "" : isThisComponentSelected ? "shadow-lg" : ""}
@@ -271,12 +292,15 @@ const ComponentRenderer = React.memo(({
         ${isViewMode ? "" : component.isDraggingDisabled ? "cursor-default" : "cursor-move"}
       `}
       data-id={component.id}
-      tabIndex={0} // Make the div focusable
+      tabIndex={0}
     >
       {renderContent()}
       {!isViewMode && isThisComponentSelected && (
-        <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs px-1 z-10">
-          {component.type}
+        <div 
+          className="absolute top-0 right-0 text-white text-xs px-1 z-10"
+          style={{ backgroundColor: highlightColor }}
+        >
+          {component.name || component.type}
         </div>
       )}
     </div>

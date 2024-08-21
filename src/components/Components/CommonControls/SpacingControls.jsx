@@ -3,11 +3,6 @@ import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 
 const SpacingControls = ({ style, onStyleChange, availableControls = ['padding', 'margin', 'gap'] }) => {
     const [isExpanded, setIsExpanded] = useState(true); 
-    const [expandedSections, setExpandedSections] = useState({
-    padding: false,
-    margin: false,
-    gap: false
-  });
 
   const units = ['px', '%', 'em', 'rem'];
 
@@ -53,10 +48,6 @@ const SpacingControls = ({ style, onStyleChange, availableControls = ['padding',
     onStyleChange({ target: { name, value: newValue } });
   };
 
-  const toggleSection = (section) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
-  };
-
   const renderPresets = (type) => (
     <div className="flex justify-between mt-2 mb-4">
       {presets[type].map((preset) => (
@@ -71,18 +62,18 @@ const SpacingControls = ({ style, onStyleChange, availableControls = ['padding',
     </div>
   );
 
-  const renderInput = (label, name, value, onChange) => {
+  const renderInput = (name, value, onChange) => {
     const { number, unit } = parseValue(value);
   
     return (
-      <div className="flex items-center py-2">
-        {label && <span className="text-sm text-gray-600 w-16">{label}</span>}
+      <div className="flex items-center justify-center w-full">
         <div className="properties-input-container flex-grow">
           <input
             type="number"
             value={number}
             onChange={(e) => onChange(e.target.value, unit)}
             className="properties-input w-full text-right"
+            placeholder={name.charAt(0).toUpperCase() + name.slice(1)}
           />
           <div className="properties-select-wrapper">
             <select
@@ -104,32 +95,34 @@ const SpacingControls = ({ style, onStyleChange, availableControls = ['padding',
   };
 
   const renderSection = (title, type) => {
-    const isExpanded = expandedSections[type];
-    const value = type === 'gap' ? style.gap : style[`${type}Top`];
-    
     return (
-      <div className="control-section">
-        <div className="control-section-header" onClick={() => toggleSection(type)}>
-          {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
-          <span className="control-section-title">{title}</span>
-        </div>
-        {isExpanded && (
-          <div className="control-section-content">
-            {renderPresets(type)}
-            {type !== 'gap' && (
-              <div className="space-y-2">
-                {['Top', 'Right', 'Bottom', 'Left'].map(direction => (
-                  renderInput(
-                    direction,
+      <div className="mb-4">
+        <span className="text-sm font-bold text-gray-700 mb-2 block">{title}</span>
+        <div className="control-section-content">
+          {renderPresets(type)}
+          {type !== 'gap' ? (
+            <div className="space-y-2">
+              {['Top', 'Right', 'Bottom', 'Left'].map(direction => (
+                <div key={direction} className="mb-4">
+                  <span className="text-xs text-gray-600 mb-1 block">{direction}</span>
+                  {renderInput(
                     `${type}${direction}`,
                     style[`${type}${direction}`],
                     (newValue, newUnit) => handleIndividualInputChange(`${type}${direction}`, newValue, newUnit)
-                  )
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="mb-4">
+              {renderInput(
+                'gap',
+                style.gap,
+                (newValue, newUnit) => handleMainInputChange('gap', newValue, newUnit)
+              )}
+            </div>
+          )}
+        </div>
       </div>
     );
   };

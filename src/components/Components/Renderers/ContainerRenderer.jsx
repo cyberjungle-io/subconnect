@@ -1,8 +1,19 @@
 import React from "react";
 import ComponentRenderer from "./ComponentRenderer";
 
-const ContainerRenderer = ({ component, ...props }) => {
+const defaultGlobalSettings = {
+  generalComponentStyle: {
+    fontSize: '16px',
+    color: '#000000',
+    backgroundColor: '#ffffff',
+    borderRadius: '4px',
+  }
+};
+
+const ContainerRenderer = ({ component, depth, isTopLevel, globalSettings = defaultGlobalSettings, ...props }) => {
   const getContainerStyles = () => {
+    const generalComponentStyle = globalSettings?.generalComponentStyle || defaultGlobalSettings.generalComponentStyle;
+
     return {
       display: "flex",
       flexDirection: component.type === "ROW" ? "row" : "column",
@@ -16,7 +27,7 @@ const ContainerRenderer = ({ component, ...props }) => {
       overflow: "hidden",
       boxSizing: 'border-box',
       padding: component.style.padding || "0px",
-      margin: component.style.margin || "0px",
+      borderRadius: component.style.borderRadius || generalComponentStyle.borderRadius || '4px',
     };
   };
 
@@ -65,6 +76,7 @@ const ContainerRenderer = ({ component, ...props }) => {
           <ComponentRenderer
             key={child.id}
             component={{ ...child, style: getChildStyles(child) }}
+            depth={depth + 1} // Increment depth for children
             {...props}
           />
         ))}
@@ -76,6 +88,7 @@ const ContainerRenderer = ({ component, ...props }) => {
       <ComponentRenderer
         key={child.id}
         component={{ ...child, style: getChildStyles(child) }}
+        depth={depth + 1} // Increment depth for children
         {...props}
       />
     ));

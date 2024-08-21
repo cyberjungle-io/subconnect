@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import ComponentControls from './ComponentControls';
 
 const FlexContainerControls = ({ component, onUpdate }) => {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -139,6 +140,13 @@ const FlexContainerControls = ({ component, onUpdate }) => {
               </select>
             </div>
           </div>
+
+          {/* Add ComponentControls */}
+          <ComponentControls
+            style={component.style}
+            onStyleChange={(updates) => onUpdate({ style: { ...component.style, ...updates } })}
+            componentId={component.id}
+          />
         </div>
       )}
     </div>

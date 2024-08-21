@@ -21,9 +21,19 @@ import { showToast, hideToast } from '../../features/toastSlice';
 import Toast from '../common/Toast';
 import ImageControls from "../Components/CommonControls/ImageControls";
 import ReChartControls from '../Components/CommonControls/ReChartControls';
+import ComponentControls from "../Components/CommonControls/ComponentControls";
 
 // Import the CSS file
 import '../../styleSheets/propertiesPanelStyles.css';
+
+const defaultGlobalSettings = {
+  generalComponentStyle: {
+    fontSize: '16px',
+    color: '#000000',
+    backgroundColor: '#ffffff',
+    borderRadius: '4px',
+  }
+};
 
 const PropertiesPanel = ({
   selectedComponent,
@@ -39,9 +49,11 @@ const PropertiesPanel = ({
   currentProject,
   onSelectPage,
   onDeletePage,
+  globalSettings = defaultGlobalSettings,
+  onUpdateGlobalSettings,
 }) => {
   const dispatch = useDispatch();
-  const { mode, globalSettings, currentPage } = useSelector((state) => state.editor);
+  const { mode, currentPage } = useSelector((state) => state.editor);
   const [activePanel, setActivePanel] = useState("properties");
   const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
@@ -154,39 +166,37 @@ const PropertiesPanel = ({
     onSelectComponent(null);  // Clear the selected component
   };
 
-  const renderGlobalSettings = () => (
-    <PropertyTabs tabs={["Layout", "Canvas"]}>
-      {renderLayoutTab(globalSettings.style, handleGlobalStyleChange, true)}
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Background Color
-          </label>
-          <input
-            type="color"
-            name="backgroundColor"
-            value={globalSettings.backgroundColor}
-            onChange={handleGlobalSettingChange}
-            className="block w-full"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Component Layout
-          </label>
-          <select
-            name="componentLayout"
-            value={globalSettings.componentLayout}
-            onChange={handleGlobalSettingChange}
-            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="vertical">Vertical (Side by Side)</option>
-            <option value="horizontal">Horizontal (One Below Another)</option>
-          </select>
+  const renderGlobalSettings = () => {
+    const generalComponentStyle = globalSettings?.generalComponentStyle || defaultGlobalSettings.generalComponentStyle;
+
+    return (
+      <div className="global-settings">
+        <h3>Global Settings</h3>
+        <div className="control-container">
+          <label htmlFor="globalBorderRadius">Default Border Radius</label>
+          <div className="properties-input-container">
+            <input
+              id="globalBorderRadius"
+              type="number"
+              className="properties-input"
+              value={(generalComponentStyle.borderRadius || '4px').replace('px', '')}
+              onChange={(e) => onUpdateGlobalSettings({
+                generalComponentStyle: {
+                  ...generalComponentStyle,
+                  borderRadius: `${e.target.value}px`
+                }
+              })}
+            />
+            <div className="properties-select-wrapper">
+              <select className="properties-select" value="px" readOnly>
+                <option value="px">px</option>
+              </select>
+            </div>
+          </div>
         </div>
       </div>
-    </PropertyTabs>
-  );
+    );
+  };
 
   const renderLayoutTab = (style, onStyleChange, isGlobal = false) => (
     <div className="space-y-6">
@@ -227,10 +237,18 @@ const PropertiesPanel = ({
     switch (selectedComponent.type) {
       case "FLEX_CONTAINER":
         return (
-          <FlexContainerControls
-            component={selectedComponent}
-            onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
-          />
+          <>
+            <FlexContainerControls
+              component={selectedComponent}
+              onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+            />
+            <ComponentControls
+              style={selectedComponent.style}
+              onStyleChange={handleStyleChange}
+              componentId={selectedComponent.id}
+              dispatch={dispatch}
+            />
+          </>
         );
       case "HEADING":
         return (
