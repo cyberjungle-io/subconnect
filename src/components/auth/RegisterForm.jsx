@@ -23,6 +23,7 @@ const RegisterForm = ({ onClose }) => {
     setPasswordError('');
     try {
       await dispatch(registerUser({ username, email, password })).unwrap();
+      onClose(); // Close the modal on successful registration
       navigate('/editor');
     } catch (err) {
       // Error is handled by the Redux slice

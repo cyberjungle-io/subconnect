@@ -17,6 +17,7 @@ const LoginForm = ({ onClose }) => {
     e.preventDefault();
     try {
       await dispatch(loginUser(credentials)).unwrap();
+      onClose(); // Close the modal on successful login
       navigate('/editor');
     } catch (err) {
       console.error('Failed to log in:', err);
