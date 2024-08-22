@@ -1,6 +1,6 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
-import storage from 'redux-persist/lib/storage/session';
+import storage from 'redux-persist/lib/storage'; // Changed to use local storage
 import editorReducer from '../features/editorSlice';
 import { w3sReducer } from '../w3s';
 import userReducer from '../features/userSlice';
@@ -16,7 +16,7 @@ const rootReducer = combineReducers({
 });
 
 const persistConfig = {
-  key: 'root',
+  key: 'subconnect', // Changed from 'root' to 'subconnect'
   storage,
   whitelist: ['editor', 'w3s', 'user'],
 };

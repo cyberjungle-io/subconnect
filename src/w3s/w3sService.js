@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { store } from '../store/store'; // Import the Redux store
 
 const API_URL = process.env.REACT_APP_W3S_API_URL || 'https://w3s.cyberjungle.io/api';
 
@@ -15,7 +16,8 @@ const api = axios.create({
 // Add a request interceptor to include the auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('w3s_token');
+    const state = store.getState();
+    const token = state.user.currentUser?.token;
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }

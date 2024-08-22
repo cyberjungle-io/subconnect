@@ -24,14 +24,8 @@ export const loginUser = createAsyncThunk(
       const response = await w3sService.login(credentials);
       // Save token to local storage
       localStorage.setItem('w3s_token', response.token);
-      // Fetch projects after successful login
-      const projects = await w3sService.getProjects();
-      dispatch(fetchProjects.fulfilled(projects));
-      // Set the first project as the current project if available
-      if (projects.length > 0) {
-        dispatch(setCurrentProject(projects[0]));
-      }
-      return response.user;
+      // Return user data with token
+      return { ...response.user, token: response.token };
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to login');
     }
