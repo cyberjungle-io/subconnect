@@ -18,6 +18,7 @@ const PrivateRoute = ({ children }) => {
 
 function AppContent() {
   const dispatch = useDispatch();
+  const { currentUser } = useSelector((state) => state.user);
 
   useEffect(() => {
     dispatch(checkAuthStatus());
@@ -26,9 +27,9 @@ function AppContent() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/register" element={<RegisterForm />} />
+        <Route path="/" element={currentUser ? <Navigate to="/editor" /> : <LandingPage />} />
+        <Route path="/login" element={currentUser ? <Navigate to="/editor" /> : <LoginForm />} />
+        <Route path="/register" element={currentUser ? <Navigate to="/editor" /> : <RegisterForm />} />
         <Route
           path="/editor"
           element={
