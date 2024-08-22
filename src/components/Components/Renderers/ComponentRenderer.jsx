@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useDrop, useDrag } from "react-dnd";
 import { useSelector, useDispatch } from 'react-redux';
 import { deleteComponents, renameComponent } from '../../../features/editorSlice'; // Update this import
@@ -12,6 +12,8 @@ import ChartRenderer from "./ChartRenderer";
 import WhiteboardRenderer from "./WhiteboardRenderer";
 import VideoRenderer from "./VideoRenderer";
 import { getHighlightColor } from '../../../utils/highlightColors'; // We'll create this utility function
+import { FaPencilAlt, FaTimes } from 'react-icons/fa'; // Add FaTimes import
+import FloatingToolbar from '../Tools/FloatingToolbar';
 
 const defaultGlobalSettings = {
   generalComponentStyle: {
@@ -66,10 +68,12 @@ const ComponentRenderer = React.memo(({
   isViewMode = false,
   globalSettings = defaultGlobalSettings,
   isTopLevel = false, // Add this prop
+  onStyleChange, // Add this prop
 }) => {
   const dispatch = useDispatch();
   const componentRef = useRef(null);
   const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild, isViewMode);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = useCallback((event) => {
     event.stopPropagation();
@@ -131,6 +135,7 @@ const ComponentRenderer = React.memo(({
         parent={component}
         isViewMode={isViewMode}
         globalSettings={globalSettings}
+        onStyleChange={onStyleChange} // Pass onStyleChange prop
       />
     ));
   };
@@ -154,6 +159,7 @@ const ComponentRenderer = React.memo(({
           ...globalSettings.generalComponentStyle,
         },
       },
+      onStyleChange, // Add this prop
     };
   
     switch (component.type) {
@@ -270,40 +276,87 @@ const ComponentRenderer = React.memo(({
     return componentStyle;
   };
 
+  const [showToolbar, setShowToolbar] = useState(false);
+  const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
+
+  const handleEditClick = (e) => {
+    e.stopPropagation();
+    const rect = componentRef.current.getBoundingClientRect();
+    setToolbarPosition({ 
+      x: rect.right - 300, // Align with the right edge of the component
+      y: rect.top - 60 // Position 60px above the component
+    });
+    setShowToolbar(true);
+  };
+
+  const handleCloseToolbar = () => {
+    setShowToolbar(false);
+  };
+
+  // Effect to hide toolbar when component is deselected
+  useEffect(() => {
+    if (!isThisComponentSelected) {
+      setShowToolbar(false);
+    }
+  }, [isThisComponentSelected]);
+
   // Use the same rendering logic for both view and edit modes
   return (
-    <div
-      ref={(node) => {
-        componentRef.current = node;
-        if (!isViewMode && !component.isDraggingDisabled) {
-          dragRef(dropRef(node));
-        } else if (!isViewMode) {
-          dropRef(node);
-        }
-      }}
-      style={{
-        ...getComponentStyle(),
-        ...(isThisComponentSelected && !isViewMode ? { outline: `2px solid ${highlightColor}` } : {}),
-      }}
-      onClick={isViewMode ? undefined : handleClick}
-      className={`
-        ${isViewMode ? "" : isThisComponentSelected ? "shadow-lg" : ""}
-        ${isViewMode ? "" : isOver ? "bg-blue-100" : ""}
-        ${isViewMode ? "" : component.isDraggingDisabled ? "cursor-default" : "cursor-move"}
-      `}
-      data-id={component.id}
-      tabIndex={0}
-    >
-      {renderContent()}
-      {!isViewMode && isThisComponentSelected && (
-        <div 
-          className="absolute top-0 right-0 text-white text-xs px-1 z-10"
-          style={{ backgroundColor: highlightColor }}
-        >
-          {component.name || component.type}
-        </div>
+    <>
+      <div
+        ref={(node) => {
+          componentRef.current = node;
+          if (!isViewMode && !component.isDraggingDisabled) {
+            dragRef(dropRef(node));
+          } else if (!isViewMode) {
+            dropRef(node);
+          }
+        }}
+        style={{
+          ...getComponentStyle(),
+          ...(isThisComponentSelected && !isViewMode ? { outline: `2px solid ${highlightColor}` } : {}),
+        }}
+        onClick={isViewMode ? undefined : handleClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={`
+          ${isViewMode ? "" : isThisComponentSelected ? "shadow-lg" : ""}
+          ${isViewMode ? "" : isOver ? "bg-blue-100" : ""}
+          ${isViewMode ? "" : component.isDraggingDisabled ? "cursor-default" : "cursor-move"}
+        `}
+        data-id={component.id}
+        tabIndex={0}
+      >
+        {renderContent()}
+        {!isViewMode && isThisComponentSelected && (
+          <div 
+            className="absolute top-0 right-0 text-white text-xs px-1 z-10"
+            style={{ backgroundColor: highlightColor }}
+          >
+            {component.name || component.type}
+          </div>
+        )}
+        {!isViewMode && isThisComponentSelected && isHovered && (
+          <button
+            className="absolute top-0 right-0 bg-white rounded-full p-1 shadow-md z-20 hover:bg-gray-100 transition-colors duration-200"
+            style={{ marginTop: '20px', marginRight: '5px' }}
+            onClick={handleEditClick}
+          >
+            <FaPencilAlt className="text-gray-600" />
+          </button>
+        )}
+      </div>
+      {showToolbar && (
+        <FloatingToolbar
+          componentId={component.id}
+          componentType={component.type}
+          initialPosition={toolbarPosition}
+          onClose={handleCloseToolbar}
+          style={component.style}
+          onStyleChange={onStyleChange} // Pass onStyleChange prop
+        />
       )}
-    </div>
+    </>
   );
 });
 
