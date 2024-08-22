@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../../features/userSlice';
+import { fetchProjects } from '../../w3s/w3sSlice'; // Added this import
 import { useNavigate } from 'react-router-dom';
 
 const LoginForm = ({ onClose }) => {
@@ -17,6 +18,8 @@ const LoginForm = ({ onClose }) => {
     e.preventDefault();
     try {
       await dispatch(loginUser(credentials)).unwrap();
+      // Fetch projects after successful login
+      await dispatch(fetchProjects());
       onClose(); // Close the modal on successful login
       navigate('/editor'); // Redirect to the editor page
     } catch (err) {
