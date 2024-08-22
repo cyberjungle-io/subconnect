@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../../features/userSlice';
-import { fetchProjects } from '../../w3s/w3sSlice'; // Added this import
+import { fetchProjects, setCurrentProject } from '../../w3s/w3sSlice'; // Added setCurrentProject import
 import { useNavigate } from 'react-router-dom';
 
 const LoginForm = ({ onClose }) => {
@@ -19,7 +19,14 @@ const LoginForm = ({ onClose }) => {
     try {
       await dispatch(loginUser(credentials)).unwrap();
       // Fetch projects after successful login
-      await dispatch(fetchProjects());
+      const resultAction = await dispatch(fetchProjects());
+      if (fetchProjects.fulfilled.match(resultAction)) {
+        const projects = resultAction.payload;
+        if (projects.length > 0) {
+          // Set the first project as the current project
+          dispatch(setCurrentProject(projects[0]));
+        }
+      }
       onClose(); // Close the modal on successful login
       navigate('/editor'); // Redirect to the editor page
     } catch (err) {
