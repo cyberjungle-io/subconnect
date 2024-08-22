@@ -353,7 +353,13 @@ const ComponentRenderer = React.memo(({
           initialPosition={toolbarPosition}
           onClose={handleCloseToolbar}
           style={component.style}
-          onStyleChange={onStyleChange} // Pass onStyleChange prop
+          props={component.props}
+          content={component.content}
+          onStyleChange={(updates) => {
+            if (updates.style) onUpdate(component.id, { style: updates.style });
+            if (updates.props) onUpdate(component.id, { props: updates.props });
+            if (updates.content !== undefined) onUpdate(component.id, { content: updates.content });
+          }}
         />
       )}
     </>

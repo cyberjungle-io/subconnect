@@ -98,7 +98,7 @@ const MainEditor = () => {
       }
 
       if (Object.keys(otherProps).length > 0) {
-        dispatch(updateHeadingProperties({ id, properties: otherProps }));
+        dispatch(updateComponent({ id, updates: { props: otherProps } }));
       }
     }
 
@@ -220,6 +220,7 @@ const MainEditor = () => {
                 onAddComponent={handleAddComponent}
                 onMoveComponent={handleMoveComponent}
                 globalSettings={globalSettings}
+                onStyleChange={handleUpdateComponent} // Added this line
               />
             ) : (
               <ViewerMode components={components} globalSettings={globalSettings} />
