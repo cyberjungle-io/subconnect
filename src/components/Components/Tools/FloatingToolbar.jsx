@@ -71,7 +71,7 @@ const iconMap = {
   // Add more component types and their corresponding icons as needed
 };
 
-const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose, style, props, content, onStyleChange }) => {
+const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose, style, props, content, onStyleChange, onToolbarInteraction }) => {
   const [position, setPosition] = useState(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -189,6 +189,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         flexDirection: 'column',
         overflow: 'hidden',
       }}
+      onClick={onToolbarInteraction}
     >
       <div
         style={{

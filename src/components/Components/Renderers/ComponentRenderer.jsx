@@ -69,6 +69,7 @@ const ComponentRenderer = React.memo(({
   globalSettings = defaultGlobalSettings,
   isTopLevel = false, // Add this prop
   onStyleChange, // Add this prop
+  onToolbarInteraction, // Add this prop
 }) => {
   const dispatch = useDispatch();
   const componentRef = useRef(null);
@@ -136,6 +137,7 @@ const ComponentRenderer = React.memo(({
         isViewMode={isViewMode}
         globalSettings={globalSettings}
         onStyleChange={onStyleChange} // Pass onStyleChange prop
+        onToolbarInteraction={onToolbarInteraction} // Pass onToolbarInteraction prop
       />
     ));
   };
@@ -360,6 +362,7 @@ const ComponentRenderer = React.memo(({
             if (updates.props) onUpdate(component.id, { props: updates.props });
             if (updates.content !== undefined) onUpdate(component.id, { content: updates.content });
           }}
+          onToolbarInteraction={onToolbarInteraction}
         />
       )}
     </>

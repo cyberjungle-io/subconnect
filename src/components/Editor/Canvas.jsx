@@ -63,6 +63,10 @@ const Canvas = ({
     [onClearSelection]
   );
 
+  const handleToolbarInteraction = useCallback((event) => {
+    event.stopPropagation();
+  }, []);
+
   const canvasStyle = {
     backgroundColor,
     padding: `${style.paddingTop || '0px'} ${style.paddingRight || '0px'} ${style.paddingBottom || '0px'} ${style.paddingLeft || '0px'}`,
@@ -107,6 +111,7 @@ const Canvas = ({
           globalComponentLayout={componentLayout}
           globalSettings={globalSettings}
           isTopLevel={true}
+          onToolbarInteraction={handleToolbarInteraction}
         />
       ))}
     </div>
