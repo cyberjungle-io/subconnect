@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { FaEye, FaChevronLeft, FaSave, FaChevronDown, FaChevronRight } from "react-icons/fa";
+import { FaEye, FaChevronLeft, FaChevronDown, FaChevronRight } from "react-icons/fa";
 import PropertyTabs from "./PropertyTabs";
 import ComponentPalette from "../Components/ComponentPalette";
 import DimensionControls from "../Components/CommonControls/DimensionControls";
@@ -125,37 +125,6 @@ const PropertiesPanel = ({
 
   const handleEnterViewMode = () => {
     dispatch(setEditorMode('view'));
-  };
-
-  const handleSaveProject = () => {
-    console.log("Saving Project");
-    
-    if (currentProject && currentProject._id) {
-      console.log("Saving project:", currentProject._id);
-      
-      const updatedProject = {
-        ...currentProject,
-        pages: currentProject.pages.map(page => {
-          if (page.name === currentPage.name) {
-            return {
-              ...page,
-              content: {
-                components: components,
-                globalSettings: globalSettings,
-              },
-            };
-          }
-          return page;
-        }),
-      };
-      
-      console.log("updatedProject:", updatedProject);
-      dispatch(updateProject(updatedProject));
-      dispatch(showToast({ message: 'Project saved successfully!', type: 'success' }));
-    } else {
-      console.error('No current project selected');
-      dispatch(showToast({ message: 'Error: No project selected', type: 'error' }));
-    }
   };
 
   const handleShowComponentPalette = () => {
@@ -345,13 +314,6 @@ const PropertiesPanel = ({
           </h2>
         </div>
         <div className="properties-panel-buttons-container ">
-          <button
-            onClick={handleSaveProject}
-            className="panel-button"
-            title="Save Project"
-          >
-            <FaSave />
-          </button>
           <button
             onClick={handleEnterViewMode}
             className="panel-button"

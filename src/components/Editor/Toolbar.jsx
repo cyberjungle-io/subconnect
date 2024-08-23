@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronRight, FaChevronUp } from 'react-icons/fa';
+import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronRight, FaChevronUp, FaSave } from 'react-icons/fa';
 import Modal from '../common/Modal';
 import RegisterForm from '../auth/RegisterForm';
 import LoginForm from '../auth/LoginForm';
@@ -9,7 +9,7 @@ import { setEditorMode } from '../../features/editorSlice';
 import HamburgerMenu from '../common/HamburgerMenu';
 import PageList from '../Components/Projects/PageList';
 
-const Toolbar = ({ onSelectPage, onDeletePage }) => {
+const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject }) => {
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
@@ -41,41 +41,50 @@ const Toolbar = ({ onSelectPage, onDeletePage }) => {
           <span className="text-sm">Welcome, {currentUser.username}</span>
         )}
         {mode === 'edit' && currentUser && currentProject && (
-          <div className="relative">
-            <button
-              onClick={toggleProjectInfo}
-              className="flex items-center space-x-2 bg-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-600 transition-colors"
-            >
-              <span>Project Info</span>
-              {expandedSections.currentProject ? (
-                <FaChevronUp className="transform transition-transform" />
-              ) : (
-                <FaChevronDown className="transform transition-transform" />
-              )}
-            </button>
-            {expandedSections.currentProject && (
-              <div className="absolute top-full left-0 mt-1 w-64 bg-gray-800 rounded shadow-lg z-10">
-                <div className="current-project-container">
-                  <div className="current-project-header p-3 border-b border-gray-700">
-                    <div className="current-project-info">
-                      <div className="current-project-name text-sm font-semibold text-white">{currentProject.name}</div>
-                      {currentPage && (
-                        <div className="current-page-name text-xs text-gray-400">Page: {currentPage.name}</div>
-                      )}
+          <>
+            <div className="relative">
+              <button
+                onClick={toggleProjectInfo}
+                className="flex items-center space-x-2 bg-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-600 transition-colors"
+              >
+                <span>Project Info</span>
+                {expandedSections.currentProject ? (
+                  <FaChevronUp className="transform transition-transform" />
+                ) : (
+                  <FaChevronDown className="transform transition-transform" />
+                )}
+              </button>
+              {expandedSections.currentProject && (
+                <div className="absolute top-full left-0 mt-1 w-64 bg-gray-800 rounded shadow-lg z-10">
+                  <div className="current-project-container">
+                    <div className="current-project-header p-3 border-b border-gray-700">
+                      <div className="current-project-info">
+                        <div className="current-project-name text-sm font-semibold text-white">{currentProject.name}</div>
+                        {currentPage && (
+                          <div className="current-page-name text-xs text-gray-400">Page: {currentPage.name}</div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="page-list-container max-h-48 overflow-y-auto">
+                      <PageList
+                        projectId={currentProject._id}
+                        selectedPageId={currentPage?._id}
+                        onSelectPage={onSelectPage}
+                        onDeletePage={onDeletePage}
+                      />
                     </div>
                   </div>
-                  <div className="page-list-container max-h-48 overflow-y-auto">
-                    <PageList
-                      projectId={currentProject._id}
-                      selectedPageId={currentPage?._id}
-                      onSelectPage={onSelectPage}
-                      onDeletePage={onDeletePage}
-                    />
-                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+            <button
+              onClick={onSaveProject}
+              className="flex items-center space-x-2 bg-green-500 px-3 py-1 rounded text-sm hover:bg-green-600 transition-colors"
+            >
+              <FaSave />
+              <span>Save Project</span>
+            </button>
+          </>
         )}
       </div>
 

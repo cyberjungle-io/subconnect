@@ -34,6 +34,8 @@ import FloatingRightMenu from './FloatingRightMenu';
 import ComponentTree from './ComponentTree';
 import ComponentPalette from '../Components/ComponentPalette';
 import FloatingGlobalSettings from './FloatingGlobalSettings';
+import { updateProject } from '../../w3s/w3sSlice';
+import { showToast } from '../../features/toastSlice';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
@@ -271,10 +273,45 @@ const MainEditor = () => {
     dispatch(updateGlobalSettings(updates));
   };
 
+  const handleSaveProject = () => {
+    console.log("Saving Project");
+    
+    if (currentProject && currentProject._id) {
+      console.log("Saving project:", currentProject._id);
+      
+      const updatedProject = {
+        ...currentProject,
+        pages: currentProject.pages.map(page => {
+          if (page.name === currentPage.name) {
+            return {
+              ...page,
+              content: {
+                components: components,
+                globalSettings: globalSettings,
+              },
+            };
+          }
+          return page;
+        }),
+      };
+      
+      console.log("updatedProject:", updatedProject);
+      dispatch(updateProject(updatedProject));
+      dispatch(showToast({ message: 'Project saved successfully!', type: 'success' }));
+    } else {
+      console.error('No current project selected');
+      dispatch(showToast({ message: 'Error: No project selected', type: 'error' }));
+    }
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex flex-col h-screen relative">
-        <Toolbar onSelectPage={handleSelectPage} onDeletePage={handleDeletePage} />
+        <Toolbar 
+          onSelectPage={handleSelectPage} 
+          onDeletePage={handleDeletePage}
+          onSaveProject={handleSaveProject}
+        />
         <div className="flex flex-grow overflow-hidden">
           <div className="flex-grow overflow-auto">
             {mode === 'edit' && currentUser ? (
