@@ -11,6 +11,7 @@ const FloatingRightMenu = ({
   onToggleVisibility,
   isComponentTreeVisible,
   isComponentPaletteVisible,
+  isGlobalSettingsVisible,
 }) => {
   return (
     <div className="fixed right-5 top-1/2 transform -translate-y-1/2 w-12 bg-white border border-gray-200 rounded-lg shadow-lg z-50 flex flex-col items-center py-2">
@@ -28,23 +29,19 @@ const FloatingRightMenu = ({
       >
         <FaPalette />
       </button>
-      <button onClick={onShowGlobalSettings} style={buttonStyle}><FaCog /></button>
-      <button onClick={onOpenDataModal} style={buttonStyle}><FaDatabase /></button>
-      <button onClick={onToggleDragMode} style={buttonStyle}><FaArrowsAlt /></button>
-      <button onClick={onToggleSpacingVisibility} style={buttonStyle}><FaEye /></button>
-      <button onClick={onToggleVisibility} style={buttonStyle}><FaChevronLeft /></button>
+      <button
+        onClick={onShowGlobalSettings}
+        className={`p-2 mb-2 rounded-full ${isGlobalSettingsVisible ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}
+        title="Toggle Global Settings"
+      >
+        <FaCog />
+      </button>
+      <button onClick={onOpenDataModal} className="p-2 mb-2 rounded-full hover:bg-gray-100"><FaDatabase /></button>
+      <button onClick={onToggleDragMode} className="p-2 mb-2 rounded-full hover:bg-gray-100"><FaArrowsAlt /></button>
+      <button onClick={onToggleSpacingVisibility} className="p-2 mb-2 rounded-full hover:bg-gray-100"><FaEye /></button>
+      <button onClick={onToggleVisibility} className="p-2 mb-2 rounded-full hover:bg-gray-100"><FaChevronLeft /></button>
     </div>
   );
-};
-
-const buttonStyle = {
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  padding: '10px',
-  fontSize: '18px',
-  color: '#333',
-  marginBottom: '10px',
 };
 
 export default FloatingRightMenu;

@@ -33,6 +33,7 @@ import Toast from '../common/Toast';
 import FloatingRightMenu from './FloatingRightMenu';
 import ComponentTree from './ComponentTree';
 import ComponentPalette from '../Components/ComponentPalette';
+import FloatingGlobalSettings from './FloatingGlobalSettings';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
@@ -50,6 +51,8 @@ const MainEditor = () => {
   const [isComponentPaletteVisible, setIsComponentPaletteVisible] = useState(false);
   const [componentPalettePosition, setComponentPalettePosition] = useState({ x: 0, y: 0 });
   const floatingRightMenuRef = useRef(null);
+  const [isGlobalSettingsVisible, setIsGlobalSettingsVisible] = useState(false);
+  const [globalSettingsPosition, setGlobalSettingsPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (currentProject && currentProject.pages.length > 0) {
@@ -250,6 +253,24 @@ const MainEditor = () => {
     setIsComponentPaletteVisible(!isComponentPaletteVisible);
   };
 
+  const handleToggleGlobalSettings = () => {
+    if (!isGlobalSettingsVisible) {
+      const floatingRightMenu = floatingRightMenuRef.current;
+      if (floatingRightMenu) {
+        const rect = floatingRightMenu.getBoundingClientRect();
+        setGlobalSettingsPosition({
+          x: rect.left - 270,
+          y: rect.top,
+        });
+      }
+    }
+    setIsGlobalSettingsVisible(!isGlobalSettingsVisible);
+  };
+
+  const handleUpdateGlobalSettings = (updates) => {
+    dispatch(updateGlobalSettings(updates));
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex flex-col h-screen relative">
@@ -282,7 +303,8 @@ const MainEditor = () => {
                 isComponentTreeVisible={isComponentTreeVisible}
                 onShowComponentPalette={handleToggleComponentPalette}
                 isComponentPaletteVisible={isComponentPaletteVisible}
-                onShowGlobalSettings={() => {/* Implement this */}}
+                onShowGlobalSettings={handleToggleGlobalSettings}
+                isGlobalSettingsVisible={isGlobalSettingsVisible}
                 onOpenDataModal={handleOpenDataModal}
                 onToggleDragMode={handleToggleDragMode}
                 onToggleSpacingVisibility={handleToggleSpacingVisibility}
@@ -304,6 +326,14 @@ const MainEditor = () => {
                 onPositionChange={setComponentPalettePosition}
                 onAddComponent={handleAddComponent}
               />
+              {isGlobalSettingsVisible && (
+                <FloatingGlobalSettings
+                  initialPosition={globalSettingsPosition}
+                  onClose={handleToggleGlobalSettings}
+                  globalSettings={globalSettings}
+                  onUpdateGlobalSettings={handleUpdateGlobalSettings}
+                />
+              )}
               <PropertiesPanel
                 selectedComponent={findComponentById(components, selectedIds?.[0])}
                 onUpdateComponent={handleUpdateComponent}
