@@ -47,25 +47,27 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
   };
 
   return (
-    <div className="bg-gray-800 text-white p-2 flex justify-between items-center">
-      <HamburgerMenu />
+    <div className="bg-gray-800 text-white px-4 py-3 flex justify-between items-center">
+      <div>
+        <HamburgerMenu />
+      </div>
 
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-5">
         {currentUser && (
-          <span className="text-sm">Welcome, {currentUser.username}</span>
+          <span className="text-sm mr-3">Welcome, {currentUser.username}</span>
         )}
         {mode === 'edit' && currentUser && currentProject && (
           <>
-            <div className="relative">
+            <div className="relative mr-3">
               <button
                 onClick={toggleProjectInfo}
-                className="flex items-center space-x-2 bg-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-600 transition-colors"
+                className="flex items-center space-x-2 bg-gray-700 px-3 py-1.5 rounded text-sm hover:bg-gray-600 transition-colors"
               >
                 <span>Project Info</span>
                 {expandedSections.currentProject ? (
-                  <FaChevronUp className="transform transition-transform" />
+                  <FaChevronUp className="transform transition-transform ml-2" />
                 ) : (
-                  <FaChevronDown className="transform transition-transform" />
+                  <FaChevronDown className="transform transition-transform ml-2" />
                 )}
               </button>
               {expandedSections.currentProject && (
@@ -93,44 +95,41 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
             </div>
             <button
               onClick={onSaveProject}
-              className="flex items-center space-x-2 bg-green-500 px-3 py-1 rounded text-sm hover:bg-green-600 transition-colors"
+              className="flex items-center justify-center w-9 h-9 bg-gray-700 rounded text-sm hover:bg-gray-600 transition-colors"
+              title="Save Project"
             >
-              <FaSave />
-              <span>Save Project</span>
+              <FaSave className="text-base" />
             </button>
           </>
         )}
-      </div>
-
-      <div className="flex items-center space-x-4">
         {currentUser && (
           <button
             onClick={handleOpenProjectModal}
-            className="flex items-center space-x-2 bg-blue-500 px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+            className="flex items-center justify-center w-9 h-9 bg-gray-700 rounded text-sm hover:bg-gray-600 transition-colors"
+            title="Open Project"
           >
-            <FaFolderOpen />
-            <span>Open Project</span>
+            <FaFolderOpen className="text-base" />
           </button>
         )}
         {currentUser ? (
           <button
             onClick={handleToggleMode}
-            className="flex items-center space-x-2 bg-blue-500 px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+            className="flex items-center justify-center w-9 h-9 bg-gray-700 rounded text-sm hover:bg-gray-600 transition-colors"
+            title={mode === 'edit' ? 'View Mode' : 'Edit Mode'}
           >
-            {mode === 'edit' ? <FaEye /> : <FaEdit />}
-            <span>{mode === 'edit' ? 'View' : 'Edit'}</span>
+            {mode === 'edit' ? <FaEye className="text-base" /> : <FaEdit className="text-base" />}
           </button>
         ) : (
           <>
             <button
               onClick={() => setLoginModalOpen(true)}
-              className="bg-blue-500 px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+              className="bg-gray-700 px-3 py-1.5 rounded text-sm hover:bg-gray-600 transition-colors"
             >
               Login
             </button>
             <button
               onClick={() => setRegisterModalOpen(true)}
-              className="bg-green-500 px-3 py-1 rounded text-sm hover:bg-green-600 transition-colors"
+              className="bg-gray-700 px-3 py-1.5 rounded text-sm hover:bg-gray-600 transition-colors"
             >
               Register
             </button>
@@ -139,7 +138,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
         {currentUser && (
           <button
             onClick={handleLogout}
-            className="flex items-center space-x-2 bg-red-500 px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+            className="flex items-center space-x-2 bg-gray-700 px-3 py-1.5 rounded text-sm hover:bg-gray-600 transition-colors"
           >
             <FaSignOutAlt />
             <span>Logout</span>
