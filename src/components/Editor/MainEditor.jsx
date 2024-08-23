@@ -30,6 +30,7 @@ import {
 } from '../../features/editorSlice';
 import { updateProject as updateW3SProject } from '../../w3s/w3sSlice';
 import Toast from '../common/Toast';
+import FloatingRightMenu from './FloatingRightMenu';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
@@ -40,6 +41,8 @@ const MainEditor = () => {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const globalSettings = useSelector(state => state.editor.globalSettings); // Get globalSettings from Redux
   const currentUser = useSelector(state => state.user.currentUser); // Get current user from Redux
+  const [isDragMode, setIsDragMode] = useState(false);
+  const [isSpacingVisible, setIsSpacingVisible] = useState(false);
 
   useEffect(() => {
     if (currentProject && currentProject.pages.length > 0) {
@@ -202,6 +205,16 @@ const MainEditor = () => {
     dispatch(loadPageContent(pageContent));
   };
 
+  const handleToggleDragMode = () => {
+    setIsDragMode(!isDragMode);
+    // Implement drag mode logic here
+  };
+
+  const handleToggleSpacingVisibility = () => {
+    setIsSpacingVisible(!isSpacingVisible);
+    // Implement spacing visibility logic here
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex flex-col h-screen relative">
@@ -219,32 +232,45 @@ const MainEditor = () => {
                 onMoveComponent={handleMoveComponent}
                 globalSettings={globalSettings}
                 onStyleChange={handleUpdateComponent} // Added this line
+                isDragMode={isDragMode}
+                isSpacingVisible={isSpacingVisible}
               />
             ) : (
               <ViewerMode components={components} globalSettings={globalSettings} />
             )}
           </div>
           {mode === 'edit' && currentUser && (
-            <PropertiesPanel
-              selectedComponent={findComponentById(components, selectedIds?.[0])}
-              onUpdateComponent={handleUpdateComponent}
-              onDeleteComponent={handleDeleteComponent}
-              onAddChildComponent={handleAddComponent}
-              onOpenProjectModal={handleOpenProjectModal}
-              onAddComponent={handleAddComponent}
-              isVisible={isPanelVisible}
-              onToggleVisibility={handleTogglePanel}
-              components={components}
-              globalSettings={globalSettings}
-              onSelectComponent={handleSelectComponent}
-              onOpenDataModal={handleOpenDataModal}
-              onUpdateGlobalSpacing={handleUpdateGlobalSpacing}
-              currentProject={currentProject}
-              onSelectPage={handleSelectPage}
-              onDeletePage={handleDeletePage}
-              onLoadPageContent={handleLoadPageContent}
-              onUpdateGlobalSettings={(updates) => dispatch(updateGlobalSettings(updates))}
-            />
+            <>
+              <FloatingRightMenu
+                onShowComponentTree={() => {/* Implement this */}}
+                onShowComponentPalette={() => {/* Implement this */}}
+                onShowGlobalSettings={() => {/* Implement this */}}
+                onOpenDataModal={handleOpenDataModal}
+                onToggleDragMode={handleToggleDragMode}
+                onToggleSpacingVisibility={handleToggleSpacingVisibility}
+                onToggleVisibility={handleTogglePanel}
+              />
+              <PropertiesPanel
+                selectedComponent={findComponentById(components, selectedIds?.[0])}
+                onUpdateComponent={handleUpdateComponent}
+                onDeleteComponent={handleDeleteComponent}
+                onAddChildComponent={handleAddComponent}
+                onOpenProjectModal={handleOpenProjectModal}
+                onAddComponent={handleAddComponent}
+                isVisible={isPanelVisible}
+                onToggleVisibility={handleTogglePanel}
+                components={components}
+                globalSettings={globalSettings}
+                onSelectComponent={handleSelectComponent}
+                onOpenDataModal={handleOpenDataModal}
+                onUpdateGlobalSpacing={handleUpdateGlobalSpacing}
+                currentProject={currentProject}
+                onSelectPage={handleSelectPage}
+                onDeletePage={handleDeletePage}
+                onLoadPageContent={handleLoadPageContent}
+                onUpdateGlobalSettings={(updates) => dispatch(updateGlobalSettings(updates))}
+              />
+            </>
           )}
         </div>
         
