@@ -32,6 +32,7 @@ import { updateProject as updateW3SProject } from '../../w3s/w3sSlice';
 import Toast from '../common/Toast';
 import FloatingRightMenu from './FloatingRightMenu';
 import ComponentTree from './ComponentTree';
+import ComponentPalette from '../Components/ComponentPalette';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
@@ -46,6 +47,8 @@ const MainEditor = () => {
   const [isSpacingVisible, setIsSpacingVisible] = useState(false);
   const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
   const [componentTreePosition, setComponentTreePosition] = useState({ x: 0, y: 0 });
+  const [isComponentPaletteVisible, setIsComponentPaletteVisible] = useState(false);
+  const [componentPalettePosition, setComponentPalettePosition] = useState({ x: 0, y: 0 });
   const floatingRightMenuRef = useRef(null);
 
   useEffect(() => {
@@ -233,6 +236,20 @@ const MainEditor = () => {
     setIsComponentTreeVisible(!isComponentTreeVisible);
   };
 
+  const handleToggleComponentPalette = () => {
+    if (!isComponentPaletteVisible) {
+      const floatingRightMenu = floatingRightMenuRef.current;
+      if (floatingRightMenu) {
+        const rect = floatingRightMenu.getBoundingClientRect();
+        setComponentPalettePosition({
+          x: rect.left - 270,
+          y: rect.top,
+        });
+      }
+    }
+    setIsComponentPaletteVisible(!isComponentPaletteVisible);
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex flex-col h-screen relative">
@@ -263,7 +280,8 @@ const MainEditor = () => {
                 ref={floatingRightMenuRef}
                 onShowComponentTree={handleToggleComponentTree}
                 isComponentTreeVisible={isComponentTreeVisible}
-                onShowComponentPalette={() => {/* Implement this */}}
+                onShowComponentPalette={handleToggleComponentPalette}
+                isComponentPaletteVisible={isComponentPaletteVisible}
                 onShowGlobalSettings={() => {/* Implement this */}}
                 onOpenDataModal={handleOpenDataModal}
                 onToggleDragMode={handleToggleDragMode}
@@ -278,6 +296,13 @@ const MainEditor = () => {
                 onClose={handleToggleComponentTree}
                 initialPosition={componentTreePosition}
                 onPositionChange={setComponentTreePosition}
+              />
+              <ComponentPalette
+                isVisible={isComponentPaletteVisible}
+                onClose={handleToggleComponentPalette}
+                initialPosition={componentPalettePosition}
+                onPositionChange={setComponentPalettePosition}
+                onAddComponent={handleAddComponent}
               />
               <PropertiesPanel
                 selectedComponent={findComponentById(components, selectedIds?.[0])}

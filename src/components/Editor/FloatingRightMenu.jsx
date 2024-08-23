@@ -10,6 +10,7 @@ const FloatingRightMenu = ({
   onToggleSpacingVisibility,
   onToggleVisibility,
   isComponentTreeVisible,
+  isComponentPaletteVisible,
 }) => {
   return (
     <div className="fixed right-5 top-1/2 transform -translate-y-1/2 w-12 bg-white border border-gray-200 rounded-lg shadow-lg z-50 flex flex-col items-center py-2">
@@ -20,7 +21,13 @@ const FloatingRightMenu = ({
       >
         <FaTree />
       </button>
-      <button onClick={onShowComponentPalette} style={buttonStyle}><FaPalette /></button>
+      <button
+        onClick={onShowComponentPalette}
+        className={`p-2 mb-2 rounded-full ${isComponentPaletteVisible ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}
+        title="Toggle Component Palette"
+      >
+        <FaPalette />
+      </button>
       <button onClick={onShowGlobalSettings} style={buttonStyle}><FaCog /></button>
       <button onClick={onOpenDataModal} style={buttonStyle}><FaDatabase /></button>
       <button onClick={onToggleDragMode} style={buttonStyle}><FaArrowsAlt /></button>
