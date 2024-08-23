@@ -5,6 +5,7 @@ import LayoutControls from './LayoutControls';
 import BorderControls from './BorderControls';
 import BackgroundControls from './BackgroundControls';
 import TextControls from './TextControls';
+import HeadingControls from './HeadingControls';
 import ImageControls from './ImageControls';
 import ChartControls from './ChartControls';
 import SpacingControls from './SpacingControls';
@@ -20,18 +21,19 @@ const iconMap = {
     { icon: FaPalette, tooltip: 'Background' },
     { icon: FaLayerGroup, tooltip: 'Layout' },
   ],
-  HEADING: [
-    { icon: FaLayerGroup, tooltip: 'Layout' },
-    { icon: FaPalette, tooltip: 'Background' },
-    { icon: FaHeading, tooltip: 'Heading Controls' },
-    { icon: FaFont, tooltip: 'Font' },
-  ],
   TEXT: [
     { icon: FaExpand, tooltip: 'Size' },
     { icon: FaArrowsAlt, tooltip: 'Spacing' },
     { icon: FaBorderStyle, tooltip: 'Border' },
     { icon: FaPalette, tooltip: 'Background' },
     { icon: FaFont, tooltip: 'Text Controls' },
+    { icon: FaHeading, tooltip: 'Heading Controls' },
+  ],
+  HEADING: [
+    { icon: FaLayerGroup, tooltip: 'Layout' },
+    { icon: FaPalette, tooltip: 'Background' },
+    { icon: FaHeading, tooltip: 'Heading Controls' },
+    { icon: FaFont, tooltip: 'Font' },
   ],
   IMAGE: [
     { icon: FaExpand, tooltip: 'Size' },
@@ -149,21 +151,22 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         return <BorderControls {...sharedProps} />;
       case 'Background':
         return <BackgroundControls {...sharedProps} />;
-      case 'Whiteboard Controls':
-        return <WhiteboardControls {...sharedProps} />;
-      case 'Video Controls':
-        return <VideoControls {...sharedProps} />;
-      case 'Button Controls':
-        return <ButtonControls {...sharedProps} />;
+      case 'Text Controls':
+        return <TextControls {...sharedProps} />;
+      case 'Heading Controls':
+        return <HeadingControls {...sharedProps} />;
       case 'Image Controls':
         return <ImageControls {...sharedProps} />;
       case 'Layout':
         return <LayoutControls {...sharedProps} />;
-      case 'Font':
-      case 'Text Controls':
-        return <TextControls {...sharedProps} />;
       case 'Chart Controls':
         return <ChartControls {...sharedProps} />;
+      case 'Video Controls':
+        return <VideoControls {...sharedProps} />;
+      case 'Whiteboard Controls':
+        return <WhiteboardControls {...sharedProps} />;
+      case 'Button Controls':
+        return <ButtonControls {...sharedProps} />;
       default:
         return null;
     }

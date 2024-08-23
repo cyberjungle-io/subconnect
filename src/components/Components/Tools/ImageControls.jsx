@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ColorPicker from '../../common/ColorPicker';
 
 const ImageControls = ({ style, onStyleChange }) => {
@@ -6,6 +6,8 @@ const ImageControls = ({ style, onStyleChange }) => {
   const [alt, setAlt] = useState('');
   const [objectFit, setObjectFit] = useState('cover');
   const [borderRadius, setBorderRadius] = useState('0');
+  const [keepAspectRatio, setKeepAspectRatio] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (style) {
@@ -18,6 +20,26 @@ const ImageControls = ({ style, onStyleChange }) => {
 
   const handleChange = (property, value) => {
     onStyleChange({ [property]: value });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        handleChange('src', e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleAspectRatioChange = (e) => {
+    setKeepAspectRatio(e.target.checked);
+    onStyleChange({ keepAspectRatio: e.target.checked });
   };
 
   return (
@@ -62,6 +84,27 @@ const ImageControls = ({ style, onStyleChange }) => {
             onChange={(e) => handleChange('borderRadius', e.target.value)}
             className="w-full text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           />
+        </div>
+        <div className="mb-2">
+          <button onClick={handleUploadClick} className="upload-button">Upload Image</button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            accept="image/*"
+            style={{ display: 'none' }}
+          />
+        </div>
+        <div className="aspect-ratio-control">
+          <label>
+            <input
+              type="checkbox"
+              name="keepAspectRatio"
+              checked={keepAspectRatio}
+              onChange={handleAspectRatioChange}
+            />
+            Maintain Aspect Ratio
+          </label>
         </div>
       </div>
     </div>
