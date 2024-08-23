@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { componentConfig } from '../Components/componentConfig';
 import { useDispatch } from 'react-redux';
 import { renameComponent } from '../../features/editorSlice';
+import { FaTimes } from 'react-icons/fa';
 
 // Custom monotone SVG icons
 const ChevronRight = () => (
@@ -112,10 +113,63 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) 
   );
 };
 
-const ComponentTree = ({ components, onSelectComponent, selectedComponentId }) => {
+const ComponentTree = ({ components, onSelectComponent, selectedComponentId, isVisible, onClose }) => {
+  const [position, setPosition] = useState({ x: 20, y: window.innerHeight / 2 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      if (isDragging) {
+        setPosition({
+          x: e.clientX - dragOffset.x,
+          y: e.clientY - dragOffset.y,
+        });
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
+
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragOffset({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
+    });
+  };
+
+  if (!isVisible) return null;
+
   return (
-    <div className="component-tree bg-white rounded-lg shadow p-3 max-h-64 overflow-y-auto">
-      <h3 className="text-sm font-semibold mb-2 text-gray-700">Component Tree</h3>
+    <div
+      className="fixed z-50 bg-white rounded-lg shadow-lg p-4 w-64 max-h-[80vh] overflow-y-auto"
+      style={{
+        left: `${position.x}px`,
+        top: `${position.y}px`,
+      }}
+    >
+      <div
+        className="flex justify-between items-center mb-2 cursor-move"
+        onMouseDown={handleMouseDown}
+      >
+        <h3 className="text-sm font-semibold text-gray-700">Component Tree</h3>
+        <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+          <FaTimes />
+        </button>
+      </div>
       <div className="border-t border-gray-200 pt-2">
         {components.map(component => (
           <TreeNode 

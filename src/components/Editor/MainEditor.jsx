@@ -1,4 +1,4 @@
-import React, { useState,useCallback, useEffect } from 'react';
+import React, { useState,useCallback, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -31,6 +31,7 @@ import {
 import { updateProject as updateW3SProject } from '../../w3s/w3sSlice';
 import Toast from '../common/Toast';
 import FloatingRightMenu from './FloatingRightMenu';
+import ComponentTree from './ComponentTree';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
@@ -43,6 +44,9 @@ const MainEditor = () => {
   const currentUser = useSelector(state => state.user.currentUser); // Get current user from Redux
   const [isDragMode, setIsDragMode] = useState(false);
   const [isSpacingVisible, setIsSpacingVisible] = useState(false);
+  const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
+  const [componentTreePosition, setComponentTreePosition] = useState({ x: 0, y: 0 });
+  const floatingRightMenuRef = useRef(null);
 
   useEffect(() => {
     if (currentProject && currentProject.pages.length > 0) {
@@ -215,6 +219,20 @@ const MainEditor = () => {
     // Implement spacing visibility logic here
   };
 
+  const handleToggleComponentTree = () => {
+    if (!isComponentTreeVisible) {
+      const floatingRightMenu = floatingRightMenuRef.current;
+      if (floatingRightMenu) {
+        const rect = floatingRightMenu.getBoundingClientRect();
+        setComponentTreePosition({
+          x: rect.left - 270, // 270 = 264 (width of ComponentTree) + 6 (gap)
+          y: rect.top,
+        });
+      }
+    }
+    setIsComponentTreeVisible(!isComponentTreeVisible);
+  };
+
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex flex-col h-screen relative">
@@ -242,13 +260,24 @@ const MainEditor = () => {
           {mode === 'edit' && currentUser && (
             <>
               <FloatingRightMenu
-                onShowComponentTree={() => {/* Implement this */}}
+                ref={floatingRightMenuRef}
+                onShowComponentTree={handleToggleComponentTree}
+                isComponentTreeVisible={isComponentTreeVisible}
                 onShowComponentPalette={() => {/* Implement this */}}
                 onShowGlobalSettings={() => {/* Implement this */}}
                 onOpenDataModal={handleOpenDataModal}
                 onToggleDragMode={handleToggleDragMode}
                 onToggleSpacingVisibility={handleToggleSpacingVisibility}
                 onToggleVisibility={handleTogglePanel}
+              />
+              <ComponentTree
+                components={components}
+                onSelectComponent={handleSelectComponent}
+                selectedComponentId={selectedIds?.[0]}
+                isVisible={isComponentTreeVisible}
+                onClose={handleToggleComponentTree}
+                initialPosition={componentTreePosition}
+                onPositionChange={setComponentTreePosition}
               />
               <PropertiesPanel
                 selectedComponent={findComponentById(components, selectedIds?.[0])}

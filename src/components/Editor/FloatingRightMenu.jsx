@@ -9,25 +9,17 @@ const FloatingRightMenu = ({
   onToggleDragMode,
   onToggleSpacingVisibility,
   onToggleVisibility,
+  isComponentTreeVisible,
 }) => {
   return (
-    <div style={{
-      position: 'fixed',
-      right: '20px',
-      top: '50%',
-      transform: 'translateY(-50%)',
-      width: '50px',
-      backgroundColor: 'white',
-      border: '1px solid #ccc',
-      borderRadius: '4px',
-      boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-      zIndex: 9998, // Lower than FloatingToolbar
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      padding: '10px 0',
-    }}>
-      <button onClick={onShowComponentTree} style={buttonStyle}><FaTree /></button>
+    <div className="fixed right-5 top-1/2 transform -translate-y-1/2 w-12 bg-white border border-gray-200 rounded-lg shadow-lg z-50 flex flex-col items-center py-2">
+      <button
+        onClick={onShowComponentTree}
+        className={`p-2 mb-2 rounded-full ${isComponentTreeVisible ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}
+        title="Toggle Component Tree"
+      >
+        <FaTree />
+      </button>
       <button onClick={onShowComponentPalette} style={buttonStyle}><FaPalette /></button>
       <button onClick={onShowGlobalSettings} style={buttonStyle}><FaCog /></button>
       <button onClick={onOpenDataModal} style={buttonStyle}><FaDatabase /></button>
