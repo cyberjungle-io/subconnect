@@ -38,7 +38,7 @@ const PageList = ({
   if (!currentProject) return <div>No project selected</div>;
 
   return (
-    <div className="page-list text-white">
+    <div className="page-list text-gray-800">
       <h3 className="text-sm font-semibold mb-2 px-3 pt-2">Pages</h3>
       <div className="flex justify-center mt-2 px-3">
         <div className="flex w-full mb-2">

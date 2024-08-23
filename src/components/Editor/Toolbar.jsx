@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye } from 'react-icons/fa';
+import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye, FaFolderOpen } from 'react-icons/fa';
 import Modal from '../common/Modal';
 import RegisterForm from '../auth/RegisterForm';
 import LoginForm from '../auth/LoginForm';
@@ -8,13 +8,15 @@ import { logoutUser } from '../../features/userSlice';
 import { setEditorMode } from '../../features/editorSlice';
 import HamburgerMenu from '../common/HamburgerMenu';
 import PageList from '../Components/Projects/PageList';
+import ProjectModal from '../Components/Projects/ProjectModal';
 
-const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject }) => {
+const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal }) => {
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     currentProject: false,
   });
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.user);
   const { mode, currentPage } = useSelector((state) => state.editor);
@@ -34,6 +36,14 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject }) => {
 
   const handleToggleMode = () => {
     dispatch(setEditorMode(mode === 'edit' ? 'view' : 'edit'));
+  };
+
+  const handleOpenProjectModal = () => {
+    setIsProjectModalOpen(true);
+  };
+
+  const handleCloseProjectModal = () => {
+    setIsProjectModalOpen(false);
   };
 
   return (
@@ -95,20 +105,20 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject }) => {
       <div className="flex items-center space-x-4">
         {currentUser && (
           <button
+            onClick={handleOpenProjectModal}
+            className="flex items-center space-x-2 bg-blue-500 px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+          >
+            <FaFolderOpen />
+            <span>Open Project</span>
+          </button>
+        )}
+        {currentUser ? (
+          <button
             onClick={handleToggleMode}
             className="flex items-center space-x-2 bg-blue-500 px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
           >
             {mode === 'edit' ? <FaEye /> : <FaEdit />}
             <span>{mode === 'edit' ? 'View' : 'Edit'}</span>
-          </button>
-        )}
-        {currentUser ? (
-          <button
-            onClick={handleLogout}
-            className="flex items-center space-x-2 bg-red-500 px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
-          >
-            <FaSignOutAlt />
-            <span>Logout</span>
           </button>
         ) : (
           <>
@@ -125,6 +135,15 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject }) => {
               Register
             </button>
           </>
+        )}
+        {currentUser && (
+          <button
+            onClick={handleLogout}
+            className="flex items-center space-x-2 bg-red-500 px-3 py-1 rounded text-sm hover:bg-red-600 transition-colors"
+          >
+            <FaSignOutAlt />
+            <span>Logout</span>
+          </button>
         )}
       </div>
 
@@ -143,6 +162,13 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject }) => {
       >
         <LoginForm onClose={() => setLoginModalOpen(false)} />
       </Modal>
+
+      {isProjectModalOpen && (
+        <ProjectModal
+          isOpen={isProjectModalOpen}
+          onClose={handleCloseProjectModal}
+        />
+      )}
     </div>
   );
 };

@@ -17,7 +17,7 @@ const ProjectList = ({ onClose }) => {
       <h3 className="text-lg font-semibold mb-2">Select a Project</h3>
       <ul className="space-y-2">
         {projects.map((project) => (
-          <li key={project._id} className="flex justify-between items-center bg-gray-100 p-2 rounded">
+          <li key={project._id} className="text-gray-800 flex justify-between items-center bg-gray-100 p-2 rounded">
             <span>{project.name}</span>
             <button
               onClick={() => handleSelectProject(project)}

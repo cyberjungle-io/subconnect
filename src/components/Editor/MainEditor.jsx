@@ -307,6 +307,7 @@ const MainEditor = () => {
           onSelectPage={handleSelectPage} 
           onDeletePage={handleDeletePage}
           onSaveProject={handleSaveProject}
+          onOpenProjectModal={handleOpenProjectModal}
         />
         <div className="flex flex-grow overflow-hidden">
           <div className="flex-grow overflow-auto">
@@ -367,12 +368,11 @@ const MainEditor = () => {
                   onUpdateGlobalSettings={handleUpdateGlobalSettings}
                 />
               )}
-              <PropertiesPanel
+              {/*<PropertiesPanel
                 selectedComponent={findComponentById(components, selectedIds?.[0])}
                 onUpdateComponent={handleUpdateComponent}
                 onDeleteComponent={handleDeleteComponent}
                 onAddChildComponent={handleAddComponent}
-                onOpenProjectModal={handleOpenProjectModal}
                 onAddComponent={handleAddComponent}
                 isVisible={isPanelVisible}
                 onToggleVisibility={handleTogglePanel}
@@ -386,7 +386,7 @@ const MainEditor = () => {
                 onDeletePage={handleDeletePage}
                 onLoadPageContent={handleLoadPageContent}
                 onUpdateGlobalSettings={(updates) => dispatch(updateGlobalSettings(updates))}
-              />
+              />*/}
             </>
           )}
         </div>
