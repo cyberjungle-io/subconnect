@@ -38,46 +38,46 @@ const PageList = ({
   if (!currentProject) return <div>No project selected</div>;
 
   return (
-    <div className="page-list">
-      <h3 className="text-lg font-semibold mb-2">Pages</h3>
-      <div className="flex justify-center mt-2">
-        <div className="flex w-full max-w-xs mb-2">
+    <div className="page-list text-white">
+      <h3 className="text-sm font-semibold mb-2 px-3 pt-2">Pages</h3>
+      <div className="flex justify-center mt-2 px-3">
+        <div className="flex w-full mb-2">
           <input
             type="text"
             value={newPageName}
             onChange={(e) => setNewPageName(e.target.value)}
             placeholder="New Page Name"
-            className="w-full px-2 py-1 text-sm border border-gray-300 rounded-l focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full px-2 py-1 text-sm bg-gray-700 border border-gray-600 rounded-l focus:outline-none focus:ring-1 focus:ring-blue-500 text-white"
           />
           <button
             onClick={handleCreatePage}
-            className="px-2 py-1 bg-blue-500 text-white rounded-r hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500 flex-shrink-0"
+            className="px-2 py-1 bg-blue-500 text-white rounded-r hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <FaPlus />
           </button>
         </div>
       </div>
       {currentProject.pages.length === 0 ? (
-        <p>No pages found. Create a new one to get started!</p>
+        <p className="text-sm text-gray-400 px-3">No pages found. Create a new one to get started!</p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-1 px-3 pb-2">
           {currentProject.pages.map((page, index) => (
             <li
               key={index}
-              className={`flex items-center justify-between p-3 rounded shadow cursor-pointer transition-colors duration-200 ${
+              className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors duration-200 ${
                 page._id === selectedPageId
-                  ? "bg-blue-100"
-                  : "bg-white hover:bg-gray-100"
+                  ? "bg-gray-600"
+                  : "hover:bg-gray-700"
               }`}
               onClick={() => onSelectPage(page)}
             >
-              <span>{page.name}</span>
+              <span className="text-sm">{page.name}</span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   onDeletePage(index);
                 }}
-                className="text-gray-600 hover:text-red-700"
+                className="text-gray-400 hover:text-red-500"
               >
                 <FaTrash />
               </button>

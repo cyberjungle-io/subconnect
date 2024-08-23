@@ -56,9 +56,6 @@ const PropertiesPanel = ({
   const { mode, currentPage } = useSelector((state) => state.editor);
   const [activePanel, setActivePanel] = useState("properties");
   const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({
-    currentProject: false,
-  });
 
   useEffect(() => {
     if (selectedComponent) {
@@ -393,36 +390,6 @@ const PropertiesPanel = ({
       <div className="panel-content">
         {renderPanelContent()}
       </div>
-      {currentProject && (
-        <div className="current-project-container">
-          <div
-            className="current-project-header"
-            onClick={() => setExpandedSections(prev => ({ ...prev, currentProject: !prev.currentProject }))}
-          >
-            <div className="current-project-info">
-              <div className="current-project-name">{currentProject.name}</div>
-              {currentPage && (
-                <div className="current-page-name">Page: {currentPage.name}</div>
-              )}
-            </div>
-            {expandedSections.currentProject ? (
-              <FaChevronDown className="current-project-icon" />
-            ) : (
-              <FaChevronRight className="current-project-icon" />
-            )}
-          </div>
-          {expandedSections.currentProject && (
-            <div className="page-list-container">
-              <PageList
-                projectId={currentProject._id}
-                selectedPageId={currentPage?._id}
-                onSelectPage={onSelectPage}
-                onDeletePage={onDeletePage}
-              />
-            </div>
-          )}
-        </div>
-      )}
       <Toast />
     </div>
   );

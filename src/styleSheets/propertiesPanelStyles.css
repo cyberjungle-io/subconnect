@@ -261,33 +261,47 @@ input[type="checkbox"] {
 }
 
 /* Project info styles */
-.project-info {
+.current-project-container {
   margin-top: 1rem;
-  background-color: #eff6ff;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 0.25rem;
+  overflow: hidden;
 }
 
-.project-header {
+.current-project-header {
   display: flex;
   align-items: center;
   cursor: pointer;
   padding: 0.75rem;
-  background-color: #dbeafe;
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.project-name {
+.current-project-info {
+  flex-grow: 1;
+}
+
+.current-project-name {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #1e40af;
+  color: rgba(255, 255, 255, 0.9);
 }
 
-.page-name {
+.current-page-name {
   font-size: 0.75rem;
-  color: #3b82f6;
+  color: rgba(255, 255, 255, 0.7);
   margin-top: 0.25rem;
+}
+
+.current-project-icon {
+  width: 0.75rem;
+  height: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.page-list-container {
+  padding: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 /* Toast styles */
@@ -381,49 +395,6 @@ input[type="checkbox"] {
 .panel-content {
   flex-grow: 1;
   overflow-y: auto;
-}
-
-.current-project-container {
-  margin-top: 1rem;
-  background-color: #eff6ff;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-}
-
-.current-project-header {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  padding: 0.75rem;
-  background-color: #dbeafe;
-  border-top-left-radius: 0.5rem;
-  border-top-right-radius: 0.5rem;
-}
-
-.current-project-info {
-  flex-grow: 1;
-}
-
-.current-project-name {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #1e40af;
-}
-
-.current-page-name {
-  font-size: 0.75rem;
-  color: #3b82f6;
-  margin-top: 0.25rem;
-}
-
-.current-project-icon {
-  width: 0.75rem;
-  height: 0.75rem;
-  color: #3b82f6;
-}
-
-.page-list-container {
-  padding: 0.75rem;
 }
 
 /* Input field theme */

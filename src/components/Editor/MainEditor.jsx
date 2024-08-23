@@ -31,8 +31,6 @@ import {
 import { updateProject as updateW3SProject } from '../../w3s/w3sSlice';
 import Toast from '../common/Toast';
 
-
-
 const MainEditor = () => {
   const dispatch = useDispatch();
   const { components, selectedIds, mode, currentPage } = useSelector(state => state.editor);
@@ -207,7 +205,7 @@ const MainEditor = () => {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="flex flex-col h-screen relative">
-        <Toolbar />
+        <Toolbar onSelectPage={handleSelectPage} onDeletePage={handleDeletePage} />
         <div className="flex flex-grow overflow-hidden">
           <div className="flex-grow overflow-auto">
             {mode === 'edit' && currentUser ? (
