@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronRight, FaChevronUp, FaSave } from 'react-icons/fa';
+import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye } from 'react-icons/fa';
 import Modal from '../common/Modal';
 import RegisterForm from '../auth/RegisterForm';
 import LoginForm from '../auth/LoginForm';
@@ -30,6 +30,10 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject }) => {
 
   const toggleProjectInfo = () => {
     setExpandedSections(prev => ({ ...prev, currentProject: !prev.currentProject }));
+  };
+
+  const handleToggleMode = () => {
+    dispatch(setEditorMode(mode === 'edit' ? 'view' : 'edit'));
   };
 
   return (
@@ -89,13 +93,13 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject }) => {
       </div>
 
       <div className="flex items-center space-x-4">
-        {currentUser && mode === 'view' && (
+        {currentUser && (
           <button
-            onClick={handleEnterEditMode}
+            onClick={handleToggleMode}
             className="flex items-center space-x-2 bg-blue-500 px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
           >
-            <FaEdit />
-            <span>Edit</span>
+            {mode === 'edit' ? <FaEye /> : <FaEdit />}
+            <span>{mode === 'edit' ? 'View' : 'Edit'}</span>
           </button>
         )}
         {currentUser ? (

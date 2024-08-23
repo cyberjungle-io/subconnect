@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { FaEye, FaChevronLeft, FaChevronDown, FaChevronRight } from "react-icons/fa";
+import { FaChevronLeft, FaChevronDown, FaChevronRight } from "react-icons/fa";
 import PropertyTabs from "./PropertyTabs";
 import ComponentPalette from "../Components/ComponentPalette";
 import DimensionControls from "../Components/CommonControls/DimensionControls";
@@ -121,10 +121,6 @@ const PropertiesPanel = ({
 
   const toggleMode = () => {
     dispatch(setEditorMode(mode === 'edit' ? 'view' : 'edit'));
-  };
-
-  const handleEnterViewMode = () => {
-    dispatch(setEditorMode('view'));
   };
 
   const handleShowComponentPalette = () => {
@@ -314,13 +310,6 @@ const PropertiesPanel = ({
           </h2>
         </div>
         <div className="properties-panel-buttons-container ">
-          <button
-            onClick={handleEnterViewMode}
-            className="panel-button"
-            title="Switch to View Mode"
-          >
-            <FaEye />
-          </button>
           <button
             onClick={onToggleVisibility}
             className="panel-button"

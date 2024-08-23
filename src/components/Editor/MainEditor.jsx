@@ -176,10 +176,6 @@ const MainEditor = () => {
     return null;
   };
 
-  const handleEnterEditMode = () => {
-    dispatch(setEditorMode('edit'));
-  };
-
   const handleSelectPage = (page) => {
     dispatch(setCurrentPage(page));
     if (page.content) {
