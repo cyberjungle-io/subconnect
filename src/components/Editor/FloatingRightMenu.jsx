@@ -14,7 +14,7 @@ const FloatingRightMenu = ({
   isGlobalSettingsVisible,
 }) => {
   return (
-    <div className="fixed right-5 top-1/2 transform -translate-y-1/2 w-12 bg-white border border-gray-200 rounded-lg shadow-lg z-50 flex flex-col items-center py-2">
+    <div className="fixed right-8 top-1/3 transform -translate-y-1/2 w-12 bg-gray-100  border border-gray-300 rounded-lg shadow-xl z-50 flex flex-col items-center py-2">
       <button
         onClick={onShowComponentTree}
         className={`p-2 mb-2 rounded-full ${isComponentTreeVisible ? 'bg-blue-100 text-blue-600' : 'hover:bg-gray-100'}`}
