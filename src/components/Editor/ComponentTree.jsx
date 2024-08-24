@@ -55,8 +55,8 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) 
   return (
     <div className={`mb-1 ${depth > 0 ? 'ml-3' : ''}`}>
       <div 
-        className={`flex items-center cursor-pointer hover:bg-gray-100 p-1 rounded text-sm
-                    ${isSelected ? 'bg-gray-200' : ''}`}
+        className={`flex items-center cursor-pointer hover:bg-[#f5f9ff] p-1 rounded text-sm
+                    ${isSelected ? 'bg-[#e6f0ff]' : ''}`}
         onClick={() => !isEditing && onSelectComponent(component.id)}
       >
         <div className="flex items-center flex-grow text-gray-600">
@@ -97,7 +97,7 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) 
         </div>
       </div>
       {isOpen && hasChildren && (
-        <div className="border-l border-gray-200 ml-2 pl-2">
+        <div className="border-l border-[#cce0ff] ml-2 pl-2">
           {component.children.map(child => (
             <TreeNode 
               key={child.id} 
@@ -155,22 +155,22 @@ const ComponentTree = ({ components, onSelectComponent, selectedComponentId, isV
 
   return (
     <div
-      className="fixed z-50 bg-white rounded-lg shadow-lg p-4 w-64 max-h-[80vh] overflow-y-auto"
+      className="fixed z-50 bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl p-4 w-64 max-h-[80vh] overflow-y-auto group"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
       }}
     >
       <div
-        className="flex justify-between items-center mb-2 cursor-move"
+        className="flex justify-between items-center mb-4 pt-2"
         onMouseDown={handleMouseDown}
       >
-        <h3 className="text-sm font-semibold text-gray-700">Component Tree</h3>
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+        <h3 className="text-lg font-semibold text-gray-700">Component Tree</h3>
+        <button onClick={onClose} className="text-gray-700 hover:text-gray-900">
           <FaTimes />
         </button>
       </div>
-      <div className="border-t border-gray-200 pt-2">
+      <div className="border-t border-[#cce0ff] pt-2">
         {components.map(component => (
           <TreeNode 
             key={component.id} 
@@ -181,6 +181,10 @@ const ComponentTree = ({ components, onSelectComponent, selectedComponentId, isV
           />
         ))}
       </div>
+      <div
+        className="absolute top-0 left-0 right-0 h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        onMouseDown={handleMouseDown}
+      />
     </div>
   );
 };

@@ -21,7 +21,7 @@ const DraggableComponent = ({ type, icon: Icon, label, onAddComponent }) => {
   return (
     <div
       ref={drag}
-      className={`flex flex-col items-center justify-center p-2 bg-white rounded-lg shadow hover:shadow-md hover:bg-blue-50 cursor-move ${
+      className={`flex flex-col items-center justify-center p-2 bg-[#fafcff] border border-[#e6f0ff] rounded-lg shadow hover:shadow-md hover:bg-[#f5f9ff] cursor-move ${
         isDragging ? 'opacity-50' : ''
       } w-full aspect-square transition-all duration-200`}
     >
@@ -69,12 +69,12 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
 
   return (
     <div
-      className="fixed bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4"
+      className="fixed bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl z-50 p-4 group"
       style={{ left: `${position.x}px`, top: `${position.y}px` }}
     >
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Component Palette</h3>
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+      <div className="flex justify-between items-center mb-4 pt-2">
+        <h3 className="text-lg font-semibold text-gray-700">Component Palette</h3>
+        <button onClick={onClose} className="text-gray-700 hover:text-gray-900">
           <FaTimes />
         </button>
       </div>
@@ -93,7 +93,7 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
         })}
       </div>
       <div
-        className="absolute top-0 left-0 right-0 h-6 cursor-move bg-gray-100 rounded-t-lg"
+        className="absolute top-0 left-0 right-0 h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         onMouseDown={handleDragStart}
       />
     </div>
