@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye, FaFolderOpen } from 'react-icons/fa';
+import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye, FaFolderOpen, FaDatabase } from 'react-icons/fa';
 import Modal from '../common/Modal';
 import RegisterForm from '../auth/RegisterForm';
 import LoginForm from '../auth/LoginForm';
@@ -9,6 +9,7 @@ import { setEditorMode } from '../../features/editorSlice';
 import HamburgerMenu from '../common/HamburgerMenu';
 import PageList from '../Components/Projects/PageList';
 import ProjectModal from '../Components/Projects/ProjectModal';
+import DataModal from './DataModal';
 
 const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal }) => {
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
@@ -17,6 +18,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
     currentProject: false,
   });
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.user);
   const { mode, currentPage } = useSelector((state) => state.editor);
@@ -44,6 +46,14 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
 
   const handleCloseProjectModal = () => {
     setIsProjectModalOpen(false);
+  };
+
+  const handleOpenDataModal = () => {
+    setIsDataModalOpen(true);
+  };
+
+  const handleCloseDataModal = () => {
+    setIsDataModalOpen(false);
   };
 
   return (
@@ -111,6 +121,15 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
             <FaFolderOpen className="text-base" />
           </button>
         )}
+        {currentUser && (
+          <button
+            onClick={handleOpenDataModal}
+            className="flex items-center justify-center w-9 h-9 bg-gray-700 rounded text-sm hover:bg-gray-600 transition-colors"
+            title="Open Data Modal"
+          >
+            <FaDatabase className="text-base" />
+          </button>
+        )}
         {currentUser ? (
           <button
             onClick={handleToggleMode}
@@ -168,6 +187,11 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
           onClose={handleCloseProjectModal}
         />
       )}
+
+      <DataModal
+        isOpen={isDataModalOpen}
+        onClose={handleCloseDataModal}
+      />
     </div>
   );
 };

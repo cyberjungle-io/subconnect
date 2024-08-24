@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTree, FaCog, FaDatabase, FaEye, FaChevronLeft, FaHandPointer } from 'react-icons/fa';
+import { FaTree, FaCog, FaEye, FaChevronLeft, FaHandPointer } from 'react-icons/fa';
 
 // Add this new custom icon component
 const FourSquaresIcon = () => (
@@ -12,7 +12,6 @@ const FloatingRightMenu = ({
   onShowComponentTree,
   onShowComponentPalette,
   onShowGlobalSettings,
-  onOpenDataModal,
   onToggleDragMode,
   onToggleSpacingVisibility,
   onToggleVisibility,
@@ -44,7 +43,6 @@ const FloatingRightMenu = ({
       >
         <FaCog />
       </button>
-      <button onClick={onOpenDataModal} className="p-2 mb-2 rounded-full hover:bg-[#d9ecff]" title="Open Data Modal"><FaDatabase /></button>
       <button
         onClick={onToggleDragMode}
         className={`p-2 mb-2 rounded-full ${isDragModeEnabled ? 'bg-[#cce7ff] text-blue-600' : 'hover:bg-[#d9ecff]'}`}

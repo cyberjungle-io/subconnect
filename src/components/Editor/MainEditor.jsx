@@ -78,7 +78,6 @@ const MainEditor = () => {
   const handleOpenDataModal = () => {
     setIsDataModalOpen(true);
   };
-  // eslint-disable-next-line no-unused-vars
   const handleCloseDataModal = () => {
     setIsDataModalOpen(false);
   };
@@ -307,6 +306,9 @@ const MainEditor = () => {
           onDeletePage={handleDeletePage}
           onSaveProject={handleSaveProject}
           onOpenProjectModal={handleOpenProjectModal}
+          onOpenDataModal={handleOpenDataModal}
+          mode={mode}
+          currentUser={currentUser}
         />
         <div className="flex flex-grow overflow-hidden">
           <div className="flex-grow overflow-auto">
@@ -338,7 +340,6 @@ const MainEditor = () => {
                 isComponentPaletteVisible={isComponentPaletteVisible}
                 onShowGlobalSettings={handleToggleGlobalSettings}
                 isGlobalSettingsVisible={isGlobalSettingsVisible}
-                onOpenDataModal={handleOpenDataModal}
                 onToggleDragMode={handleToggleDragMode}
                 isDragModeEnabled={isDragModeEnabled}
                 onToggleSpacingVisibility={handleToggleSpacingVisibility}
@@ -368,25 +369,6 @@ const MainEditor = () => {
                   onUpdateGlobalSettings={handleUpdateGlobalSettings}
                 />
               )}
-              {/*<PropertiesPanel
-                selectedComponent={findComponentById(components, selectedIds?.[0])}
-                onUpdateComponent={handleUpdateComponent}
-                onDeleteComponent={handleDeleteComponent}
-                onAddChildComponent={handleAddComponent}
-                onAddComponent={handleAddComponent}
-                isVisible={isPanelVisible}
-                onToggleVisibility={handleTogglePanel}
-                components={components}
-                globalSettings={globalSettings}
-                onSelectComponent={handleSelectComponent}
-                onOpenDataModal={handleOpenDataModal}
-                onUpdateGlobalSpacing={handleUpdateGlobalSpacing}
-                currentProject={currentProject}
-                onSelectPage={handleSelectPage}
-                onDeletePage={handleDeletePage}
-                onLoadPageContent={handleLoadPageContent}
-                onUpdateGlobalSettings={(updates) => dispatch(updateGlobalSettings(updates))}
-              />*/}
             </>
           )}
         </div>
@@ -396,12 +378,6 @@ const MainEditor = () => {
       <ProjectModal
           isOpen={isProjectModalOpen}
           onClose={handleCloseProjectModal}
-        />
-      )}
-      {isDataModalOpen && (
-        <DataModal
-          isOpen={isDataModalOpen}
-          onClose={() => setIsDataModalOpen(false)}
         />
       )}
       <Toast />
