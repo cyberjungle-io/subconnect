@@ -21,7 +21,7 @@ const FloatingRightMenu = ({
   isDragModeEnabled,
 }) => {
   return (
-    <div className="fixed right-8 top-1/3 transform -translate-y-1/2 w-12 bg-[#e6f3ff] border border-[#b3d9ff] rounded-lg shadow-xl z-50 flex flex-col items-center py-2">
+    <div className="fixed right-8 top-1/3 transform -translate-y-1/2 w-12 bg-[#e6f3ff] border border-[#b3d9ff] rounded-lg shadow-xl z-[960] flex flex-col items-center py-2">
       <button
         onClick={onShowComponentPalette}
         className={`p-2 mb-2 rounded-full ${isComponentPaletteVisible ? 'bg-[#cce7ff] text-blue-600' : 'hover:bg-[#d9ecff]'}`}

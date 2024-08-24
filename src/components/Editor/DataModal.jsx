@@ -25,7 +25,7 @@ const DataModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center" onClick={handleOverlayClick}>
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-[970] flex justify-center items-center" onClick={handleOverlayClick}>
       <div className="bg-white w-3/4 h-3/4 rounded-lg flex overflow-hidden">
         {/* Side Menu */}
         <div className="w-1/4 bg-gray-100 p-4">

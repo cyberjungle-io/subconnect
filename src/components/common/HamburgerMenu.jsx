@@ -30,7 +30,7 @@ const HamburgerMenu = () => {
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex">
+        <div className="fixed inset-0 z-[1000] flex">
           <div className="bg-white w-64 shadow-lg transform transition-transform duration-300 ease-in-out">
             <div className="p-4 flex justify-between items-center">
               <h2 className="text-xl font-bold">Menu</h2>

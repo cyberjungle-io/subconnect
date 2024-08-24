@@ -63,7 +63,7 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
 
   return (
     <div
-      className="fixed bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl z-50 p-4 group"
+      className="fixed bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl z-[930] p-4 group"
       style={{ left: `${position.x}px`, top: `${position.y}px` }}
     >
       <div className="flex justify-between items-center mb-4 pt-2">

@@ -81,7 +81,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
                 )}
               </button>
               {expandedSections.currentProject && (
-                <div className="absolute top-full left-0 mt-1 w-64 bg-gray-800 rounded shadow-lg z-10">
+                <div className="absolute top-full left-0 mt-1 w-64 bg-gray-800 rounded shadow-lg z-[990]">
                   <div className="current-project-container">
                     <div className="current-project-header p-3 border-b border-gray-700">
                       <div className="current-project-info">

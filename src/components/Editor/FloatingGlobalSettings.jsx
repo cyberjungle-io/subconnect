@@ -105,7 +105,7 @@ const FloatingGlobalSettings = ({ initialPosition, onClose, globalSettings, onUp
         border: '1px solid #ccc',
         borderRadius: '4px',
         boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        zIndex: 9999,
+        zIndex: 950,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',

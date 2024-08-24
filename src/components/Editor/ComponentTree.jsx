@@ -155,7 +155,7 @@ const ComponentTree = ({ components, onSelectComponent, selectedComponentId, isV
 
   return (
     <div
-      className="fixed z-50 bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl p-4 w-64 max-h-[80vh] overflow-y-auto group"
+      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl p-4 w-64 max-h-[80vh] overflow-y-auto group"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
