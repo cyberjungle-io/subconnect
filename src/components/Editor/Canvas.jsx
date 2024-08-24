@@ -20,16 +20,12 @@ const Canvas = ({
   const [, drop] = useDrop({
     accept: "COMPONENT",
     drop: (item, monitor) => {
-      const didDrop = monitor.didDrop();
-      if (didDrop) {
-        return; // Prevent adding the component twice
-      }
+      if (monitor.didDrop()) return;
 
       const offset = monitor.getClientOffset();
       const canvasElement = canvasRef.current;
 
       if (!offset || !canvasElement) {
-        // If we don't have a valid offset or canvas element, add the component at the end
         onAddComponent(item.type, null);
         return;
       }
@@ -49,21 +45,21 @@ const Canvas = ({
       });
 
       if (flexContainerAtPosition) {
-        // If dropping into a FLEX_CONTAINER, add as a child (regardless of drag mode)
-        if (item.id) {
+        // If dropping into a FLEX_CONTAINER, add as a child
+        if (item.id && isDragModeEnabled) {
           onMoveComponent(item.id, flexContainerAtPosition.id);
         } else {
           onAddComponent(item.type, flexContainerAtPosition.id);
         }
-      } else if (!isDragModeEnabled) {
-        // If not in drag mode and not dropping into a FLEX_CONTAINER, add to canvas
+      } else {
+        // If not dropping into a FLEX_CONTAINER, add to canvas
         const insertIndex = components.findIndex(comp => {
           const compRect = canvasRef.current.querySelector(`[data-id="${comp.id}"]`).getBoundingClientRect();
-          return (componentLayout === 'vertical' && dropPosition.x < compRect.right) ||
-                 (componentLayout === 'horizontal' && dropPosition.y < compRect.bottom);
+          return (componentLayout === 'vertical' && dropPosition.y < compRect.bottom) ||
+                 (componentLayout === 'horizontal' && dropPosition.x < compRect.right);
         });
 
-        if (item.id) {
+        if (item.id && isDragModeEnabled) {
           onMoveComponent(item.id, null, insertIndex);
         } else {
           onAddComponent(item.type, null, insertIndex);

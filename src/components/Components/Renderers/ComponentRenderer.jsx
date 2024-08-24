@@ -39,7 +39,7 @@ const useDragDrop = (component, onMoveComponent, onAddChild, isDragModeEnabled) 
     drop: (item, monitor) => {
       if (monitor.didDrop()) return;
       
-      if (item.id) {
+      if (item.id && isDragModeEnabled) {
         onMoveComponent(item.id, component.id);
       } else {
         onAddChild(component.id, item.type);
@@ -311,7 +311,10 @@ const ComponentRenderer = React.memo(({
       <div
         ref={(node) => {
           componentRef.current = node;
-          dragRef(dropRef(node));
+          if (component.type === "FLEX_CONTAINER") {
+            dropRef(node);
+          }
+          dragRef(node);
         }}
         style={{
           ...getComponentStyle(),
