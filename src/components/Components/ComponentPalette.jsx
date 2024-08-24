@@ -3,16 +3,10 @@ import { useDrag } from 'react-dnd';
 import { FaSquare, FaFont, FaImage, FaTable, FaChartBar, FaTimes } from 'react-icons/fa';
 import { componentTypes, componentConfig } from './componentConfig';
 
-const DraggableComponent = ({ type, icon: Icon, label, onAddComponent }) => {
+const DraggableComponent = ({ type, icon: Icon, label }) => {
   const [{ isDragging }, drag] = useDrag({
     type: 'COMPONENT',
     item: { type },
-    end: (item, monitor) => {
-      const dropResult = monitor.getDropResult();
-      if (item && dropResult) {
-        onAddComponent(item.type, null, dropResult);
-      }
-    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -87,7 +81,6 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
               type={type}
               icon={config.icon}
               label={config.name}
-              onAddComponent={onAddComponent}
             />
           );
         })}
