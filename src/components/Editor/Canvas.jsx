@@ -13,6 +13,7 @@ const Canvas = ({
   onAddComponent,
   onMoveComponent,
   globalSettings = {},
+  isDragModeEnabled,
 }) => {
   const { backgroundColor = '#ffffff', componentLayout = 'vertical', style = {} } = useSelector(state => state.editor.globalSettings || {});
   const canvasRef = useRef(null);
@@ -112,6 +113,7 @@ const Canvas = ({
           globalSettings={globalSettings}
           isTopLevel={true}
           onToolbarInteraction={handleToolbarInteraction}
+          isDragModeEnabled={isDragModeEnabled}
         />
       ))}
     </div>

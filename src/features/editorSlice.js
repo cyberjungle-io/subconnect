@@ -19,6 +19,7 @@ const initialState = {
     history: [],
     historyIndex: -1,
   },
+  isDragModeEnabled: false,
 };
 
 const findComponentById = (components, id) => {
@@ -396,6 +397,9 @@ export const editorSlice = createSlice({
         }
       }
     },
+    setDragModeEnabled: (state, action) => {
+      state.isDragModeEnabled = action.payload;
+    },
   },
 });
 
@@ -435,6 +439,7 @@ export const {
   undoWhiteboard,
   redoWhiteboard,
   renameComponent,
+  setDragModeEnabled,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

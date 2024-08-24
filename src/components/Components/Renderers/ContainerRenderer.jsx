@@ -10,7 +10,7 @@ const defaultGlobalSettings = {
   }
 };
 
-const ContainerRenderer = ({ component, depth, isTopLevel, globalSettings = defaultGlobalSettings, ...props }) => {
+const ContainerRenderer = ({ component, depth, isTopLevel, globalSettings = defaultGlobalSettings, isDragModeEnabled, ...props }) => {
   const getContainerStyles = () => {
     const generalComponentStyle = globalSettings?.generalComponentStyle || defaultGlobalSettings.generalComponentStyle;
 
@@ -77,6 +77,7 @@ const ContainerRenderer = ({ component, depth, isTopLevel, globalSettings = defa
             key={child.id}
             component={{ ...child, style: getChildStyles(child) }}
             depth={depth + 1} // Increment depth for children
+            isDragModeEnabled={isDragModeEnabled}
             {...props}
           />
         ))}
@@ -89,6 +90,7 @@ const ContainerRenderer = ({ component, depth, isTopLevel, globalSettings = defa
         key={child.id}
         component={{ ...child, style: getChildStyles(child) }}
         depth={depth + 1} // Increment depth for children
+        isDragModeEnabled={isDragModeEnabled}
         {...props}
       />
     ));

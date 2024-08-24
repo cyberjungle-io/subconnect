@@ -26,7 +26,8 @@ import {
   updateHeadingProperties,
   updateResponsiveProperties,
   loadPageContent,
-  setCurrentPage
+  setCurrentPage,
+  setDragModeEnabled
 } from '../../features/editorSlice';
 import { updateProject as updateW3SProject } from '../../w3s/w3sSlice';
 import Toast from '../common/Toast';
@@ -39,14 +40,13 @@ import { showToast } from '../../features/toastSlice';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
-  const { components, selectedIds, mode, currentPage } = useSelector(state => state.editor);
+  const { components, selectedIds, mode, currentPage, isDragModeEnabled } = useSelector(state => state.editor);
   const currentProject = useSelector(state => state.w3s.currentProject.data); // Fetch current project from Redux
   const [isPanelVisible, setIsPanelVisible] = useState(true);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const globalSettings = useSelector(state => state.editor.globalSettings); // Get globalSettings from Redux
   const currentUser = useSelector(state => state.user.currentUser); // Get current user from Redux
-  const [isDragMode, setIsDragMode] = useState(false);
   const [isSpacingVisible, setIsSpacingVisible] = useState(false);
   const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
   const [componentTreePosition, setComponentTreePosition] = useState({ x: 0, y: 0 });
@@ -214,8 +214,7 @@ const MainEditor = () => {
   };
 
   const handleToggleDragMode = () => {
-    setIsDragMode(!isDragMode);
-    // Implement drag mode logic here
+    dispatch(setDragModeEnabled(!isDragModeEnabled));
   };
 
   const handleToggleSpacingVisibility = () => {
@@ -322,7 +321,7 @@ const MainEditor = () => {
                 onMoveComponent={handleMoveComponent}
                 globalSettings={globalSettings}
                 onStyleChange={handleUpdateComponent} // Added this line
-                isDragMode={isDragMode}
+                isDragModeEnabled={isDragModeEnabled}
                 isSpacingVisible={isSpacingVisible}
               />
             ) : (
@@ -341,6 +340,7 @@ const MainEditor = () => {
                 isGlobalSettingsVisible={isGlobalSettingsVisible}
                 onOpenDataModal={handleOpenDataModal}
                 onToggleDragMode={handleToggleDragMode}
+                isDragModeEnabled={isDragModeEnabled}
                 onToggleSpacingVisibility={handleToggleSpacingVisibility}
                 onToggleVisibility={handleTogglePanel}
               />

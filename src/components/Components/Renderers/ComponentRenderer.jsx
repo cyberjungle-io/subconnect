@@ -70,10 +70,11 @@ const ComponentRenderer = React.memo(({
   isTopLevel = false, // Add this prop
   onStyleChange, // Add this prop
   onToolbarInteraction, // Add this prop
+  isDragModeEnabled, // Add this prop
 }) => {
   const dispatch = useDispatch();
   const componentRef = useRef(null);
-  const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild, isViewMode);
+  const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild, !isDragModeEnabled);
   const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = useCallback((event) => {
@@ -138,6 +139,7 @@ const ComponentRenderer = React.memo(({
         globalSettings={globalSettings}
         onStyleChange={onStyleChange} // Pass onStyleChange prop
         onToolbarInteraction={onToolbarInteraction} // Pass onToolbarInteraction prop
+        isDragModeEnabled={isDragModeEnabled} // Pass isDragModeEnabled prop
       />
     ));
   };
@@ -308,9 +310,9 @@ const ComponentRenderer = React.memo(({
       <div
         ref={(node) => {
           componentRef.current = node;
-          if (!isViewMode && !component.isDraggingDisabled) {
+          if (isDragModeEnabled && !component.isDraggingDisabled) {
             dragRef(dropRef(node));
-          } else if (!isViewMode) {
+          } else {
             dropRef(node);
           }
         }}
