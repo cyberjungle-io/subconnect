@@ -24,20 +24,20 @@ const defaultGlobalSettings = {
   }
 };
 
-const useDragDrop = (component, onMoveComponent, onAddChild, isViewMode) => {
+const useDragDrop = (component, onMoveComponent, onAddChild, isDragModeEnabled) => {
   const [{ isDragging }, drag] = useDrag({
     type: "COMPONENT",
     item: { id: component.id, type: component.type },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
-    canDrag: () => !isViewMode && !component.isDraggingDisabled,
+    canDrag: () => isDragModeEnabled && !component.isDraggingDisabled,
   });
 
   const [{ isOver }, drop] = useDrop({
     accept: "COMPONENT",
     drop: (item, monitor) => {
-      if (isViewMode || monitor.didDrop()) return;
+      if (monitor.didDrop()) return;
       
       if (item.id) {
         onMoveComponent(item.id, component.id);
@@ -45,6 +45,7 @@ const useDragDrop = (component, onMoveComponent, onAddChild, isViewMode) => {
         onAddChild(component.id, item.type);
       }
     },
+    canDrop: () => component.type === "FLEX_CONTAINER",
     collect: (monitor) => ({
       isOver: !!monitor.isOver({ shallow: true }),
     }),
@@ -74,7 +75,7 @@ const ComponentRenderer = React.memo(({
 }) => {
   const dispatch = useDispatch();
   const componentRef = useRef(null);
-  const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild, !isDragModeEnabled);
+  const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild, isDragModeEnabled);
   const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = useCallback((event) => {
@@ -310,11 +311,7 @@ const ComponentRenderer = React.memo(({
       <div
         ref={(node) => {
           componentRef.current = node;
-          if (isDragModeEnabled && !component.isDraggingDisabled) {
-            dragRef(dropRef(node));
-          } else {
-            dropRef(node);
-          }
+          dragRef(dropRef(node));
         }}
         style={{
           ...getComponentStyle(),
