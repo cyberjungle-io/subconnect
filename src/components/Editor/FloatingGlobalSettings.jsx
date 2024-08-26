@@ -60,9 +60,9 @@ const FloatingGlobalSettings = ({ initialPosition, onClose, globalSettings, onUp
       case 'Layout':
         return (
           <div>
-            <h3>Global Settings</h3>
+            <h3 className="text-sm font-semibold mb-2">Global Settings</h3>
             <div className="control-container">
-              <label htmlFor="globalBorderRadius">Default Border Radius</label>
+              <label htmlFor="globalBorderRadius" className="control-label">Default Border Radius</label>
               <div className="properties-input-container">
                 <input
                   id="globalBorderRadius"
@@ -96,50 +96,22 @@ const FloatingGlobalSettings = ({ initialPosition, onClose, globalSettings, onUp
 
   return (
     <div
+      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl p-4 w-64 max-h-[80vh] overflow-y-auto group"
       style={{
-        position: 'fixed',
         left: `${position.x}px`,
         top: `${position.y}px`,
-        width: '250px',
-        backgroundColor: 'white',
-        border: '1px solid #ccc',
-        borderRadius: '4px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        zIndex: 950,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
       }}
     >
       <div
-        style={{
-          height: '20px',
-          backgroundColor: '#f0f0f0',
-          cursor: 'move',
-          borderTopLeftRadius: '4px',
-          borderTopRightRadius: '4px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '0 5px',
-        }}
+        className="flex justify-between items-center mb-4 pt-2"
         onMouseDown={handleMouseDown}
       >
-        <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Global Settings</span>
-        <button
-          onClick={onClose}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '14px',
-            color: '#666',
-          }}
-        >
+        <h3 className="text-lg font-semibold text-gray-700">Global Settings</h3>
+        <button onClick={onClose} className="text-gray-700 hover:text-gray-900">
           <FaTimes />
         </button>
       </div>
-      <div style={{ display: 'flex', padding: '5px', flexWrap: 'wrap' }}>
+      <div className="flex mb-4">
         {[
           { icon: FaExpand, tooltip: 'Layout' },
           { icon: FaArrowsAlt, tooltip: 'Spacing' },
@@ -147,14 +119,7 @@ const FloatingGlobalSettings = ({ initialPosition, onClose, globalSettings, onUp
         ].map((iconData, index) => (
           <button
             key={index}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '5px',
-              fontSize: '18px',
-              color: activeControl === iconData.tooltip ? '#007bff' : '#333',
-            }}
+            className={`p-2 rounded-full ${activeControl === iconData.tooltip ? 'bg-[#cce7ff] text-blue-600' : 'hover:bg-[#d9ecff] text-gray-600'}`}
             title={iconData.tooltip}
             onClick={() => handleIconClick(iconData.tooltip)}
           >
@@ -162,9 +127,13 @@ const FloatingGlobalSettings = ({ initialPosition, onClose, globalSettings, onUp
           </button>
         ))}
       </div>
-      <div style={{ padding: '10px', flexGrow: 1, overflowY: 'auto' }}>
+      <div className="border-t border-[#cce0ff] pt-4">
         {renderActiveControl()}
       </div>
+      <div
+        className="absolute top-0 left-0 right-0 h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        onMouseDown={handleMouseDown}
+      />
     </div>
   );
 };
