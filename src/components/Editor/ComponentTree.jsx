@@ -55,8 +55,11 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) 
   return (
     <div className={`mb-1 ${depth > 0 ? 'ml-3' : ''}`}>
       <div 
-        className={`flex items-center cursor-pointer hover:bg-[#f5f9ff] p-1 rounded text-sm
-                    ${isSelected ? 'bg-[#e6f0ff]' : ''}`}
+        className={`flex items-center cursor-pointer p-1 rounded text-sm
+                    ${isSelected 
+                      ? 'bg-[#cce7ff] text-blue-600 border border-blue-300' 
+                      : 'hover:bg-[#d9ecff] border border-transparent'
+                    }`}
         onClick={() => !isEditing && onSelectComponent(component.id)}
       >
         <div className="flex items-center flex-grow text-gray-600">

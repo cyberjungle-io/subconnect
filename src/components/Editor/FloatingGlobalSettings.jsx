@@ -94,46 +94,58 @@ const FloatingGlobalSettings = ({ initialPosition, onClose, globalSettings, onUp
     }
   };
 
+  const buttonClass = (isActive) => `
+    p-2 rounded-full
+    ${isActive 
+      ? 'bg-[#cce7ff] text-blue-600 border border-blue-300' 
+      : 'hover:bg-[#d9ecff] border border-transparent'
+    }
+  `;
+
   return (
     <div
-      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl p-4 w-64 max-h-[80vh] overflow-y-auto group"
+      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-64 max-h-[80vh] overflow-hidden flex flex-col group"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
       }}
     >
       <div
-        className="flex justify-between items-center mb-4 pt-2"
-        onMouseDown={handleMouseDown}
-      >
-        <h3 className="text-lg font-semibold text-gray-700">Global Settings</h3>
-        <button onClick={onClose} className="text-gray-700 hover:text-gray-900">
-          <FaTimes />
-        </button>
-      </div>
-      <div className="flex mb-4">
-        {[
-          { icon: FaExpand, tooltip: 'Layout' },
-          { icon: FaArrowsAlt, tooltip: 'Spacing' },
-          { icon: FaPalette, tooltip: 'Background' },
-        ].map((iconData, index) => (
-          <button
-            key={index}
-            className={`p-2 rounded-full ${activeControl === iconData.tooltip ? 'bg-[#cce7ff] text-blue-600' : 'hover:bg-[#d9ecff] text-gray-600'}`}
-            title={iconData.tooltip}
-            onClick={() => handleIconClick(iconData.tooltip)}
-          >
-            <iconData.icon />
-          </button>
-        ))}
-      </div>
-      <div className="border-t border-[#cce0ff] pt-4">
-        {renderActiveControl()}
-      </div>
-      <div
-        className="absolute top-0 left-0 right-0 h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        className="h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         onMouseDown={handleMouseDown}
       />
+      <div className="px-4 pt-1 pb-3">
+        <div
+          className="flex justify-between items-center mb-3"
+          onMouseDown={handleMouseDown}
+        >
+          <h3 className="text-lg font-semibold text-gray-700">Global Settings</h3>
+          <button onClick={onClose} className="text-gray-700 hover:text-gray-900">
+            <FaTimes />
+          </button>
+        </div>
+        <div className="flex mb-2 space-x-2">
+          {[
+            { icon: FaExpand, tooltip: 'Layout' },
+            { icon: FaArrowsAlt, tooltip: 'Spacing' },
+            { icon: FaPalette, tooltip: 'Background' },
+          ].map((iconData, index) => (
+            <button
+              key={index}
+              className={buttonClass(activeControl === iconData.tooltip)}
+              title={iconData.tooltip}
+              onClick={() => handleIconClick(iconData.tooltip)}
+            >
+              <iconData.icon />
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="border-t border-[#cce0ff] flex-grow overflow-y-auto">
+        <div className="p-4">
+          {renderActiveControl()}
+        </div>
+      </div>
     </div>
   );
 };
