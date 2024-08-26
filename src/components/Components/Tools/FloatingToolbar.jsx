@@ -172,80 +172,55 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
     }
   };
 
+  const buttonClass = (isActive) => `
+    p-2 rounded-full
+    ${isActive 
+      ? 'bg-[#cce7ff] text-blue-600 border border-blue-300' 
+      : 'hover:bg-[#d9ecff] border border-transparent'
+    }
+  `;
+
   return (
     <div
+      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-64 max-h-[80vh] overflow-hidden flex flex-col group"
       style={{
-        position: 'fixed',
         left: `${position.x}px`,
         top: `${position.y}px`,
-        width: '200px',
-        height: activeControl ? 'auto' : '60px',
-        maxHeight: '80vh',
-        overflow: 'auto',
-        backgroundColor: 'white',
-        border: '1px solid #ccc',
-        borderRadius: '4px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-        zIndex: 955, 
-        transition: 'height 0.3s ease-in-out',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
       }}
       onClick={onToolbarInteraction}
     >
       <div
-        style={{
-          height: '20px',
-          backgroundColor: '#f0f0f0',
-          cursor: 'move',
-          borderTopLeftRadius: '4px',
-          borderTopRightRadius: '4px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '0 5px',
-        }}
+        className="h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         onMouseDown={handleMouseDown}
-      >
-        <span style={{ fontSize: '12px', fontWeight: 'bold' }}>Component Toolbar</span>
-        <button
-          onClick={onClose}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '14px',
-            color: '#666',
-          }}
+      />
+      <div className="px-4 pt-1 pb-3">
+        <div
+          className="flex justify-between items-center mb-3"
+          onMouseDown={handleMouseDown}
         >
-          <FaTimes />
-        </button>
-      </div>
-      <div style={{ display: 'flex', padding: '5px', flexWrap: 'wrap' }}>
-        {icons.map((iconData, index) => (
-          <button
-            key={index}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '5px',
-              fontSize: '18px',
-              color: activeControl === iconData.tooltip ? '#007bff' : '#333',
-            }}
-            title={iconData.tooltip}
-            onClick={() => handleIconClick(iconData.tooltip)}
-          >
-            <iconData.icon />
+          <h3 className="text-lg font-semibold text-gray-700">Component Toolbar</h3>
+          <button onClick={onClose} className="text-gray-700 hover:text-gray-900">
+            <FaTimes />
           </button>
-        ))}
+        </div>
+        <div className="flex mb-2 space-x-2">
+          {icons.map((iconData, index) => (
+            <button
+              key={index}
+              className={buttonClass(activeControl === iconData.tooltip)}
+              title={iconData.tooltip}
+              onClick={() => handleIconClick(iconData.tooltip)}
+            >
+              <iconData.icon />
+            </button>
+          ))}
+        </div>
       </div>
-      {activeControl && (
-        <div style={{ padding: '10px', flexGrow: 1, overflowY: 'auto' }}>
+      <div className="border-t border-[#cce0ff] flex-grow overflow-y-auto">
+        <div className="p-4">
           {renderActiveControl()}
         </div>
-      )}
+      </div>
     </div>
   );
 };
