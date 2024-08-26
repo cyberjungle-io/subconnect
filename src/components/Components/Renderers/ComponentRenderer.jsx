@@ -284,12 +284,14 @@ const ComponentRenderer = React.memo(({
   const [showToolbar, setShowToolbar] = useState(false);
   const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
 
-  const handleEditClick = (e) => {
+  const handleDoubleClick = (e) => {
     e.stopPropagation();
+    if (isViewMode) return;
+
     const rect = componentRef.current.getBoundingClientRect();
     setToolbarPosition({ 
-      x: rect.right - 300, // Align with the right edge of the component
-      y: rect.top - 60 // Position 60px above the component
+      x: e.clientX, // Position at the cursor's X coordinate
+      y: e.clientY + 10 // Position slightly below the cursor's Y coordinate
     });
     setShowToolbar(true);
   };
@@ -321,6 +323,7 @@ const ComponentRenderer = React.memo(({
           ...(isThisComponentSelected && !isViewMode ? { outline: `2px solid ${highlightColor}` } : {}),
         }}
         onClick={isViewMode ? undefined : handleClick}
+        onDoubleClick={handleDoubleClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
@@ -339,15 +342,6 @@ const ComponentRenderer = React.memo(({
           >
             {component.name || component.type}
           </div>
-        )}
-        {!isViewMode && isThisComponentSelected && isHovered && (
-          <button
-            className="absolute top-0 right-0 bg-white rounded-full p-1 shadow-md z-20 hover:bg-gray-100 transition-colors duration-200"
-            style={{ marginTop: '20px', marginRight: '5px' }}
-            onClick={handleEditClick}
-          >
-            <FaPencilAlt className="text-gray-600" />
-          </button>
         )}
       </div>
       {showToolbar && (
