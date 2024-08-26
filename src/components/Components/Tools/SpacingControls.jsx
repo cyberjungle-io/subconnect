@@ -12,6 +12,8 @@ const MARGIN_PRESETS = {
   'Large': '24px',
 };
 
+const UNITS = ['px', 'em', 'rem', '%', 'vw', 'vh'];
+
 const SpacingControls = ({ style, onStyleChange }) => {
   const [paddingTop, setPaddingTop] = useState('0px');
   const [paddingRight, setPaddingRight] = useState('0px');
@@ -99,62 +101,155 @@ const SpacingControls = ({ style, onStyleChange }) => {
     }
   };
 
-  const renderInput = (label, value, setter, property) => (
-    <div className="mb-2">
-      <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => {
-          setter(e.target.value);
-          handleChange(property, e.target.value);
-        }}
-        className="w-full text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-      />
+  const renderInputGroup = (label, values, setters, properties) => (
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-700 mb-2">{label}</label>
+      <div className="flex flex-col gap-2">
+        <div className="flex justify-between">
+          {['Top', 'Bottom'].map((side, index) => (
+            <div key={side} className="flex flex-col w-[48%]">
+              <span className="text-xs text-gray-500 mb-1">{side}</span>
+              <div className="flex">
+                <input
+                  type="text"
+                  value={(values[index * 2] || '').split(/(\d+)/)[1] || ''}
+                  onChange={(e) => {
+                    const newValue = e.target.value + ((values[index * 2] || '').split(/(\d+)/)[2] || 'px');
+                    setters[index * 2](newValue);
+                    handleChange(properties[index * 2], newValue);
+                  }}
+                  className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+                <select
+                  value={(values[index * 2] || '').split(/(\d+)/)[2] || 'px'}
+                  onChange={(e) => {
+                    const newValue = ((values[index * 2] || '').split(/(\d+)/)[1] || '0') + e.target.value;
+                    setters[index * 2](newValue);
+                    handleChange(properties[index * 2], newValue);
+                  }}
+                  className="p-2 text-sm border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  {UNITS.map((u) => (
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-between">
+          {['Left', 'Right'].map((side, index) => (
+            <div key={side} className="flex flex-col w-[48%]">
+              <span className="text-xs text-gray-500 mb-1">{side}</span>
+              <div className="flex">
+                <input
+                  type="text"
+                  value={(values[index * 2 + 3] || '').split(/(\d+)/)[1] || ''}
+                  onChange={(e) => {
+                    const newValue = e.target.value + ((values[index * 2 + 3] || '').split(/(\d+)/)[2] || 'px');
+                    setters[index * 2 + 3](newValue);
+                    handleChange(properties[index * 2 + 3], newValue);
+                  }}
+                  className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+                <select
+                  value={(values[index * 2 + 3] || '').split(/(\d+)/)[2] || 'px'}
+                  onChange={(e) => {
+                    const newValue = ((values[index * 2 + 3] || '').split(/(\d+)/)[1] || '0') + e.target.value;
+                    setters[index * 2 + 3](newValue);
+                    handleChange(properties[index * 2 + 3], newValue);
+                  }}
+                  className="p-2 text-sm border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  {UNITS.map((u) => (
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 
   const renderPresetButtons = (presets, selectedPreset, applyPreset) => (
-    <div className="flex space-x-2 mb-4">
-      {Object.entries(presets).map(([name, value]) => (
-        <button
-          key={name}
-          onClick={() => applyPreset(name)}
-          className={`px-2 py-1 text-xs rounded ${
-            selectedPreset === name
-              ? 'bg-indigo-600 text-white'
-              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-          }`}
-        >
-          {name}
-        </button>
-      ))}
+    <div className="flex justify-center items-center mb-4">
+      <div className="inline-flex space-x-2">
+        {Object.entries(presets).map(([name, value]) => (
+          <button
+            key={name}
+            onClick={() => applyPreset(name)}
+            className={`px-3 py-1 text-sm rounded-full transition-colors duration-200 border ${
+              selectedPreset === name
+                ? 'bg-[#cce7ff] text-blue-700 border-blue-300'
+                : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
+            }`}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
     </div>
   );
 
   return (
     <div className="control-section">
-      <div className="control-section-content">
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Padding Presets</h3>
-        {renderPresetButtons(PADDING_PRESETS, selectedPaddingPreset, applyPaddingPreset)}
+      <h3 className="text-lg font-semibold text-gray-700 mb-4">Spacing Controls</h3>
 
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Padding</h3>
-        {renderInput('Top', paddingTop, setPaddingTop, 'paddingTop')}
-        {renderInput('Right', paddingRight, setPaddingRight, 'paddingRight')}
-        {renderInput('Bottom', paddingBottom, setPaddingBottom, 'paddingBottom')}
-        {renderInput('Left', paddingLeft, setPaddingLeft, 'paddingLeft')}
+      <h4 className="text-sm font-medium text-gray-700 mb-2">Padding Presets</h4>
+      {renderPresetButtons(PADDING_PRESETS, selectedPaddingPreset, applyPaddingPreset)}
 
-        <h3 className="text-sm font-medium text-gray-700 mb-2 mt-4">Margin Presets</h3>
-        {renderPresetButtons(MARGIN_PRESETS, selectedMarginPreset, applyMarginPreset)}
+      {renderInputGroup(
+        'Padding',
+        [paddingTop, paddingRight, paddingBottom, paddingLeft],
+        [setPaddingTop, setPaddingRight, setPaddingBottom, setPaddingLeft],
+        ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft']
+      )}
 
-        <h3 className="text-sm font-medium text-gray-700 mb-2">Margin</h3>
-        {renderInput('Top', marginTop, setMarginTop, 'marginTop')}
-        {renderInput('Right', marginRight, setMarginRight, 'marginRight')}
-        {renderInput('Bottom', marginBottom, setMarginBottom, 'marginBottom')}
-        {renderInput('Left', marginLeft, setMarginLeft, 'marginLeft')}
+      <h4 className="text-sm font-medium text-gray-700 mb-2 mt-6">Margin Presets</h4>
+      {renderPresetButtons(MARGIN_PRESETS, selectedMarginPreset, applyMarginPreset)}
 
-        <h3 className="text-sm font-medium text-gray-700 mb-2 mt-4">Gap</h3>
-        {renderInput('Gap', gap, setGap, 'gap')}
+      {renderInputGroup(
+        'Margin',
+        [marginTop, marginRight, marginBottom, marginLeft],
+        [setMarginTop, setMarginRight, setMarginBottom, setMarginLeft],
+        ['marginTop', 'marginRight', 'marginBottom', 'marginLeft']
+      )}
+
+      <div className="mt-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">Gap</label>
+        <div className="flex">
+          <input
+            type="text"
+            value={gap.split(/(\d+)/)[1] || ''}
+            onChange={(e) => {
+              const newValue = e.target.value + (gap.split(/(\d+)/)[2] || 'px');
+              setGap(newValue);
+              handleChange('gap', newValue);
+            }}
+            className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <select
+            value={gap.split(/(\d+)/)[2] || 'px'}
+            onChange={(e) => {
+              const newValue = (gap.split(/(\d+)/)[1] || '0') + e.target.value;
+              setGap(newValue);
+              handleChange('gap', newValue);
+            }}
+            className="p-2 text-sm border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            {UNITS.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
     </div>
   );
