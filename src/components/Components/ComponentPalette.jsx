@@ -15,7 +15,7 @@ const DraggableComponent = ({ type, icon: Icon, label }) => {
   return (
     <div
       ref={drag}
-      className={`flex flex-col items-center justify-center p-2 bg-[#fafcff] border border-[#e6f0ff] rounded-lg shadow hover:shadow-md hover:bg-[#f5f9ff] cursor-move ${
+      className={`flex flex-col items-center justify-center p-2 bg-[#fafcff] border border-[#d1e3ff] rounded-lg shadow hover:shadow-md hover:bg-[#f5f9ff] hover:border-[#b3d1ff] cursor-move ${
         isDragging ? 'opacity-50' : ''
       } w-full aspect-square transition-all duration-200`}
     >
