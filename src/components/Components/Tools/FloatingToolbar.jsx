@@ -182,7 +182,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
 
   return (
     <div
-      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-64 max-h-[80vh] overflow-hidden flex flex-col group"
+      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-[280px] max-h-[80vh] overflow-hidden flex flex-col group"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,

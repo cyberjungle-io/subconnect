@@ -1,174 +1,139 @@
-import React, { useState, useEffect } from 'react';
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import React, { useState, useEffect, useCallback } from 'react';
+
+const UNITS = ['px', '%', 'em', 'rem', 'vw', 'vh'];
+
+const PRESETS = {
+  'Square': { width: '200px', height: '200px' },
+  'Banner': { width: '100%', height: '150px' },
+};
 
 const SizeControls = ({ style = {}, onStyleChange }) => {
-  const [widthUnit, setWidthUnit] = useState('px');
-  const [heightUnit, setHeightUnit] = useState('px');
+  const [width, setWidth] = useState('');
+  const [height, setHeight] = useState('');
   const [activePreset, setActivePreset] = useState(null);
 
   useEffect(() => {
     if (style) {
-      setWidthUnit(getUnitFromValue(style.width));
-      setHeightUnit(getUnitFromValue(style.height));
+      setWidth(style.width || '');
+      setHeight(style.height || '');
     }
   }, [style]);
 
-  console.log('SizeControls rendered', { style, onStyleChange });
+  const handleChange = useCallback((property, value) => {
+    onStyleChange({ [property]: value });
+  }, [onStyleChange]);
 
-  const getUnitFromValue = (value) => {
-    if (typeof value !== 'string') return 'px';
-    const unit = value.replace(/[0-9.-]/g, '');
-    return unit || 'px';
-  };
-
-  const setDimension = (dimension, value, unit) => {
+  const setDimension = useCallback((dimension, value) => {
     if (value === 'auto') {
-      onStyleChange({ [dimension]: 'auto' });
+      handleChange(dimension, 'auto');
     } else {
       const numericValue = parseFloat(value);
+      const unit = value.replace(/[0-9.-]/g, '') || 'px';
       if (!isNaN(numericValue)) {
-        onStyleChange({ [dimension]: `${numericValue}${unit}` });
+        handleChange(dimension, `${numericValue}${unit}`);
       }
     }
-  };
+  }, [handleChange]);
 
-  const setPercentage = (dimension, percentage) => {
-    setDimension(dimension, percentage, '%');
-    if (dimension === 'width') {
-      setWidthUnit('%');
-    } else {
-      setHeightUnit('%');
-    }
+  const setPercentage = useCallback((dimension, percentage) => {
+    setDimension(dimension, `${percentage}%`);
     setActivePreset(null);
-  };
+  }, [setDimension]);
 
-  const isActiveSize = (dimension, value, unit) => {
-    return style[dimension] === `${value}${unit}`;
-  };
-
-  const renderSizeButtons = (dimension) => {
-    return (
-      <div className="flex justify-between mt-2 mb-4">
+  const renderSizeButtons = (dimension) => (
+    <div className="flex justify-center items-center mb-4">
+      <div className="inline-flex space-x-2">
         {[25, 50, 75, 100].map((percentage) => (
           <button
             key={percentage}
             onClick={() => setPercentage(dimension, percentage)}
-            className={`flex-1 px-2 py-1 text-xs font-bold rounded transition-colors duration-200 ${
-              isActiveSize(dimension, percentage, '%')
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+            className={`px-3 py-1 text-sm rounded-full transition-colors duration-200 border ${
+              style[dimension] === `${percentage}%`
+                ? 'bg-[#cce7ff] text-blue-700 border-blue-300'
+                : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
             }`}
           >
             {percentage}%
           </button>
         ))}
       </div>
-    );
-  };
+    </div>
+  );
 
-  const renderPresetButtons = () => {
-    const presets = [
-      { label: 'Square', width: '200px', height: '200px' },
-      { label: 'Banner', width: '100%', height: '150px' },
-    ];
-
-    return (
-      <div className="flex justify-between mt-2 mb-4">
-        {presets.map((preset, index) => (
+  const renderPresetButtons = () => (
+    <div className="flex justify-center items-center mb-4">
+      <div className="flex w-full space-x-2">
+        {Object.entries(PRESETS).map(([name, preset]) => (
           <button
-            key={index}
+            key={name}
             onClick={() => {
-              onStyleChange({ width: preset.width, height: preset.height });
-              setWidthUnit(getUnitFromValue(preset.width));
-              setHeightUnit(getUnitFromValue(preset.height));
-              setActivePreset(preset.label);
+              handleChange('width', preset.width);
+              handleChange('height', preset.height);
+              setWidth(preset.width);
+              setHeight(preset.height);
+              setActivePreset(name);
             }}
-            className={`flex-1 px-2 py-1 text-xs font-bold rounded transition-colors duration-200 ${
-              activePreset === preset.label
-                ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
+            className={`flex-1 px-3 py-1 text-sm rounded-full transition-colors duration-200 border ${
+              activePreset === name
+                ? 'bg-[#cce7ff] text-blue-700 border-blue-300'
+                : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
             }`}
           >
-            {preset.label}
+            {name}
           </button>
         ))}
       </div>
-    );
-  };
+    </div>
+  );
 
-  const renderInput = (name, value, unit, setUnit) => {
-    const { number } = parseValue(value);
-    const units = ['px', '%', 'em', 'rem'];
-  
+  const renderInput = (name, value, onChange) => {
+    const numericValue = parseFloat(value) || '';
+    const unit = value.replace(/[0-9.-]/g, '') || 'px';
+
     return (
-      <div className="flex items-center justify-center w-full" onClick={(e) => e.stopPropagation()}>
-        <div className="properties-input-container flex-grow">
+      <div className="flex items-center justify-center w-full">
+        <div className="flex-grow flex">
           <input
-            type="number"
-            value={number}
-            onChange={(e) => setDimension(name, e.target.value, unit)}
-            className="properties-input w-full text-right"
+            type="text"
+            value={numericValue}
+            onChange={(e) => onChange(`${e.target.value}${unit}`)}
+            className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             placeholder={name.charAt(0).toUpperCase() + name.slice(1)}
           />
-          <div className="properties-select-wrapper">
-            <select
-              value={unit}
-              onChange={(e) => {
-                setUnit(e.target.value);
-                setDimension(name, number, e.target.value);
-              }}
-              className="properties-select"
-            >
-              {units.map((u) => (
-                <option key={u} value={u}>
-                  {u}
-                </option>
-              ))}
-            </select>
-            <div className="properties-select-arrow">
-              <FaChevronDown className="w-3 h-3" />
-            </div>
-          </div>
+          <select
+            value={unit}
+            onChange={(e) => onChange(`${numericValue}${e.target.value}`)}
+            className="p-2 text-sm border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            {UNITS.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     );
   };
 
-  const parseValue = (value) => {
-    if (value === null || value === undefined || value === '') {
-      return { number: '', unit: 'px' };
-    }
-    if (typeof value === 'number') {
-      return { number: value.toString(), unit: 'px' };
-    }
-    if (typeof value === 'string') {
-      const match = value.match(/^(\d*\.?\d+)(\D+)?$/);
-      return match ? { number: match[1], unit: match[2] || 'px' } : { number: '', unit: 'px' };
-    }
-    return { number: '', unit: 'px' };
-  };
-
-  const renderSection = (title, name, value, unit, setUnit) => {
-    return (
-      <div className="mb-4">
-        <span className="text-sm font-bold text-gray-700 mb-2 block">{title}</span>
-        {renderSizeButtons(name)}
-        <div className="flex items-center">
-          {renderInput(name, value, unit, setUnit)}
-        </div>
+  const renderSection = (title, name, value, onChange) => (
+    <div className="mb-4">
+      <span className="text-sm font-medium text-gray-700 mb-2 block">{title}</span>
+      {renderSizeButtons(name)}
+      <div className="flex items-center">
+        {renderInput(name, value, onChange)}
       </div>
-    );
-  };
+    </div>
+  );
 
   return (
     <div className="control-section">
-      <div >
-        <span>Sizing</span>
-      </div>
+      <h3 className="text-lg font-semibold text-gray-700 mb-4">Size Controls</h3>
       <div className="control-section-content">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Presets</h4>
         {renderPresetButtons()}
-        {renderSection('Width', 'width', style.width, widthUnit, setWidthUnit)}
-        {renderSection('Height', 'height', style.height, heightUnit, setHeightUnit)}
+        {renderSection('Width', 'width', width, (v) => setDimension('width', v))}
+        {renderSection('Height', 'height', height, (v) => setDimension('height', v))}
       </div>
     </div>
   );
