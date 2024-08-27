@@ -87,8 +87,10 @@ const SizeControls = ({ style = {}, onStyleChange }) => {
   );
 
   const renderInput = (name, value, onChange) => {
-    const numericValue = parseFloat(value) || '';
-    const unit = value.replace(/[0-9.-]/g, '') || 'px';
+    // Convert value to string if it's not already
+    const stringValue = String(value || '');
+    const numericValue = parseFloat(stringValue) || '';
+    const unit = stringValue.replace(/[0-9.-]/g, '') || 'px';
 
     return (
       <div className="flex items-center justify-center w-full">
