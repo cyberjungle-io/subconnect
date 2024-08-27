@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ColorPicker from '../../common/ColorPicker';
 
 const UNITS = ['px', '%', 'em', 'rem', 'vw', 'vh'];
@@ -11,20 +11,33 @@ const BorderControls = ({ style, onStyleChange }) => {
   const [allBorderWidth, setAllBorderWidth] = useState('0px');
   const [allBorderRadius, setAllBorderRadius] = useState('0px');
 
+  const updateTimeoutRef = useRef(null);
+
   useEffect(() => {
     if (style.borderWidth) {
       const [top, right, bottom, left] = style.borderWidth.split(' ');
       setBorderWidth({ top, right: right || top, bottom: bottom || top, left: left || right || top });
+      setAllBorderWidth(top);
     }
     if (style.borderStyle) setBorderStyle(style.borderStyle);
     if (style.borderColor) setBorderColor(style.borderColor);
     if (style.borderRadius) {
       const [topLeft, topRight, bottomRight, bottomLeft] = style.borderRadius.split(' ');
       setBorderRadius({ topLeft, topRight: topRight || topLeft, bottomRight: bottomRight || topLeft, bottomLeft: bottomLeft || topRight || topLeft });
+      setAllBorderRadius(topLeft);
     }
   }, [style]);
 
-  const handleBorderChange = (property, value) => {
+  const debouncedStyleChange = useCallback((updates) => {
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+    updateTimeoutRef.current = setTimeout(() => {
+      onStyleChange(updates);
+    }, 100); // Adjust this delay as needed
+  }, [onStyleChange]);
+
+  const handleBorderChange = useCallback((property, value) => {
     let updates = {};
     if (property === 'width') {
       updates.borderWidth = `${value.top} ${value.right} ${value.bottom} ${value.left}`;
@@ -33,42 +46,38 @@ const BorderControls = ({ style, onStyleChange }) => {
     } else {
       updates[`border${property.charAt(0).toUpperCase() + property.slice(1)}`] = value;
     }
-    onStyleChange(updates);
-  };
+    debouncedStyleChange(updates);
+  }, [debouncedStyleChange]);
 
-  const handleAllBorderWidthChange = (value) => {
+  const handleAllBorderWidthChange = useCallback((value) => {
     setAllBorderWidth(value);
     const newBorderWidth = { top: value, right: value, bottom: value, left: value };
     setBorderWidth(newBorderWidth);
     handleBorderChange('width', newBorderWidth);
-  };
+  }, [handleBorderChange]);
 
-  const handleSingleBorderWidthChange = (side, value) => {
-    const allValue = parseFloat(allBorderWidth) || 0;
-    const sideValue = parseFloat(value) || 0;
-    const newValue = `${allValue + sideValue}px`;
-    
+  const handleSingleBorderWidthChange = useCallback((side, value) => {
     setBorderWidth(prev => {
-      const newBorderWidth = { ...prev, [side]: newValue };
+      const newBorderWidth = { ...prev, [side]: value };
       handleBorderChange('width', newBorderWidth);
       return newBorderWidth;
     });
-  };
+  }, [handleBorderChange]);
 
-  const handleAllBorderRadiusChange = (value) => {
+  const handleAllBorderRadiusChange = useCallback((value) => {
     setAllBorderRadius(value);
     const newBorderRadius = { topLeft: value, topRight: value, bottomRight: value, bottomLeft: value };
     setBorderRadius(newBorderRadius);
     handleBorderChange('radius', newBorderRadius);
-  };
+  }, [handleBorderChange]);
 
-  const handleSingleBorderRadiusChange = (corner, value) => {
+  const handleSingleBorderRadiusChange = useCallback((corner, value) => {
     setBorderRadius(prev => {
       const newBorderRadius = { ...prev, [corner]: value || '0px' };
       handleBorderChange('radius', newBorderRadius);
       return newBorderRadius;
     });
-  };
+  }, [handleBorderChange]);
 
   const handleKeyDown = useCallback((e, setValue, currentValue) => {
     if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
