@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import ColorPicker from '../../common/ColorPicker';
 
 const BackgroundControls = ({ style, onStyleChange }) => {
   const [backgroundColor, setBackgroundColor] = useState('#ffffff');
@@ -19,11 +20,9 @@ const BackgroundControls = ({ style, onStyleChange }) => {
       <div className="control-section-content">
         <div className="mb-2">
           <label className="block text-xs font-medium text-gray-700 mb-1">Background Color</label>
-          <input
-            type="color"
-            value={backgroundColor}
-            onChange={(e) => handleBackgroundChange(e.target.value)}
-            className="w-full h-8 p-0 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          <ColorPicker
+            color={backgroundColor}
+            onChange={handleBackgroundChange}
           />
         </div>
       </div>
