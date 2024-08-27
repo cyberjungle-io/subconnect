@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaHeading, FaArrowsAlt, FaMousePointer, FaPencilAlt } from 'react-icons/fa';
 import SizeControls from './SizeControls';
 import LayoutControls from './LayoutControls';
@@ -79,6 +79,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [activeControl, setActiveControl] = useState('Size');
   const [toolbarHeight, setToolbarHeight] = useState('auto');
+  const [isMouseDown, setIsMouseDown] = useState(false);
 
   useEffect(() => {
     setPosition(initialPosition);
@@ -117,13 +118,35 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
     }
   }, [activeControl]);
 
-  const handleMouseDown = (e) => {
+  const handleMouseDown = useCallback((e) => {
     setIsDragging(true);
+    setIsMouseDown(true);
     setDragOffset({
       x: e.clientX - position.x,
       y: e.clientY - position.y,
     });
-  };
+    onToolbarInteraction(e);
+  }, [position, onToolbarInteraction]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+    setIsMouseDown(false);
+  }, []);
+
+  useEffect(() => {
+    const handleGlobalMouseUp = (e) => {
+      if (isMouseDown) {
+        handleMouseUp();
+        e.stopPropagation();
+      }
+    };
+
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+
+    return () => {
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [isMouseDown, handleMouseUp]);
 
   const handleIconClick = (tooltip) => {
     setActiveControl(activeControl === tooltip ? null : tooltip);
@@ -188,6 +211,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         top: `${position.y}px`,
       }}
       onClick={onToolbarInteraction}
+      onMouseDown={onToolbarInteraction}
     >
       <div
         className="h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"

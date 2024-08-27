@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useState } from "react";
 import { useDrop } from "react-dnd";
 import { useSelector } from 'react-redux';
 import ComponentRenderer from "../Components/Renderers/ComponentRenderer";
@@ -68,17 +68,21 @@ const Canvas = ({
     },
   });
 
+  const [isClickFromToolbar, setIsClickFromToolbar] = useState(false);
+
   const handleCanvasClick = useCallback(
     (event) => {
-      if (event.target === canvasRef.current) {
+      if (event.target === canvasRef.current && !isClickFromToolbar) {
         onClearSelection();
       }
+      setIsClickFromToolbar(false);
     },
-    [onClearSelection]
+    [onClearSelection, isClickFromToolbar]
   );
 
   const handleToolbarInteraction = useCallback((event) => {
     event.stopPropagation();
+    setIsClickFromToolbar(true);
   }, []);
 
   const canvasStyle = {
@@ -109,6 +113,7 @@ const Canvas = ({
       className="canvas-area w-full h-full bg-gray-100 overflow-auto"
       style={canvasStyle}
       onClick={handleCanvasClick}
+      onMouseDown={() => setIsClickFromToolbar(false)}
     >
       {components.map((component) => (
         <ComponentRenderer
