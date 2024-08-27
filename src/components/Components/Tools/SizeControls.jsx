@@ -40,6 +40,17 @@ const SizeControls = ({ style = {}, onStyleChange }) => {
     setActivePreset(null);
   }, [setDimension]);
 
+  const handleKeyDown = useCallback((e, dimension, value) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const numericValue = parseFloat(value) || 0;
+      const unit = value.replace(/[0-9.-]/g, '') || 'px';
+      const step = e.shiftKey ? 10 : 1;
+      const newValue = e.key === 'ArrowUp' ? numericValue + step : numericValue - step;
+      setDimension(dimension, `${newValue}${unit}`);
+    }
+  }, [setDimension]);
+
   const renderSizeButtons = (dimension) => (
     <div className="flex justify-center items-center mb-4">
       <div className="inline-flex space-x-2">
@@ -87,7 +98,6 @@ const SizeControls = ({ style = {}, onStyleChange }) => {
   );
 
   const renderInput = (name, value, onChange) => {
-    // Convert value to string if it's not already
     const stringValue = String(value || '');
     const numericValue = parseFloat(stringValue) || '';
     const unit = stringValue.replace(/[0-9.-]/g, '') || 'px';
@@ -99,6 +109,7 @@ const SizeControls = ({ style = {}, onStyleChange }) => {
             type="text"
             value={numericValue}
             onChange={(e) => onChange(`${e.target.value}${unit}`)}
+            onKeyDown={(e) => handleKeyDown(e, name, `${numericValue}${unit}`)}
             className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             placeholder={name.charAt(0).toUpperCase() + name.slice(1)}
           />
