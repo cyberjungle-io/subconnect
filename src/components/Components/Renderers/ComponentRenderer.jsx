@@ -165,6 +165,7 @@ const ComponentRenderer = React.memo(({
         },
       },
       onStyleChange, // Add this prop
+      isSelected: isThisComponentSelected,
     };
   
     switch (component.type) {
