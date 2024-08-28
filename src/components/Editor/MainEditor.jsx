@@ -37,11 +37,28 @@ import ComponentPalette from '../Components/ComponentPalette';
 import FloatingGlobalSettings from './FloatingGlobalSettings';
 import { updateProject } from '../../w3s/w3sSlice';
 import { showToast } from '../../features/toastSlice';
+import { useParams } from 'react-router-dom';
+import { fetchProject } from '../../w3s/w3sSlice';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
   const { components, selectedIds, mode, currentPage, isDragModeEnabled } = useSelector(state => state.editor);
-  const currentProject = useSelector(state => state.w3s.currentProject.data); // Fetch current project from Redux
+  const currentProject = useSelector(state => state.w3s.currentProject.data);
+  const { projectId } = useParams();
+
+  useEffect(() => {
+    if (projectId) {
+      dispatch(fetchProject(projectId));
+      dispatch(setEditorMode('view'));
+    }
+  }, [projectId, dispatch]);
+
+  useEffect(() => {
+    if (currentProject && currentProject.pages.length > 0) {
+      dispatch(setCurrentPage(currentProject.pages[0]));
+    }
+  }, [currentProject, dispatch]);
+
   const [isPanelVisible, setIsPanelVisible] = useState(true);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
@@ -55,12 +72,6 @@ const MainEditor = () => {
   const floatingRightMenuRef = useRef(null);
   const [isGlobalSettingsVisible, setIsGlobalSettingsVisible] = useState(false);
   const [globalSettingsPosition, setGlobalSettingsPosition] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    if (currentProject && currentProject.pages.length > 0) {
-      dispatch(setCurrentPage(currentProject.pages[0]));
-    }
-  }, [currentProject, dispatch]);
 
   const handleOpenProjectModal = useCallback(() => {
     console.log('Attempting to open Project Modal');

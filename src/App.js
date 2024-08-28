@@ -9,6 +9,8 @@ import LandingPage from './pages/LandingPage';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
 import MainEditor from './components/Editor/MainEditor';
+import { fetchProject } from './w3s/w3sSlice';
+import { setEditorMode } from './features/editorSlice';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -36,6 +38,12 @@ function AppContent() {
             <PrivateRoute>
               <MainEditor />
             </PrivateRoute>
+          }
+        />
+        <Route
+          path="/project/:projectId"
+          element={
+            <MainEditor />
           }
         />
       </Routes>
