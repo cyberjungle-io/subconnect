@@ -56,27 +56,30 @@ const TextRenderer = ({
     onUpdate(component.id, { style: { ...component.style, content: newContent } });
   };
 
-  // Add this new function
   const handleKeyDown = (e) => {
-    if (e.key === 'Backspace' && e.target.innerText.length === 1) {
+    if (e.key === 'Backspace' && e.target.innerText.length === 0) {
       e.preventDefault();
-      onUpdate(component.id, { style: { ...component.style, content: '' } });
     }
   };
+
+  const placeholderText = "Enter text here";
 
   return (
     <ElementType
       ref={textRef}
       className="w-full h-full overflow-hidden"
-      style={textStyle}
+      style={{
+        ...textStyle,
+        ...(component.style.content === '' && !isEditing ? { color: '#999' } : {}),
+      }}
       contentEditable={isEditing}
       onDoubleClick={onDoubleClick}
       onBlur={handleBlur}
       onInput={handleInput}
-      onKeyDown={handleKeyDown} // Add this line
+      onKeyDown={handleKeyDown}
       suppressContentEditableWarning={true}
     >
-      {component.style.content || "Text Component"}
+      {component.style.content || (!isEditing ? placeholderText : '')}
     </ElementType>
   );
 };
