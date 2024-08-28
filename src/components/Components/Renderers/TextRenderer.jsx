@@ -52,7 +52,16 @@ const TextRenderer = ({
   };
 
   const handleInput = (e) => {
-    onUpdate(component.id, { style: { ...component.style, content: e.target.innerText } });
+    const newContent = e.target.innerText;
+    onUpdate(component.id, { style: { ...component.style, content: newContent } });
+  };
+
+  // Add this new function
+  const handleKeyDown = (e) => {
+    if (e.key === 'Backspace' && e.target.innerText.length === 1) {
+      e.preventDefault();
+      onUpdate(component.id, { style: { ...component.style, content: '' } });
+    }
   };
 
   return (
@@ -64,6 +73,7 @@ const TextRenderer = ({
       onDoubleClick={onDoubleClick}
       onBlur={handleBlur}
       onInput={handleInput}
+      onKeyDown={handleKeyDown} // Add this line
       suppressContentEditableWarning={true}
     >
       {component.style.content || "Text Component"}

@@ -80,6 +80,11 @@ const ComponentRenderer = React.memo(({
   const [showToolbar, setShowToolbar] = useState(false);
   const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
   const [isEditing, setIsEditing] = useState(false);
+  const editingRef = useRef(false);
+
+  useEffect(() => {
+    editingRef.current = isEditing;
+  }, [isEditing]);
 
   const handleClick = useCallback((event) => {
     event.stopPropagation();
@@ -162,13 +167,30 @@ const ComponentRenderer = React.memo(({
         });
         setShowToolbar(true);
       }
-      // Toggle editing mode
-      setIsEditing(!isEditing);
+      setIsEditing(true);
     } else {
       // For non-text components, just show/hide toolbar
       setShowToolbar(!showToolbar);
     }
-  }, [isViewMode, component.type, showToolbar, isEditing]);
+  }, [isViewMode, component.type, showToolbar]);
+
+  const handleUpdate = useCallback((id, updates) => {
+    onUpdate(id, updates);
+    if (editingRef.current) {
+      setTimeout(() => {
+        const textElement = componentRef.current.querySelector('[contenteditable="true"]');
+        if (textElement) {
+          textElement.focus();
+          const range = document.createRange();
+          const sel = window.getSelection();
+          range.selectNodeContents(textElement);
+          range.collapse(false);
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+      }, 0);
+    }
+  }, [onUpdate]);
 
   const handleToolbarClose = useCallback(() => {
     setShowToolbar(false);
@@ -183,7 +205,7 @@ const ComponentRenderer = React.memo(({
   const renderContent = () => {
     const sharedProps = {
       component,
-      onUpdate,
+      onUpdate: handleUpdate, // Use the new handleUpdate function
       onSelect,
       onAddChild,
       onMoveComponent,
