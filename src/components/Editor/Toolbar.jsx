@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom'; // Add this import
 import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye, FaFolderOpen, FaDatabase } from 'react-icons/fa';
 import Modal from '../common/Modal';
 import RegisterForm from '../auth/RegisterForm';
@@ -20,12 +21,14 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // Add this line
   const { currentUser } = useSelector((state) => state.user);
   const { mode, currentPage } = useSelector((state) => state.editor);
   const currentProject = useSelector((state) => state.w3s.currentProject.data);
 
-  const handleLogout = () => {
-    dispatch(logoutUser());
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    navigate('/');
   };
 
   const handleEnterEditMode = () => {

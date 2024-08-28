@@ -246,6 +246,10 @@ const w3sSlice = createSlice({
         error: null,
       };
     },
+    clearW3sState: (state) => {
+      // Reset the entire state to its initial values
+      Object.assign(state, w3sSlice.getInitialState());
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -372,5 +376,5 @@ const w3sSlice = createSlice({
   },
 });
 
-export const { clearCurrentProject, updateCurrentProject, clearCurrentQuery } = w3sSlice.actions;
+export const { clearCurrentProject, updateCurrentProject, clearCurrentQuery, clearW3sState } = w3sSlice.actions;
 export default w3sSlice.reducer;

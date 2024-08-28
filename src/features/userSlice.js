@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { w3sService } from '../w3s/w3sService';
 import { fetchProjects, setCurrentProject } from '../w3s/w3sSlice'; // Add this import
 import { setEditorMode } from './editorSlice'; // Added this import
+import { clearW3sState } from '../w3s/w3sSlice'; // Add this import
 
 export const registerUser = createAsyncThunk(
   'user/register',
@@ -38,6 +39,8 @@ export const logoutUser = createAsyncThunk(
     try {
       await w3sService.logout();
       dispatch(setEditorMode('view')); // Switch to view mode
+      dispatch(clearW3sState()); // Clear w3s state
+      localStorage.removeItem('w3s_token'); // Remove token from local storage
       return null;
     } catch (error) {
       console.error('Logout error:', error);
