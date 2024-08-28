@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FaAlignLeft, FaAlignCenter, FaAlignRight, FaBold, FaItalic, FaUnderline, FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import { FaAlignLeft, FaAlignCenter, FaAlignRight, FaBold, FaItalic, FaUnderline } from 'react-icons/fa';
 import { TbOverline, TbStrikethrough } from 'react-icons/tb';
 import ColorPicker from '../../common/ColorPicker';
+import { sanitizeHtml } from '../../../utils/sanitize';
+import { validateHtmlContent } from '../../../utils/validate';
 
 const FONT_OPTIONS = [
   { value: 'Arial, sans-serif', label: 'Arial' },
@@ -47,10 +49,6 @@ const TextControls = ({ style, onStyleChange }) => {
   const [textShadow, setTextShadow] = useState({ x: 0, y: 0, blur: 0, color: '#000000' });
   const [hoverEffect, setHoverEffect] = useState('none');
   const [clickAction, setClickAction] = useState('none');
-  const [expandedSections, setExpandedSections] = useState({
-    general: true,
-    advanced: false,
-  });
 
   useEffect(() => {
     if (style) {
@@ -76,32 +74,47 @@ const TextControls = ({ style, onStyleChange }) => {
     onStyleChange({ ...style, ...updates });
   };
 
-  const handleFontStyleChange = (styleType) => {
-    switch (styleType) {
-      case 'bold':
-        setFontWeight(fontWeight === 'bold' ? 'normal' : 'bold');
-        handleStyleChange({ fontWeight: fontWeight === 'bold' ? 'normal' : 'bold' });
-        break;
-      case 'italic':
-        setFontStyle(fontStyle === 'italic' ? 'normal' : 'italic');
-        handleStyleChange({ fontStyle: fontStyle === 'italic' ? 'normal' : 'italic' });
-        break;
-      case 'underline':
-      case 'overline':
-      case 'line-through':
-        const newDecoration = textDecoration.includes(styleType)
-          ? textDecoration.replace(styleType, '').trim() || 'none'
-          : `${textDecoration === 'none' ? '' : `${textDecoration} `}${styleType}`;
-        setTextDecoration(newDecoration);
-        handleStyleChange({ textDecoration: newDecoration });
-        break;
-      default:
-        break;
+  const applyStyleToSelection = (styleType) => {
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      let tag;
+      switch (styleType) {
+        case 'bold':
+          tag = 'strong';
+          break;
+        case 'italic':
+          tag = 'em';
+          break;
+        case 'underline':
+          tag = 'u';
+          break;
+        case 'overline':
+        case 'line-through':
+          tag = 'span';
+          break;
+        default:
+          return;
+      }
+
+      const newNode = document.createElement(tag);
+      if (styleType === 'overline' || styleType === 'line-through') {
+        newNode.style.textDecoration = styleType;
+      }
+      range.surroundContents(newNode);
+      const newContent = sanitizeHtml(document.querySelector('[contenteditable="true"]').innerHTML);
+      
+      if (validateHtmlContent(newContent)) {
+        handleStyleChange({ content: newContent });
+      } else {
+        console.error('Invalid HTML content detected');
+        // Optionally, revert changes or notify the user
+      }
     }
   };
 
-  const toggleSection = (section) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
+  const handleFontStyleChange = (styleType) => {
+    applyStyleToSelection(styleType);
   };
 
   const parseShadow = (shadowString) => {
@@ -116,268 +129,240 @@ const TextControls = ({ style, onStyleChange }) => {
     handleStyleChange({ elementType: newElementType, fontSize: selectedType.defaultSize });
   };
 
-  const renderGeneralControls = () => (
-    <div className="control-section-content">
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Font Style</label>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => handleFontStyleChange('bold')}
-            className={`p-1 ${fontWeight === 'bold' ? 'bg-gray-200' : ''}`}
-          >
-            <FaBold />
-          </button>
-          <button
-            onClick={() => handleFontStyleChange('italic')}
-            className={`p-1 ${fontStyle === 'italic' ? 'bg-gray-200' : ''}`}
-          >
-            <FaItalic />
-          </button>
-          <button
-            onClick={() => handleFontStyleChange('underline')}
-            className={`p-1 ${textDecoration.includes('underline') ? 'bg-gray-200' : ''}`}
-          >
-            <FaUnderline />
-          </button>
-          <button
-            onClick={() => handleFontStyleChange('overline')}
-            className={`p-1 ${textDecoration.includes('overline') ? 'bg-gray-200' : ''}`}
-          >
-            <TbOverline />
-          </button>
-          <button
-            onClick={() => handleFontStyleChange('line-through')}
-            className={`p-1 ${textDecoration.includes('line-through') ? 'bg-gray-200' : ''}`}
-          >
-            <TbStrikethrough />
-          </button>
+  return (
+    <div className="text-controls">
+      <h3 className="text-lg font-semibold text-gray-700 mb-4">Text Controls</h3>
+      <div className="control-section-content">
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Font Style</label>
+          <div className="flex space-x-2">
+            {['bold', 'italic', 'underline', 'overline', 'line-through'].map((styleType) => (
+              <button
+                key={styleType}
+                onClick={() => handleFontStyleChange(styleType)}
+                className={`p-2 text-sm rounded-md transition-colors duration-200 border ${
+                  (styleType === 'bold' && fontWeight === 'bold') ||
+                  (styleType === 'italic' && fontStyle === 'italic') ||
+                  (styleType === 'underline' && textDecoration.includes('underline')) ||
+                  (styleType === 'overline' && textDecoration.includes('overline')) ||
+                  (styleType === 'line-through' && textDecoration.includes('line-through'))
+                    ? 'bg-[#cce7ff] text-blue-700 border-blue-300'
+                    : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
+                }`}
+              >
+                {styleType === 'bold' && <FaBold />}
+                {styleType === 'italic' && <FaItalic />}
+                {styleType === 'underline' && <FaUnderline />}
+                {styleType === 'overline' && <TbOverline />}
+                {styleType === 'line-through' && <TbStrikethrough />}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Text Align</label>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => {
-              setTextAlign('left');
-              handleStyleChange({ textAlign: 'left' });
-            }}
-            className={`p-1 ${textAlign === 'left' ? 'bg-gray-200' : ''}`}
-          >
-            <FaAlignLeft />
-          </button>
-          <button
-            onClick={() => {
-              setTextAlign('center');
-              handleStyleChange({ textAlign: 'center' });
-            }}
-            className={`p-1 ${textAlign === 'center' ? 'bg-gray-200' : ''}`}
-          >
-            <FaAlignCenter />
-          </button>
-          <button
-            onClick={() => {
-              setTextAlign('right');
-              handleStyleChange({ textAlign: 'right' });
-            }}
-            className={`p-1 ${textAlign === 'right' ? 'bg-gray-200' : ''}`}
-          >
-            <FaAlignRight />
-          </button>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Text Align</label>
+          <div className="flex space-x-2">
+            {['left', 'center', 'right'].map((align) => (
+              <button
+                key={align}
+                onClick={() => {
+                  setTextAlign(align);
+                  handleStyleChange({ textAlign: align });
+                }}
+                className={`p-2 text-sm rounded-md transition-colors duration-200 border ${
+                  textAlign === align
+                    ? 'bg-[#cce7ff] text-blue-700 border-blue-300'
+                    : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
+                }`}
+              >
+                {align === 'left' && <FaAlignLeft />}
+                {align === 'center' && <FaAlignCenter />}
+                {align === 'right' && <FaAlignRight />}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="flex mb-2 space-x-2">
-        <div className="w-1/2">
-          <label className="block text-xs font-medium text-gray-700 mb-1">Element Type</label>
+
+        <div className="flex mb-4 space-x-2">
+          <div className="w-1/2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Element Type</label>
+            <select
+              value={elementType}
+              onChange={(e) => handleElementTypeChange(e.target.value)}
+              className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              {ELEMENT_TYPES.map(type => (
+                <option key={type.value} value={type.value}>{type.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="w-1/2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
+            <input
+              type="text"
+              value={fontSize}
+              onChange={(e) => {
+                setFontSize(e.target.value);
+                handleStyleChange({ fontSize: e.target.value });
+              }}
+              className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Font Family</label>
           <select
-            value={elementType}
-            onChange={(e) => handleElementTypeChange(e.target.value)}
-            className="w-full text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            value={fontFamily}
+            onChange={(e) => {
+              setFontFamily(e.target.value);
+              handleStyleChange({ fontFamily: e.target.value });
+            }}
+            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           >
-            {ELEMENT_TYPES.map(type => (
-              <option key={type.value} value={type.value}>{type.label}</option>
+            {FONT_OPTIONS.map(font => (
+              <option key={font.value} value={font.value}>{font.label}</option>
             ))}
           </select>
         </div>
-        <div className="w-1/2">
-          <label className="block text-xs font-medium text-gray-700 mb-1">Font Size</label>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Font Color</label>
+          <ColorPicker
+            color={fontColor}
+            onChange={(color) => {
+              setFontColor(color);
+              handleStyleChange({ color });
+            }}
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Letter Spacing</label>
           <input
             type="text"
-            value={fontSize}
+            value={letterSpacing}
             onChange={(e) => {
-              setFontSize(e.target.value);
-              handleStyleChange({ fontSize: e.target.value });
+              setLetterSpacing(e.target.value);
+              handleStyleChange({ letterSpacing: e.target.value });
             }}
-            className="w-full text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Font Family</label>
-        <select
-          value={fontFamily}
-          onChange={(e) => {
-            setFontFamily(e.target.value);
-            handleStyleChange({ fontFamily: e.target.value });
-          }}
-          className="w-full text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          {FONT_OPTIONS.map(font => (
-            <option key={font.value} value={font.value}>{font.label}</option>
-          ))}
-        </select>
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Font Color</label>
-        <ColorPicker
-          color={fontColor}
-          onChange={(color) => {
-            setFontColor(color);
-            handleStyleChange({ color });
-          }}
-        />
-      </div>
-    </div>
-  );
 
-  const renderAdvancedControls = () => (
-    <>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Letter Spacing</label>
-        <input
-          type="text"
-          value={letterSpacing}
-          onChange={(e) => {
-            setLetterSpacing(e.target.value);
-            handleStyleChange({ letterSpacing: e.target.value });
-          }}
-          className="w-full text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Line Height</label>
-        <input
-          type="text"
-          value={lineHeight}
-          onChange={(e) => {
-            setLineHeight(e.target.value);
-            handleStyleChange({ lineHeight: e.target.value });
-          }}
-          className="w-full text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Text Transform</label>
-        <select
-          value={textTransform}
-          onChange={(e) => {
-            setTextTransform(e.target.value);
-            handleStyleChange({ textTransform: e.target.value });
-          }}
-          className="w-full text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option value="none">None</option>
-          <option value="uppercase">Uppercase</option>
-          <option value="lowercase">Lowercase</option>
-          <option value="capitalize">Capitalize</option>
-        </select>
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Word Spacing</label>
-        <input
-          type="text"
-          value={wordSpacing}
-          onChange={(e) => {
-            setWordSpacing(e.target.value);
-            handleStyleChange({ wordSpacing: e.target.value });
-          }}
-          className="w-full text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Text Shadow</label>
-        <div className="flex space-x-1">
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Line Height</label>
           <input
-            type="number"
-            placeholder="X"
-            value={textShadow.x}
-            onChange={(e) => setTextShadow(prev => ({ ...prev, x: e.target.value }))}
-            onBlur={() => handleStyleChange({ textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${textShadow.color}` })}
-            className="w-1/4 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-          <input
-            type="number"
-            placeholder="Y"
-            value={textShadow.y}
-            onChange={(e) => setTextShadow(prev => ({ ...prev, y: e.target.value }))}
-            onBlur={() => handleStyleChange({ textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${textShadow.color}` })}
-            className="w-1/4 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-          <input
-            type="number"
-            placeholder="Blur"
-            value={textShadow.blur}
-            onChange={(e) => setTextShadow(prev => ({ ...prev, blur: e.target.value }))}
-            onBlur={() => handleStyleChange({ textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${textShadow.color}` })}
-            className="w-1/4 text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-          <ColorPicker
-            color={textShadow.color}
-            onChange={(color) => {
-              setTextShadow(prev => ({ ...prev, color }));
-              handleStyleChange({ textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${color}` });
+            type="text"
+            value={lineHeight}
+            onChange={(e) => {
+              setLineHeight(e.target.value);
+              handleStyleChange({ lineHeight: e.target.value });
             }}
+            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           />
         </div>
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Hover Effect</label>
-        <select
-          value={hoverEffect}
-          onChange={(e) => {
-            setHoverEffect(e.target.value);
-            handleStyleChange({ hoverEffect: e.target.value });
-          }}
-          className="w-full text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option value="none">None</option>
-          <option value="underline">Underline</option>
-          <option value="color">Color Change</option>
-          <option value="scale">Scale</option>
-        </select>
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Click Action</label>
-        <select
-          value={clickAction}
-          onChange={(e) => {
-            setClickAction(e.target.value);
-            handleStyleChange({ clickAction: e.target.value });
-          }}
-          className="w-full text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option value="none">None</option>
-          <option value="smoothScroll">Smooth Scroll</option>
-          <option value="openModal">Open Modal</option>
-        </select>
-      </div>
-    </>
-  );
 
-  return (
-    <div className="text-controls">
-      <div className="control-section">
-        <div className="control-section-header" onClick={() => toggleSection('general')}>
-          <span>General</span>
-          {expandedSections.general ? <FaChevronDown /> : <FaChevronRight />}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Text Transform</label>
+          <select
+            value={textTransform}
+            onChange={(e) => {
+              setTextTransform(e.target.value);
+              handleStyleChange({ textTransform: e.target.value });
+            }}
+            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="none">None</option>
+            <option value="uppercase">Uppercase</option>
+            <option value="lowercase">Lowercase</option>
+            <option value="capitalize">Capitalize</option>
+          </select>
         </div>
-        {expandedSections.general && renderGeneralControls()}
-      </div>
-      <div className="control-section">
-        <div className="control-section-header" onClick={() => toggleSection('advanced')}>
-          <span>Advanced</span>
-          {expandedSections.advanced ? <FaChevronDown /> : <FaChevronRight />}
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Word Spacing</label>
+          <input
+            type="text"
+            value={wordSpacing}
+            onChange={(e) => {
+              setWordSpacing(e.target.value);
+              handleStyleChange({ wordSpacing: e.target.value });
+            }}
+            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
         </div>
-        {expandedSections.advanced && renderAdvancedControls()}
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Text Shadow</label>
+          <div className="flex space-x-2">
+            <input
+              type="number"
+              placeholder="X"
+              value={textShadow.x}
+              onChange={(e) => setTextShadow(prev => ({ ...prev, x: e.target.value }))}
+              onBlur={() => handleStyleChange({ textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${textShadow.color}` })}
+              className="w-1/4 p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            />
+            <input
+              type="number"
+              placeholder="Y"
+              value={textShadow.y}
+              onChange={(e) => setTextShadow(prev => ({ ...prev, y: e.target.value }))}
+              onBlur={() => handleStyleChange({ textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${textShadow.color}` })}
+              className="w-1/4 p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            />
+            <input
+              type="number"
+              placeholder="Blur"
+              value={textShadow.blur}
+              onChange={(e) => setTextShadow(prev => ({ ...prev, blur: e.target.value }))}
+              onBlur={() => handleStyleChange({ textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${textShadow.color}` })}
+              className="w-1/4 p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            />
+            <ColorPicker
+              color={textShadow.color}
+              onChange={(color) => {
+                setTextShadow(prev => ({ ...prev, color }));
+                handleStyleChange({ textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${color}` });
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Hover Effect</label>
+          <select
+            value={hoverEffect}
+            onChange={(e) => {
+              setHoverEffect(e.target.value);
+              handleStyleChange({ hoverEffect: e.target.value });
+            }}
+            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="none">None</option>
+            <option value="underline">Underline</option>
+            <option value="color">Color Change</option>
+            <option value="scale">Scale</option>
+          </select>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Click Action</label>
+          <select
+            value={clickAction}
+            onChange={(e) => {
+              setClickAction(e.target.value);
+              handleStyleChange({ clickAction: e.target.value });
+            }}
+            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="none">None</option>
+            <option value="smoothScroll">Smooth Scroll</option>
+            <option value="openModal">Open Modal</option>
+          </select>
+        </div>
       </div>
     </div>
   );
