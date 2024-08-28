@@ -2,18 +2,24 @@ import React from "react";
 
 const TextRenderer = ({ component, globalSettings }) => {
   const textStyle = {
-    fontFamily: globalSettings.generalComponentStyle.fontFamily,
-    fontSize: globalSettings.generalComponentStyle.fontSize,
-    color: component.props.color || globalSettings.generalComponentStyle.color,
-    backgroundColor: globalSettings.generalComponentStyle.backgroundColor,
-    borderRadius: globalSettings.generalComponentStyle.borderRadius,
-    boxShadow: globalSettings.generalComponentStyle.boxShadow,
+    fontFamily: component.style.fontFamily || globalSettings.generalComponentStyle.fontFamily,
+    fontSize: component.style.fontSize || globalSettings.generalComponentStyle.fontSize,
+    color: component.style.color || globalSettings.generalComponentStyle.color,
+    backgroundColor: component.style.backgroundColor || globalSettings.generalComponentStyle.backgroundColor,
+    borderRadius: component.style.borderRadius || globalSettings.generalComponentStyle.borderRadius,
+    boxShadow: component.style.boxShadow || globalSettings.generalComponentStyle.boxShadow,
+    textAlign: component.style.textAlign || 'left',
+    fontWeight: component.style.fontWeight || 'normal',
+    fontStyle: component.style.fontStyle || 'normal',
+    textDecoration: component.style.textDecoration || 'none',
   };
 
+  const ElementType = component.style.headingLevel || 'p';
+
   return (
-    <p className="w-full h-full overflow-hidden" style={textStyle}>
-      {component.content || "Text Component"}
-    </p>
+    <ElementType className="w-full h-full overflow-hidden" style={textStyle}>
+      {component.style.content || "Text Component"}
+    </ElementType>
   );
 };
 
