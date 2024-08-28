@@ -21,6 +21,16 @@ const FONT_OPTIONS = [
   { value: 'custom', label: 'Custom Font' },
 ];
 
+const ELEMENT_TYPES = [
+  { value: 'p', label: 'Paragraph', defaultSize: '16px' },
+  { value: 'h1', label: 'Heading 1', defaultSize: '32px' },
+  { value: 'h2', label: 'Heading 2', defaultSize: '24px' },
+  { value: 'h3', label: 'Heading 3', defaultSize: '18.72px' },
+  { value: 'h4', label: 'Heading 4', defaultSize: '16px' },
+  { value: 'h5', label: 'Heading 5', defaultSize: '13.28px' },
+  { value: 'h6', label: 'Heading 6', defaultSize: '10.72px' },
+];
+
 const TextControls = ({ style, onStyleChange }) => {
   const [content, setContent] = useState('');
   const [fontFamily, setFontFamily] = useState('Arial, sans-serif');
@@ -30,7 +40,7 @@ const TextControls = ({ style, onStyleChange }) => {
   const [fontWeight, setFontWeight] = useState('normal');
   const [fontStyle, setFontStyle] = useState('normal');
   const [textDecoration, setTextDecoration] = useState('none');
-  const [headingLevel, setHeadingLevel] = useState('p');
+  const [elementType, setElementType] = useState('p');
   const [letterSpacing, setLetterSpacing] = useState('normal');
   const [lineHeight, setLineHeight] = useState('normal');
   const [textTransform, setTextTransform] = useState('none');
@@ -53,7 +63,7 @@ const TextControls = ({ style, onStyleChange }) => {
       setFontWeight(style.fontWeight || 'normal');
       setFontStyle(style.fontStyle || 'normal');
       setTextDecoration(style.textDecoration || 'none');
-      setHeadingLevel(style.headingLevel || 'p');
+      setElementType(style.elementType || 'p');
       setLetterSpacing(style.letterSpacing || 'normal');
       setLineHeight(style.lineHeight || 'normal');
       setTextTransform(style.textTransform || 'none');
@@ -101,6 +111,13 @@ const TextControls = ({ style, onStyleChange }) => {
     return { x: parseInt(x), y: parseInt(y), blur: parseInt(blur), color };
   };
 
+  const handleElementTypeChange = (newElementType) => {
+    const selectedType = ELEMENT_TYPES.find(type => type.value === newElementType);
+    setElementType(newElementType);
+    setFontSize(selectedType.defaultSize);
+    handleStyleChange({ elementType: newElementType, fontSize: selectedType.defaultSize });
+  };
+
   const renderGeneralControls = () => (
     <div className="control-section-content">
       <div className="mb-2">
@@ -116,6 +133,18 @@ const TextControls = ({ style, onStyleChange }) => {
         />
       </div>
       <div className="mb-2">
+        <label className="block text-xs font-medium text-gray-700 mb-1">Element Type</label>
+        <select
+          value={elementType}
+          onChange={(e) => handleElementTypeChange(e.target.value)}
+          className="w-full text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          {ELEMENT_TYPES.map(type => (
+            <option key={type.value} value={type.value}>{type.label}</option>
+          ))}
+        </select>
+      </div>
+      <div className="mb-2">
         <label className="block text-xs font-medium text-gray-700 mb-1">Font Family</label>
         <select
           value={fontFamily}
@@ -128,25 +157,6 @@ const TextControls = ({ style, onStyleChange }) => {
           {FONT_OPTIONS.map(font => (
             <option key={font.value} value={font.value}>{font.label}</option>
           ))}
-        </select>
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Element Type</label>
-        <select
-          value={headingLevel}
-          onChange={(e) => {
-            setHeadingLevel(e.target.value);
-            handleStyleChange({ headingLevel: e.target.value });
-          }}
-          className="w-full text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option value="p">Paragraph</option>
-          <option value="h1">H1</option>
-          <option value="h2">H2</option>
-          <option value="h3">H3</option>
-          <option value="h4">H4</option>
-          <option value="h5">H5</option>
-          <option value="h6">H6</option>
         </select>
       </div>
       <div className="mb-2">
@@ -242,7 +252,7 @@ const TextControls = ({ style, onStyleChange }) => {
   );
 
   const renderAdvancedControls = () => (
-    <div className="control-section-content">
+    <>
       <div className="mb-2">
         <label className="block text-xs font-medium text-gray-700 mb-1">Letter Spacing</label>
         <input
@@ -362,7 +372,7 @@ const TextControls = ({ style, onStyleChange }) => {
           <option value="openModal">Open Modal</option>
         </select>
       </div>
-    </div>
+    </>
   );
 
   return (
