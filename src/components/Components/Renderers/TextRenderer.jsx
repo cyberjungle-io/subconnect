@@ -55,14 +55,8 @@ const TextRenderer = ({
   };
 
   const handleInput = (e) => {
-    const newContent = sanitizeHtml(e.target.innerHTML);
-    if (validateHtmlContent(newContent)) {
-      onUpdate(component.id, { style: { ...component.style, content: newContent } });
-    } else {
-      console.error('Invalid HTML content detected');
-      // Revert changes
-      e.target.innerHTML = component.style.content || '';
-    }
+    const newContent = e.target.innerText;
+    onUpdate(component.id, { style: { ...component.style, content: newContent } });
   };
 
   const handleKeyDown = (e) => {
@@ -87,9 +81,12 @@ const TextRenderer = ({
       onInput={handleInput}
       onKeyDown={handleKeyDown}
       suppressContentEditableWarning={true}
-    >
-      {component.style.content || (!isEditing ? placeholderText : '')}
-    </ElementType>
+      dangerouslySetInnerHTML={{ 
+        __html: validateHtmlContent(component.style.content) 
+          ? sanitizeHtml(component.style.content || (!isEditing ? placeholderText : ''))
+          : placeholderText
+      }}
+    />
   );
 };
 
