@@ -57,21 +57,20 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
   };
 
   return (
-    <div className="bg-gray-800 text-white px-4 py-3 flex justify-between items-center">
-      <div>
+    <div className="bg-gradient-to-r from-[#d1e5f7] to-[#e6f3ff] text-gray-800 px-4 py-3 flex justify-between items-center border-b border-[#a3c9ff] shadow-sm relative">
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iLjA1IiBkPSJNMCAwaDMwMHYzMDBIMHoiLz48L3N2Zz4=')] opacity-50 mix-blend-overlay"></div>
+      <div className="relative z-10">
         <HamburgerMenu />
       </div>
 
-      <div className="flex items-center space-x-5">
-        {currentUser && (
-          <span className="text-sm mr-3">Welcome, {currentUser.username}</span>
-        )}
+      <div className="flex items-center space-x-5 relative z-10">
+        
         {mode === 'edit' && currentUser && currentProject && (
           <>
             <div className="relative mr-3">
               <button
                 onClick={toggleProjectInfo}
-                className="flex items-center space-x-2 bg-gray-700 px-3 py-1.5 rounded text-sm hover:bg-gray-600 transition-colors"
+                className="flex items-center space-x-2 px-3 py-1.5 rounded text-sm hover:bg-[#b3d9ff] transition-colors"
               >
                 <span>Project Info</span>
                 {expandedSections.currentProject ? (
@@ -81,7 +80,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
                 )}
               </button>
               {expandedSections.currentProject && (
-                <div className="absolute top-full left-0 mt-1 w-64 bg-gray-800 rounded shadow-lg z-[990]">
+                <div className="absolute top-full left-0 mt-1 w-64 bg-[#e6f3ff] rounded shadow-lg z-[990] border border-[#a3c9ff]">
                   <div className="current-project-container">
                     <div className="current-project-header p-3 border-b border-gray-700">
                       <div className="current-project-info">
@@ -105,7 +104,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
             </div>
             <button
               onClick={onSaveProject}
-              className="flex items-center justify-center w-9 h-9 bg-gray-700 rounded text-sm hover:bg-gray-600 transition-colors"
+              className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#b3d9ff] transition-colors"
               title="Save Project"
             >
               <FaSave className="text-base" />
@@ -115,7 +114,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
         {currentUser && (
           <button
             onClick={handleOpenProjectModal}
-            className="flex items-center justify-center w-9 h-9 bg-gray-700 rounded text-sm hover:bg-gray-600 transition-colors"
+            className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#b3d9ff] transition-colors"
             title="Open Project"
           >
             <FaFolderOpen className="text-base" />
@@ -124,7 +123,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
         {currentUser && (
           <button
             onClick={handleOpenDataModal}
-            className="flex items-center justify-center w-9 h-9 bg-gray-700 rounded text-sm hover:bg-gray-600 transition-colors"
+            className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#b3d9ff] transition-colors"
             title="Open Data Modal"
           >
             <FaDatabase className="text-base" />
@@ -133,7 +132,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
         {currentUser ? (
           <button
             onClick={handleToggleMode}
-            className="flex items-center justify-center w-9 h-9 bg-gray-700 rounded text-sm hover:bg-gray-600 transition-colors"
+            className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#b3d9ff] transition-colors"
             title={mode === 'edit' ? 'View Mode' : 'Edit Mode'}
           >
             {mode === 'edit' ? <FaEye className="text-base" /> : <FaEdit className="text-base" />}
@@ -142,13 +141,13 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
           <>
             <button
               onClick={() => setLoginModalOpen(true)}
-              className="bg-gray-700 px-3 py-1.5 rounded text-sm hover:bg-gray-600 transition-colors"
+              className="px-3 py-1.5 rounded text-sm hover:bg-[#b3d9ff] transition-colors"
             >
               Login
             </button>
             <button
               onClick={() => setRegisterModalOpen(true)}
-              className="bg-gray-700 px-3 py-1.5 rounded text-sm hover:bg-gray-600 transition-colors"
+              className="px-3 py-1.5 rounded text-sm hover:bg-[#b3d9ff] transition-colors"
             >
               Register
             </button>
@@ -157,7 +156,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
         {currentUser && (
           <button
             onClick={handleLogout}
-            className="flex items-center space-x-2 bg-gray-700 px-3 py-1.5 rounded text-sm hover:bg-gray-600 transition-colors"
+            className="flex items-center space-x-2 px-3 py-1.5 rounded text-sm hover:bg-[#b3d9ff] transition-colors"
           >
             <FaSignOutAlt />
             <span>Logout</span>
