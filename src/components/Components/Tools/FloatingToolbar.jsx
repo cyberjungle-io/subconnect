@@ -5,7 +5,6 @@ import LayoutControls from './LayoutControls';
 import BorderControls from './BorderControls';
 import BackgroundControls from './BackgroundControls';
 import TextControls from './TextControls';
-import HeadingControls from './HeadingControls';
 import ImageControls from './ImageControls';
 import ChartControls from './ChartControls';
 import SpacingControls from './SpacingControls';
@@ -27,13 +26,6 @@ const iconMap = {
     { icon: FaBorderStyle, tooltip: 'Border' },
     { icon: FaPalette, tooltip: 'Background' },
     { icon: FaFont, tooltip: 'Text Controls' },
-    { icon: FaHeading, tooltip: 'Heading Controls' },
-  ],
-  HEADING: [
-    { icon: FaLayerGroup, tooltip: 'Layout' },
-    { icon: FaPalette, tooltip: 'Background' },
-    { icon: FaHeading, tooltip: 'Heading Controls' },
-    { icon: FaFont, tooltip: 'Font' },
   ],
   IMAGE: [
     { icon: FaExpand, tooltip: 'Size' },
@@ -186,8 +178,6 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         return <BackgroundControls {...sharedProps} />;
       case 'Text Controls':
         return <TextControls {...sharedProps} />;
-      case 'Heading Controls':
-        return <HeadingControls {...sharedProps} />;
       case 'Image Controls':
         return <ImageControls {...sharedProps} />;
       case 'Layout':

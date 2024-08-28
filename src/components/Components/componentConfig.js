@@ -2,7 +2,6 @@ import { FaColumns, FaFont, FaImage, FaChartBar, FaTable, FaPlayCircle, FaSquare
 
 export const componentTypes = {
   FLEX_CONTAINER: 'FLEX_CONTAINER',
-  HEADING: 'HEADING',
   TEXT: 'TEXT',
   IMAGE: 'IMAGE',
   BUTTON: 'BUTTON',
@@ -27,16 +26,15 @@ export const componentConfig = {
       borderRadius: '4px'
     }
   },
-  [componentTypes.HEADING]: {
-    name: 'Heading',
-    icon: FaHeading,
+  [componentTypes.TEXT]: {
+    name: 'Text',
+    icon: FaFont,
     acceptsChildren: false,
-    defaultContent: 'Heading',
+    defaultContent: 'Enter your text here',
     defaultProps: {
-      level: 'h1',
       fontFamily: 'Arial, sans-serif',
-      fontSize: '32px',
-      fontWeight: 'bold',
+      fontSize: '16px',
+      fontWeight: 'normal',
       fontStyle: 'normal',
       textDecoration: 'none',
       textTransform: 'none',
@@ -44,7 +42,7 @@ export const componentConfig = {
       backgroundColor: 'transparent',
       textAlign: 'left',
       textIndent: '0px',
-      lineHeight: '1.2',
+      lineHeight: '1.5',
       letterSpacing: 'normal',
       wordSpacing: 'normal',
       textShadow: 'none',
@@ -54,35 +52,26 @@ export const componentConfig = {
       height: 'auto',
       hoverEffect: 'none',
       clickAction: 'none',
+      headingLevel: 'p', // Add this for heading functionality
       responsiveHide: {
         mobile: false,
         tablet: false,
         desktop: false
       },
       responsiveFontSize: {
-        mobile: '24px',
-        tablet: '28px',
-        desktop: '32px'
+        mobile: '14px',
+        tablet: '16px',
+        desktop: '16px'
       },
       borderRadius: '4px'
     },
     style: {
       textAlign: 'left',
-      fontSize: '2rem',
+      fontSize: '16px',
       verticalAlign: 'top',
       // ... (keep other style properties)
     }
   },
-  [componentTypes.TEXT]: {
-    name: 'Text',
-    icon: FaFont,
-    acceptsChildren: false,
-    defaultContent: 'Enter your text here',
-    defaultProps: {
-      borderRadius: '4px'
-    }
-  },
-  
   [componentTypes.IMAGE]: {
     name: 'Image',
     icon: FaImage,
