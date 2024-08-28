@@ -78,6 +78,7 @@ const ContainerRenderer = ({ component, depth, isTopLevel, globalSettings = defa
             component={{ ...child, style: getChildStyles(child) }}
             depth={depth + 1} // Increment depth for children
             isDragModeEnabled={isDragModeEnabled}
+            globalSettings={globalSettings} // Pass globalSettings here
             {...props}
           />
         ))}
@@ -91,6 +92,7 @@ const ContainerRenderer = ({ component, depth, isTopLevel, globalSettings = defa
         component={{ ...child, style: getChildStyles(child) }}
         depth={depth + 1} // Increment depth for children
         isDragModeEnabled={isDragModeEnabled}
+        globalSettings={globalSettings} // Pass globalSettings here
         {...props}
       />
     ));

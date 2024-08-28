@@ -118,6 +118,16 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
     }
   }, [activeControl]);
 
+  const handleToolbarInteraction = useCallback((e) => {
+    e.stopPropagation();
+    onToolbarInteraction(e);
+  }, [onToolbarInteraction]);
+
+  const handleDoubleClick = useCallback((e) => {
+    e.stopPropagation();
+    e.preventDefault();
+  }, []);
+
   const handleMouseDown = useCallback((e) => {
     setIsDragging(true);
     setIsMouseDown(true);
@@ -210,8 +220,8 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         left: `${position.x}px`,
         top: `${position.y}px`,
       }}
-      onClick={onToolbarInteraction}
-      onMouseDown={onToolbarInteraction}
+      onClick={handleToolbarInteraction}
+      onDoubleClick={handleDoubleClick}
     >
       <div
         className="h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useDrop, useDrag } from "react-dnd";
 import { useSelector, useDispatch } from 'react-redux';
 import { deleteComponents, renameComponent } from '../../../features/editorSlice'; // Update this import
@@ -77,6 +77,9 @@ const ComponentRenderer = React.memo(({
   const componentRef = useRef(null);
   const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild, isDragModeEnabled);
   const [isHovered, setIsHovered] = useState(false);
+  const [showToolbar, setShowToolbar] = useState(false);
+  const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleClick = useCallback((event) => {
     event.stopPropagation();
@@ -145,6 +148,38 @@ const ComponentRenderer = React.memo(({
     ));
   };
 
+  const handleDoubleClick = useCallback((e) => {
+    e.stopPropagation();
+    if (isViewMode) return;
+
+    if (component.type === "TEXT") {
+      // Always show toolbar for text components
+      if (!showToolbar) {
+        const rect = componentRef.current.getBoundingClientRect();
+        setToolbarPosition({ 
+          x: e.clientX,
+          y: e.clientY + 10
+        });
+        setShowToolbar(true);
+      }
+      // Toggle editing mode
+      setIsEditing(!isEditing);
+    } else {
+      // For non-text components, just show/hide toolbar
+      setShowToolbar(!showToolbar);
+    }
+  }, [isViewMode, component.type, showToolbar, isEditing]);
+
+  const handleToolbarClose = useCallback(() => {
+    setShowToolbar(false);
+    setIsEditing(false);
+  }, []);
+
+  const handleToolbarInteraction = useCallback((e) => {
+    e.stopPropagation();
+    // Prevent closing the toolbar when interacting with it
+  }, []);
+
   const renderContent = () => {
     const sharedProps = {
       component,
@@ -165,6 +200,10 @@ const ComponentRenderer = React.memo(({
         },
       },
       onStyleChange, // Add this prop
+      isSelected: isThisComponentSelected,
+      onDoubleClick: handleDoubleClick,
+      isEditing: isEditing,
+      setIsEditing: setIsEditing,
     };
   
     switch (component.type) {
@@ -281,25 +320,6 @@ const ComponentRenderer = React.memo(({
     return componentStyle;
   };
 
-  const [showToolbar, setShowToolbar] = useState(false);
-  const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
-
-  const handleDoubleClick = (e) => {
-    e.stopPropagation();
-    if (isViewMode) return;
-
-    const rect = componentRef.current.getBoundingClientRect();
-    setToolbarPosition({ 
-      x: e.clientX, // Position at the cursor's X coordinate
-      y: e.clientY + 10 // Position slightly below the cursor's Y coordinate
-    });
-    setShowToolbar(true);
-  };
-
-  const handleCloseToolbar = () => {
-    setShowToolbar(false);
-  };
-
   // Effect to hide toolbar when component is deselected
   useEffect(() => {
     if (!isThisComponentSelected) {
@@ -349,7 +369,7 @@ const ComponentRenderer = React.memo(({
           componentId={component.id}
           componentType={component.type}
           initialPosition={toolbarPosition}
-          onClose={handleCloseToolbar}
+          onClose={handleToolbarClose}
           style={component.style}
           props={component.props}
           content={component.content}
@@ -358,7 +378,7 @@ const ComponentRenderer = React.memo(({
             if (updates.props) onUpdate(component.id, { props: updates.props });
             if (updates.content !== undefined) onUpdate(component.id, { content: updates.content });
           }}
-          onToolbarInteraction={onToolbarInteraction}
+          onToolbarInteraction={handleToolbarInteraction}
         />
       )}
     </>
