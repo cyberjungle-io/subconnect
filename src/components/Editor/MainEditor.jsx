@@ -1,4 +1,4 @@
-import React, { useState,useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -43,19 +43,20 @@ import { fetchProject } from '../../w3s/w3sSlice';
 const MainEditor = () => {
   const dispatch = useDispatch();
   const { components, selectedIds, mode, currentPage, isDragModeEnabled } = useSelector(state => state.editor);
-  const currentProject = useSelector(state => state.w3s.currentProject.data);
+  const { data: currentProject, status: projectStatus, error: projectError } = useSelector(state => state.w3s.currentProject);
   const { projectId } = useParams();
 
   useEffect(() => {
     if (projectId) {
       dispatch(fetchProject(projectId));
-      dispatch(setEditorMode('view'));
     }
   }, [projectId, dispatch]);
 
   useEffect(() => {
     if (currentProject && currentProject.pages.length > 0) {
       dispatch(setCurrentPage(currentProject.pages[0]));
+      dispatch(loadPageContent(currentProject.pages[0].content));
+      dispatch(setEditorMode('view'));
     }
   }, [currentProject, dispatch]);
 
@@ -332,6 +333,14 @@ const MainEditor = () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
+
+  if (projectStatus === 'loading') {
+    return <div>Loading project...</div>;
+  }
+
+  if (projectStatus === 'failed') {
+    return <div>Error: {projectError}</div>;
+  }
 
   return (
     <DndProvider backend={HTML5Backend}>

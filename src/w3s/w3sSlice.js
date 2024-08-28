@@ -20,7 +20,7 @@ export const fetchProject = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     try {
       const response = await w3sService.getProject(id);
-      return response.data;
+      return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to fetch project');
     }
@@ -265,10 +265,17 @@ const w3sSlice = createSlice({
       })
 
       // Fetch Single Project
+      .addCase(fetchProject.pending, (state) => {
+        state.currentProject.status = 'loading';
+      })
       .addCase(fetchProject.fulfilled, (state, action) => {
         state.currentProject.status = 'succeeded';
         state.currentProject.data = action.payload;
         state.currentProject.error = null;
+      })
+      .addCase(fetchProject.rejected, (state, action) => {
+        state.currentProject.status = 'failed';
+        state.currentProject.error = action.payload;
       })
 
       // Update Project
