@@ -221,33 +221,37 @@ const MainEditor = () => {
     // Implement spacing visibility logic here
   };
 
-  const handleToggleComponentTree = () => {
-    if (!isComponentTreeVisible) {
-      const floatingRightMenu = floatingRightMenuRef.current;
-      if (floatingRightMenu) {
-        const rect = floatingRightMenu.getBoundingClientRect();
-        setComponentTreePosition({
-          x: rect.left - 270, // 270 = 264 (width of ComponentTree) + 6 (gap)
-          y: rect.top,
-        });
+  const handleToggleComponentTree = useCallback(() => {
+    setIsComponentTreeVisible((prev) => {
+      if (!prev) {
+        const floatingRightMenu = floatingRightMenuRef.current;
+        if (floatingRightMenu) {
+          const rect = floatingRightMenu.getBoundingClientRect();
+          setComponentTreePosition({
+            x: rect.left - 270, // 270 = 264 (width of ComponentTree) + 6 (gap)
+            y: rect.top,
+          });
+        }
       }
-    }
-    setIsComponentTreeVisible(!isComponentTreeVisible);
-  };
+      return !prev;
+    });
+  }, []);
 
-  const handleToggleComponentPalette = () => {
-    if (!isComponentPaletteVisible) {
-      const floatingRightMenu = floatingRightMenuRef.current;
-      if (floatingRightMenu) {
-        const rect = floatingRightMenu.getBoundingClientRect();
-        setComponentPalettePosition({
-          x: rect.left - 270,
-          y: rect.top,
-        });
+  const handleToggleComponentPalette = useCallback(() => {
+    setIsComponentPaletteVisible((prev) => {
+      if (!prev) {
+        const floatingRightMenu = floatingRightMenuRef.current;
+        if (floatingRightMenu) {
+          const rect = floatingRightMenu.getBoundingClientRect();
+          setComponentPalettePosition({
+            x: rect.left - 270,
+            y: rect.top,
+          });
+        }
       }
-    }
-    setIsComponentPaletteVisible(!isComponentPaletteVisible);
-  };
+      return !prev;
+    });
+  }, []);
 
   const handleToggleGlobalSettings = () => {
     if (!isGlobalSettingsVisible) {
@@ -297,6 +301,26 @@ const MainEditor = () => {
       dispatch(showToast({ message: 'Error: No project selected', type: 'error' }));
     }
   };
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.ctrlKey || event.metaKey) {
+        if (event.key === 'q') {
+          event.preventDefault();
+          handleToggleComponentPalette();
+        } else if (event.key === 'e') {
+          event.preventDefault();
+          handleToggleComponentTree();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
     <DndProvider backend={HTML5Backend}>
