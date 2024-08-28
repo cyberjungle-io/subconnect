@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from "react";
+import { sanitizeHtml } from '../../../utils/sanitize';
+import { validateHtmlContent } from '../../../utils/validate';
 
 const TextRenderer = ({ 
   component, 
@@ -25,6 +27,7 @@ const TextRenderer = ({
       fontStyle: component.style.fontStyle || 'normal',
       textDecoration: component.style.textDecoration || 'none',
       padding: component.style.padding || '5px',
+      cursor: isEditing ? 'text' : 'default', // Add this line
       ...component.style, // This ensures any specific component styles override the global ones
     };
   };
@@ -52,12 +55,18 @@ const TextRenderer = ({
   };
 
   const handleInput = (e) => {
-    const newContent = e.target.innerText;
-    onUpdate(component.id, { style: { ...component.style, content: newContent } });
+    const newContent = sanitizeHtml(e.target.innerHTML);
+    if (validateHtmlContent(newContent)) {
+      onUpdate(component.id, { style: { ...component.style, content: newContent } });
+    } else {
+      console.error('Invalid HTML content detected');
+      // Optionally, revert changes or notify the user
+      e.target.innerHTML = component.style.content; // Revert to previous content
+    }
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Backspace' && e.target.innerText.length === 0) {
+    if (e.key === 'Backspace' && textRef.current.innerHTML.trim() === '') {
       e.preventDefault();
     }
   };
@@ -78,9 +87,12 @@ const TextRenderer = ({
       onInput={handleInput}
       onKeyDown={handleKeyDown}
       suppressContentEditableWarning={true}
-    >
-      {component.style.content || (!isEditing ? placeholderText : '')}
-    </ElementType>
+      dangerouslySetInnerHTML={{ 
+        __html: validateHtmlContent(component.style.content) 
+          ? sanitizeHtml(component.style.content || (!isEditing ? placeholderText : ''))
+          : placeholderText
+      }}
+    />
   );
 };
 

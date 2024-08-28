@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { FaAlignLeft, FaAlignCenter, FaAlignRight, FaBold, FaItalic, FaUnderline, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import { TbOverline, TbStrikethrough } from 'react-icons/tb';
 import ColorPicker from '../../common/ColorPicker';
+import { sanitizeHtml } from '../../../utils/sanitize';
+import { validateHtmlContent } from '../../../utils/validate';
 
 const FONT_OPTIONS = [
   { value: 'Arial, sans-serif', label: 'Arial' },
@@ -76,28 +78,47 @@ const TextControls = ({ style, onStyleChange }) => {
     onStyleChange({ ...style, ...updates });
   };
 
-  const handleFontStyleChange = (styleType) => {
-    switch (styleType) {
-      case 'bold':
-        setFontWeight(fontWeight === 'bold' ? 'normal' : 'bold');
-        handleStyleChange({ fontWeight: fontWeight === 'bold' ? 'normal' : 'bold' });
-        break;
-      case 'italic':
-        setFontStyle(fontStyle === 'italic' ? 'normal' : 'italic');
-        handleStyleChange({ fontStyle: fontStyle === 'italic' ? 'normal' : 'italic' });
-        break;
-      case 'underline':
-      case 'overline':
-      case 'line-through':
-        const newDecoration = textDecoration.includes(styleType)
-          ? textDecoration.replace(styleType, '').trim() || 'none'
-          : `${textDecoration === 'none' ? '' : `${textDecoration} `}${styleType}`;
-        setTextDecoration(newDecoration);
-        handleStyleChange({ textDecoration: newDecoration });
-        break;
-      default:
-        break;
+  const applyStyleToSelection = (styleType) => {
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      let tag;
+      switch (styleType) {
+        case 'bold':
+          tag = 'strong';
+          break;
+        case 'italic':
+          tag = 'em';
+          break;
+        case 'underline':
+          tag = 'u';
+          break;
+        case 'overline':
+        case 'line-through':
+          tag = 'span';
+          break;
+        default:
+          return;
+      }
+
+      const newNode = document.createElement(tag);
+      if (styleType === 'overline' || styleType === 'line-through') {
+        newNode.style.textDecoration = styleType;
+      }
+      range.surroundContents(newNode);
+      const newContent = sanitizeHtml(document.querySelector('[contenteditable="true"]').innerHTML);
+      
+      if (validateHtmlContent(newContent)) {
+        handleStyleChange({ content: newContent });
+      } else {
+        console.error('Invalid HTML content detected');
+        // Optionally, revert changes or notify the user
+      }
     }
+  };
+
+  const handleFontStyleChange = (styleType) => {
+    applyStyleToSelection(styleType);
   };
 
   const toggleSection = (section) => {
@@ -123,31 +144,31 @@ const TextControls = ({ style, onStyleChange }) => {
         <div className="flex space-x-2">
           <button
             onClick={() => handleFontStyleChange('bold')}
-            className={`p-1 ${fontWeight === 'bold' ? 'bg-gray-200' : ''}`}
+            className="p-1"
           >
             <FaBold />
           </button>
           <button
             onClick={() => handleFontStyleChange('italic')}
-            className={`p-1 ${fontStyle === 'italic' ? 'bg-gray-200' : ''}`}
+            className="p-1"
           >
             <FaItalic />
           </button>
           <button
             onClick={() => handleFontStyleChange('underline')}
-            className={`p-1 ${textDecoration.includes('underline') ? 'bg-gray-200' : ''}`}
+            className="p-1"
           >
             <FaUnderline />
           </button>
           <button
             onClick={() => handleFontStyleChange('overline')}
-            className={`p-1 ${textDecoration.includes('overline') ? 'bg-gray-200' : ''}`}
+            className="p-1"
           >
             <TbOverline />
           </button>
           <button
             onClick={() => handleFontStyleChange('line-through')}
-            className={`p-1 ${textDecoration.includes('line-through') ? 'bg-gray-200' : ''}`}
+            className="p-1"
           >
             <TbStrikethrough />
           </button>
