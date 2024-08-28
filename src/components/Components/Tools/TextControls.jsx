@@ -32,7 +32,6 @@ const ELEMENT_TYPES = [
 ];
 
 const TextControls = ({ style, onStyleChange }) => {
-  const [content, setContent] = useState('');
   const [fontFamily, setFontFamily] = useState('Arial, sans-serif');
   const [fontSize, setFontSize] = useState('16px');
   const [fontColor, setFontColor] = useState('#000000');
@@ -55,7 +54,6 @@ const TextControls = ({ style, onStyleChange }) => {
 
   useEffect(() => {
     if (style) {
-      setContent(style.content || '');
       setFontFamily(style.fontFamily || 'Arial, sans-serif');
       setFontSize(style.fontSize || '16px');
       setFontColor(style.color || '#000000');
@@ -121,99 +119,6 @@ const TextControls = ({ style, onStyleChange }) => {
   const renderGeneralControls = () => (
     <div className="control-section-content">
       <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Content</label>
-        <textarea
-          value={content}
-          onChange={(e) => {
-            setContent(e.target.value);
-            handleStyleChange({ content: e.target.value });
-          }}
-          className="w-full text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          rows="4"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Element Type</label>
-        <select
-          value={elementType}
-          onChange={(e) => handleElementTypeChange(e.target.value)}
-          className="w-full text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          {ELEMENT_TYPES.map(type => (
-            <option key={type.value} value={type.value}>{type.label}</option>
-          ))}
-        </select>
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Font Family</label>
-        <select
-          value={fontFamily}
-          onChange={(e) => {
-            setFontFamily(e.target.value);
-            handleStyleChange({ fontFamily: e.target.value });
-          }}
-          className="w-full text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          {FONT_OPTIONS.map(font => (
-            <option key={font.value} value={font.value}>{font.label}</option>
-          ))}
-        </select>
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Font Size</label>
-        <input
-          type="text"
-          value={fontSize}
-          onChange={(e) => {
-            setFontSize(e.target.value);
-            handleStyleChange({ fontSize: e.target.value });
-          }}
-          className="w-full text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Font Color</label>
-        <ColorPicker
-          color={fontColor}
-          onChange={(color) => {
-            setFontColor(color);
-            handleStyleChange({ color });
-          }}
-        />
-      </div>
-      <div className="mb-2">
-        <label className="block text-xs font-medium text-gray-700 mb-1">Text Align</label>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => {
-              setTextAlign('left');
-              handleStyleChange({ textAlign: 'left' });
-            }}
-            className={`p-1 ${textAlign === 'left' ? 'bg-gray-200' : ''}`}
-          >
-            <FaAlignLeft />
-          </button>
-          <button
-            onClick={() => {
-              setTextAlign('center');
-              handleStyleChange({ textAlign: 'center' });
-            }}
-            className={`p-1 ${textAlign === 'center' ? 'bg-gray-200' : ''}`}
-          >
-            <FaAlignCenter />
-          </button>
-          <button
-            onClick={() => {
-              setTextAlign('right');
-              handleStyleChange({ textAlign: 'right' });
-            }}
-            className={`p-1 ${textAlign === 'right' ? 'bg-gray-200' : ''}`}
-          >
-            <FaAlignRight />
-          </button>
-        </div>
-      </div>
-      <div className="mb-2">
         <label className="block text-xs font-medium text-gray-700 mb-1">Font Style</label>
         <div className="flex space-x-2">
           <button
@@ -247,6 +152,89 @@ const TextControls = ({ style, onStyleChange }) => {
             <TbStrikethrough />
           </button>
         </div>
+      </div>
+      <div className="mb-2">
+        <label className="block text-xs font-medium text-gray-700 mb-1">Text Align</label>
+        <div className="flex space-x-2">
+          <button
+            onClick={() => {
+              setTextAlign('left');
+              handleStyleChange({ textAlign: 'left' });
+            }}
+            className={`p-1 ${textAlign === 'left' ? 'bg-gray-200' : ''}`}
+          >
+            <FaAlignLeft />
+          </button>
+          <button
+            onClick={() => {
+              setTextAlign('center');
+              handleStyleChange({ textAlign: 'center' });
+            }}
+            className={`p-1 ${textAlign === 'center' ? 'bg-gray-200' : ''}`}
+          >
+            <FaAlignCenter />
+          </button>
+          <button
+            onClick={() => {
+              setTextAlign('right');
+              handleStyleChange({ textAlign: 'right' });
+            }}
+            className={`p-1 ${textAlign === 'right' ? 'bg-gray-200' : ''}`}
+          >
+            <FaAlignRight />
+          </button>
+        </div>
+      </div>
+      <div className="flex mb-2 space-x-2">
+        <div className="w-1/2">
+          <label className="block text-xs font-medium text-gray-700 mb-1">Element Type</label>
+          <select
+            value={elementType}
+            onChange={(e) => handleElementTypeChange(e.target.value)}
+            className="w-full text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            {ELEMENT_TYPES.map(type => (
+              <option key={type.value} value={type.value}>{type.label}</option>
+            ))}
+          </select>
+        </div>
+        <div className="w-1/2">
+          <label className="block text-xs font-medium text-gray-700 mb-1">Font Size</label>
+          <input
+            type="text"
+            value={fontSize}
+            onChange={(e) => {
+              setFontSize(e.target.value);
+              handleStyleChange({ fontSize: e.target.value });
+            }}
+            className="w-full text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+        </div>
+      </div>
+      <div className="mb-2">
+        <label className="block text-xs font-medium text-gray-700 mb-1">Font Family</label>
+        <select
+          value={fontFamily}
+          onChange={(e) => {
+            setFontFamily(e.target.value);
+            handleStyleChange({ fontFamily: e.target.value });
+          }}
+          className="w-full text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          {FONT_OPTIONS.map(font => (
+            <option key={font.value} value={font.value}>{font.label}</option>
+          ))}
+        </select>
+      </div>
+      <div className="mb-2">
+        <label className="block text-xs font-medium text-gray-700 mb-1">Font Color</label>
+        <ColorPicker
+          color={fontColor}
+          onChange={(color) => {
+            setFontColor(color);
+            handleStyleChange({ color });
+          }}
+        />
       </div>
     </div>
   );
