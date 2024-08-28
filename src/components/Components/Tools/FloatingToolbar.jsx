@@ -203,6 +203,12 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
     }
   `;
 
+  const handleToolbarInteraction = useCallback((e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onToolbarInteraction(e);
+  }, [onToolbarInteraction]);
+
   return (
     <div
       className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-[280px] max-h-[80vh] overflow-hidden flex flex-col group"
@@ -210,8 +216,10 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         left: `${position.x}px`,
         top: `${position.y}px`,
       }}
-      onClick={onToolbarInteraction}
-      onMouseDown={onToolbarInteraction}
+      onClick={handleToolbarInteraction}
+      onMouseDown={handleToolbarInteraction}
+      onDoubleClick={handleToolbarInteraction}
+      onMouseUp={handleToolbarInteraction}
     >
       <div
         className="h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
