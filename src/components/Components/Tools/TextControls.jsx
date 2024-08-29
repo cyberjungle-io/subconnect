@@ -33,7 +33,7 @@ const ELEMENT_TYPES = [
   { value: 'h6', label: 'Heading 6', defaultSize: '10.72px' },
 ];
 
-const TextControls = ({ style, onStyleChange }) => {
+const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
   const [fontFamily, setFontFamily] = useState('Arial, sans-serif');
   const [fontSize, setFontSize] = useState('16px');
   const [fontColor, setFontColor] = useState('#000000');

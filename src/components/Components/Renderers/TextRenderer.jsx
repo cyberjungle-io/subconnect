@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { sanitizeHtml } from '../../../utils/sanitize';
 import { validateHtmlContent } from '../../../utils/validate';
 
@@ -9,16 +9,19 @@ const TextRenderer = ({
   onDoubleClick, 
   isEditing, 
   setIsEditing, 
-  globalSettings 
+  globalSettings,
+  isToolbarOpen
 }) => {
   const textRef = useRef(null);
+  const [showPlaceholder, setShowPlaceholder] = useState(!component.style.content);
+  const [localContent, setLocalContent] = useState(component.style.content || '');
 
   const getTextStyle = () => {
     const generalComponentStyle = globalSettings?.generalComponentStyle || {};
     return {
       fontFamily: component.style.fontFamily || generalComponentStyle.fontFamily,
       fontSize: component.style.fontSize || generalComponentStyle.fontSize,
-      color: component.style.color || generalComponentStyle.color,
+      color: component.style.color || generalComponentStyle.color || '#000000', // Default to black
       backgroundColor: component.style.backgroundColor || generalComponentStyle.backgroundColor,
       borderRadius: component.style.borderRadius || generalComponentStyle.borderRadius,
       boxShadow: component.style.boxShadow || generalComponentStyle.boxShadow,
@@ -27,8 +30,8 @@ const TextRenderer = ({
       fontStyle: component.style.fontStyle || 'normal',
       textDecoration: component.style.textDecoration || 'none',
       padding: component.style.padding || '5px',
-      cursor: isEditing ? 'text' : 'default', // Add this line
-      ...component.style, // This ensures any specific component styles override the global ones
+      cursor: isEditing ? 'text' : 'default',
+      ...component.style,
     };
   };
 
@@ -36,36 +39,55 @@ const TextRenderer = ({
 
   const ElementType = component.style.headingLevel || 'p';
 
+  const getPlaceholderText = () => {
+    if (!isToolbarOpen && !isEditing) {
+      return "Double Tap to Open Toolbar";
+    } else if (isToolbarOpen && !isEditing) {
+      return "Double Tap to Type Text";
+    } else if (isEditing) {
+      return "Type Text";
+    }
+    return "";
+  };
+
+  const placeholderText = getPlaceholderText();
+
+  useEffect(() => {
+    setLocalContent(component.style.content || '');
+    setShowPlaceholder(!component.style.content);
+  }, [component.style.content]);
+
   useEffect(() => {
     if (isEditing && textRef.current) {
       textRef.current.focus();
-      // Place cursor at the end of the text
-      const range = document.createRange();
-      const sel = window.getSelection();
-      range.selectNodeContents(textRef.current);
-      range.collapse(false);
-      sel.removeAllRanges();
-      sel.addRange(range);
     }
   }, [isEditing]);
 
+  const handleFocus = () => {
+    setShowPlaceholder(false);
+  };
+
   const handleBlur = () => {
-    // Don't set isEditing to false on blur
-    // This allows the toolbar to remain open
+    if (!localContent.trim()) {
+      setShowPlaceholder(true);
+    }
   };
 
   const handleInput = (e) => {
     const newContent = e.target.innerText;
-    onUpdate(component.id, { style: { ...component.style, content: newContent } });
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Backspace' && textRef.current.innerHTML.trim() === '') {
-      e.preventDefault();
+    setLocalContent(newContent);
+    setShowPlaceholder(!newContent.trim());
+    const sanitizedContent = sanitizeHtml(newContent);
+    if (validateHtmlContent(sanitizedContent)) {
+      onUpdate(component.id, { style: { ...component.style, content: sanitizedContent } });
     }
   };
 
-  const placeholderText = "Enter text here";
+  const handleKeyDown = (e) => {
+    if (e.key === 'Backspace' && textRef.current.innerText.trim() === '') {
+      e.preventDefault();
+    }
+  };
 
   return (
     <ElementType
@@ -73,20 +95,18 @@ const TextRenderer = ({
       className="w-full h-full overflow-hidden"
       style={{
         ...textStyle,
-        ...((!component.style.content || component.style.content === '') && !isEditing ? { color: '#999' } : {}),
+        color: showPlaceholder ? '#999' : (component.style.color || '#000000'), // Use placeholder color only when showing placeholder
       }}
       contentEditable={isEditing}
       onDoubleClick={onDoubleClick}
+      onFocus={handleFocus}
       onBlur={handleBlur}
       onInput={handleInput}
       onKeyDown={handleKeyDown}
       suppressContentEditableWarning={true}
-      dangerouslySetInnerHTML={{ 
-        __html: validateHtmlContent(component.style.content) 
-          ? sanitizeHtml(component.style.content || (!isEditing ? placeholderText : ''))
-          : placeholderText
-      }}
-    />
+    >
+      {showPlaceholder ? placeholderText : sanitizeHtml(localContent)}
+    </ElementType>
   );
 };
 
