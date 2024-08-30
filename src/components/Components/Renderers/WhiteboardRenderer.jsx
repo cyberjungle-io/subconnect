@@ -25,6 +25,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const [layersDropdownOpen, setLayersDropdownOpen] = useState(false);
   const [activeShape, setActiveShape] = useState('pen');
   const [shapesDropdownOpen, setShapesDropdownOpen] = useState(false);
+  const [eraserSize, setEraserSize] = useState(10);
 
   const saveToHistory = useCallback(() => {
     const canvas = canvasRef.current;
@@ -80,11 +81,19 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
 
-    context.lineTo(x, y);
-    context.stroke();
-    context.beginPath();
-    context.moveTo(x, y);
-  }, [isDrawing, context]);
+    if (tool === 'eraser') {
+      context.globalCompositeOperation = 'destination-out';
+      context.beginPath();
+      context.arc(x, y, eraserSize / 2, 0, Math.PI * 2, false);
+      context.fill();
+    } else {
+      context.globalCompositeOperation = 'source-over';
+      context.lineTo(x, y);
+      context.stroke();
+      context.beginPath();
+      context.moveTo(x, y);
+    }
+  }, [isDrawing, context, tool, eraserSize]);
 
   const startDrawing = useCallback((e) => {
     setIsDrawing(true);
@@ -95,13 +104,22 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     const x = (e.clientX - rect.left) * scaleX;
     const y = (e.clientY - rect.top) * scaleY;
 
-    context.beginPath();
-    context.moveTo(x, y);
-  }, [context]);
+    if (tool === 'eraser') {
+      context.globalCompositeOperation = 'destination-out';
+      context.beginPath();
+      context.arc(x, y, eraserSize / 2, 0, Math.PI * 2, false);
+      context.fill();
+    } else {
+      context.globalCompositeOperation = 'source-over';
+      context.beginPath();
+      context.moveTo(x, y);
+    }
+  }, [context, tool, eraserSize]);
 
   const stopDrawing = useCallback(() => {
     setIsDrawing(false);
     context.beginPath();
+    context.globalCompositeOperation = 'source-over';
     saveToHistory();
   }, [context, saveToHistory]);
 
@@ -376,9 +394,21 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
             </div>
           )}
         </div>
-        <button className="toolbar-button">
+        <button 
+          className={`toolbar-button ${tool === 'eraser' ? 'active' : ''}`} 
+          onClick={() => handleToolChange('eraser')}
+        >
           <FaEraser />
         </button>
+        {tool === 'eraser' && (
+          <input
+            type="range"
+            min="5"
+            max="50"
+            value={eraserSize}
+            onChange={(e) => setEraserSize(parseInt(e.target.value, 10))}
+          />
+        )}
         <button className="toolbar-button">
           <FaFont />
         </button>
