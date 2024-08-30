@@ -375,6 +375,19 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     setEraserDropdownOpen(!eraserDropdownOpen);
   };
 
+  const EraserSizePreview = ({ size }) => (
+    <div
+      style={{
+        width: `${size}px`,
+        height: `${size}px`,
+        borderRadius: '50%',
+        backgroundColor: 'rgba(0, 0, 0, 0.1)',
+        border: '1px solid rgba(0, 0, 0, 0.3)',
+        marginRight: '10px',
+      }}
+    />
+  );
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (eraserDropdownRef.current && !eraserDropdownRef.current.contains(event.target)) {
@@ -428,14 +441,18 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           </button>
           {eraserDropdownOpen && (
             <div className="eraser-dropdown">
-              <input
-                type="range"
-                min="5"
-                max="50"
-                value={eraserSize}
-                onChange={(e) => setEraserSize(parseInt(e.target.value, 10))}
-                orient="vertical"
-              />
+              <div style={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
+                <EraserSizePreview size={eraserSize} />
+                <input
+                  type="range"
+                  min="5"
+                  max="50"
+                  value={eraserSize}
+                  onChange={(e) => setEraserSize(parseInt(e.target.value, 10))}
+                  orient="vertical"
+                  style={{ height: '100px' }}
+                />
+              </div>
             </div>
           )}
         </div>
