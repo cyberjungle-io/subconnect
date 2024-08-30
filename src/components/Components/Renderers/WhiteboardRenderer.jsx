@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { FaPen, FaEraser, FaTrash, FaSquare, FaCircle, FaMinus, FaLongArrowAltRight, FaFont, FaUndo, FaEye, FaTrashAlt, FaChevronDown, FaEyeSlash, FaRedo, FaSave, FaUpload, FaPlus, FaLayerGroup, FaChevronRight } from 'react-icons/fa';
+import { FaPen, FaEraser, FaTrash, FaSquare, FaCircle, FaMinus, FaLongArrowAltRight, FaFont, FaUndo, FaEye, FaTrashAlt, FaChevronDown, FaEyeSlash, FaRedo, FaSave, FaUpload, FaPlus, FaLayerGroup, FaChevronRight, FaChevronUp } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateComponent, undoWhiteboard, redoWhiteboard } from '../../../features/editorSlice';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -26,6 +26,8 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const [activeShape, setActiveShape] = useState('pen');
   const [shapesDropdownOpen, setShapesDropdownOpen] = useState(false);
   const [eraserSize, setEraserSize] = useState(10);
+  const [eraserDropdownOpen, setEraserDropdownOpen] = useState(false);
+  const eraserDropdownRef = useRef(null);
 
   const saveToHistory = useCallback(() => {
     const canvas = canvasRef.current;
@@ -369,6 +371,23 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     return shape ? shape.icon : FaPen;
   };
 
+  const toggleEraserDropdown = () => {
+    setEraserDropdownOpen(!eraserDropdownOpen);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (eraserDropdownRef.current && !eraserDropdownRef.current.contains(event.target)) {
+        setEraserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', borderRadius: component.props.borderRadius || '4px', overflow: 'hidden', position: 'relative' }}>
       <div className="whiteboard-toolbar">
@@ -394,21 +413,32 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
             </div>
           )}
         </div>
-        <button 
-          className={`toolbar-button ${tool === 'eraser' ? 'active' : ''}`} 
-          onClick={() => handleToolChange('eraser')}
-        >
-          <FaEraser />
-        </button>
-        {tool === 'eraser' && (
-          <input
-            type="range"
-            min="5"
-            max="50"
-            value={eraserSize}
-            onChange={(e) => setEraserSize(parseInt(e.target.value, 10))}
-          />
-        )}
+        <div className="eraser-tool" ref={eraserDropdownRef}>
+          <button 
+            className={`toolbar-button ${tool === 'eraser' ? 'active' : ''}`} 
+            onClick={() => handleToolChange('eraser')}
+          >
+            <FaEraser />
+          </button>
+          <button 
+            className="eraser-dropdown-toggle" 
+            onClick={toggleEraserDropdown}
+          >
+            {eraserDropdownOpen ? <FaChevronUp /> : <FaChevronDown />}
+          </button>
+          {eraserDropdownOpen && (
+            <div className="eraser-dropdown">
+              <input
+                type="range"
+                min="5"
+                max="50"
+                value={eraserSize}
+                onChange={(e) => setEraserSize(parseInt(e.target.value, 10))}
+                orient="vertical"
+              />
+            </div>
+          )}
+        </div>
         <button className="toolbar-button">
           <FaFont />
         </button>
