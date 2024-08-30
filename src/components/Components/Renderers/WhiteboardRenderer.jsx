@@ -240,8 +240,23 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
 
     const resizeCanvas = () => {
       const parent = canvas.parentElement;
-      canvas.width = parent.clientWidth;
-      canvas.height = parent.clientHeight;
+      const newWidth = parent.clientWidth;
+      const newHeight = parent.clientHeight;
+      
+      // Create a temporary canvas to store the current drawing
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      tempCtx.drawImage(canvas, 0, 0);
+
+      // Resize the main canvas
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+
+      // Redraw the content
+      ctx.drawImage(tempCanvas, 0, 0);
+      
       ctx.strokeStyle = component.props.strokeColor || globalSettings.generalComponentStyle.color || '#000000';
       ctx.lineWidth = component.props.strokeWidth || 2;
     };
