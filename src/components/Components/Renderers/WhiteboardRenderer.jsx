@@ -71,51 +71,39 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   }, [context, tool, strokeColor, strokeWidth]);
 
   const draw = useCallback((e) => {
-    if (component.isDraggingDisabled && isDrawing) {
-      const canvas = canvasRef.current;
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
-      const x = (e.clientX - rect.left) * scaleX;
-      const y = (e.clientY - rect.top) * scaleY;
+    if (!isDrawing || !context) return;
 
-      if (tool === 'pen' || tool === 'eraser') {
-        context.strokeStyle = tool === 'eraser' ? (component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff') : strokeColor;
-        context.lineWidth = tool === 'eraser' ? 20 : strokeWidth;
-        context.lineTo(x, y);
-        context.stroke();
-        context.beginPath();
-        context.moveTo(x, y);
-      } else if (['rectangle', 'circle', 'line', 'arrow'].includes(tool)) {
-        drawShape(startPoint, { x, y });
-      }
-    }
-  }, [component.isDraggingDisabled, isDrawing, tool, context, startPoint, strokeColor, strokeWidth, drawShape, component.props.backgroundColor, globalSettings]);
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    context.lineTo(x, y);
+    context.stroke();
+    context.beginPath();
+    context.moveTo(x, y);
+  }, [isDrawing, context]);
 
   const startDrawing = useCallback((e) => {
-    if (component.isDraggingDisabled) {
-      e.preventDefault();
-      setIsDrawing(true);
-      const rect = canvasRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      setStartPoint({ x, y });
-      if (tool === 'pen' || tool === 'eraser') {
-        draw(e);
-      }
-    }
-  }, [component.isDraggingDisabled, tool, draw]);
+    setIsDrawing(true);
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    context.beginPath();
+    context.moveTo(x, y);
+  }, [context]);
 
   const stopDrawing = useCallback(() => {
-    if (component.isDraggingDisabled) {
-      setIsDrawing(false);
-      context.beginPath();
-      if (['rectangle', 'circle', 'line', 'arrow'].includes(tool)) {
-        drawShape(startPoint, { x: startPoint.x, y: startPoint.y });
-      }
-      saveToHistory();
-    }
-  }, [component.isDraggingDisabled, context, tool, drawShape, startPoint, saveToHistory]);
+    setIsDrawing(false);
+    context.beginPath();
+    saveToHistory();
+  }, [context, saveToHistory]);
 
   const drawArrow = (start, end) => {
     const headlen = 10;
@@ -452,7 +440,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           height: '100%',
           border: '1px solid #000',
           backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff',
-          cursor: component.isDraggingDisabled ? 'crosshair' : 'move',
+          cursor: 'crosshair',
           borderRadius: 'inherit',
         }}
         onMouseDown={startDrawing}
