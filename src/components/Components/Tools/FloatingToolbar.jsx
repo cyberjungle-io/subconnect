@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaHeading, FaArrowsAlt, FaMousePointer, FaPencilAlt } from 'react-icons/fa';
 import SizeControls from './SizeControls';
 import LayoutControls from './LayoutControls';
@@ -72,6 +72,27 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   const [activeControl, setActiveControl] = useState('Size');
   const [toolbarHeight, setToolbarHeight] = useState('auto');
   const [isMouseDown, setIsMouseDown] = useState(false);
+  const toolbarRef = useRef(null);
+
+  useEffect(() => {
+    if (toolbarRef.current) {
+      const toolbarRect = toolbarRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      let { x, y } = initialPosition;
+
+      // Ensure the toolbar stays within the viewport
+      if (x + toolbarRect.width > viewportWidth) {
+        x = viewportWidth - toolbarRect.width;
+      }
+      if (y + toolbarRect.height > viewportHeight) {
+        y = viewportHeight - toolbarRect.height;
+      }
+
+      setPosition({ x: Math.max(0, x), y: Math.max(0, y) });
+    }
+  }, [initialPosition]);
 
   useEffect(() => {
     setPosition(initialPosition);
@@ -205,6 +226,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
 
   return (
     <div
+      ref={toolbarRef}
       className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-[280px] max-h-[80vh] overflow-hidden flex flex-col group"
       style={{
         left: `${position.x}px`,

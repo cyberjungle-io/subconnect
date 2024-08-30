@@ -157,19 +157,36 @@ const ComponentRenderer = React.memo(({
     e.stopPropagation();
     if (isViewMode) return;
 
+    const rect = componentRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Calculate the available space on the right and bottom
+    const spaceRight = viewportWidth - e.clientX;
+    const spaceBottom = viewportHeight - e.clientY;
+
+    // Determine the position based on available space
+    let x = e.clientX;
+    let y = e.clientY;
+
+    // If there's not enough space on the right, position on the left
+    if (spaceRight < 300) { // Assuming toolbar width is 300px
+      x = Math.max(0, e.clientX - 300);
+    }
+
+    // If there's not enough space at the bottom, position above
+    if (spaceBottom < 400) { // Assuming a max toolbar height of 400px
+      y = Math.max(0, e.clientY - 400);
+    }
+
     if (component.type === "TEXT") {
-      // Always show toolbar for text components
       if (!showToolbar) {
-        const rect = componentRef.current.getBoundingClientRect();
-        setToolbarPosition({ 
-          x: e.clientX,
-          y: e.clientY + 10
-        });
+        setToolbarPosition({ x, y });
         setShowToolbar(true);
       }
       setIsEditing(true);
     } else {
-      // For non-text components, just show/hide toolbar
+      setToolbarPosition({ x, y });
       setShowToolbar(!showToolbar);
     }
   }, [isViewMode, component.type, showToolbar]);
