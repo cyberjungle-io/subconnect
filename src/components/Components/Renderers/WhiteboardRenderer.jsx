@@ -23,7 +23,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const [layers, setLayers] = useState([{ id: 1, name: 'Layer 1', visible: true }]);
   const [activeLayer, setActiveLayer] = useState(1);
   const [layersDropdownOpen, setLayersDropdownOpen] = useState(false);
-  const [activeShape, setActiveShape] = useState('pen');
+  const [activeShape, setActiveShape] = useState('arrow');
   const [shapesDropdownOpen, setShapesDropdownOpen] = useState(false);
   const [eraserSize, setEraserSize] = useState(10);
   const [eraserDropdownOpen, setEraserDropdownOpen] = useState(false);
@@ -362,16 +362,15 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const toggleShapesDropdown = () => setShapesDropdownOpen(prevState => !prevState);
 
   const shapes = [
-    { name: 'Pen', icon: FaPen, value: 'pen' },
+    { name: 'Arrow', icon: FaLongArrowAltRight, value: 'arrow' },
     { name: 'Square', icon: FaSquare, value: 'square' },
     { name: 'Circle', icon: FaCircle, value: 'circle' },
     { name: 'Line', icon: FaMinus, value: 'line' },
-    { name: 'Arrow', icon: FaLongArrowAltRight, value: 'arrow' },
   ];
 
   const getShapeIcon = (value) => {
     const shape = shapes.find(s => s.value === value);
-    return shape ? shape.icon : FaPen;
+    return shape ? shape.icon : FaLongArrowAltRight;
   };
 
   const toggleEraserDropdown = () => {
@@ -407,10 +406,16 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', borderRadius: component.props.borderRadius || '4px', overflow: 'hidden', position: 'relative' }}>
       <div className="whiteboard-toolbar">
+        <button
+          onClick={() => handleToolChange('pen')}
+          className={`toolbar-button ${activeTool === 'pen' ? 'active' : ''}`}
+        >
+          <FaPen />
+        </button>
         <div className="dropdown shapes-dropdown">
           <button onClick={toggleShapesDropdown} className="toolbar-button">
-            {React.createElement(getShapeIcon(activeTool === 'eraser' ? activeShape : activeTool))}
-            <FaChevronRight />
+            {React.createElement(getShapeIcon(activeShape))}
+            <FaChevronDown />
           </button>
           {shapesDropdownOpen && (
             <div className="dropdown-menu">
@@ -418,10 +423,11 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
                 <button
                   key={shape.value}
                   onClick={() => {
+                    setActiveShape(shape.value);
                     handleToolChange(shape.value);
                     toggleShapesDropdown();
                   }}
-                  className={`toolbar-button ${activeTool === shape.value ? 'active' : ''}`}
+                  className={`toolbar-button ${activeShape === shape.value ? 'active' : ''}`}
                 >
                   <shape.icon /> {shape.name}
                 </button>
