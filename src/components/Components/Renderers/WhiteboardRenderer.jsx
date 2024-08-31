@@ -148,6 +148,9 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const handleToolChange = (newTool) => {
     setTool(newTool);
     setActiveTool(newTool);
+    if (newTool !== 'eraser') {
+      setActiveShape(newTool);
+    }
   };
 
   const handleTextInput = (e) => {
@@ -406,7 +409,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
       <div className="whiteboard-toolbar">
         <div className="dropdown shapes-dropdown">
           <button onClick={toggleShapesDropdown} className="toolbar-button">
-            {React.createElement(getShapeIcon(activeShape))}
+            {React.createElement(getShapeIcon(activeTool === 'eraser' ? activeShape : activeTool))}
             <FaChevronRight />
           </button>
           {shapesDropdownOpen && (
@@ -415,10 +418,10 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
                 <button
                   key={shape.value}
                   onClick={() => {
-                    setActiveShape(shape.value);
+                    handleToolChange(shape.value);
                     toggleShapesDropdown();
                   }}
-                  className={`toolbar-button ${activeShape === shape.value ? 'active' : ''}`}
+                  className={`toolbar-button ${activeTool === shape.value ? 'active' : ''}`}
                 >
                   <shape.icon /> {shape.name}
                 </button>
