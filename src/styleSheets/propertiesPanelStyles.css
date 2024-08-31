@@ -739,16 +739,17 @@ input[type="checkbox"] {
 
 .eraser-tool .toolbar-button {
   margin: 0;
-  border-radius: 0;
+  border-radius: 4px 0 0 4px;
 }
 
 .eraser-dropdown-toggle {
   padding: 8px 5px;
-  background-color: transparent;
+  background-color: rgba(255, 255, 255, 0.7);
   border: none;
   cursor: pointer;
   display: flex;
   align-items: center;
+  border-radius: 0 4px 4px 0;
 }
 
 .eraser-dropdown-toggle:hover {
@@ -758,12 +759,15 @@ input[type="checkbox"] {
 .eraser-dropdown {
   position: absolute;
   top: 100%;
-  right: 0;
+  left: 0;
   background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 4px;
   padding: 10px;
   z-index: 1000;
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
 }
 
 .eraser-dropdown input[type="range"] {
@@ -795,6 +799,10 @@ input[type="checkbox"] {
 /* Ensure the dropdown is visible on top of other elements */
 .whiteboard-toolbar {
   z-index: 10;
+}
+
+.eraser-dropdown {
+  z-index: 11;
 }
 
 .eraser-dropdown {

@@ -453,12 +453,30 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
             </div>
           )}
         </div>
-        <button 
-          className={`toolbar-button ${tool === 'eraser' ? 'active' : ''}`} 
-          onClick={() => handleToolChange('eraser')}
-        >
-          <FaEraser />
-        </button>
+        <div className="eraser-tool" ref={eraserDropdownRef}>
+          <button 
+            className={`toolbar-button ${tool === 'eraser' ? 'active' : ''}`} 
+            onClick={() => handleToolChange('eraser')}
+          >
+            <FaEraser />
+          </button>
+          <button className="eraser-dropdown-toggle" onClick={toggleEraserDropdown}>
+            <FaChevronDown />
+          </button>
+          {eraserDropdownOpen && (
+            <div className="eraser-dropdown">
+              <EraserSizePreview size={eraserSize} />
+              <input
+                type="range"
+                min="1"
+                max="50"
+                value={eraserSize}
+                onChange={(e) => setEraserSize(parseInt(e.target.value))}
+                orient="vertical"
+              />
+            </div>
+          )}
+        </div>
         <button className="toolbar-button">
           <FaFont />
         </button>
