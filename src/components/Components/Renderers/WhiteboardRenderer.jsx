@@ -28,6 +28,8 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const [eraserSize, setEraserSize] = useState(10);
   const [eraserDropdownOpen, setEraserDropdownOpen] = useState(false);
   const eraserDropdownRef = useRef(null);
+  const tempCanvasRef = useRef(null);
+  const [tempContext, setTempContext] = useState(null);
 
   const saveToHistory = useCallback(() => {
     const canvas = canvasRef.current;
@@ -43,59 +45,35 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     dispatch(redoWhiteboard());
   }, [dispatch]);
 
-  const drawShape = useCallback((start, end) => {
-    if (!context) return;
+  const drawShape = useCallback((start, end, ctx) => {
+    if (!ctx) return;
 
-    context.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    context.beginPath();
-    context.strokeStyle = strokeColor;
-    context.lineWidth = strokeWidth;
+    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    ctx.beginPath();
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = strokeWidth;
 
-    switch (tool) {
-      case 'rectangle':
-        context.rect(start.x, start.y, end.x - start.x, end.y - start.y);
+    switch (activeShape) {
+      case 'square':
+        ctx.rect(start.x, start.y, end.x - start.x, end.y - start.y);
         break;
       case 'circle':
         const radius = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2));
-        context.arc(start.x, start.y, radius, 0, 2 * Math.PI);
+        ctx.arc(start.x, start.y, radius, 0, 2 * Math.PI);
         break;
       case 'line':
-        context.moveTo(start.x, start.y);
-        context.lineTo(end.x, end.y);
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y);
         break;
       case 'arrow':
-        drawArrow(start, end);
+        drawArrow(ctx, start, end);
         break;
       default:
         break;
     }
 
-    context.stroke();
-  }, [context, tool, strokeColor, strokeWidth]);
-
-  const draw = useCallback((e) => {
-    if (!isDrawing || !context) return;
-
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
-
-    if (tool === 'eraser') {
-      context.globalCompositeOperation = 'destination-out';
-      context.beginPath();
-      context.arc(x, y, eraserSize / 2, 0, Math.PI * 2, false);
-      context.fill();
-    } else {
-      context.globalCompositeOperation = 'source-over';
-      context.lineTo(x, y);
-      context.stroke();
-      context.beginPath();
-      context.moveTo(x, y);
-    }
-  }, [isDrawing, context, tool, eraserSize]);
+    ctx.stroke();
+  }, [activeShape, strokeColor, strokeWidth]);
 
   const startDrawing = useCallback((e) => {
     setIsDrawing(true);
@@ -111,6 +89,8 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
       context.beginPath();
       context.arc(x, y, eraserSize / 2, 0, Math.PI * 2, false);
       context.fill();
+    } else if (tool !== 'pen') {
+      setStartPoint({ x, y });
     } else {
       context.globalCompositeOperation = 'source-over';
       context.beginPath();
@@ -118,24 +98,56 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     }
   }, [context, tool, eraserSize]);
 
-  const stopDrawing = useCallback(() => {
-    setIsDrawing(false);
-    context.beginPath();
-    context.globalCompositeOperation = 'source-over';
-    saveToHistory();
-  }, [context, saveToHistory]);
+  const draw = useCallback((e) => {
+    if (!isDrawing) return;
 
-  const drawArrow = (start, end) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    if (tool === 'pen') {
+      context.lineTo(x, y);
+      context.stroke();
+      context.beginPath();
+      context.moveTo(x, y);
+    } else if (tool === 'eraser') {
+      context.globalCompositeOperation = 'destination-out';
+      context.beginPath();
+      context.arc(x, y, eraserSize / 2, 0, Math.PI * 2, false);
+      context.fill();
+    } else if (startPoint) {
+      drawShape(startPoint, { x, y }, tempContext);
+    }
+  }, [isDrawing, context, tool, eraserSize, startPoint, drawShape, tempContext]);
+
+  const stopDrawing = useCallback(() => {
+    if (isDrawing) {
+      if (tool !== 'pen' && tool !== 'eraser') {
+        context.drawImage(tempCanvasRef.current, 0, 0);
+        tempContext.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      }
+      setIsDrawing(false);
+      setStartPoint(null);
+      context.beginPath();
+      context.globalCompositeOperation = 'source-over';
+      saveToHistory();
+    }
+  }, [isDrawing, context, tool, tempContext, saveToHistory]);
+
+  const drawArrow = (ctx, start, end) => {
     const headlen = 10;
     const dx = end.x - start.x;
     const dy = end.y - start.y;
     const angle = Math.atan2(dy, dx);
     
-    context.moveTo(start.x, start.y);
-    context.lineTo(end.x, end.y);
-    context.lineTo(end.x - headlen * Math.cos(angle - Math.PI / 6), end.y - headlen * Math.sin(angle - Math.PI / 6));
-    context.moveTo(end.x, end.y);
-    context.lineTo(end.x - headlen * Math.cos(angle + Math.PI / 6), end.y - headlen * Math.sin(angle + Math.PI / 6));
+    ctx.moveTo(start.x, start.y);
+    ctx.lineTo(end.x, end.y);
+    ctx.lineTo(end.x - headlen * Math.cos(angle - Math.PI / 6), end.y - headlen * Math.sin(angle - Math.PI / 6));
+    ctx.moveTo(end.x, end.y);
+    ctx.lineTo(end.x - headlen * Math.cos(angle + Math.PI / 6), end.y - headlen * Math.sin(angle + Math.PI / 6));
   };
 
   const clearCanvas = useCallback(() => {
@@ -260,6 +272,12 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     setContext(ctx);
     ctx.strokeStyle = component.props.strokeColor || globalSettings.generalComponentStyle.color || '#000000';
     ctx.lineWidth = component.props.strokeWidth || 2;
+
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    tempCanvasRef.current = tempCanvas;
+    setTempContext(tempCanvas.getContext('2d'));
 
     const resizeCanvas = () => {
       const parent = canvas.parentElement;
@@ -435,36 +453,12 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
             </div>
           )}
         </div>
-        <div className="eraser-tool" ref={eraserDropdownRef}>
-          <button 
-            className={`toolbar-button ${tool === 'eraser' ? 'active' : ''}`} 
-            onClick={() => handleToolChange('eraser')}
-          >
-            <FaEraser />
-          </button>
-          <button 
-            className="eraser-dropdown-toggle" 
-            onClick={toggleEraserDropdown}
-          >
-            {eraserDropdownOpen ? <FaChevronUp /> : <FaChevronDown />}
-          </button>
-          {eraserDropdownOpen && (
-            <div className="eraser-dropdown">
-              <div style={{ display: 'flex', alignItems: 'center', padding: '10px' }}>
-                <EraserSizePreview size={eraserSize} />
-                <input
-                  type="range"
-                  min="5"
-                  max="50"
-                  value={eraserSize}
-                  onChange={(e) => setEraserSize(parseInt(e.target.value, 10))}
-                  orient="vertical"
-                  style={{ height: '100px' }}
-                />
-              </div>
-            </div>
-          )}
-        </div>
+        <button 
+          className={`toolbar-button ${tool === 'eraser' ? 'active' : ''}`} 
+          onClick={() => handleToolChange('eraser')}
+        >
+          <FaEraser />
+        </button>
         <button className="toolbar-button">
           <FaFont />
         </button>
@@ -549,6 +543,17 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
         onMouseMove={draw}
         onMouseOut={stopDrawing}
         onClick={addText}
+      />
+      <canvas
+        ref={tempCanvasRef}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+        }}
       />
       <Minimap />
     </div>
