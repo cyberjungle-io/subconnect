@@ -1,11 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchQueries } from '../../../w3s/w3sSlice'; // Adjust the import path as needed
+import { executeQuery } from '../../../features/graphQLSlice';
 
 const QueryValueControls = ({ style, props, content, onStyleChange, onPropsChange, onContentChange }) => {
   const dispatch = useDispatch();
   const queries = useSelector(state => state.w3s.queries.list);
   const queriesStatus = useSelector(state => state.w3s.queries.status);
+  const [queryResult, setQueryResult] = useState(null);
+  const [isRunningQuery, setIsRunningQuery] = useState(false);
 
   useEffect(() => {
     if (queriesStatus === 'idle') {
@@ -13,9 +16,37 @@ const QueryValueControls = ({ style, props, content, onStyleChange, onPropsChang
     }
   }, [dispatch, queriesStatus]);
 
+  useEffect(() => {
+    if (props.queryId && props.field) {
+      setIsRunningQuery(true);
+      const selectedQuery = queries.find(query => query._id === props.queryId);
+      if (selectedQuery) {
+        dispatch(executeQuery({ endpoint: selectedQuery.endpoint, query: selectedQuery.queryString }))
+          .then((action) => {
+            if (action.payload && action.payload.data) {
+              let result = action.payload.data;
+              props.field.split('.').forEach(key => {
+                result = result && result[key];
+              });
+              if (Array.isArray(result) && result.length > 0) {
+                result = result[0];
+              }
+              setQueryResult(result);
+            }
+          })
+          .finally(() => setIsRunningQuery(false));
+      }
+    }
+  }, [dispatch, props.queryId, props.field, queries]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    onPropsChange({ ...props, [name]: value });
+    if (name === 'queryId') {
+      onPropsChange({ ...props, queryId: value, field: '' });
+      setQueryResult(null);
+    } else {
+      onPropsChange({ ...props, [name]: value });
+    }
   };
 
   if (queriesStatus === 'loading') {
@@ -58,6 +89,13 @@ const QueryValueControls = ({ style, props, content, onStyleChange, onPropsChang
             ))}
           </select>
         </label>
+      )}
+      {isRunningQuery && <div>Running query...</div>}
+      {!isRunningQuery && queryResult !== null && (
+        <div>
+          <label>Query Result: </label>
+          <span>{JSON.stringify(queryResult)}</span>
+        </div>
       )}
     </div>
   );
