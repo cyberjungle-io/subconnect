@@ -138,9 +138,9 @@ export const fetchQueries = createAsyncThunk(
 
 export const fetchQuery = createAsyncThunk(
   'w3s/fetchQuery',
-  async (queryId, { rejectWithValue }) => {
+  async (id, { rejectWithValue }) => {
     try {
-      const response = await w3sService.getQuery(queryId);
+      const response = await w3sService.getQuery(id);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to fetch query');

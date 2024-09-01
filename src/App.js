@@ -11,6 +11,7 @@ import RegisterForm from './components/auth/RegisterForm';
 import MainEditor from './components/Editor/MainEditor';
 import { fetchProject } from './w3s/w3sSlice';
 import { setEditorMode } from './features/editorSlice';
+import { fetchQueries } from './w3s/w3sSlice';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -52,6 +53,12 @@ function AppContent() {
 }
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchQueries());
+  }, [dispatch]);
+
   return (
     <Provider store={store}>
       <AppContent />

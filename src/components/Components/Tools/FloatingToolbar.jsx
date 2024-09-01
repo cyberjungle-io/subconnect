@@ -219,6 +219,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       case 'Button Controls':
         return <ButtonControls {...sharedProps} />;
       case 'Query Controls':
+        console.log('Rendering QueryValueControls with props:', sharedProps);
         return <QueryValueControls {...sharedProps} />;
       default:
         return null;
