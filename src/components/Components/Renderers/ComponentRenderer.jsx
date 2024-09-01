@@ -11,6 +11,7 @@ import ButtonRenderer from "./ButtonRenderer";
 import ChartRenderer from "./ChartRenderer";
 import WhiteboardRenderer from "./WhiteboardRenderer";
 import VideoRenderer from "./VideoRenderer";
+import QueryValueRenderer from "./QueryValueRenderer"; // Add this import
 import { getHighlightColor } from '../../../utils/highlightColors'; // We'll create this utility function
 import { FaPencilAlt, FaTimes } from 'react-icons/fa'; // Add FaTimes import
 import FloatingToolbar from '../Tools/FloatingToolbar';
@@ -245,6 +246,8 @@ const ComponentRenderer = React.memo(({
         return <WhiteboardRenderer {...sharedProps} />;
       case "VIDEO":
         return <VideoRenderer {...sharedProps} />;
+      case "QUERY_VALUE": // Add this case
+        return <QueryValueRenderer {...sharedProps} />;
       default:
         return null;
     }

@@ -22,6 +22,7 @@ import Toast from '../common/Toast';
 import ImageControls from "../Components/CommonControls/ImageControls";
 import ReChartControls from '../Components/CommonControls/ReChartControls';
 import ComponentControls from "../Components/CommonControls/ComponentControls";
+import QueryValueControls from '../Components/Tools/QueryValueControls';
 
 // Import the CSS file
 import '../../styleSheets/propertiesPanelStyles.css';
@@ -60,6 +61,12 @@ const PropertiesPanel = ({
   useEffect(() => {
     if (selectedComponent) {
       setActivePanel("properties");
+    }
+  }, [selectedComponent]);
+
+  useEffect(() => {
+    if (selectedComponent) {
+      console.log("Selected component type:", selectedComponent.type);
     }
   }, [selectedComponent]);
 
@@ -193,6 +200,10 @@ const PropertiesPanel = ({
     </div>
   );
 
+  const handleUpdateComponent = (updatedComponent) => {
+    onUpdateComponent(updatedComponent.id, updatedComponent);
+  };
+
   const renderComponentSpecificTab = () => {
     if (!selectedComponent) return null;
 
@@ -254,6 +265,22 @@ const PropertiesPanel = ({
             onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
           />
         );
+      case 'QUERY_VALUE':
+        console.log("****** ***** *******   Rendering QueryValueControls");
+        return (
+          <>
+            <QueryValueControls
+              component={selectedComponent}
+              onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+            />
+            <ComponentControls
+              style={selectedComponent.style}
+              onStyleChange={handleStyleChange}
+              componentId={selectedComponent.id}
+              dispatch={dispatch}
+            />
+          </>
+        );
       default:
         return (
           <div className="text-gray-500 italic">
@@ -274,6 +301,73 @@ const PropertiesPanel = ({
         {renderComponentSpecificTab()}
       </PropertyTabs>
     );
+  };
+
+  const renderComponentSpecificControls = () => {
+    if (!selectedComponent) return null;
+
+    console.log("Selected component type:", selectedComponent.type);
+
+    switch (selectedComponent.type) {
+      case "FLEX_CONTAINER":
+        return (
+          <FlexContainerControls
+            component={selectedComponent}
+            onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+          />
+        );
+      case "HEADING":
+        return (
+          <HeadingControls
+            component={selectedComponent}
+            onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+          />
+        );
+      case "WHITEBOARD":
+        return (
+          <WhiteboardControls
+            component={selectedComponent}
+            onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+          />
+        );
+      case "TEXT":
+        return (
+          <TextControls
+            component={selectedComponent}
+            onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+          />
+        );
+      case "VIDEO":
+        return (
+          <VideoControls
+            component={selectedComponent}
+            onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+          />
+        );
+      case "IMAGE":
+        return (
+          <ImageControls
+            component={selectedComponent}
+            updateComponent={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+          />
+        );
+      case "CHART":
+        return (
+          <ReChartControls
+            component={selectedComponent}
+            onUpdate={(updates) => onUpdateComponent(selectedComponent.id, updates)}
+          />
+        );
+      case 'QUERY_VALUE':
+        return (
+          <QueryValueControls
+            component={selectedComponent}
+            onUpdate={handleUpdateComponent}
+          />
+        );
+      default:
+        return null;
+    }
   };
 
   const renderPanelContent = () => {
@@ -342,6 +436,7 @@ const PropertiesPanel = ({
         {renderPanelContent()}
       </div>
       <Toast />
+      {renderComponentSpecificControls()}
     </div>
   );
 };

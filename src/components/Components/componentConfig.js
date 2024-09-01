@@ -1,4 +1,4 @@
-import { FaColumns, FaFont, FaImage, FaChartBar, FaTable, FaPlayCircle, FaSquare, FaHeading, FaChalkboard } from 'react-icons/fa';
+import { FaColumns, FaFont, FaImage, FaChartBar, FaTable, FaPlayCircle, FaSquare, FaHeading, FaChalkboard, FaDatabase } from 'react-icons/fa';
 
 export const componentTypes = {
   FLEX_CONTAINER: 'FLEX_CONTAINER',
@@ -9,6 +9,7 @@ export const componentTypes = {
   TABLE: 'TABLE',
   VIDEO: 'VIDEO',
   WHITEBOARD: 'WHITEBOARD',
+  QUERY_VALUE: 'QUERY_VALUE',
 };
 
 export const componentConfig = {
@@ -177,6 +178,18 @@ export const componentConfig = {
       backgroundColor: '#ffffff',
       strokeColor: '#000000',
       strokeWidth: 2,
+      borderRadius: '4px'
+    }
+  },
+  [componentTypes.QUERY_VALUE]: {
+    name: 'Query Value',
+    icon: FaDatabase,
+    acceptsChildren: false,
+    defaultSize: { width: 'auto', height: 'auto' },
+    defaultProps: {
+      queryId: '',
+      field: '',
+      formatting: 'none',
       borderRadius: '4px'
     }
   },

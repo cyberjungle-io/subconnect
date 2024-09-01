@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaHeading, FaArrowsAlt, FaMousePointer, FaPencilAlt } from 'react-icons/fa';
+import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaHeading, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase } from 'react-icons/fa';
 import SizeControls from './SizeControls';
 import LayoutControls from './LayoutControls';
 import BorderControls from './BorderControls';
@@ -11,6 +11,7 @@ import SpacingControls from './SpacingControls';
 import VideoControls from './VideoControls';
 import WhiteboardControls from './WhiteboardControls';
 import ButtonControls from './ButtonControls';
+import QueryValueControls from './QueryValueControls';
 
 const iconMap = {
   FLEX_CONTAINER: [
@@ -62,7 +63,13 @@ const iconMap = {
     { icon: FaPalette, tooltip: 'Background' },
     { icon: FaPencilAlt, tooltip: 'Whiteboard Controls' },
   ],
-  // Add more component types and their corresponding icons as needed
+  QUERY_VALUE: [
+    { icon: FaExpand, tooltip: 'Size' },
+    { icon: FaArrowsAlt, tooltip: 'Spacing' },
+    { icon: FaBorderStyle, tooltip: 'Border' },
+    { icon: FaPalette, tooltip: 'Background' },
+    { icon: FaDatabase, tooltip: 'Query Controls' },
+  ],
 };
 
 const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose, style, props, content, onStyleChange, onToolbarInteraction }) => {
@@ -190,6 +197,8 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         return <WhiteboardControls {...sharedProps} />;
       case 'Button Controls':
         return <ButtonControls {...sharedProps} />;
+      case 'Query Controls':
+        return <QueryValueControls {...sharedProps} />;
       default:
         return null;
     }
