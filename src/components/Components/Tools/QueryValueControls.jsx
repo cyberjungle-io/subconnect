@@ -13,9 +13,6 @@ const QueryValueControls = ({ style, props, content, onStyleChange, onPropsChang
     }
   }, [dispatch, queriesStatus]);
 
-  console.log('QueryValueControls rendered with props:', { style, props, content });
-  console.log('Available queries:', queries);
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     onPropsChange({ ...props, [name]: value });
@@ -28,6 +25,8 @@ const QueryValueControls = ({ style, props, content, onStyleChange, onPropsChang
   if (queriesStatus === 'failed') {
     return <div>Error loading queries. Please try again.</div>;
   }
+
+  const selectedQuery = queries.find(query => query._id === props.queryId);
 
   return (
     <div>
@@ -45,16 +44,21 @@ const QueryValueControls = ({ style, props, content, onStyleChange, onPropsChang
           ))}
         </select>
       </label>
-      <label>
-        Select Field:
-        <input
-          type="text"
-          name="field"
-          value={props.field || ''}
-          onChange={handleChange}
-          placeholder="Enter field name"
-        />
-      </label>
+      {selectedQuery && (
+        <label>
+          Select Field:
+          <select
+            name="field"
+            value={props.field || ''}
+            onChange={handleChange}
+          >
+            <option value="">Select a field</option>
+            {selectedQuery.fields.map(field => (
+              <option key={field._id} value={field.name}>{field.name}</option>
+            ))}
+          </select>
+        </label>
+      )}
     </div>
   );
 };
