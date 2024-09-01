@@ -727,3 +727,84 @@ input[type="checkbox"] {
   padding: 4px;
   margin-left: 4px;
 }
+
+.eraser-tool {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+  overflow: visible;
+}
+
+.eraser-tool .toolbar-button {
+  margin: 0;
+  border-radius: 4px 0 0 4px;
+}
+
+.eraser-dropdown-toggle {
+  padding: 8px 5px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-radius: 0 4px 4px 0;
+}
+
+.eraser-dropdown-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.eraser-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.eraser-dropdown input[type="range"] {
+  -webkit-appearance: slider-vertical;
+  writing-mode: bt-lr;
+  width: 20px;
+  height: 100px;
+  padding: 0 5px;
+}
+
+.eraser-dropdown input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #4CAF50;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.eraser-dropdown input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #4CAF50;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+/* Ensure the dropdown is visible on top of other elements */
+.whiteboard-toolbar {
+  z-index: 10;
+}
+
+.eraser-dropdown {
+  z-index: 11;
+}
+
+.eraser-dropdown {
+  z-index: 11;
+}

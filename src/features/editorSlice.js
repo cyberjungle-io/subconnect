@@ -380,7 +380,7 @@ export const editorSlice = createSlice({
       if (state.whiteboardState.historyIndex > 0) {
         state.whiteboardState.historyIndex -= 1;
         const previousState = state.whiteboardState.history[state.whiteboardState.historyIndex];
-        const whiteboardComponent = state.components.find(c => c.type === 'WHITEBOARD');
+        const whiteboardComponent = findComponentById(state.components, state.components.find(c => c.type === 'WHITEBOARD').id);
         if (whiteboardComponent) {
           whiteboardComponent.props.imageData = previousState;
         }
@@ -391,7 +391,7 @@ export const editorSlice = createSlice({
       if (state.whiteboardState.historyIndex < state.whiteboardState.history.length - 1) {
         state.whiteboardState.historyIndex += 1;
         const nextState = state.whiteboardState.history[state.whiteboardState.historyIndex];
-        const whiteboardComponent = state.components.find(c => c.type === 'WHITEBOARD');
+        const whiteboardComponent = findComponentById(state.components, state.components.find(c => c.type === 'WHITEBOARD').id);
         if (whiteboardComponent) {
           whiteboardComponent.props.imageData = nextState;
         }
