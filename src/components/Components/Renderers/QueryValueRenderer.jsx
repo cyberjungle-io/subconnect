@@ -18,12 +18,19 @@ const QueryValueRenderer = ({ component }) => {
           if (action.payload && action.payload.data) {
             let result = action.payload.data;
             if (component.props.field) {
-              component.props.field.split('.').forEach(key => {
-                result = result && result[key];
-              });
-            }
-            if (Array.isArray(result) && result.length > 0) {
-              result = result[0];
+              const fieldPath = component.props.field.split('.');
+              for (let i = 0; i < fieldPath.length; i++) {
+                const key = fieldPath[i];
+                if (Array.isArray(result)) {
+                  result = result[0]; // Always take the first element of an array
+                }
+                if (result && typeof result === 'object') {
+                  result = result[key];
+                } else {
+                  result = undefined;
+                  break;
+                }
+              }
             }
             setValue(result);
           }
@@ -37,21 +44,36 @@ const QueryValueRenderer = ({ component }) => {
     }
   }, [dispatch, component.props.queryId, component.props.field, query]);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const renderContent = () => {
+    if (loading) {
+      return "Loading...";
+    }
+    if (error) {
+      return `Error: ${error}`;
+    }
+    if (value === null || value === undefined) {
+      return "No data available";
+    }
+    return `${value}`;
+  };
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (value === null) {
-    return <div>No data available</div>;
-  }
+  const labelStyle = {
+    ...component.style,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '10px',
+    border: '1px solid #ccc',
+    borderRadius: '4px',
+    backgroundColor: '#f8f8f8',
+    fontFamily: 'Arial, sans-serif',
+    fontSize: '14px',
+    color: '#333',
+  };
 
   return (
-    <div className="query-value-renderer" style={component.style}>
-      {value}
+    <div className="query-value-renderer" style={labelStyle}>
+      {renderContent()}
     </div>
   );
 };
