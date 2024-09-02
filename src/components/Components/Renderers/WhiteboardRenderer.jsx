@@ -30,6 +30,9 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const eraserDropdownRef = useRef(null);
   const tempCanvasRef = useRef(null);
   const [tempContext, setTempContext] = useState(null);
+  const [drawSize, setDrawSize] = useState(2);
+  const [drawSizeDropdownOpen, setDrawSizeDropdownOpen] = useState(false);
+  const drawSizeDropdownRef = useRef(null);
 
   const saveToHistory = useCallback(() => {
     const canvas = canvasRef.current;
@@ -93,10 +96,11 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
       setStartPoint({ x, y });
     } else {
       context.globalCompositeOperation = 'source-over';
+      context.lineWidth = drawSize;
       context.beginPath();
       context.moveTo(x, y);
     }
-  }, [context, tool, eraserSize]);
+  }, [context, tool, eraserSize, drawSize]);
 
   const draw = useCallback((e) => {
     if (!isDrawing) return;
@@ -421,15 +425,50 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     };
   }, []);
 
+  const handleDrawSizeChange = (e) => {
+    setDrawSize(parseInt(e.target.value, 10));
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (drawSizeDropdownRef.current && !drawSizeDropdownRef.current.contains(event.target)) {
+        setDrawSizeDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', borderRadius: component.props.borderRadius || '4px', overflow: 'hidden', position: 'relative' }}>
       <div className="whiteboard-toolbar">
-        <button
-          onClick={() => handleToolChange('pen')}
-          className={`toolbar-button ${activeTool === 'pen' ? 'active' : ''}`}
-        >
-          <FaPen />
-        </button>
+        <div className="draw-size-tool" ref={drawSizeDropdownRef}>
+          <button
+            onClick={() => handleToolChange('pen')}
+            className={`toolbar-button ${activeTool === 'pen' ? 'active' : ''}`}
+          >
+            <FaPen />
+          </button>
+          <button className="draw-size-dropdown-toggle" onClick={() => setDrawSizeDropdownOpen(!drawSizeDropdownOpen)}>
+            <FaChevronDown />
+          </button>
+          {drawSizeDropdownOpen && (
+            <div className="draw-size-dropdown">
+              <div className="draw-size-preview" style={{ width: `${drawSize}px`, height: `${drawSize}px` }} />
+              <input
+                type="range"
+                min="1"
+                max="50"
+                value={drawSize}
+                onChange={handleDrawSizeChange}
+                orient="vertical"
+              />
+            </div>
+          )}
+        </div>
         <div className="dropdown shapes-dropdown">
           <button onClick={toggleShapesDropdown} className="toolbar-button">
             {React.createElement(getShapeIcon(activeShape))}

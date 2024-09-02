@@ -796,15 +796,183 @@ input[type="checkbox"] {
   border-radius: 50%;
 }
 
+.draw-size-tool {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+  overflow: visible;
+}
+
+.draw-size-tool .toolbar-button {
+  margin: 0;
+  border-radius: 4px 0 0 4px;
+}
+
+.draw-size-dropdown-toggle {
+  padding: 8px 5px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-radius: 0 4px 4px 0;
+}
+
+.draw-size-dropdown-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.draw-size-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.draw-size-dropdown input[type="range"] {
+  -webkit-appearance: slider-vertical;
+  writing-mode: bt-lr;
+  width: 20px;
+  height: 100px;
+  padding: 0 5px;
+}
+
+.draw-size-dropdown input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #4CAF50;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.draw-size-dropdown input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #4CAF50;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.draw-size-preview {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  margin-right: 10px;
+}
+
 /* Ensure the dropdown is visible on top of other elements */
 .whiteboard-toolbar {
   z-index: 10;
 }
 
-.eraser-dropdown {
+.draw-size-dropdown {
   z-index: 11;
 }
 
-.eraser-dropdown {
+.draw-size-tool {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+  overflow: visible;
+}
+
+.draw-size-tool .toolbar-button {
+  margin: 0;
+  border-radius: 4px 0 0 4px;
+}
+
+.draw-size-dropdown-toggle {
+  padding: 8px 5px;
+  background-color: rgba(255, 255, 255, 0.7);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  border-radius: 0 4px 4px 0;
+}
+
+.draw-size-dropdown-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.draw-size-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.draw-size-dropdown input[type="range"] {
+  -webkit-appearance: slider-vertical;
+  writing-mode: bt-lr;
+  width: 20px;
+  height: 100px;
+  padding: 0 5px;
+}
+
+.draw-size-dropdown input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #4CAF50;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.draw-size-dropdown input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: #4CAF50;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.draw-size-preview {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  margin-right: 10px;
+}
+
+/* Ensure the dropdown is visible on top of other elements */
+.whiteboard-toolbar {
+  z-index: 10;
+}
+
+.draw-size-dropdown {
+  z-index: 11;
+}
+
+/* Ensure the dropdown is visible on top of other elements */
+.whiteboard-toolbar {
+  z-index: 10;
+}
+
+.draw-size-dropdown {
   z-index: 11;
 }
