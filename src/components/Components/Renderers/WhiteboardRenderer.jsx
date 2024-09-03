@@ -30,9 +30,22 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const eraserDropdownRef = useRef(null);
   const tempCanvasRef = useRef(null);
   const [tempContext, setTempContext] = useState(null);
-  const [drawSize, setDrawSize] = useState(2);
+  const [drawSize, setDrawSize] = useState(4);
   const [drawSizeDropdownOpen, setDrawSizeDropdownOpen] = useState(false);
   const drawSizeDropdownRef = useRef(null);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [lastPoint, setLastPoint] = useState(null);
+  const [lastMidPoint, setLastMidPoint] = useState(null);
+
+  const updateCursorPosition = useCallback((e) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    setCursorPosition({ x, y });
+  }, []);
 
   const saveToHistory = useCallback(() => {
     const canvas = canvasRef.current;
@@ -97,12 +110,15 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     } else {
       context.globalCompositeOperation = 'source-over';
       context.lineWidth = drawSize;
-      context.beginPath();
-      context.moveTo(x, y);
+      context.lineCap = 'round';
+      context.lineJoin = 'round';
+      setLastPoint({ x, y });
     }
-  }, [context, tool, eraserSize, drawSize]);
+    updateCursorPosition(e);
+  }, [context, tool, eraserSize, drawSize, updateCursorPosition]);
 
   const draw = useCallback((e) => {
+    updateCursorPosition(e);
     if (!isDrawing) return;
 
     const canvas = canvasRef.current;
@@ -113,10 +129,30 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     const y = (e.clientY - rect.top) * scaleY;
 
     if (tool === 'pen') {
-      context.lineTo(x, y);
-      context.stroke();
-      context.beginPath();
-      context.moveTo(x, y);
+      if (lastPoint) {
+        context.beginPath();
+        
+        if (lastMidPoint) {
+          context.moveTo(lastMidPoint.x, lastMidPoint.y);
+        } else {
+          context.moveTo(lastPoint.x, lastPoint.y);
+        }
+
+        const midPoint = midPointBtw(lastPoint.x, lastPoint.y, x, y);
+        
+        // Interpolate points
+        const pointsToFill = getPointsOnLine(lastPoint.x, lastPoint.y, x, y);
+        pointsToFill.forEach((point, index) => {
+          const midPointToFill = midPointBtw(lastPoint.x, lastPoint.y, point.x, point.y);
+          context.quadraticCurveTo(lastPoint.x, lastPoint.y, midPointToFill.x, midPointToFill.y);
+        });
+
+        context.quadraticCurveTo(lastPoint.x, lastPoint.y, midPoint.x, midPoint.y);
+        
+        context.stroke();
+        setLastPoint({ x, y });
+        setLastMidPoint(midPoint);
+      }
     } else if (tool === 'eraser') {
       context.globalCompositeOperation = 'destination-out';
       context.beginPath();
@@ -125,7 +161,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     } else if (startPoint) {
       drawShape(startPoint, { x, y }, tempContext);
     }
-  }, [isDrawing, context, tool, eraserSize, startPoint, drawShape, tempContext]);
+  }, [isDrawing, context, tool, eraserSize, startPoint, drawShape, tempContext, updateCursorPosition, lastPoint, lastMidPoint]);
 
   const stopDrawing = useCallback(() => {
     if (isDrawing) {
@@ -137,6 +173,8 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
       setStartPoint(null);
       context.beginPath();
       context.globalCompositeOperation = 'source-over';
+      setLastPoint(null);
+      setLastMidPoint(null);
       saveToHistory();
     }
   }, [isDrawing, context, tool, tempContext, saveToHistory]);
@@ -442,6 +480,33 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     };
   }, []);
 
+  const cursorSize = tool === 'eraser' ? eraserSize : drawSize;
+
+  // Add this helper function for calculating midpoints
+  const midPointBtw = (p1x, p1y, p2x, p2y) => {
+    return {
+      x: p1x + (p2x - p1x) / 2,
+      y: p1y + (p2y - p1y) / 2
+    };
+  };
+
+  // Helper function to get points on a line
+  const getPointsOnLine = (x1, y1, x2, y2) => {
+    const points = [];
+    const distance = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+    const steps = Math.ceil(distance / 5); // Adjust this value to control smoothness
+
+    for (let i = 1; i < steps; i++) {
+      const t = i / steps;
+      points.push({
+        x: x1 + (x2 - x1) * t,
+        y: y1 + (y2 - y1) * t
+      });
+    }
+
+    return points;
+  };
+
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', borderRadius: component.props.borderRadius || '4px', overflow: 'hidden', position: 'relative' }}>
       <div className="whiteboard-toolbar">
@@ -592,12 +657,15 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           height: '100%',
           border: '1px solid #000',
           backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff',
-          cursor: 'crosshair',
+          cursor: 'none', // Hide the default cursor
           borderRadius: 'inherit',
         }}
         onMouseDown={startDrawing}
         onMouseUp={stopDrawing}
-        onMouseMove={draw}
+        onMouseMove={(e) => {
+          draw(e);
+          updateCursorPosition(e);
+        }}
         onMouseOut={stopDrawing}
         onClick={addText}
       />
@@ -610,6 +678,21 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           width: '100%',
           height: '100%',
           pointerEvents: 'none',
+        }}
+      />
+      {/* Custom cursor */}
+      <div
+        style={{
+          position: 'absolute',
+          left: cursorPosition.x,
+          top: cursorPosition.y,
+          width: `${cursorSize}px`,
+          height: `${cursorSize}px`,
+          borderRadius: '50%',
+          border: '1px solid black',
+          backgroundColor: tool === 'eraser' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.2)',
+          pointerEvents: 'none',
+          transform: 'translate(-50%, -50%)',
         }}
       />
       <Minimap />
