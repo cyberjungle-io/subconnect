@@ -15,9 +15,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const [textInput, setTextInput] = useState('');
   const [textPosition, setTextPosition] = useState(null);
   const [isAddingText, setIsAddingText] = useState(false);
-  const [strokeColor, setStrokeColor] = useState(component.props.strokeColor || globalSettings.generalComponentStyle.color || '#000000');
-  const [strokeWidth, setStrokeWidth] = useState(component.props.strokeWidth || 2);
-  const [showGrid, setShowGrid] = useState(component.props.showGrid || false);
   const dispatch = useDispatch();
   const whiteboardState = useSelector(state => state.editor.whiteboardState);
   const [selectedShape, setSelectedShape] = useState(null);
@@ -96,8 +93,8 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
 
     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     ctx.beginPath();
-    ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = strokeWidth;
+    ctx.strokeStyle = whiteboardState.strokeColor;
+    ctx.lineWidth = 2; // Set a fixed line width of 2
 
     switch (activeShape) {
       case 'square':
@@ -119,7 +116,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     }
 
     ctx.stroke();
-  }, [activeShape, strokeColor, strokeWidth]);
+  }, [activeShape, whiteboardState.strokeColor]);
 
   const startDrawing = useCallback((e) => {
     setIsDrawing(true);
@@ -251,14 +248,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     }
   }, [textInput, textPosition, context, textStyle, saveToHistory]);
 
-  const handleColorChange = (e) => {
-    setStrokeColor(e.target.value);
-  };
-
-  const handleWidthChange = (e) => {
-    setStrokeWidth(parseInt(e.target.value, 10));
-  };
-
   const loadCanvas = (e) => {
     const file = e.target.files[0];
     const reader = new FileReader();
@@ -315,8 +304,8 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     setContext(ctx);
-    ctx.strokeStyle = component.props.strokeColor || globalSettings.generalComponentStyle.color || '#000000';
-    ctx.lineWidth = component.props.strokeWidth || 2;
+    ctx.strokeStyle = whiteboardState.strokeColor;
+    ctx.lineWidth = 2; // Set a fixed line width of 2
 
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = canvas.width;
@@ -343,8 +332,8 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
       // Redraw the content
       ctx.drawImage(tempCanvas, 0, 0);
       
-      ctx.strokeStyle = component.props.strokeColor || globalSettings.generalComponentStyle.color || '#000000';
-      ctx.lineWidth = component.props.strokeWidth || 2;
+      ctx.strokeStyle = whiteboardState.strokeColor;
+      ctx.lineWidth = 2; // Set a fixed line width of 2
     };
 
     resizeCanvas(); // Initial resize
@@ -353,7 +342,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     return () => {
       window.removeEventListener('resize', resizeCanvas);
     };
-  }, [component.props.strokeColor, component.props.strokeWidth, globalSettings]);
+  }, [whiteboardState.strokeColor]);
 
   useEffect(() => {
     if (component.props.imageData) {
@@ -367,35 +356,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
       img.src = component.props.imageData;
     }
   }, [component.props.imageData]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-
-    if (showGrid) {
-      drawGrid(ctx);
-    }
-  }, [component.props, globalSettings, showGrid]);
-
-  const drawGrid = (ctx) => {
-    const gridSize = 20;
-    ctx.strokeStyle = '#e0e0e0';
-    ctx.lineWidth = 0.5;
-
-    for (let x = 0; x <= canvasRef.current.width; x += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, canvasRef.current.height);
-      ctx.stroke();
-    }
-
-    for (let y = 0; y <= canvasRef.current.height; y += gridSize) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(canvasRef.current.width, y);
-      ctx.stroke();
-    }
-  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];

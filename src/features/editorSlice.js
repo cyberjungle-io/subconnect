@@ -18,6 +18,7 @@ const initialState = {
   whiteboardState: {
     history: [],
     historyIndex: -1,
+    strokeColor: '#000000',
   },
   isDragModeEnabled: false,
   isFloatingMenuVisible: false,
@@ -404,6 +405,16 @@ export const editorSlice = createSlice({
     toggleFloatingMenu: (state) => {
       state.isFloatingMenuVisible = !state.isFloatingMenuVisible;
     },
+    updateWhiteboardStrokeColor: (state, action) => {
+      const { componentId, color } = action.payload;
+      state.whiteboardState.strokeColor = color;
+      
+      // Update the component's props as well
+      const component = findComponentById(state.components, componentId);
+      if (component && component.type === 'WHITEBOARD') {
+        component.props.strokeColor = color;
+      }
+    },
   },
 });
 
@@ -445,6 +456,7 @@ export const {
   renameComponent,
   setDragModeEnabled,
   toggleFloatingMenu,
+  updateWhiteboardStrokeColor,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;
