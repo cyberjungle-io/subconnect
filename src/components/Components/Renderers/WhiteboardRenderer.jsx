@@ -39,6 +39,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     fontFamily: component.props.fontFamily || globalSettings.generalComponentStyle.fontFamily || 'Arial',
     color: component.props.textColor || globalSettings.generalComponentStyle.color || '#000000',
   });
+  const shapesDropdownRef = useRef(null);
 
   const getEventCoordinates = useCallback((e) => {
     const canvas = canvasRef.current;
@@ -492,6 +493,19 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     return points;
   };
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (shapesDropdownRef.current && !shapesDropdownRef.current.contains(event.target)) {
+        setShapesDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', borderRadius: component.props.borderRadius || '4px', overflow: 'hidden', position: 'relative' }}>
       <div className="whiteboard-toolbar">
@@ -519,7 +533,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
             </div>
           )}
         </div>
-        <div className="dropdown shapes-dropdown">
+        <div className="dropdown shapes-dropdown" ref={shapesDropdownRef}>
           <button onClick={toggleShapesDropdown} className="toolbar-button">
             {React.createElement(getShapeIcon(activeShape))}
             <FaChevronDown />
