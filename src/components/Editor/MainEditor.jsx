@@ -73,6 +73,7 @@ const MainEditor = () => {
   const floatingRightMenuRef = useRef(null);
   const [isGlobalSettingsVisible, setIsGlobalSettingsVisible] = useState(false);
   const [globalSettingsPosition, setGlobalSettingsPosition] = useState({ x: 0, y: 0 });
+  const isFloatingMenuVisible = useSelector(state => state.editor.isFloatingMenuVisible);
 
   const handleOpenProjectModal = useCallback(() => {
     console.log('Attempting to open Project Modal');
@@ -374,46 +375,42 @@ const MainEditor = () => {
               <ViewerMode components={components} globalSettings={globalSettings} />
             )}
           </div>
-          {mode === 'edit' && currentUser && (
-            <>
-              <FloatingRightMenu
-                ref={floatingRightMenuRef}
-                onShowComponentTree={handleToggleComponentTree}
-                isComponentTreeVisible={isComponentTreeVisible}
-                onShowComponentPalette={handleToggleComponentPalette}
-                isComponentPaletteVisible={isComponentPaletteVisible}
-                onShowGlobalSettings={handleToggleGlobalSettings}
-                isGlobalSettingsVisible={isGlobalSettingsVisible}
-                onToggleDragMode={handleToggleDragMode}
-                isDragModeEnabled={isDragModeEnabled}
-                onToggleSpacingVisibility={handleToggleSpacingVisibility}
-                onToggleVisibility={handleTogglePanel}
-              />
-              <ComponentTree
-                components={components}
-                onSelectComponent={handleSelectComponent}
-                selectedComponentId={selectedIds?.[0]}
-                isVisible={isComponentTreeVisible}
-                onClose={handleToggleComponentTree}
-                initialPosition={componentTreePosition}
-                onPositionChange={setComponentTreePosition}
-              />
-              <ComponentPalette
-                isVisible={isComponentPaletteVisible}
-                onClose={handleToggleComponentPalette}
-                initialPosition={componentPalettePosition}
-                onPositionChange={setComponentPalettePosition}
-                onAddComponent={handleAddComponent}
-              />
-              {isGlobalSettingsVisible && (
-                <FloatingGlobalSettings
-                  initialPosition={globalSettingsPosition}
-                  onClose={handleToggleGlobalSettings}
-                  globalSettings={globalSettings}
-                  onUpdateGlobalSettings={handleUpdateGlobalSettings}
-                />
-              )}
-            </>
+          {mode === 'edit' && currentUser && isFloatingMenuVisible && (
+            <FloatingRightMenu
+              onShowComponentTree={handleToggleComponentTree}
+              isComponentTreeVisible={isComponentTreeVisible}
+              onShowComponentPalette={handleToggleComponentPalette}
+              isComponentPaletteVisible={isComponentPaletteVisible}
+              onShowGlobalSettings={handleToggleGlobalSettings}
+              isGlobalSettingsVisible={isGlobalSettingsVisible}
+              onToggleDragMode={handleToggleDragMode}
+              isDragModeEnabled={isDragModeEnabled}
+              onToggleSpacingVisibility={handleToggleSpacingVisibility}
+            />
+          )}
+          <ComponentTree
+            components={components}
+            onSelectComponent={handleSelectComponent}
+            selectedComponentId={selectedIds?.[0]}
+            isVisible={isComponentTreeVisible}
+            onClose={handleToggleComponentTree}
+            initialPosition={componentTreePosition}
+            onPositionChange={setComponentTreePosition}
+          />
+          <ComponentPalette
+            isVisible={isComponentPaletteVisible}
+            onClose={handleToggleComponentPalette}
+            initialPosition={componentPalettePosition}
+            onPositionChange={setComponentPalettePosition}
+            onAddComponent={handleAddComponent}
+          />
+          {isGlobalSettingsVisible && (
+            <FloatingGlobalSettings
+              initialPosition={globalSettingsPosition}
+              onClose={handleToggleGlobalSettings}
+              globalSettings={globalSettings}
+              onUpdateGlobalSettings={handleUpdateGlobalSettings}
+            />
           )}
         </div>
         

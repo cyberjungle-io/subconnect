@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom'; // Add this import
-import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye, FaFolderOpen, FaDatabase } from 'react-icons/fa';
+import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye, FaFolderOpen, FaDatabase, FaBars } from 'react-icons/fa';
 import Modal from '../common/Modal';
 import RegisterForm from '../auth/RegisterForm';
 import LoginForm from '../auth/LoginForm';
@@ -11,6 +11,7 @@ import HamburgerMenu from '../common/HamburgerMenu';
 import PageList from '../Components/Projects/PageList';
 import ProjectModal from '../Components/Projects/ProjectModal';
 import DataModal from './DataModal';
+import { toggleFloatingMenu } from '../../features/editorSlice';
 
 const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal }) => {
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
@@ -57,6 +58,10 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
 
   const handleCloseDataModal = () => {
     setIsDataModalOpen(false);
+  };
+
+  const handleToggleFloatingMenu = () => {
+    dispatch(toggleFloatingMenu());
   };
 
   return (
@@ -163,6 +168,15 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
           >
             <FaSignOutAlt />
             <span>Logout</span>
+          </button>
+        )}
+        {currentUser && mode === 'edit' && (
+          <button
+            onClick={handleToggleFloatingMenu}
+            className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+            title="Toggle Floating Menu"
+          >
+            <FaBars className="text-base" />
           </button>
         )}
       </div>

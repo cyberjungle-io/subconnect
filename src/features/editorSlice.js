@@ -20,6 +20,7 @@ const initialState = {
     historyIndex: -1,
   },
   isDragModeEnabled: false,
+  isFloatingMenuVisible: false,
 };
 
 const findComponentById = (components, id) => {
@@ -400,6 +401,9 @@ export const editorSlice = createSlice({
     setDragModeEnabled: (state, action) => {
       state.isDragModeEnabled = action.payload;
     },
+    toggleFloatingMenu: (state) => {
+      state.isFloatingMenuVisible = !state.isFloatingMenuVisible;
+    },
   },
 });
 
@@ -440,6 +444,7 @@ export const {
   redoWhiteboard,
   renameComponent,
   setDragModeEnabled,
+  toggleFloatingMenu,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;
