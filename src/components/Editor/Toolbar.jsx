@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom'; // Add this import
-import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye, FaFolderOpen, FaDatabase, FaBars } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
+import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye, FaFolderOpen, FaDatabase, FaTools } from 'react-icons/fa';
 import Modal from '../common/Modal';
 import RegisterForm from '../auth/RegisterForm';
 import LoginForm from '../auth/LoginForm';
@@ -22,7 +22,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Add this line
+  const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);
   const { mode, currentPage } = useSelector((state) => state.editor);
   const currentProject = useSelector((state) => state.w3s.currentProject.data);
@@ -137,28 +137,24 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
             <FaDatabase className="text-base" />
           </button>
         )}
-        {currentUser ? (
-          <button
-            onClick={handleToggleMode}
-            className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
-            title={mode === 'edit' ? 'View Mode' : 'Edit Mode'}
-          >
-            {mode === 'edit' ? <FaEye className="text-base" /> : <FaEdit className="text-base" />}
-          </button>
-        ) : (
+        {currentUser && (
           <>
             <button
-              onClick={() => setLoginModalOpen(true)}
-              className="px-3 py-1.5 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+              onClick={handleToggleMode}
+              className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+              title={mode === 'edit' ? 'View Mode' : 'Edit Mode'}
             >
-              Login
+              {mode === 'edit' ? <FaEye className="text-base" /> : <FaEdit className="text-base" />}
             </button>
-            <button
-              onClick={() => setRegisterModalOpen(true)}
-              className="px-3 py-1.5 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
-            >
-              Register
-            </button>
+            {mode === 'edit' && (
+              <button
+                onClick={handleToggleFloatingMenu}
+                className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+                title="Toggle Floating Menu"
+              >
+                <FaTools className="text-base" />
+              </button>
+            )}
           </>
         )}
         {currentUser && (
@@ -168,15 +164,6 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
           >
             <FaSignOutAlt />
             <span>Logout</span>
-          </button>
-        )}
-        {currentUser && mode === 'edit' && (
-          <button
-            onClick={handleToggleFloatingMenu}
-            className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
-            title="Toggle Floating Menu"
-          >
-            <FaBars className="text-base" />
           </button>
         )}
       </div>
