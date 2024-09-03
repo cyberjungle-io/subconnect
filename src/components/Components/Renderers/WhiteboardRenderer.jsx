@@ -288,18 +288,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     reader.readAsDataURL(file);
   };
 
-  const Minimap = () => {
-    const minimapRef = useRef(null);
-
-    useEffect(() => {
-      const minimap = minimapRef.current;
-      const ctx = minimap.getContext('2d');
-      ctx.drawImage(canvasRef.current, 0, 0, minimap.width, minimap.height);
-    }, [whiteboardState.history]);
-
-    return <canvas ref={minimapRef} width={100} height={100} />;
-  };
-
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -628,7 +616,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           transform: 'translate(-50%, -50%)',
         }}
       />
-      <Minimap />
     </div>
   );
 };
