@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { FaTree, FaGlobe, FaEye, FaHandPointer, FaChevronLeft } from 'react-icons/fa';
-import HidePropertiesPanelArrow from '../common/CustomIcons/HidePropertiesPanelArrow';
+import React from 'react';
+import { FaTree, FaGlobe, FaEye, FaHandPointer } from 'react-icons/fa';
 
 // Add this new custom icon component
 const FourSquaresIcon = () => (
@@ -15,30 +14,11 @@ const FloatingRightMenu = ({
   onShowGlobalSettings,
   onToggleDragMode,
   onToggleSpacingVisibility,
-  onToggleVisibility,
   isComponentTreeVisible,
   isComponentPaletteVisible,
   isGlobalSettingsVisible,
   isDragModeEnabled,
 }) => {
-  const [isVisible, setIsVisible] = useState(true);
-
-  const toggleVisibility = () => {
-    setIsVisible(!isVisible);
-  };
-
-  if (!isVisible) {
-    return (
-      <button
-        onClick={toggleVisibility}
-        className="fixed right-0 top-1/3 transform -translate-y-1/2 bg-[#e6f3ff] border border-[#b3d9ff] rounded-l-lg shadow-xl z-[960] p-2"
-        title="Show Menu"
-      >
-        <FaChevronLeft />
-      </button>
-    );
-  }
-
   const buttonClass = (isActive) => `
     p-2 mb-2 rounded-full
     ${isActive 
@@ -77,9 +57,8 @@ const FloatingRightMenu = ({
       >
         <FaHandPointer />
       </button>
-      <button onClick={onToggleSpacingVisibility} className={buttonClass(false)} title="Toggle Spacing Visibility"><FaEye /></button>
-      <button onClick={toggleVisibility} className={buttonClass(false)} title="Hide Menu">
-        <HidePropertiesPanelArrow className="w-5 h-5" />
+      <button onClick={onToggleSpacingVisibility} className={buttonClass(false)} title="Toggle Spacing Visibility">
+        <FaEye />
       </button>
     </div>
   );
