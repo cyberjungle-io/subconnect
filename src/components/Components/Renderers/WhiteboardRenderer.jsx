@@ -34,6 +34,11 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [lastPoint, setLastPoint] = useState(null);
   const [lastMidPoint, setLastMidPoint] = useState(null);
+  const [textStyle, setTextStyle] = useState({
+    fontSize: component.props.fontSize || globalSettings.generalComponentStyle.fontSize || '16px',
+    fontFamily: component.props.fontFamily || globalSettings.generalComponentStyle.fontFamily || 'Arial',
+    color: component.props.textColor || globalSettings.generalComponentStyle.color || '#000000',
+  });
 
   const getEventCoordinates = useCallback((e) => {
     const canvas = canvasRef.current;
@@ -226,26 +231,24 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   };
 
   const addText = useCallback((e) => {
-    if (component.isDraggingDisabled && tool === 'text') {
-      const rect = canvasRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+    if (tool === 'text') {
+      const { x, y } = getEventCoordinates(e);
       setTextPosition({ x, y });
       setIsAddingText(true);
     }
-  }, [component.isDraggingDisabled, tool]);
+  }, [tool, getEventCoordinates]);
 
   const confirmText = useCallback(() => {
     if (textInput && textPosition) {
-      context.font = `${component.props.fontSize || globalSettings.generalComponentStyle.fontSize || '16px'} ${component.props.fontFamily || globalSettings.generalComponentStyle.fontFamily || 'Arial'}`;
-      context.fillStyle = component.props.textColor || globalSettings.generalComponentStyle.color || '#000000';
+      context.font = `${textStyle.fontSize} ${textStyle.fontFamily}`;
+      context.fillStyle = textStyle.color;
       context.fillText(textInput, textPosition.x, textPosition.y);
       setIsAddingText(false);
       setTextInput('');
       setTextPosition(null);
       saveToHistory();
     }
-  }, [textInput, textPosition, context, component.props, globalSettings, saveToHistory]);
+  }, [textInput, textPosition, context, textStyle, saveToHistory]);
 
   const handleColorChange = (e) => {
     setStrokeColor(e.target.value);
@@ -563,7 +566,10 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
             </div>
           )}
         </div>
-        <button className="toolbar-button">
+        <button 
+          className={`toolbar-button ${tool === 'text' ? 'active' : ''}`}
+          onClick={() => handleToolChange('text')}
+        >
           <FaFont />
         </button>
         <button className="toolbar-button" onClick={undo} disabled={whiteboardState.historyIndex <= 0}>
@@ -596,8 +602,9 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
               border: 'none',
               outline: 'none',
               resize: 'none',
-              font: `${component.props.fontSize || globalSettings.generalComponentStyle.fontSize || '16px'} ${component.props.fontFamily || globalSettings.generalComponentStyle.fontFamily || 'Arial'}`,
-              color: component.props.textColor || globalSettings.generalComponentStyle.color || '#000000',
+              font: `${textStyle.fontSize} ${textStyle.fontFamily}`,
+              color: textStyle.color,
+              minWidth: '100px',
             }}
           />
         </div>
@@ -609,7 +616,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           height: '100%',
           border: '1px solid #000',
           backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff',
-          cursor: 'none',
+          cursor: tool === 'text' ? 'text' : 'none',
           borderRadius: 'inherit',
           touchAction: 'none',
         }}
