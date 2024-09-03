@@ -3,6 +3,7 @@ import { FaPen, FaEraser, FaTrash, FaSquare, FaCircle, FaMinus, FaLongArrowAltRi
 import { useDispatch, useSelector } from 'react-redux';
 import { updateComponent, undoWhiteboard, redoWhiteboard } from '../../../features/editorSlice';
 import TextareaAutosize from 'react-textarea-autosize';
+import debounce from 'lodash/debounce';
 
 const WhiteboardRenderer = ({ component, globalSettings }) => {
   const canvasRef = useRef(null);
@@ -37,21 +38,47 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const [lastPoint, setLastPoint] = useState(null);
   const [lastMidPoint, setLastMidPoint] = useState(null);
 
-  const updateCursorPosition = useCallback((e) => {
+  const getEventCoordinates = useCallback((e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
-    setCursorPosition({ x, y });
+    let clientX, clientY;
+
+    if (e.touches && e.touches[0]) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+
+    const x = (clientX - rect.left) * scaleX;
+    const y = (clientY - rect.top) * scaleY;
+    return { x, y };
   }, []);
+
+  const updateCursorPosition = useCallback((e) => {
+    const { x, y } = getEventCoordinates(e);
+    setCursorPosition({ x, y });
+  }, [getEventCoordinates]);
 
   const saveToHistory = useCallback(() => {
     const canvas = canvasRef.current;
     const newImageData = canvas.toDataURL();
     dispatch(updateComponent({ id: component.id, updates: { props: { imageData: newImageData } } }));
+    
+    // Auto-save logic
+    // You might want to debounce this function to prevent too frequent saves
+    autoSave(newImageData);
   }, [dispatch, component.id]);
+
+  const autoSave = useCallback(debounce((imageData) => {
+    // Implement your auto-save logic here
+    // For example, you could send the imageData to your backend API
+    console.log('Auto-saving whiteboard...');
+    // api.saveWhiteboard(component.id, imageData);
+  }, 2000), []);  // Debounce for 2 seconds
 
   const undo = useCallback(() => {
     dispatch(undoWhiteboard());
@@ -93,12 +120,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
 
   const startDrawing = useCallback((e) => {
     setIsDrawing(true);
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
+    const { x, y } = getEventCoordinates(e);
 
     if (tool === 'eraser') {
       context.globalCompositeOperation = 'destination-out';
@@ -115,18 +137,13 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
       setLastPoint({ x, y });
     }
     updateCursorPosition(e);
-  }, [context, tool, eraserSize, drawSize, updateCursorPosition]);
+  }, [context, tool, eraserSize, drawSize, updateCursorPosition, getEventCoordinates]);
 
   const draw = useCallback((e) => {
     updateCursorPosition(e);
     if (!isDrawing) return;
 
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
+    const { x, y } = getEventCoordinates(e);
 
     if (tool === 'pen') {
       if (lastPoint) {
@@ -161,7 +178,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     } else if (startPoint) {
       drawShape(startPoint, { x, y }, tempContext);
     }
-  }, [isDrawing, context, tool, eraserSize, startPoint, drawShape, tempContext, updateCursorPosition, lastPoint, lastMidPoint]);
+  }, [isDrawing, context, tool, eraserSize, startPoint, drawShape, tempContext, updateCursorPosition, lastPoint, lastMidPoint, getEventCoordinates]);
 
   const stopDrawing = useCallback(() => {
     if (isDrawing) {
@@ -239,15 +256,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
 
   const handleWidthChange = (e) => {
     setStrokeWidth(parseInt(e.target.value, 10));
-  };
-
-  const saveCanvas = () => {
-    const canvas = canvasRef.current;
-    const dataURL = canvas.toDataURL();
-    const link = document.createElement('a');
-    link.download = 'whiteboard.png';
-    link.href = dataURL;
-    link.click();
   };
 
   const loadCanvas = (e) => {
@@ -590,9 +598,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
         <button className="toolbar-button" onClick={redo} disabled={whiteboardState.historyIndex >= whiteboardState.history.length - 1}>
           <FaRedo />
         </button>
-        <button className="toolbar-button">
-          <FaSave />
-        </button>
         <label className="toolbar-button">
           <FaUpload />
           <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
@@ -657,16 +662,17 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           height: '100%',
           border: '1px solid #000',
           backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff',
-          cursor: 'none', // Hide the default cursor
+          cursor: 'none',
           borderRadius: 'inherit',
+          touchAction: 'none',
         }}
         onMouseDown={startDrawing}
+        onMouseMove={draw}
         onMouseUp={stopDrawing}
-        onMouseMove={(e) => {
-          draw(e);
-          updateCursorPosition(e);
-        }}
         onMouseOut={stopDrawing}
+        onTouchStart={startDrawing}
+        onTouchMove={draw}
+        onTouchEnd={stopDrawing}
         onClick={addText}
       />
       <canvas
@@ -680,7 +686,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           pointerEvents: 'none',
         }}
       />
-      {/* Custom cursor */}
       <div
         style={{
           position: 'absolute',
