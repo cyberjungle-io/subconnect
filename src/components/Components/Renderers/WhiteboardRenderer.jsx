@@ -21,9 +21,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   const dispatch = useDispatch();
   const whiteboardState = useSelector(state => state.editor.whiteboardState);
   const [selectedShape, setSelectedShape] = useState(null);
-  const [layers, setLayers] = useState([{ id: 1, name: 'Layer 1', visible: true }]);
-  const [activeLayer, setActiveLayer] = useState(1);
-  const [layersDropdownOpen, setLayersDropdownOpen] = useState(false);
   const [activeShape, setActiveShape] = useState('arrow');
   const [shapesDropdownOpen, setShapesDropdownOpen] = useState(false);
   const [eraserSize, setEraserSize] = useState(10);
@@ -285,12 +282,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     }
   };
 
-  const addLayer = () => {
-    const newLayer = { id: layers.length + 1, name: `Layer ${layers.length + 1}`, visible: true };
-    setLayers([...layers, newLayer]);
-    setActiveLayer(newLayer.id);
-  };
-
   const insertImage = (file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -407,23 +398,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     if (file) {
       loadCanvas(e);
       insertImage(file);
-    }
-  };
-
-  const toggleLayersDropdown = () => setLayersDropdownOpen(prevState => !prevState);
-
-  const toggleLayerVisibility = (layerId) => {
-    setLayers(layers.map(layer => 
-      layer.id === layerId ? { ...layer, visible: !layer.visible } : layer
-    ));
-  };
-
-  const deleteLayer = (layerId) => {
-    if (layers.length > 1) {
-      setLayers(layers.filter(layer => layer.id !== layerId));
-      if (activeLayer === layerId) {
-        setActiveLayer(layers[0].id);
-      }
     }
   };
 
@@ -602,33 +576,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           <FaUpload />
           <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
         </label>
-        <div className="dropdown layers-dropdown">
-          <button onClick={toggleLayersDropdown} className="toolbar-button">
-            <FaLayerGroup />
-            <FaChevronRight />
-          </button>
-          {layersDropdownOpen && (
-            <div className="dropdown-menu">
-              {layers.map(layer => (
-                <div key={layer.id} className="layer-item">
-                  <span 
-                    onClick={() => setActiveLayer(layer.id)}
-                    style={{ fontWeight: activeLayer === layer.id ? 'bold' : 'normal' }}
-                  >
-                    {layer.name}
-                  </span>
-                  <button onClick={() => toggleLayerVisibility(layer.id)}>
-                    {layer.visible ? <FaEye /> : <FaEyeSlash />}
-                  </button>
-                  <button onClick={() => deleteLayer(layer.id)}>
-                    <FaTrashAlt />
-                  </button>
-                </div>
-              ))}
-              <button onClick={addLayer}>Add New Layer</button>
-            </div>
-          )}
-        </div>
       </div>
       {isAddingText && (
         <div
