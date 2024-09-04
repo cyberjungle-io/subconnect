@@ -15,19 +15,26 @@ const ChartRenderer = ({ component }) => {
   const queryResult = useSelector(state => state.graphQL.queryResult);
 
   const formatData = (data, dataKeys, nameKey) => {
+    if (!data || !Array.isArray(data)) return [];
     return data.map(item => {
-      const formattedItem = { [nameKey]: item[nameKey] };
-      dataKeys.forEach(key => {
-        formattedItem[key] = parseFloat(item[key]) || 0;
-      });
+      const formattedItem = { 
+        [`accountSnapshots.${nameKey}`]: format(parseISO(item.updatedTime), 'yyyy-MM-dd'),
+        'accountSnapshots.delegationValue': parseFloat(item.delegationValue) || 0,
+        'accountSnapshots.cumulativeStakePoolOwnerRewards': parseFloat(item.cumulativeStakePoolOwnerRewards) || 0
+      };
       return formattedItem;
-    });
+    }).sort((a, b) => new Date(a[`accountSnapshots.${nameKey}`]) - new Date(b[`accountSnapshots.${nameKey}`]));
   };
 
   useEffect(() => {
+    console.log('Raw queryResult:', queryResult);
+    console.log('Component props:', component.props);
+
     if (queryResult && queryResult.data) {
       const dataKey = Object.keys(queryResult.data)[0];
+      console.log('Data key:', dataKey);
       const rawData = queryResult.data[dataKey];
+      console.log('Raw data:', rawData);
       const formattedData = formatData(rawData, component.props.dataKeys, component.props.nameKey);
       setChartData(formattedData);
       console.log('Updated Formatted Chart Data:', formattedData);
