@@ -1,22 +1,51 @@
 import React, { useEffect, useState, useMemo } from "react";
+import { useSelector } from 'react-redux';
 import {
   LineChart, BarChart, AreaChart, PieChart,
   Line, Bar, Area, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   Label
 } from "recharts";
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import numeral from 'numeral';
-import { extent, max } from 'd3-array'; // Add this import
 
 const ChartRenderer = ({ component }) => {
   const [key, setKey] = useState(0);
+  const [chartData, setChartData] = useState([]);
+  const queryResult = useSelector(state => state.graphQL.queryResult);
+
+  const formatData = (data, dataKeys, nameKey) => {
+    if (!data || !Array.isArray(data)) return [];
+    return data.map(item => {
+      const formattedItem = { 
+        [`accountSnapshots.${nameKey}`]: format(parseISO(item.updatedTime), 'yyyy-MM-dd'),
+        'accountSnapshots.delegationValue': parseFloat(item.delegationValue) || 0,
+        'accountSnapshots.cumulativeStakePoolOwnerRewards': parseFloat(item.cumulativeStakePoolOwnerRewards) || 0
+      };
+      return formattedItem;
+    }).sort((a, b) => new Date(a[`accountSnapshots.${nameKey}`]) - new Date(b[`accountSnapshots.${nameKey}`]));
+  };
+
+  useEffect(() => {
+    console.log('Raw queryResult:', queryResult);
+    console.log('Component props:', component.props);
+
+    if (queryResult && queryResult.data) {
+      const dataKey = Object.keys(queryResult.data)[0];
+      console.log('Data key:', dataKey);
+      const rawData = queryResult.data[dataKey];
+      console.log('Raw data:', rawData);
+      const formattedData = formatData(rawData, component.props.dataKeys, component.props.nameKey);
+      setChartData(formattedData);
+      console.log('Updated Formatted Chart Data:', formattedData);
+    }
+  }, [queryResult, component.props.dataKeys, component.props.nameKey]);
 
   // Use useMemo to memoize the chart props
   const chartProps = useMemo(() => {
     return {
       chartType: component.props.chartType || 'line',
-      data: component.props.data || [],
+      data: chartData,
       dataKeys: Array.isArray(component.props.dataKeys) ? component.props.dataKeys : [],
       nameKey: component.props.nameKey || '',
       title: component.props.title || '',
@@ -26,7 +55,7 @@ const ChartRenderer = ({ component }) => {
       width: component.props.width || '100%',
       height: component.props.height || 400,
       colors: component.props.colors || ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#00C49F'],
-      lineColors: component.props.lineColors || {}, // New prop for custom line colors
+      lineColors: component.props.lineColors || {},
       lineWidth: component.props.lineWidth || 2,
       dataPointSize: component.props.dataPointSize || 5,
       showLegend: component.props.showLegend || true,
@@ -35,22 +64,20 @@ const ChartRenderer = ({ component }) => {
       yAxisLabel: component.props.yAxisLabel || '',
       xAxisAngle: component.props.xAxisAngle || 0,
       yAxisAngle: component.props.yAxisAngle || 0,
-      xAxisDataType: component.props.xAxisDataType || 'category', // 'number', 'date'
+      xAxisDataType: component.props.xAxisDataType || 'category',
       yAxisDataType: component.props.yAxisDataType || 'number',
       dateFormat: component.props.dateFormat || 'MM/dd/yyyy',
-      numberFormat: component.props.numberFormat || '0,0.[00]', // Using Numeral.js format
-      lineColor: component.props.lineColor || '#8884d8', // Add this line
+      numberFormat: component.props.numberFormat || '0,0.[00]',
     };
-  }, [component.props]);
+  }, [component.props, chartData]);
 
-  // Force re-render when chartType changes
   useEffect(() => {
     setKey(prevKey => prevKey + 1);
   }, [chartProps.chartType]);
 
   const formatXAxis = (tickItem) => {
     if (chartProps.xAxisDataType === 'date') {
-      return format(new Date(tickItem), chartProps.dateFormat);
+      return format(parseISO(tickItem), chartProps.dateFormat);
     }
     if (chartProps.xAxisDataType === 'number') {
       return numeral(tickItem).format(chartProps.numberFormat);
@@ -69,14 +96,14 @@ const ChartRenderer = ({ component }) => {
     const allValues = data.flatMap(item => keys.map(key => item[key]));
     const minValue = Math.min(...allValues);
     const maxValue = Math.max(...allValues);
-    const padding = (maxValue - minValue) * 0.1; // Add 10% padding
+    const padding = (maxValue - minValue) * 0.1;
     return [minValue - padding, maxValue + padding];
   };
 
   const renderChart = () => {
     const CommonProps = {
       data: chartProps.data,
-      margin: { top: 20, right: 30, left: 50, bottom: 50 }, // Increased left and bottom margins
+      margin: { top: 20, right: 30, left: 50, bottom: 50 },
     };
 
     const domain = calculateDomain(chartProps.data, chartProps.dataKeys);
@@ -86,7 +113,7 @@ const ChartRenderer = ({ component }) => {
         dataKey: chartProps.nameKey,
         angle: chartProps.xAxisAngle,
         tickFormatter: formatXAxis,
-        height: 60, // Increased height for x-axis
+        height: 60,
         children: chartProps.xAxisLabel && <Label value={chartProps.xAxisLabel} offset={-10} position="insideBottom" />
       },
       YAxis: {
@@ -106,26 +133,16 @@ const ChartRenderer = ({ component }) => {
             <YAxis {...CommonAxisProps.YAxis} />
             <Tooltip />
             {chartProps.showLegend && <Legend verticalAlign={chartProps.legendPosition} />}
-            {chartProps.dataKeys.length > 0 ? (
-              chartProps.dataKeys.map((key, index) => (
-                <Line
-                  key={key}
-                  type="monotone"
-                  dataKey={key}
-                  stroke={chartProps.lineColors[key] || chartProps.lineColor || chartProps.colors[index % chartProps.colors.length]}
-                  strokeWidth={chartProps.lineWidth}
-                  dot={{ r: chartProps.dataPointSize }}
-                />
-              ))
-            ) : (
+            {chartProps.dataKeys.map((key, index) => (
               <Line
+                key={key}
                 type="monotone"
-                dataKey={chartProps.nameKey}
-                stroke={chartProps.lineColor || chartProps.colors[0]}
+                dataKey={key}
+                stroke={chartProps.lineColors[key] || chartProps.colors[index % chartProps.colors.length]}
                 strokeWidth={chartProps.lineWidth}
                 dot={{ r: chartProps.dataPointSize }}
               />
-            )}
+            ))}
           </LineChart>
         );
       case 'bar':

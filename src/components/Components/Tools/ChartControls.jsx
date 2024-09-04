@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import ColorPicker from '../../common/ColorPicker';
 import { useSelector, useDispatch } from 'react-redux';
@@ -16,8 +16,16 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const queries = useSelector(state => state.w3s?.queries?.list ?? []);
   const queriesStatus = useSelector(state => state.w3s?.queries?.status ?? 'idle');
   const [selectedQuery, setSelectedQuery] = useState(null);
-  const [chartData, setChartData] = useState([]);
   const [availableFields, setAvailableFields] = useState([]);
+  const queryResult = useSelector(state => state.graphQL.queryResult);
+  const queryLoading = useSelector(state => state.graphQL.queryLoading);
+  const queryError = useSelector(state => state.graphQL.queryError);
+
+  const [chartData, setChartData] = useState([]);
+
+  const memoizedOnPropsChange = useCallback((newProps) => {
+    onPropsChange(newProps);
+  }, [onPropsChange]);
 
   useEffect(() => {
     if (props?.selectedQueryId) {
@@ -29,7 +37,34 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
     }
   }, [props?.selectedQueryId, queries]);
 
-  const handleChange = async (e) => {
+  useEffect(() => {
+    if (selectedQuery && props.dataKeys?.length > 0 && props.nameKey) {
+      dispatch(executeQuery({
+        endpoint: selectedQuery.endpoint,
+        query: selectedQuery.queryString
+      }));
+    }
+  }, [selectedQuery, props.dataKeys, props.nameKey, dispatch]);
+
+  useEffect(() => {
+    if (queryResult && !queryLoading && !queryError) {
+      const dataKey = Object.keys(queryResult.data)[0];
+      const newChartData = queryResult.data[dataKey];
+      setChartData(newChartData);
+    }
+  }, [queryResult, queryLoading, queryError]);
+
+  useEffect(() => {
+    if (chartData.length > 0 && JSON.stringify(chartData) !== JSON.stringify(props.data)) {
+      memoizedOnPropsChange({
+        ...props,
+        data: chartData,
+        key: Date.now()
+      });
+    }
+  }, [chartData, memoizedOnPropsChange, props]);
+
+  const handleChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     let newValue = type === 'checkbox' ? checked : value;
 
@@ -46,33 +81,8 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
       updatedProps.key = Date.now();
     }
 
-    onPropsChange(updatedProps);
-
-    if ((name === 'dataKeys' || name === 'nameKey') && selectedQuery) {
-      if (updatedProps.dataKeys?.length > 0 && updatedProps.nameKey) {
-        try {
-          const result = await dispatch(executeQuery({
-            endpoint: selectedQuery.endpoint,
-            query: selectedQuery.queryString
-          })).unwrap();
-          
-          if (result.data) {
-            const dataKey = Object.keys(result.data)[0];
-            const newChartData = result.data[dataKey];
-            setChartData(newChartData);
-            
-            onPropsChange({
-              ...updatedProps,
-              data: newChartData,
-              key: Date.now()
-            });
-          }
-        } catch (error) {
-          console.error('Error executing query:', error);
-        }
-      }
-    }
-  };
+    memoizedOnPropsChange(updatedProps);
+  }, [props, memoizedOnPropsChange]);
 
   const toggleSection = (section) => {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
