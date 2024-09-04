@@ -12,6 +12,7 @@ import VideoControls from './VideoControls';
 import WhiteboardControls from './WhiteboardControls';
 import ButtonControls from './ButtonControls';
 import QueryValueControls from './QueryValueControls';
+import BasicTextControls from './BasicTextControls';
 
 const iconMap = {
   FLEX_CONTAINER: [
@@ -69,6 +70,7 @@ const iconMap = {
     { icon: FaBorderStyle, tooltip: 'Border' },
     { icon: FaPalette, tooltip: 'Background' },
     { icon: FaDatabase, tooltip: 'Query Controls' },
+    { icon: FaFont, tooltip: 'Text Controls' },
   ],
 };
 
@@ -205,7 +207,11 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       case 'Background':
         return <BackgroundControls {...sharedProps} />;
       case 'Text Controls':
-        return <TextControls {...sharedProps} />;
+        return componentType === 'TEXT' ? (
+          <TextControls {...sharedProps} />
+        ) : (
+          <BasicTextControls {...sharedProps} />
+        );
       case 'Image Controls':
         return <ImageControls {...sharedProps} />;
       case 'Layout':
@@ -220,7 +226,12 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         return <ButtonControls {...sharedProps} />;
       case 'Query Controls':
         console.log('Rendering QueryValueControls with props:', sharedProps);
-        return <QueryValueControls {...sharedProps} />;
+        return (
+          <>
+            <QueryValueControls {...sharedProps} />
+            <BasicTextControls {...sharedProps} />
+          </>
+        );
       default:
         return null;
     }

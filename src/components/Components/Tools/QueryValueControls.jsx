@@ -2,17 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchQueries } from '../../../w3s/w3sSlice';
 import { executeQuery } from '../../../features/graphQLSlice';
-import { FaAlignLeft, FaAlignCenter, FaAlignRight } from 'react-icons/fa';
-import { MdVerticalAlignTop, MdVerticalAlignCenter, MdVerticalAlignBottom } from 'react-icons/md';
 
-const QueryValueControls = ({ style, props, onStyleChange, onPropsChange }) => {
+const QueryValueControls = ({ props, onPropsChange }) => {
   const dispatch = useDispatch();
   const queries = useSelector(state => state.w3s.queries.list);
   const queriesStatus = useSelector(state => state.w3s.queries.status);
   const [queryResult, setQueryResult] = useState(null);
   const [isRunningQuery, setIsRunningQuery] = useState(false);
-  const [horizontalAlign, setHorizontalAlign] = useState(style.justifyContent || 'flex-start');
-  const [verticalAlign, setVerticalAlign] = useState(style.alignItems || 'flex-start');
 
   useEffect(() => {
     if (queriesStatus === 'idle') {
@@ -52,47 +48,6 @@ const QueryValueControls = ({ style, props, onStyleChange, onPropsChange }) => {
       onPropsChange({ ...props, [name]: value });
     }
   };
-
-  const handleAlignmentChange = (type, value) => {
-    if (type === 'horizontal') {
-      const justifyContent = value === 'left' ? 'flex-start' : value === 'right' ? 'flex-end' : 'center';
-      setHorizontalAlign(value);
-      onStyleChange({ ...style, justifyContent });
-    } else if (type === 'vertical') {
-      setVerticalAlign(value);
-      onStyleChange({ ...style, alignItems: value });
-    }
-  };
-
-  const renderAlignmentButtons = (type, currentValue, options) => (
-    <div className="flex space-x-2 mb-4">
-      {options.map(({ value, icon: Icon }) => (
-        <button
-          key={value}
-          onClick={() => handleAlignmentChange(type, value)}
-          className={`p-2 text-sm rounded-md transition-colors duration-200 border ${
-            currentValue === value
-              ? 'bg-[#cce7ff] text-blue-700 border-blue-300'
-              : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
-          }`}
-        >
-          <Icon />
-        </button>
-      ))}
-    </div>
-  );
-
-  const horizontalAlignOptions = [
-    { value: 'left', icon: FaAlignLeft },
-    { value: 'center', icon: FaAlignCenter },
-    { value: 'right', icon: FaAlignRight },
-  ];
-
-  const verticalAlignOptions = [
-    { value: 'flex-start', icon: MdVerticalAlignTop },
-    { value: 'center', icon: MdVerticalAlignCenter },
-    { value: 'flex-end', icon: MdVerticalAlignBottom },
-  ];
 
   if (queriesStatus === 'loading') {
     return <div>Loading queries...</div>;
@@ -142,14 +97,6 @@ const QueryValueControls = ({ style, props, onStyleChange, onPropsChange }) => {
             </label>
           </div>
         )}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Horizontal Alignment</label>
-          {renderAlignmentButtons('horizontal', horizontalAlign, horizontalAlignOptions)}
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Vertical Alignment</label>
-          {renderAlignmentButtons('vertical', verticalAlign, verticalAlignOptions)}
-        </div>
         {isRunningQuery && <div>Running query...</div>}
         {!isRunningQuery && queryResult !== null && (
           <div className="mt-4">

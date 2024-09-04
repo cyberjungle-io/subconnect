@@ -63,16 +63,33 @@ const QueryValueRenderer = ({ component }) => {
     alignItems: component.style.alignItems || 'flex-start',
     justifyContent: component.style.justifyContent || 'flex-start',
     padding: '10px',
-    border: '1px solid #ccc',
-    borderRadius: '4px',
-    backgroundColor: '#f8f8f8',
-    fontFamily: 'Arial, sans-serif',
-    fontSize: '14px',
-    color: '#333',
     width: '100%',
     height: '100%',
     boxSizing: 'border-box',
+    // Apply text styles
+    fontFamily: component.style.fontFamily || 'Arial, sans-serif',
+    fontSize: component.style.fontSize || '14px',
+    fontWeight: component.style.fontWeight || 'normal',
+    fontStyle: component.style.fontStyle || 'normal',
+    textDecoration: component.style.textDecoration || 'none',
+    color: component.style.color || '#333',
+    textAlign: component.style.textAlign || 'left',
+    lineHeight: component.style.lineHeight || 'normal',
+    letterSpacing: component.style.letterSpacing || 'normal',
+    textTransform: component.style.textTransform || 'none',
+    textShadow: component.style.textShadow || 'none',
   };
+
+  // Apply background styles
+  if (component.style.backgroundColor) {
+    labelStyle.backgroundColor = component.style.backgroundColor;
+  }
+  if (component.style.backgroundImage) {
+    labelStyle.backgroundImage = component.style.backgroundImage;
+    labelStyle.backgroundSize = 'cover';
+    labelStyle.backgroundPosition = 'center';
+    labelStyle.backgroundRepeat = 'no-repeat';
+  }
 
   return (
     <div className="query-value-renderer" style={labelStyle}>

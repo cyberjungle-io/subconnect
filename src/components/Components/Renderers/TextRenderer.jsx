@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { sanitizeHtml } from '../../../utils/sanitize';
 import { validateHtmlContent } from '../../../utils/validate';
+import TextControls from '../Tools/TextControls';
 
 const TextRenderer = ({ 
   component, 
@@ -90,23 +91,32 @@ const TextRenderer = ({
   };
 
   return (
-    <ElementType
-      ref={textRef}
-      className="w-full h-full overflow-hidden"
-      style={{
-        ...textStyle,
-        color: showPlaceholder ? '#999' : (component.style.color || '#000000'), // Use placeholder color only when showing placeholder
-      }}
-      contentEditable={isEditing}
-      onDoubleClick={onDoubleClick}
-      onFocus={handleFocus}
-      onBlur={handleBlur}
-      onInput={handleInput}
-      onKeyDown={handleKeyDown}
-      suppressContentEditableWarning={true}
-    >
-      {showPlaceholder ? placeholderText : sanitizeHtml(localContent)}
-    </ElementType>
+    <>
+      <ElementType
+        ref={textRef}
+        className="w-full h-full overflow-hidden"
+        style={{
+          ...textStyle,
+          color: showPlaceholder ? '#999' : (component.style.color || '#000000'), // Use placeholder color only when showing placeholder
+        }}
+        contentEditable={isEditing}
+        onDoubleClick={onDoubleClick}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
+        onInput={handleInput}
+        onKeyDown={handleKeyDown}
+        suppressContentEditableWarning={true}
+      >
+        {showPlaceholder ? placeholderText : sanitizeHtml(localContent)}
+      </ElementType>
+      {isToolbarOpen && !isViewMode && (
+        <TextControls
+          style={component.style}
+          onStyleChange={(newStyle) => onUpdate(component.id, { style: newStyle })}
+          isToolbarOpen={isToolbarOpen}
+        />
+      )}
+    </>
   );
 };
 
