@@ -17,7 +17,7 @@ const ChartRenderer = ({ component }) => {
     return {
       chartType: component.props.chartType || 'line',
       data: component.props.data || [],
-      dataKeys: component.props.dataKeys || [],
+      dataKeys: Array.isArray(component.props.dataKeys) ? component.props.dataKeys : [],
       nameKey: component.props.nameKey || '',
       title: component.props.title || '',
       titleFontSize: component.props.titleFontSize || 16,
@@ -106,16 +106,26 @@ const ChartRenderer = ({ component }) => {
             <YAxis {...CommonAxisProps.YAxis} />
             <Tooltip />
             {chartProps.showLegend && <Legend verticalAlign={chartProps.legendPosition} />}
-            {chartProps.dataKeys.map((key, index) => (
+            {chartProps.dataKeys.length > 0 ? (
+              chartProps.dataKeys.map((key, index) => (
+                <Line
+                  key={key}
+                  type="monotone"
+                  dataKey={key}
+                  stroke={chartProps.lineColors[key] || chartProps.lineColor || chartProps.colors[index % chartProps.colors.length]}
+                  strokeWidth={chartProps.lineWidth}
+                  dot={{ r: chartProps.dataPointSize }}
+                />
+              ))
+            ) : (
               <Line
-                key={key}
                 type="monotone"
-                dataKey={key}
-                stroke={chartProps.lineColors[key] || chartProps.lineColor || chartProps.colors[index % chartProps.colors.length]}
+                dataKey={chartProps.nameKey}
+                stroke={chartProps.lineColor || chartProps.colors[0]}
                 strokeWidth={chartProps.lineWidth}
                 dot={{ r: chartProps.dataPointSize }}
               />
-            ))}
+            )}
           </LineChart>
         );
       case 'bar':

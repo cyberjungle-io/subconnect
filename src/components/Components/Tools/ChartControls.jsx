@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { FaChevronDown, FaChevronRight, FaChevronUp, FaChevronLeft } from 'react-icons/fa';
+import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import ColorPicker from '../../common/ColorPicker';
 import { useSelector, useDispatch } from 'react-redux';
 import { executeQuery } from '../../../features/graphQLSlice';
 
-const ChartControls = ({ component = {}, onUpdate = () => {} }) => {
+const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const [expandedSections, setExpandedSections] = useState({
     general: true,
     dataSource: false,
@@ -20,14 +20,14 @@ const ChartControls = ({ component = {}, onUpdate = () => {} }) => {
   const [availableFields, setAvailableFields] = useState([]);
 
   useEffect(() => {
-    if (component.props?.selectedQueryId) {
-      const query = queries.find(q => q._id === component.props.selectedQueryId);
+    if (props?.selectedQueryId) {
+      const query = queries.find(q => q._id === props.selectedQueryId);
       setSelectedQuery(query);
       if (query && query.fields) {
         setAvailableFields(query.fields);
       }
     }
-  }, [component.props?.selectedQueryId, queries]);
+  }, [props?.selectedQueryId, queries]);
 
   const handleChange = async (e) => {
     const { name, value, type, checked } = e.target;
@@ -38,7 +38,7 @@ const ChartControls = ({ component = {}, onUpdate = () => {} }) => {
     }
 
     const updatedProps = {
-      ...component.props,
+      ...props,
       [name]: newValue
     };
 
@@ -46,7 +46,7 @@ const ChartControls = ({ component = {}, onUpdate = () => {} }) => {
       updatedProps.key = Date.now();
     }
 
-    onUpdate({ props: updatedProps });
+    onPropsChange(updatedProps);
 
     if ((name === 'dataKeys' || name === 'nameKey') && selectedQuery) {
       if (updatedProps.dataKeys?.length > 0 && updatedProps.nameKey) {
@@ -61,12 +61,10 @@ const ChartControls = ({ component = {}, onUpdate = () => {} }) => {
             const newChartData = result.data[dataKey];
             setChartData(newChartData);
             
-            onUpdate({
-              props: {
-                ...updatedProps,
-                data: newChartData,
-                key: Date.now()
-              }
+            onPropsChange({
+              ...updatedProps,
+              data: newChartData,
+              key: Date.now()
             });
           }
         } catch (error) {
@@ -81,16 +79,16 @@ const ChartControls = ({ component = {}, onUpdate = () => {} }) => {
   };
 
   const renderSection = (title, sectionKey, content) => (
-    <div className="control-section">
+    <div className="control-section mb-4">
       <div
-        className="control-section-header"
+        className="control-section-header flex items-center cursor-pointer"
         onClick={() => toggleSection(sectionKey)}
       >
-        {expandedSections[sectionKey] ? <FaChevronDown /> : <FaChevronRight />}
-        <span className="control-section-title">{title}</span>
+        {expandedSections[sectionKey] ? <FaChevronDown className="mr-2" /> : <FaChevronRight className="mr-2" />}
+        <span className="control-section-title text-sm font-medium text-gray-700">{title}</span>
       </div>
       {expandedSections[sectionKey] && (
-        <div className="control-section-content">
+        <div className="control-section-content mt-2">
           {content}
         </div>
       )}
@@ -100,12 +98,12 @@ const ChartControls = ({ component = {}, onUpdate = () => {} }) => {
   const generalContent = (
     <>
       <div className="mb-2">
-        <label className="control-label">Chart Type</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Chart Type</label>
         <select
           name="chartType"
-          value={component.props?.chartType || 'line'}
+          value={props?.chartType || 'line'}
           onChange={handleChange}
-          className="control-select"
+          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         >
           <option value="line">Line Chart</option>
           <option value="bar">Bar Chart</option>
@@ -114,33 +112,13 @@ const ChartControls = ({ component = {}, onUpdate = () => {} }) => {
         </select>
       </div>
       <div className="mb-2">
-        <label className="control-label">Chart Title</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Chart Title</label>
         <input
           type="text"
           name="title"
-          value={component.props?.title || ''}
+          value={props?.title || ''}
           onChange={handleChange}
-          className="control-input"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="control-label">Chart Width</label>
-        <input
-          type="number"
-          name="width"
-          value={component.props?.width || 500}
-          onChange={handleChange}
-          className="control-input"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="control-label">Chart Height</label>
-        <input
-          type="number"
-          name="height"
-          value={component.props?.height || 300}
-          onChange={handleChange}
-          className="control-input"
+          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
     </>
@@ -149,12 +127,12 @@ const ChartControls = ({ component = {}, onUpdate = () => {} }) => {
   const dataSourceContent = (
     <>
       <div className="mb-2">
-        <label className="control-label">Select Query</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Select Query</label>
         <select
           name="selectedQueryId"
-          value={component.props?.selectedQueryId || ''}
+          value={props?.selectedQueryId || ''}
           onChange={handleChange}
-          className="control-select"
+          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         >
           <option value="">Select a query</option>
           {queries.map(query => (
@@ -168,13 +146,13 @@ const ChartControls = ({ component = {}, onUpdate = () => {} }) => {
       {selectedQuery && (
         <>
           <div className="mb-2">
-            <label className="control-label">Data Keys (Y-axis)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Data Keys (Y-axis)</label>
             <select
               multiple
               name="dataKeys"
-              value={component.props?.dataKeys || []}
+              value={props?.dataKeys || []}
               onChange={handleChange}
-              className="control-select"
+              className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             >
               {availableFields.map(field => (
                 <option key={field._id} value={field.name}>{field.name}</option>
@@ -182,12 +160,12 @@ const ChartControls = ({ component = {}, onUpdate = () => {} }) => {
             </select>
           </div>
           <div className="mb-2">
-            <label className="control-label">Name Key (X-axis)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name Key (X-axis)</label>
             <select
               name="nameKey"
-              value={component.props?.nameKey || ''}
+              value={props?.nameKey || ''}
               onChange={handleChange}
-              className="control-select"
+              className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="">Select a field</option>
               {availableFields.map(field => (
@@ -203,189 +181,68 @@ const ChartControls = ({ component = {}, onUpdate = () => {} }) => {
   const stylingContent = (
     <>
       <div className="mb-2">
-        <label className="control-label">Title Font Size</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Title Font Size</label>
         <input
           type="number"
           name="titleFontSize"
-          value={component.props?.titleFontSize || 16}
+          value={props?.titleFontSize || 16}
           onChange={handleChange}
-          className="control-input"
+          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
       <div className="mb-2">
-        <label className="control-label">Title Color</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Title Color</label>
         <ColorPicker
-          color={component.props?.titleColor || '#000000'}
-          onChange={(color) => handleChange({ target: { name: 'titleColor', value: color } })}
+          color={props?.titleColor || '#000000'}
+          onChange={(color) => onPropsChange({ ...props, titleColor: color })}
         />
       </div>
       <div className="mb-2">
-        <label className="control-label">Title Alignment</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Title Alignment</label>
         <select
           name="titleAlign"
-          value={component.props?.titleAlign || 'center'}
+          value={props?.titleAlign || 'center'}
           onChange={handleChange}
-          className="control-select"
+          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         >
           <option value="left">Left</option>
           <option value="center">Center</option>
           <option value="right">Right</option>
         </select>
       </div>
-      {(component.props?.chartType === 'line' || !component.props?.chartType) && (
-        <>
-          <div className="mb-2">
-            <label className="control-label">Line Color</label>
-            <ColorPicker
-              color={component.props?.lineColor || '#8884d8'}
-              onChange={(color) => handleChange({ target: { name: 'lineColor', value: color } })}
-            />
-          </div>
-          <div className="mb-2">
-            <label className="control-label">Line Width</label>
-            <input
-              type="number"
-              name="lineWidth"
-              value={component.props?.lineWidth || 2}
-              onChange={handleChange}
-              className="control-input"
-            />
-          </div>
-        </>
-      )}
-      {component.props?.chartType === 'bar' && (
-        <>
-          <div className="mb-2">
-            <label className="control-label">Bar Color</label>
-            <ColorPicker
-              color={component.props?.barColor || '#8884d8'}
-              onChange={(color) => handleChange({ target: { name: 'barColor', value: color } })}
-            />
-          </div>
-          <div className="mb-2">
-            <label className="control-label">Bar Opacity</label>
-            <input
-              type="number"
-              name="barOpacity"
-              min="0"
-              max="1"
-              step="0.1"
-              value={component.props?.barOpacity || 1}
-              onChange={handleChange}
-              className="control-input"
-            />
-          </div>
-        </>
-      )}
     </>
   );
 
   const advancedContent = (
     <>
       <div className="mb-2">
-        <label className="control-label">Show Legend</label>
-        <input
-          type="checkbox"
-          name="showLegend"
-          checked={component.props?.showLegend || false}
-          onChange={handleChange}
-        />
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            name="showLegend"
+            checked={props?.showLegend || false}
+            onChange={handleChange}
+            className="mr-2"
+          />
+          <span className="text-sm font-medium text-gray-700">Show Legend</span>
+        </label>
       </div>
-      {component.props?.showLegend && (
+      {props?.showLegend && (
         <div className="mb-2">
-          <label className="control-label">Legend Position</label>
-          <div className="control-button-group">
-            {['top', 'right', 'bottom', 'left'].map(position => (
-              <button
-                key={position}
-                onClick={() => handleChange({ target: { name: 'legendPosition', value: position } })}
-                className={`control-button ${component.props?.legendPosition === position ? 'active' : ''}`}
-                title={position.charAt(0).toUpperCase() + position.slice(1)}
-              >
-                {position === 'top' && <FaChevronUp />}
-                {position === 'right' && <FaChevronRight />}
-                {position === 'bottom' && <FaChevronDown />}
-                {position === 'left' && <FaChevronLeft />}
-              </button>
-            ))}
-          </div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Legend Position</label>
+          <select
+            name="legendPosition"
+            value={props?.legendPosition || 'bottom'}
+            onChange={handleChange}
+            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="top">Top</option>
+            <option value="right">Right</option>
+            <option value="bottom">Bottom</option>
+            <option value="left">Left</option>
+          </select>
         </div>
       )}
-      <div className="mb-2">
-        <label className="control-label">X-Axis Label</label>
-        <input
-          type="text"
-          name="xAxisLabel"
-          value={component.props?.xAxisLabel || ''}
-          onChange={handleChange}
-          className="control-input"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="control-label">Y-Axis Label</label>
-        <input
-          type="text"
-          name="yAxisLabel"
-          value={component.props?.yAxisLabel || ''}
-          onChange={handleChange}
-          className="control-input"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="control-label">X-Axis Angle</label>
-        <input
-          type="number"
-          name="xAxisAngle"
-          value={component.props?.xAxisAngle || 0}
-          onChange={handleChange}
-          min="-90"
-          max="90"
-          className="control-input"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="control-label">Y-Axis Angle</label>
-        <input
-          type="number"
-          name="yAxisAngle"
-          value={component.props?.yAxisAngle || 0}
-          onChange={handleChange}
-          min="-90"
-          max="90"
-          className="control-input"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="control-label">Date Format</label>
-        <input
-          type="text"
-          name="dateFormat"
-          value={component.props?.dateFormat || ''}
-          onChange={handleChange}
-          className="control-input"
-          placeholder="e.g., YYYY-MM-DD"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="control-label">Start Date</label>
-        <input
-          type="date"
-          name="startDate"
-          value={component.props?.startDate || ''}
-          onChange={handleChange}
-          className="control-input"
-        />
-      </div>
-      <div className="mb-2">
-        <label className="control-label">End Date</label>
-        <input
-          type="date"
-          name="endDate"
-          value={component.props?.endDate || ''}
-          onChange={handleChange}
-          className="control-input"
-        />
-      </div>
     </>
   );
 
