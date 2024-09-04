@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchQueries } from '../../../w3s/w3sSlice';
 import { executeQuery } from '../../../features/graphQLSlice';
-import { FaAlignLeft, FaAlignCenter, FaAlignRight, FaAlignJustify } from 'react-icons/fa';
+import { FaAlignLeft, FaAlignCenter, FaAlignRight } from 'react-icons/fa';
 import { MdVerticalAlignTop, MdVerticalAlignCenter, MdVerticalAlignBottom } from 'react-icons/md';
 
 const QueryValueControls = ({ style, props, onStyleChange, onPropsChange }) => {
@@ -55,8 +55,9 @@ const QueryValueControls = ({ style, props, onStyleChange, onPropsChange }) => {
 
   const handleAlignmentChange = (type, value) => {
     if (type === 'horizontal') {
+      const justifyContent = value === 'left' ? 'flex-start' : value === 'right' ? 'flex-end' : 'center';
       setHorizontalAlign(value);
-      onStyleChange({ ...style, justifyContent: value });
+      onStyleChange({ ...style, justifyContent });
     } else if (type === 'vertical') {
       setVerticalAlign(value);
       onStyleChange({ ...style, alignItems: value });
@@ -82,10 +83,9 @@ const QueryValueControls = ({ style, props, onStyleChange, onPropsChange }) => {
   );
 
   const horizontalAlignOptions = [
-    { value: 'flex-start', icon: FaAlignLeft },
+    { value: 'left', icon: FaAlignLeft },
     { value: 'center', icon: FaAlignCenter },
-    { value: 'flex-end', icon: FaAlignRight },
-    { value: 'space-between', icon: FaAlignJustify },
+    { value: 'right', icon: FaAlignRight },
   ];
 
   const verticalAlignOptions = [
