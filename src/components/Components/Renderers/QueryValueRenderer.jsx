@@ -60,8 +60,8 @@ const QueryValueRenderer = ({ component }) => {
   const labelStyle = {
     ...component.style,
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: component.style.alignItems || 'flex-start',
+    justifyContent: component.style.justifyContent || 'flex-start',
     padding: '10px',
     border: '1px solid #ccc',
     borderRadius: '4px',
@@ -69,6 +69,9 @@ const QueryValueRenderer = ({ component }) => {
     fontFamily: 'Arial, sans-serif',
     fontSize: '14px',
     color: '#333',
+    width: '100%',
+    height: '100%',
+    boxSizing: 'border-box',
   };
 
   return (
