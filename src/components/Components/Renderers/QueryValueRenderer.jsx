@@ -69,6 +69,9 @@ const QueryValueRenderer = ({ component }) => {
     fontFamily: 'Arial, sans-serif',
     fontSize: '14px',
     color: '#333',
+    width: '100%',  // Add this line
+    height: '100%', // Add this line
+    boxSizing: 'border-box', // Add this line
   };
 
   return (
