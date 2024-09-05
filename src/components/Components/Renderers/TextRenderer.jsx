@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { sanitizeHtml } from '../../../utils/sanitize';
 import { validateHtmlContent } from '../../../utils/validate';
 import TextControls from '../Tools/TextControls';
+import DOMPurify from 'dompurify'; // Add this import
 
 const TextRenderer = ({ 
   component, 
@@ -77,16 +78,13 @@ const TextRenderer = ({
   };
 
   const handleInput = (e) => {
-    const newContent = e.target.innerText;
+    const newContent = e.target.innerHTML; // Change this from innerText to innerHTML
     setLocalContent(newContent);
     setShowPlaceholder(!newContent.trim());
-    const sanitizedContent = sanitizeHtml(newContent);
+    const sanitizedContent = DOMPurify.sanitize(newContent); // Use DOMPurify instead of sanitizeHtml
     if (validateHtmlContent(sanitizedContent)) {
       onUpdate(component.id, { style: { ...component.style, content: sanitizedContent } });
     }
-
-    // Add this line to ensure the cursor stays at the end
-    placeCaretAtEnd(e.target);
   };
 
   const handleKeyDown = (e) => {
@@ -122,14 +120,18 @@ const TextRenderer = ({
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         suppressContentEditableWarning={true}
-      >
-        {showPlaceholder ? placeholderText : sanitizeHtml(localContent)}
-      </ElementType>
+        dangerouslySetInnerHTML={{ __html: showPlaceholder ? placeholderText : DOMPurify.sanitize(localContent) }}
+      />
       {isToolbarOpen && !isViewMode && (
         <TextControls
           style={component.style}
           onStyleChange={(newStyle) => onUpdate(component.id, { style: newStyle })}
           isToolbarOpen={isToolbarOpen}
+          content={localContent} // Add this prop
+          onContentChange={(newContent) => { // Add this prop
+            setLocalContent(newContent);
+            onUpdate(component.id, { style: { ...component.style, content: newContent } });
+          }}
         />
       )}
     </>
