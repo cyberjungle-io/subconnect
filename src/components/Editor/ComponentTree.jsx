@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { componentConfig } from '../Components/componentConfig';
 import { useDispatch } from 'react-redux';
-import { renameComponent } from '../../features/editorSlice';
 import { FaTimes } from 'react-icons/fa';
 import FloatingToolbar from '../Components/Tools/FloatingToolbar';
 
@@ -21,37 +20,11 @@ const ChevronDown = () => (
 
 
 const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) => {
-  const dispatch = useDispatch();
   const [isOpen, setIsOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState(component.name || component.type);
-  const inputRef = useRef(null);
   const hasChildren = component.children && component.children.length > 0;
   const isSelected = component.id === selectedComponentId;
 
   const Icon = componentConfig[component.type]?.icon || (() => null);
-
-  useEffect(() => {
-    if (isEditing) {
-      inputRef.current.focus();
-    }
-  }, [isEditing]);
-
-  const handleRename = () => {
-    if (editedName.trim() !== '' && editedName !== (component.name || component.type)) {
-      dispatch(renameComponent({ id: component.id, newName: editedName.trim() }));
-    }
-    setIsEditing(false);
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleRename();
-    } else if (e.key === 'Escape') {
-      setEditedName(component.name || component.type);
-      setIsEditing(false);
-    }
-  };
 
   return (
     <div className={`mb-1 ${depth > 0 ? 'ml-3' : ''}`}>
@@ -61,7 +34,7 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) 
                       ? 'bg-[#cce7ff] text-blue-600 border border-blue-300' 
                       : 'hover:bg-[#d9ecff] border border-transparent'
                     }`}
-        onClick={() => !isEditing && onSelectComponent(component)}
+        onClick={() => onSelectComponent(component)}
       >
         <div className="flex items-center flex-grow text-gray-600">
           {hasChildren && (
@@ -77,27 +50,9 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) 
           )}
           {!hasChildren && <div className="w-3 mr-1" />}
           <Icon className="w-4 h-4 mr-1" />
-          {isEditing ? (
-            <input
-              ref={inputRef}
-              value={editedName}
-              onChange={(e) => setEditedName(e.target.value)}
-              onBlur={handleRename}
-              onKeyDown={handleKeyDown}
-              className="ml-1 px-1 py-0 w-full bg-white border border-gray-300 rounded"
-              onClick={(e) => e.stopPropagation()}
-            />
-          ) : (
-            <span 
-              className="ml-1 truncate flex-grow"
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                setIsEditing(true);
-              }}
-            >
-              {component.name || component.type}
-            </span>
-          )}
+          <span className="ml-1 truncate flex-grow">
+            {component.name || component.type}
+          </span>
         </div>
       </div>
       {isOpen && hasChildren && (
@@ -126,8 +81,8 @@ const ComponentTree = ({ components, onSelectComponent, selectedComponentId, isV
 
   const handleComponentSelect = (component) => {
     onSelectComponent(component.id);
-    setSelectedComponent(component);
-    setToolbarPosition({ x: position.x + 300, y: position.y }); // Position toolbar to the right of the tree
+    setSelectedComponent({...component}); // Create a new object to ensure updates
+    setToolbarPosition({ x: position.x + 300, y: position.y });
   };
 
   useEffect(() => {
@@ -204,6 +159,10 @@ const ComponentTree = ({ components, onSelectComponent, selectedComponentId, isV
           content={selectedComponent.content}
           onStyleChange={(updates) => {
             // Handle style updates
+            const updatedComponent = {...selectedComponent, ...updates};
+            setSelectedComponent(updatedComponent);
+            // You might need to call a function here to update the main component state
+            // For example: onComponentUpdate(updatedComponent);
           }}
           onToolbarInteraction={(e) => e.stopPropagation()}
         />

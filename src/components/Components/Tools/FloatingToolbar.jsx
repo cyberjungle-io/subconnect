@@ -13,6 +13,8 @@ import WhiteboardControls from './WhiteboardControls';
 import ButtonControls from './ButtonControls';
 import QueryValueControls from './QueryValueControls';
 import BasicTextControls from './BasicTextControls';
+import { useDispatch } from 'react-redux';
+import { renameComponent } from '../../../features/editorSlice';
 
 const iconMap = {
   FLEX_CONTAINER: [
@@ -75,6 +77,7 @@ const iconMap = {
 };
 
 const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose, style, props, content, onStyleChange, onToolbarInteraction }) => {
+  const dispatch = useDispatch();
   const [position, setPosition] = useState(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -82,6 +85,9 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   const [toolbarHeight, setToolbarHeight] = useState('auto');
   const [isMouseDown, setIsMouseDown] = useState(false);
   const toolbarRef = useRef(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedName, setEditedName] = useState(props.name || componentType);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     if (toolbarRef.current) {
@@ -151,14 +157,16 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   }, []);
 
   const handleMouseDown = useCallback((e) => {
-    setIsDragging(true);
-    setIsMouseDown(true);
-    setDragOffset({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
-    });
-    onToolbarInteraction(e);
-  }, [position, onToolbarInteraction]);
+    if (!isEditing) {
+      setIsDragging(true);
+      setIsMouseDown(true);
+      setDragOffset({
+        x: e.clientX - position.x,
+        y: e.clientY - position.y,
+      });
+      onToolbarInteraction(e);
+    }
+  }, [position, onToolbarInteraction, isEditing]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -245,6 +253,30 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
     }
   `;
 
+  useEffect(() => {
+    if (isEditing) {
+      inputRef.current.focus();
+    }
+  }, [isEditing]);
+
+  const handleRename = () => {
+    if (editedName.trim() !== '' && editedName !== (props.name || componentType)) {
+      dispatch(renameComponent({ id: componentId, newName: editedName.trim() }));
+      onStyleChange({ props: { ...props, name: editedName.trim() } });
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleRename();
+    } else if (e.key === 'Escape') {
+      setEditedName(props.name || componentType);
+      setIsEditing(false);
+    }
+    e.stopPropagation(); // Prevent dragging when typing
+  };
+
   return (
     <div
       ref={toolbarRef}
@@ -257,15 +289,35 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       onDoubleClick={handleDoubleClick}
     >
       <div
-        className="h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        className={`h-6 ${isEditing ? '' : 'cursor-move'} bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
         onMouseDown={handleMouseDown}
       />
       <div className="px-4 pt-1 pb-3">
         <div
-          className="flex justify-between items-center mb-3"
+          className={`flex justify-between items-center mb-3 ${isEditing ? '' : 'cursor-move'}`}
           onMouseDown={handleMouseDown}
         >
-          <h3 className="text-lg font-semibold text-gray-700">Component Toolbar</h3>
+          {isEditing ? (
+            <input
+              ref={inputRef}
+              value={editedName}
+              onChange={(e) => setEditedName(e.target.value)}
+              onBlur={handleRename}
+              onKeyDown={handleKeyDown}
+              className="text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded px-1 py-0 w-full"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            <h3 
+              className="text-lg font-semibold text-gray-700 cursor-text"
+              onDoubleClick={(e) => {
+                e.stopPropagation();
+                setIsEditing(true);
+              }}
+            >
+              {props.name || componentType}
+            </h3>
+          )}
           <button onClick={onClose} className="text-gray-700 hover:text-gray-900">
             <FaTimes />
           </button>
