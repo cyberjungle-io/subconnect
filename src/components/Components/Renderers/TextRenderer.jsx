@@ -82,12 +82,26 @@ const TextRenderer = ({
     if (validateHtmlContent(sanitizedContent)) {
       onUpdate(component.id, { style: { ...component.style, content: sanitizedContent } });
     }
+
+    // Add this line to ensure the cursor stays at the end
+    placeCaretAtEnd(e.target);
   };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Backspace' && textRef.current.innerText.trim() === '') {
       e.preventDefault();
     }
+  };
+
+  // Add this new function
+  const placeCaretAtEnd = (element) => {
+    const range = document.createRange();
+    const selection = window.getSelection();
+    range.selectNodeContents(element);
+    range.collapse(false);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    element.focus();
   };
 
   return (
