@@ -3,6 +3,7 @@ import { componentConfig } from '../Components/componentConfig';
 import { useDispatch } from 'react-redux';
 import { renameComponent } from '../../features/editorSlice';
 import { FaTimes } from 'react-icons/fa';
+import FloatingToolbar from '../Components/Tools/FloatingToolbar';
 
 // Custom monotone SVG icons
 const ChevronRight = () => (
@@ -60,7 +61,7 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) 
                       ? 'bg-[#cce7ff] text-blue-600 border border-blue-300' 
                       : 'hover:bg-[#d9ecff] border border-transparent'
                     }`}
-        onClick={() => !isEditing && onSelectComponent(component.id)}
+        onClick={() => !isEditing && onSelectComponent(component)}
       >
         <div className="flex items-center flex-grow text-gray-600">
           {hasChildren && (
@@ -116,10 +117,18 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) 
   );
 };
 
-const ComponentTree = ({ components, onSelectComponent, selectedComponentId, isVisible, onClose }) => {
+const ComponentTree = ({ components, onSelectComponent, selectedComponentId, isVisible, onClose, initialPosition }) => {
   const [position, setPosition] = useState({ x: 20, y: window.innerHeight / 2 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [selectedComponent, setSelectedComponent] = useState(null);
+  const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
+
+  const handleComponentSelect = (component) => {
+    onSelectComponent(component.id);
+    setSelectedComponent(component);
+    setToolbarPosition({ x: position.x + 300, y: position.y }); // Position toolbar to the right of the tree
+  };
 
   useEffect(() => {
     const handleMouseMove = (e) => {
@@ -179,11 +188,26 @@ const ComponentTree = ({ components, onSelectComponent, selectedComponentId, isV
             key={component.id} 
             component={component} 
             depth={0} 
-            onSelectComponent={onSelectComponent}
+            onSelectComponent={handleComponentSelect}
             selectedComponentId={selectedComponentId}
           />
         ))}
       </div>
+      {selectedComponent && (
+        <FloatingToolbar
+          componentId={selectedComponent.id}
+          componentType={selectedComponent.type}
+          initialPosition={toolbarPosition}
+          onClose={() => setSelectedComponent(null)}
+          style={selectedComponent.style}
+          props={selectedComponent.props}
+          content={selectedComponent.content}
+          onStyleChange={(updates) => {
+            // Handle style updates
+          }}
+          onToolbarInteraction={(e) => e.stopPropagation()}
+        />
+      )}
       <div
         className="absolute top-0 left-0 right-0 h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         onMouseDown={handleMouseDown}

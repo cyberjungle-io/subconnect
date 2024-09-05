@@ -297,6 +297,11 @@ const MainEditor = () => {
     }
   };
 
+  const handleSelectComponentFromTree = (componentId) => {
+    dispatch(setSelectedIds([componentId]));
+    // You might want to scroll to the selected component in the Canvas here
+  };
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.ctrlKey || event.metaKey) {
@@ -372,12 +377,13 @@ const MainEditor = () => {
           )}
           <ComponentTree
             components={components}
-            onSelectComponent={handleSelectComponent}
+            onSelectComponent={handleSelectComponentFromTree}
             selectedComponentId={selectedIds?.[0]}
             isVisible={isComponentTreeVisible}
             onClose={handleToggleComponentTree}
             initialPosition={componentTreePosition}
             onPositionChange={setComponentTreePosition}
+            onUpdateComponent={handleUpdateComponent}
           />
           <ComponentPalette
             isVisible={isComponentPaletteVisible}
