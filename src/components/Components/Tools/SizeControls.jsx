@@ -11,6 +11,7 @@ const SizeControls = ({ style = {}, onStyleChange }) => {
   const [width, setWidth] = useState('');
   const [height, setHeight] = useState('');
   const [activePreset, setActivePreset] = useState(null);
+  const [activeFitOption, setActiveFitOption] = useState(null);
 
   useEffect(() => {
     if (style) {
@@ -52,42 +53,82 @@ const SizeControls = ({ style = {}, onStyleChange }) => {
   }, [setDimension]);
 
   const handleFitContent = useCallback(() => {
-    onStyleChange({
-      width: 'fit-content',
-      height: 'fit-content',
-    });
-  }, [onStyleChange]);
+    if (activeFitOption === 'content') {
+      onStyleChange({
+        width: width,
+        height: height,
+      });
+      setActiveFitOption(null);
+    } else {
+      onStyleChange({
+        width: 'fit-content',
+        height: 'fit-content',
+      });
+      setActiveFitOption('content');
+    }
+    setActivePreset(null);
+  }, [onStyleChange, activeFitOption, width, height]);
 
   const handleFitVertical = useCallback(() => {
-    onStyleChange({
-      height: 'fit-content',
-    });
-  }, [onStyleChange]);
+    if (activeFitOption === 'vertical') {
+      onStyleChange({
+        height: height,
+      });
+      setActiveFitOption(null);
+    } else {
+      onStyleChange({
+        height: 'fit-content',
+      });
+      setActiveFitOption('vertical');
+    }
+    setActivePreset(null);
+  }, [onStyleChange, activeFitOption, height]);
 
   const handleFitHorizontal = useCallback(() => {
-    onStyleChange({
-      width: 'fit-content',
-    });
-  }, [onStyleChange]);
+    if (activeFitOption === 'horizontal') {
+      onStyleChange({
+        width: width,
+      });
+      setActiveFitOption(null);
+    } else {
+      onStyleChange({
+        width: 'fit-content',
+      });
+      setActiveFitOption('horizontal');
+    }
+    setActivePreset(null);
+  }, [onStyleChange, activeFitOption, width]);
 
   const renderFitButtons = () => (
     <div className="flex justify-center items-center mb-4">
       <div className="flex w-full space-x-2">
         <button
           onClick={handleFitContent}
-          className="flex-1 px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]"
+          className={`flex-1 px-3 py-1 text-sm rounded-full transition-colors duration-200 border ${
+            activeFitOption === 'content'
+              ? 'bg-[#cce7ff] text-blue-700 border-blue-300'
+              : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
+          }`}
         >
           Fit Content
         </button>
         <button
           onClick={handleFitVertical}
-          className="flex-1 px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]"
+          className={`flex-1 px-3 py-1 text-sm rounded-full transition-colors duration-200 border ${
+            activeFitOption === 'vertical'
+              ? 'bg-[#cce7ff] text-blue-700 border-blue-300'
+              : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
+          }`}
         >
           Fit Vertical
         </button>
         <button
           onClick={handleFitHorizontal}
-          className="flex-1 px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]"
+          className={`flex-1 px-3 py-1 text-sm rounded-full transition-colors duration-200 border ${
+            activeFitOption === 'horizontal'
+              ? 'bg-[#cce7ff] text-blue-700 border-blue-300'
+              : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
+          }`}
         >
           Fit Horizontal
         </button>
@@ -127,6 +168,7 @@ const SizeControls = ({ style = {}, onStyleChange }) => {
               setWidth(preset.width);
               setHeight(preset.height);
               setActivePreset(name);
+              setActiveFitOption(null);
             }}
             className={`flex-1 px-3 py-1 text-sm rounded-full transition-colors duration-200 border ${
               activePreset === name

@@ -313,12 +313,6 @@ const ComponentRenderer = React.memo(({
       componentStyle.justifyContent = props.justifyContent || "flex-start";
       componentStyle.gap = style.gap || "0px";
       
-      // Always allow the FLEX_CONTAINER to grow based on its content
-      componentStyle.minWidth = style.minWidth || "300px";
-      componentStyle.minHeight = style.minHeight || "300px";
-      componentStyle.width = style.width || "auto";
-      componentStyle.height = style.height || "auto";
-
       if (!isFlexChild) {
         // Top-level FLEX_CONTAINER
         if (globalComponentLayout === "horizontal") {
@@ -328,9 +322,11 @@ const ComponentRenderer = React.memo(({
         }
       } else {
         // Nested FLEX_CONTAINER
-        componentStyle.flexGrow = style.flexGrow || 1;
+        componentStyle.flexGrow = style.flexGrow || 0;
         componentStyle.flexShrink = style.flexShrink || 1;
         componentStyle.flexBasis = style.flexBasis || 'auto';
+        componentStyle.width = style.width || 'auto';
+        componentStyle.height = style.height || 'auto';
       }
 
       // Apply ComponentControls styles
