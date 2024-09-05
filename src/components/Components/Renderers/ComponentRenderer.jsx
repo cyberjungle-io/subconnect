@@ -74,6 +74,9 @@ const ComponentRenderer = React.memo(({
   onStyleChange, // Add this prop
   onToolbarInteraction, // Add this prop
   isDragModeEnabled, // Add this prop
+  onToolbarOpen,
+  onToolbarClose,
+  isToolbarOpen,
 }) => {
   const dispatch = useDispatch();
   const componentRef = useRef(null);
@@ -151,6 +154,9 @@ const ComponentRenderer = React.memo(({
         onStyleChange={onStyleChange} // Pass onStyleChange prop
         onToolbarInteraction={onToolbarInteraction} // Pass onToolbarInteraction prop
         isDragModeEnabled={isDragModeEnabled} // Pass isDragModeEnabled prop
+        onToolbarOpen={onToolbarOpen}
+        onToolbarClose={onToolbarClose}
+        isToolbarOpen={isToolbarOpen}
       />
     ));
   };
@@ -185,13 +191,19 @@ const ComponentRenderer = React.memo(({
       if (!showToolbar) {
         setToolbarPosition({ x, y });
         setShowToolbar(true);
+        onToolbarOpen(component.id);
       }
       setIsEditing(true);
     } else {
       setToolbarPosition({ x, y });
       setShowToolbar(!showToolbar);
+      if (!showToolbar) {
+        onToolbarOpen(component.id);
+      } else {
+        onToolbarClose();
+      }
     }
-  }, [isViewMode, component.type, showToolbar]);
+  }, [isViewMode, component.type, showToolbar, onToolbarOpen, onToolbarClose, component.id]);
 
   const handleUpdate = useCallback((id, updates) => {
     onUpdate(id, updates);
@@ -214,7 +226,8 @@ const ComponentRenderer = React.memo(({
   const handleToolbarClose = useCallback(() => {
     setShowToolbar(false);
     setIsEditing(false);
-  }, []);
+    onToolbarClose();
+  }, [onToolbarClose]);
 
   const handleToolbarInteraction = useCallback((e) => {
     e.stopPropagation();
@@ -367,13 +380,6 @@ const ComponentRenderer = React.memo(({
     return componentStyle;
   };
 
-  // Effect to hide toolbar when component is deselected
-  useEffect(() => {
-    if (!isThisComponentSelected) {
-      setShowToolbar(false);
-    }
-  }, [isThisComponentSelected]);
-
   const handleResize = (newSize, unit, dimension) => {
     onUpdate(component.id, {
       style: {
@@ -418,7 +424,12 @@ const ComponentRenderer = React.memo(({
           ...(isThisComponentSelected && !isViewMode ? { outline: `2px solid ${highlightColor}` } : {}),
           position: 'relative', // Add this line
         }}
-        onClick={isViewMode ? undefined : handleClick}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (!isToolbarOpen) {
+            handleClick(e);
+          }
+        }}
         onDoubleClick={handleDoubleClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}

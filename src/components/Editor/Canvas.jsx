@@ -3,7 +3,6 @@ import { useDrop } from "react-dnd";
 import { useSelector } from 'react-redux';
 import ComponentRenderer from "../Components/Renderers/ComponentRenderer";
 
-
 const Canvas = ({
   components,
   selectedIds,
@@ -69,16 +68,27 @@ const Canvas = ({
   });
 
   const [isClickFromToolbar, setIsClickFromToolbar] = useState(false);
+  const [openToolbarId, setOpenToolbarId] = useState(null);
 
   const handleCanvasClick = useCallback(
     (event) => {
       if (event.target === canvasRef.current && !isClickFromToolbar) {
-        onClearSelection();
+        if (!openToolbarId) {
+          onClearSelection();
+        }
       }
       setIsClickFromToolbar(false);
     },
-    [onClearSelection, isClickFromToolbar]
+    [onClearSelection, isClickFromToolbar, openToolbarId]
   );
+
+  const handleToolbarOpen = useCallback((componentId) => {
+    setOpenToolbarId(componentId);
+  }, []);
+
+  const handleToolbarClose = useCallback(() => {
+    setOpenToolbarId(null);
+  }, []);
 
   const handleToolbarInteraction = useCallback((event) => {
     event.stopPropagation();
@@ -132,6 +142,9 @@ const Canvas = ({
           isTopLevel={true}
           onToolbarInteraction={handleToolbarInteraction}
           isDragModeEnabled={isDragModeEnabled}
+          onToolbarOpen={handleToolbarOpen}
+          onToolbarClose={handleToolbarClose}
+          isToolbarOpen={openToolbarId === component.id}
         />
       ))}
     </div>
