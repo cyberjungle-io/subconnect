@@ -256,7 +256,7 @@ const ComponentRenderer = React.memo(({
   
     switch (component.type) {
       case "FLEX_CONTAINER":
-        return renderChildren();  // Just render children directly
+        return <ContainerRenderer {...sharedProps} />;
       case "HEADING":
         return <HeadingRenderer {...sharedProps} />;
       case "TEXT":
@@ -348,7 +348,7 @@ const ComponentRenderer = React.memo(({
       // For non-FLEX_CONTAINER components
       if (isFlexChild) {
         componentStyle.flexGrow = style.flexGrow || 0;
-        componentStyle.flexShrink = style.flexShrink || 0;
+        componentStyle.flexShrink = style.flexShrink || 1;
         componentStyle.flexBasis = style.flexBasis || 'auto';
       }
       componentStyle.width = style.width || 'auto';
@@ -415,6 +415,7 @@ const ComponentRenderer = React.memo(({
         style={{
           ...getComponentStyle(),
           ...(isThisComponentSelected && !isViewMode ? { outline: `2px solid ${highlightColor}` } : {}),
+          position: 'relative', // Add this line
         }}
         onClick={isViewMode ? undefined : handleClick}
         onDoubleClick={handleDoubleClick}
@@ -437,7 +438,7 @@ const ComponentRenderer = React.memo(({
             {component.name || component.type}
           </div>
         )}
-        {isSelected && (
+        {isThisComponentSelected && (
           <>
             <ResizeHandle
               onResize={(newSize, unit) => handleResize(newSize, unit, 'width')}

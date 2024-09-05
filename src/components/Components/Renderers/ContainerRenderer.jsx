@@ -1,6 +1,5 @@
 import React from "react";
 import ComponentRenderer from "./ComponentRenderer";
-import ResizeHandle from '../../common/ResizeHandle';
 
 const defaultGlobalSettings = {
   generalComponentStyle: {
@@ -60,100 +59,22 @@ const ContainerRenderer = ({ component, depth, isTopLevel, globalSettings = defa
       return null;
     }
 
-    // Group children by type (ROW and non-ROW)
-    const groupedChildren = component.children.reduce((acc, child) => {
-      if (child.type === "ROW") {
-        acc.rows.push(child);
-      } else {
-        acc.others.push(child);
-      }
-      return acc;
-    }, { rows: [], others: [] });
-
-    // Render non-ROW children in a flex container
-    const otherChildren = (
-      <div style={{ display: "flex", flexDirection: "row", flexGrow: 1 }}>
-        {groupedChildren.others.map((child) => (
-          <ComponentRenderer
-            key={child.id}
-            component={{ ...child, style: getChildStyles(child) }}
-            depth={depth + 1} // Increment depth for children
-            isDragModeEnabled={isDragModeEnabled}
-            globalSettings={globalSettings} // Pass globalSettings here
-            {...props}
-          />
-        ))}
-      </div>
-    );
-
-    // Render ROW children stacked vertically
-    const rowChildren = groupedChildren.rows.map((child) => (
+    return component.children.map((child) => (
       <ComponentRenderer
         key={child.id}
         component={{ ...child, style: getChildStyles(child) }}
-        depth={depth + 1} // Increment depth for children
+        depth={depth + 1}
         isDragModeEnabled={isDragModeEnabled}
-        globalSettings={globalSettings} // Pass globalSettings here
+        globalSettings={globalSettings}
+        isFlexChild={true}
         {...props}
       />
     ));
-
-    // Combine other children and row children
-    return (
-      <>
-        {otherChildren}
-        {rowChildren}
-      </>
-    );
   };
-
-  const handleResize = (newSize, unit, dimension) => {
-    props.onUpdate(component.id, {
-      style: {
-        ...component.style,
-        [dimension]: `${newSize}${unit}`
-      }
-    });
-  };
-
-  const getSize = (dimension) => {
-    const size = component.style[dimension];
-    if (size === undefined || size === null) return { size: 100, unit: '%' };
-    
-    if (typeof size === 'number') {
-      return { size, unit: 'px' };
-    }
-    
-    if (typeof size === 'string') {
-      const match = size.match(/^([\d.]+)(.*)$/);
-      return match ? { size: parseFloat(match[1]), unit: match[2] || 'px' } : { size: 100, unit: '%' };
-    }
-    
-    return { size: 100, unit: '%' };
-  };
-
-  const { size: width, unit: widthUnit } = getSize('width');
-  const { size: height, unit: heightUnit } = getSize('height');
 
   return (
     <div className="container-renderer" style={getContainerStyles()}>
       {renderChildren()}
-      {props.isSelected && (
-        <>
-          <ResizeHandle
-            onResize={(newSize, unit) => handleResize(newSize, unit, 'width')}
-            isHorizontal={true}
-            currentSize={width}
-            currentUnit={widthUnit}
-          />
-          <ResizeHandle
-            onResize={(newSize, unit) => handleResize(newSize, unit, 'height')}
-            isHorizontal={false}
-            currentSize={height}
-            currentUnit={heightUnit}
-          />
-        </>
-      )}
     </div>
   );
 };
