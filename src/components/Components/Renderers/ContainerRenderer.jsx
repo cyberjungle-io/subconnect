@@ -118,9 +118,18 @@ const ContainerRenderer = ({ component, depth, isTopLevel, globalSettings = defa
 
   const getSize = (dimension) => {
     const size = component.style[dimension];
-    if (!size) return { size: 100, unit: '%' }; // Default to 100% if not set
-    const match = size.match(/^([\d.]+)(.*)$/);
-    return match ? { size: parseFloat(match[1]), unit: match[2] || 'px' } : { size: 100, unit: '%' };
+    if (size === undefined || size === null) return { size: 100, unit: '%' };
+    
+    if (typeof size === 'number') {
+      return { size, unit: 'px' };
+    }
+    
+    if (typeof size === 'string') {
+      const match = size.match(/^([\d.]+)(.*)$/);
+      return match ? { size: parseFloat(match[1]), unit: match[2] || 'px' } : { size: 100, unit: '%' };
+    }
+    
+    return { size: 100, unit: '%' };
   };
 
   const { size: width, unit: widthUnit } = getSize('width');
