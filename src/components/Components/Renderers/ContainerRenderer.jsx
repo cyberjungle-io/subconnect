@@ -1,57 +1,26 @@
 import React from "react";
 import ComponentRenderer from "./ComponentRenderer";
 
-const defaultGlobalSettings = {
-  generalComponentStyle: {
-    fontSize: '16px',
-    color: '#000000',
-    backgroundColor: '#ffffff',
-    borderRadius: '4px',
-  }
-};
-
-const ContainerRenderer = ({ component, depth, isTopLevel, globalSettings = defaultGlobalSettings, isDragModeEnabled, ...props }) => {
+const ContainerRenderer = ({ component, depth, isTopLevel, globalSettings = {}, isDragModeEnabled, ...props }) => {
   const getContainerStyles = () => {
-    const generalComponentStyle = globalSettings?.generalComponentStyle || defaultGlobalSettings.generalComponentStyle;
+    const { style, props: componentProps } = component;
 
     return {
       display: "flex",
-      flexDirection: component.type === "ROW" ? "row" : "column",
-      flexWrap: "nowrap",
-      alignItems: component.style.alignItems || "stretch",
-      justifyContent: component.style.justifyContent || "flex-start",
-      gap: component.style.gap || "0px",
-      width: "100%",
-      height: component.style.height || "100%",
-      minHeight: component.style.minHeight || "auto",
+      flexDirection: componentProps.direction || "row",
+      flexWrap: componentProps.wrap || "nowrap",
+      alignItems: componentProps.alignItems || "stretch",
+      justifyContent: componentProps.justifyContent || "flex-start",
+      gap: style.gap || "0px",
+      width: style.width || "100%",
+      height: style.height || "auto",
+      minHeight: style.minHeight || "auto",
       overflow: "hidden",
       boxSizing: 'border-box',
-      padding: component.style.padding || "0px",
-      borderRadius: component.style.borderRadius || generalComponentStyle.borderRadius || '4px',
+      padding: style.padding || "0px",
+      borderRadius: style.borderRadius || '4px',
+      ...style, // Add this line to include any other custom styles
     };
-  };
-
-  const getChildStyles = (childComponent) => {
-    const childStyles = { ...childComponent.style };
-
-    if (component.type === "ROW") {
-      if (childComponent.type === "ROW") {
-        // For nested rows, set them to stack vertically
-        childStyles.width = "100%";
-        childStyles.flexBasis = "auto";
-        childStyles.flexGrow = 0;
-        childStyles.flexShrink = 0;
-      } else {
-        // For non-row children, keep them side by side
-        childStyles.flexGrow = childComponent.style.flexGrow || 0;
-        childStyles.flexShrink = childComponent.style.flexShrink || 1;
-        childStyles.flexBasis = childComponent.style.width || "auto";
-        childStyles.height = childComponent.style.height || "100%";
-      }
-    }
-
-    childStyles.boxSizing = 'border-box';
-    return childStyles;
   };
 
   const renderChildren = () => {
@@ -62,7 +31,7 @@ const ContainerRenderer = ({ component, depth, isTopLevel, globalSettings = defa
     return component.children.map((child) => (
       <ComponentRenderer
         key={child.id}
-        component={{ ...child, style: getChildStyles(child) }}
+        component={child}
         depth={depth + 1}
         isDragModeEnabled={isDragModeEnabled}
         globalSettings={globalSettings}

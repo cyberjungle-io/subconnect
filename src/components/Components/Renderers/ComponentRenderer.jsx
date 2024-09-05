@@ -252,6 +252,7 @@ const ComponentRenderer = React.memo(({
       onDoubleClick: handleDoubleClick,
       isEditing: isEditing,
       setIsEditing: setIsEditing,
+      isDragModeEnabled, // Add this prop
     };
   
     switch (component.type) {
