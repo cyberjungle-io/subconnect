@@ -15,6 +15,7 @@ import QueryValueRenderer from "./QueryValueRenderer"; // Add this import
 import { getHighlightColor } from '../../../utils/highlightColors'; // We'll create this utility function
 import { FaPencilAlt, FaTimes } from 'react-icons/fa'; // Add FaTimes import
 import FloatingToolbar from '../Tools/FloatingToolbar';
+import ResizeHandle from '../../common/ResizeHandle';
 
 const defaultGlobalSettings = {
   generalComponentStyle: {
@@ -365,6 +366,25 @@ const ComponentRenderer = React.memo(({
     }
   }, [isThisComponentSelected]);
 
+  const handleResize = (newSize, unit, dimension) => {
+    onUpdate(component.id, {
+      style: {
+        ...component.style,
+        [dimension]: `${newSize}${unit}`
+      }
+    });
+  };
+
+  const getSize = (dimension) => {
+    const size = component.style[dimension];
+    if (!size) return { size: 100, unit: '%' }; // Default to 100% if not set
+    const match = size.match(/^([\d.]+)(.*)$/);
+    return match ? { size: parseFloat(match[1]), unit: match[2] || 'px' } : { size: 100, unit: '%' };
+  };
+
+  const { size: width, unit: widthUnit } = getSize('width');
+  const { size: height, unit: heightUnit } = getSize('height');
+
   // Use the same rendering logic for both view and edit modes
   return (
     <>
@@ -400,6 +420,22 @@ const ComponentRenderer = React.memo(({
           >
             {component.name || component.type}
           </div>
+        )}
+        {isSelected && (
+          <>
+            <ResizeHandle
+              onResize={(newSize, unit) => handleResize(newSize, unit, 'width')}
+              isHorizontal={true}
+              currentSize={width}
+              currentUnit={widthUnit}
+            />
+            <ResizeHandle
+              onResize={(newSize, unit) => handleResize(newSize, unit, 'height')}
+              isHorizontal={false}
+              currentSize={height}
+              currentUnit={heightUnit}
+            />
+          </>
         )}
       </div>
       {showToolbar && (

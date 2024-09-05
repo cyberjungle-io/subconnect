@@ -115,25 +115,7 @@ const MainEditor = () => {
   };
 
   const handleUpdateComponent = (id, updates) => {
-    if (updates.props) {
-      const { responsiveHide, responsiveFontSize, ...otherProps } = updates.props;
-      
-      if (responsiveHide || responsiveFontSize) {
-        dispatch(updateResponsiveProperties({ id, responsiveProps: { responsiveHide, responsiveFontSize } }));
-      }
-
-      if (Object.keys(otherProps).length > 0) {
-        dispatch(updateComponent({ id, updates: { props: otherProps } }));
-      }
-    }
-
-    if (updates.style) {
-      dispatch(updateComponent({ id, updates: { style: updates.style } }));
-    }
-
-    if (updates.content !== undefined) {
-      dispatch(updateComponent({ id, updates: { content: updates.content } }));
-    }
+    dispatch(updateComponent({ id, updates }));
   };
 
   const handleMoveComponent = (componentId, newParentId, newPosition = null) => {

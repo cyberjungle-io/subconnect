@@ -1,5 +1,6 @@
 import React from "react";
 import ComponentRenderer from "./ComponentRenderer";
+import ResizeHandle from '../../common/ResizeHandle';
 
 const defaultGlobalSettings = {
   generalComponentStyle: {
@@ -106,9 +107,44 @@ const ContainerRenderer = ({ component, depth, isTopLevel, globalSettings = defa
     );
   };
 
+  const handleResize = (newSize, unit, dimension) => {
+    props.onUpdate(component.id, {
+      style: {
+        ...component.style,
+        [dimension]: `${newSize}${unit}`
+      }
+    });
+  };
+
+  const getSize = (dimension) => {
+    const size = component.style[dimension];
+    if (!size) return { size: 100, unit: '%' }; // Default to 100% if not set
+    const match = size.match(/^([\d.]+)(.*)$/);
+    return match ? { size: parseFloat(match[1]), unit: match[2] || 'px' } : { size: 100, unit: '%' };
+  };
+
+  const { size: width, unit: widthUnit } = getSize('width');
+  const { size: height, unit: heightUnit } = getSize('height');
+
   return (
     <div className="container-renderer" style={getContainerStyles()}>
       {renderChildren()}
+      {props.isSelected && (
+        <>
+          <ResizeHandle
+            onResize={(newSize, unit) => handleResize(newSize, unit, 'width')}
+            isHorizontal={true}
+            currentSize={width}
+            currentUnit={widthUnit}
+          />
+          <ResizeHandle
+            onResize={(newSize, unit) => handleResize(newSize, unit, 'height')}
+            isHorizontal={false}
+            currentSize={height}
+            currentUnit={heightUnit}
+          />
+        </>
+      )}
     </div>
   );
 };
