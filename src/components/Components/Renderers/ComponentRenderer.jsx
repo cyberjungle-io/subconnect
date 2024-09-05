@@ -223,7 +223,14 @@ const ComponentRenderer = React.memo(({
 
   const renderContent = () => {
     const sharedProps = {
-      component,
+      component: {
+        ...component,
+        style: {
+          ...component.style,
+          width: '100%',
+          height: '100%',
+        },
+      },
       onUpdate: handleUpdate, // Use the new handleUpdate function
       onSelect,
       onAddChild,

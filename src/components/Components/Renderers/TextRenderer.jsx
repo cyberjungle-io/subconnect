@@ -20,6 +20,8 @@ const TextRenderer = ({
   const getTextStyle = () => {
     const generalComponentStyle = globalSettings?.generalComponentStyle || {};
     return {
+      width: '100%',
+      height: '100%',
       fontFamily: component.style.fontFamily || generalComponentStyle.fontFamily,
       fontSize: component.style.fontSize || generalComponentStyle.fontSize,
       color: component.style.color || generalComponentStyle.color || '#000000', // Default to black
