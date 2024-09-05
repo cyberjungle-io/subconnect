@@ -280,10 +280,14 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   return (
     <div
       ref={toolbarRef}
-      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-[280px] max-h-[80vh] overflow-hidden flex flex-col group"
+      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-[280px] max-h-[80vh] overflow-hidden flex flex-col group select-none"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
+        MozUserSelect: 'none',
+        msUserSelect: 'none',
       }}
       onClick={handleToolbarInteraction}
       onDoubleClick={handleDoubleClick}
@@ -304,7 +308,13 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
               onChange={(e) => setEditedName(e.target.value)}
               onBlur={handleRename}
               onKeyDown={handleKeyDown}
-              className="text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded px-1 py-0 w-full"
+              className="text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded px-1 py-0 w-full select-text"
+              style={{
+                userSelect: 'text',
+                WebkitUserSelect: 'text',
+                MozUserSelect: 'text',
+                msUserSelect: 'text',
+              }}
               onClick={(e) => e.stopPropagation()}
             />
           ) : (
