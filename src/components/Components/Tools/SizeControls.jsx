@@ -51,6 +51,50 @@ const SizeControls = ({ style = {}, onStyleChange }) => {
     }
   }, [setDimension]);
 
+  const handleFitContent = useCallback(() => {
+    onStyleChange({
+      width: 'fit-content',
+      height: 'fit-content',
+    });
+  }, [onStyleChange]);
+
+  const handleFitVertical = useCallback(() => {
+    onStyleChange({
+      height: 'fit-content',
+    });
+  }, [onStyleChange]);
+
+  const handleFitHorizontal = useCallback(() => {
+    onStyleChange({
+      width: 'fit-content',
+    });
+  }, [onStyleChange]);
+
+  const renderFitButtons = () => (
+    <div className="flex justify-center items-center mb-4">
+      <div className="flex w-full space-x-2">
+        <button
+          onClick={handleFitContent}
+          className="flex-1 px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]"
+        >
+          Fit Content
+        </button>
+        <button
+          onClick={handleFitVertical}
+          className="flex-1 px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]"
+        >
+          Fit Vertical
+        </button>
+        <button
+          onClick={handleFitHorizontal}
+          className="flex-1 px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]"
+        >
+          Fit Horizontal
+        </button>
+      </div>
+    </div>
+  );
+
   const renderSizeButtons = (dimension) => (
     <div className="flex justify-center items-center mb-4">
       <div className="inline-flex space-x-2">
@@ -145,6 +189,8 @@ const SizeControls = ({ style = {}, onStyleChange }) => {
       <div className="control-section-content">
         <h4 className="text-sm font-medium text-gray-700 mb-2">Presets</h4>
         {renderPresetButtons()}
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Fit Content</h4>
+        {renderFitButtons()}
         {renderSection('Width', 'width', width, (v) => setDimension('width', v))}
         {renderSection('Height', 'height', height, (v) => setDimension('height', v))}
       </div>
