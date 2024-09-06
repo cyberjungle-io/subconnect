@@ -110,53 +110,66 @@ const SpacingControls = ({ style, onStyleChange }) => {
       <label className="block text-sm font-medium text-gray-700 mb-2">
         {label}
       </label>
-      <div className="grid grid-cols-2 gap-2">
-        {["Top", "Right", "Bottom", "Left"].map((side, index) => (
-          <div key={side} className="flex flex-col">
-            <span className="text-xs text-gray-500 mb-1">{side}</span>
-            <div className="flex">
-              <input
-                type="text"
-                value={values[index].replace(/[^\d.-]/g, '')}
-                onChange={(e) => {
-                  const numericValue = e.target.value.replace(/^0+/, ''); // Remove leading zeros
-                  const newValue = (numericValue || '0') + (values[index].match(/[a-z%]+/i) || 'px');
-                  setters[index](newValue);
-                  handleChange(properties[index], newValue);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    const currentValue = parseFloat(values[index]) || 0;
-                    const step = e.shiftKey ? 10 : 1;
-                    const newValue = e.key === 'ArrowUp' ? currentValue + step : currentValue - step;
-                    const unit = values[index].match(/[a-z%]+/i) || 'px';
-                    const updatedValue = `${newValue}${unit}`;
-                    setters[index](updatedValue);
-                    throttledHandleChange(properties[index], updatedValue);
-                  }
-                }}
-                className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              />
-              <select
-                value={values[index].match(/[a-z%]+/i) || 'px'}
-                onChange={(e) => {
-                  const numericPart = values[index].replace(/[^\d.-]/g, '') || '0';
-                  const newValue = numericPart + e.target.value;
-                  setters[index](newValue);
-                  handleChange(properties[index], newValue);
-                }}
-                className="p-2 text-sm border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-              >
-                {UNITS.map((u) => (
-                  <option key={u} value={u}>
-                    {u}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        ))}
+      <div className="grid grid-cols-4 gap-x-0 gap-y-1 w-42 mx-auto">
+        <div className="col-start-2 col-span-2">
+          {renderInput("Top", values[0], setters[0], properties[0])}
+        </div>
+        <div className="col-start-1 col-span-2 row-start-2 justify-self-end pr-2">
+          {renderInput("Left", values[3], setters[3], properties[3])}
+        </div>
+        <div className="col-start-3 col-span-2 row-start-2 justify-self-start pl-2">
+          {renderInput("Right", values[1], setters[1], properties[1])}
+        </div>
+        <div className="col-start-2 col-span-2 row-start-3">
+          {renderInput("Bottom", values[2], setters[2], properties[2])}
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderInput = (side, value, setter, property) => (
+    <div className="flex flex-col items-center">
+      <span className="text-xs text-gray-500 mb-1">{side}</span>
+      <div className="flex">
+        <input
+          type="text"
+          value={value.replace(/[^\d.-]/g, '')}
+          onChange={(e) => {
+            const numericValue = e.target.value.replace(/^0+/, '');
+            const newValue = (numericValue || '0') + (value.match(/[a-z%]+/i) || 'px');
+            setter(newValue);
+            handleChange(property, newValue);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+              e.preventDefault();
+              const currentValue = parseFloat(value) || 0;
+              const step = e.shiftKey ? 10 : 1;
+              const newValue = e.key === 'ArrowUp' ? currentValue + step : currentValue - step;
+              const unit = value.match(/[a-z%]+/i) || 'px';
+              const updatedValue = `${newValue}${unit}`;
+              setter(updatedValue);
+              throttledHandleChange(property, updatedValue);
+            }
+          }}
+          className="w-12 p-1 text-xs border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        />
+        <select
+          value={value.match(/[a-z%]+/i) || 'px'}
+          onChange={(e) => {
+            const numericPart = value.replace(/[^\d.-]/g, '') || '0';
+            const newValue = numericPart + e.target.value;
+            setter(newValue);
+            handleChange(property, newValue);
+          }}
+          className="p-1 text-xs border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          {UNITS.map((u) => (
+            <option key={u} value={u}>
+              {u}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );
