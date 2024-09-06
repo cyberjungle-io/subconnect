@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import Canvas from './Canvas';
-import PropertiesPanel from './PropertiesPanel';
+
 import Toolbar from './Toolbar';
 import DataModal from './DataModal';
 import ProjectModal from '../Components/Projects/ProjectModal';
