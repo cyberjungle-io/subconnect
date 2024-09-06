@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import debounce from "lodash/debounce";
 
 const PADDING_PRESETS = {
   Small: "8px",
@@ -27,6 +28,13 @@ const SpacingControls = ({ style, onStyleChange }) => {
   const [selectedPaddingPreset, setSelectedPaddingPreset] = useState(null);
   const [selectedMarginPreset, setSelectedMarginPreset] = useState(null);
 
+  const debouncedStyleChange = useCallback(
+    debounce((newStyle) => {
+      onStyleChange(newStyle);
+    }, 300),
+    [onStyleChange]
+  );
+
   useEffect(() => {
     if (style) {
       const parseSpacing = (value) => (value || "0px 0px 0px 0px").split(" ");
@@ -51,24 +59,31 @@ const SpacingControls = ({ style, onStyleChange }) => {
     const updateSpacing = (top, right, bottom, left) =>
       `${top} ${right} ${bottom} ${left}`;
 
+    let newStyle;
     if (property.startsWith("padding")) {
-      onStyleChange({
+      newStyle = {
         padding: updateSpacing(
-          paddingTop,
-          paddingRight,
-          paddingBottom,
-          paddingLeft
+          property === "paddingTop" ? value : paddingTop,
+          property === "paddingRight" ? value : paddingRight,
+          property === "paddingBottom" ? value : paddingBottom,
+          property === "paddingLeft" ? value : paddingLeft
         ),
-      });
+      };
       setSelectedPaddingPreset(null);
     } else if (property.startsWith("margin")) {
-      onStyleChange({
-        margin: updateSpacing(marginTop, marginRight, marginBottom, marginLeft),
-      });
+      newStyle = {
+        margin: updateSpacing(
+          property === "marginTop" ? value : marginTop,
+          property === "marginRight" ? value : marginRight,
+          property === "marginBottom" ? value : marginBottom,
+          property === "marginLeft" ? value : marginLeft
+        ),
+      };
       setSelectedMarginPreset(null);
     } else {
-      onStyleChange({ [property]: value });
+      newStyle = { [property]: value };
     }
+    debouncedStyleChange(newStyle);
   };
 
   const applyPreset =
@@ -87,85 +102,39 @@ const SpacingControls = ({ style, onStyleChange }) => {
       <label className="block text-sm font-medium text-gray-700 mb-2">
         {label}
       </label>
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between">
-          {["Top", "Bottom"].map((side, index) => (
-            <div key={side} className="flex flex-col w-[48%]">
-              <span className="text-xs text-gray-500 mb-1">{side}</span>
-              <div className="flex">
-                <input
-                  type="text"
-                  value={(values[index * 2] || "").split(/(\d+)/)[1] || ""}
-                  onChange={(e) => {
-                    const newValue =
-                      e.target.value +
-                      ((values[index * 2] || "").split(/(\d+)/)[2] || "px");
-                    setters[index * 2](newValue);
-                    handleChange(properties[index * 2], newValue);
-                  }}
-                  className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-                <select
-                  value={(values[index * 2] || "").split(/(\d+)/)[2] || "px"}
-                  onChange={(e) => {
-                    const newValue =
-                      ((values[index * 2] || "").split(/(\d+)/)[1] || "0") +
-                      e.target.value;
-                    setters[index * 2](newValue);
-                    handleChange(properties[index * 2], newValue);
-                  }}
-                  className="p-2 text-sm border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  {UNITS.map((u) => (
-                    <option key={u} value={u}>
-                      {u}
-                    </option>
-                  ))}
-                </select>
-              </div>
+      <div className="grid grid-cols-2 gap-2">
+        {["Top", "Right", "Bottom", "Left"].map((side, index) => (
+          <div key={side} className="flex flex-col">
+            <span className="text-xs text-gray-500 mb-1">{side}</span>
+            <div className="flex">
+              <input
+                type="text"
+                value={values[index].replace(/[^\d.-]/g, '')}
+                onChange={(e) => {
+                  const newValue = e.target.value + (values[index].match(/[a-z%]+/i) || 'px');
+                  setters[index](newValue);
+                  handleChange(properties[index], newValue);
+                }}
+                className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+              <select
+                value={values[index].match(/[a-z%]+/i) || 'px'}
+                onChange={(e) => {
+                  const newValue = (values[index].replace(/[^\d.-]/g, '') || '0') + e.target.value;
+                  setters[index](newValue);
+                  handleChange(properties[index], newValue);
+                }}
+                className="p-2 text-sm border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                {UNITS.map((u) => (
+                  <option key={u} value={u}>
+                    {u}
+                  </option>
+                ))}
+              </select>
             </div>
-          ))}
-        </div>
-        <div className="flex justify-between">
-          {["Left", "Right"].map((side, index) => (
-            <div key={side} className="flex flex-col w-[48%]">
-              <span className="text-xs text-gray-500 mb-1">{side}</span>
-              <div className="flex">
-                <input
-                  type="text"
-                  value={(values[index * 2 + 3] || "").split(/(\d+)/)[1] || ""}
-                  onChange={(e) => {
-                    const newValue =
-                      e.target.value +
-                      ((values[index * 2 + 3] || "").split(/(\d+)/)[2] || "px");
-                    setters[index * 2 + 3](newValue);
-                    handleChange(properties[index * 2 + 3], newValue);
-                  }}
-                  className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-                <select
-                  value={
-                    (values[index * 2 + 3] || "").split(/(\d+)/)[2] || "px"
-                  }
-                  onChange={(e) => {
-                    const newValue =
-                      ((values[index * 2 + 3] || "").split(/(\d+)/)[1] || "0") +
-                      e.target.value;
-                    setters[index * 2 + 3](newValue);
-                    handleChange(properties[index * 2 + 3], newValue);
-                  }}
-                  className="p-2 text-sm border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  {UNITS.map((u) => (
-                    <option key={u} value={u}>
-                      {u}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   );
