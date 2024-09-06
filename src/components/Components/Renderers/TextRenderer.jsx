@@ -26,9 +26,9 @@ const TextRenderer = ({
       fontFamily: component.style.fontFamily || generalComponentStyle.fontFamily,
       fontSize: component.style.fontSize || generalComponentStyle.fontSize,
       color: component.style.color || generalComponentStyle.color || '#000000', // Default to black
-      backgroundColor: component.style.backgroundColor || generalComponentStyle.backgroundColor,
-      borderRadius: component.style.borderRadius || generalComponentStyle.borderRadius,
-      boxShadow: component.style.boxShadow || generalComponentStyle.boxShadow,
+      backgroundColor: 'transparent',
+      borderRadius: 'none',
+      boxShadow: 'none',
       textAlign: component.style.textAlign || 'left',
       fontWeight: component.style.fontWeight || 'normal',
       fontStyle: component.style.fontStyle || 'normal',
