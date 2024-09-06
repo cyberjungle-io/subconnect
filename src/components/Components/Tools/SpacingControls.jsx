@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import debounce from "lodash/debounce";
+import throttle from "lodash/throttle";
 
 const PADDING_PRESETS = {
   Small: "8px",
@@ -35,27 +36,7 @@ const SpacingControls = ({ style, onStyleChange }) => {
     [onStyleChange]
   );
 
-  useEffect(() => {
-    if (style) {
-      const parseSpacing = (value) => (value || "0px 0px 0px 0px").split(" ");
-      const [pTop, pRight, pBottom, pLeft] = parseSpacing(style.padding);
-      const [mTop, mRight, mBottom, mLeft] = parseSpacing(style.margin);
-
-      setPaddingTop(pTop);
-      setPaddingRight(pRight || pTop);
-      setPaddingBottom(pBottom || pTop);
-      setPaddingLeft(pLeft || pRight || pTop);
-
-      setMarginTop(mTop);
-      setMarginRight(mRight || mTop);
-      setMarginBottom(mBottom || mTop);
-      setMarginLeft(mLeft || mRight || mTop);
-
-      setGap(style.gap || "0px");
-    }
-  }, [style]);
-
-  const handleChange = (property, value) => {
+  const handleChange = useCallback((property, value) => {
     const updateSpacing = (top, right, bottom, left) =>
       `${top} ${right} ${bottom} ${left}`;
 
@@ -84,7 +65,34 @@ const SpacingControls = ({ style, onStyleChange }) => {
       newStyle = { [property]: value };
     }
     debouncedStyleChange(newStyle);
-  };
+  }, [debouncedStyleChange, paddingTop, paddingRight, paddingBottom, paddingLeft, marginTop, marginRight, marginBottom, marginLeft]);
+
+  const throttledHandleChange = useCallback(
+    throttle((property, value) => {
+      handleChange(property, value);
+    }, 100),
+    [handleChange]
+  );
+
+  useEffect(() => {
+    if (style) {
+      const parseSpacing = (value) => (value || "0px 0px 0px 0px").split(" ");
+      const [pTop, pRight, pBottom, pLeft] = parseSpacing(style.padding);
+      const [mTop, mRight, mBottom, mLeft] = parseSpacing(style.margin);
+
+      setPaddingTop(pTop);
+      setPaddingRight(pRight || pTop);
+      setPaddingBottom(pBottom || pTop);
+      setPaddingLeft(pLeft || pRight || pTop);
+
+      setMarginTop(mTop);
+      setMarginRight(mRight || mTop);
+      setMarginBottom(mBottom || mTop);
+      setMarginLeft(mLeft || mRight || mTop);
+
+      setGap(style.gap || "0px");
+    }
+  }, [style]);
 
   const applyPreset =
     (presets, setters, property, selectedPreset, setSelectedPreset) =>
@@ -111,16 +119,30 @@ const SpacingControls = ({ style, onStyleChange }) => {
                 type="text"
                 value={values[index].replace(/[^\d.-]/g, '')}
                 onChange={(e) => {
-                  const newValue = e.target.value + (values[index].match(/[a-z%]+/i) || 'px');
+                  const numericValue = e.target.value.replace(/^0+/, ''); // Remove leading zeros
+                  const newValue = (numericValue || '0') + (values[index].match(/[a-z%]+/i) || 'px');
                   setters[index](newValue);
                   handleChange(properties[index], newValue);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const currentValue = parseFloat(values[index]) || 0;
+                    const step = e.shiftKey ? 10 : 1;
+                    const newValue = e.key === 'ArrowUp' ? currentValue + step : currentValue - step;
+                    const unit = values[index].match(/[a-z%]+/i) || 'px';
+                    const updatedValue = `${newValue}${unit}`;
+                    setters[index](updatedValue);
+                    throttledHandleChange(properties[index], updatedValue);
+                  }
                 }}
                 className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               />
               <select
                 value={values[index].match(/[a-z%]+/i) || 'px'}
                 onChange={(e) => {
-                  const newValue = (values[index].replace(/[^\d.-]/g, '') || '0') + e.target.value;
+                  const numericPart = values[index].replace(/[^\d.-]/g, '') || '0';
+                  const newValue = numericPart + e.target.value;
                   setters[index](newValue);
                   handleChange(properties[index], newValue);
                 }}
