@@ -224,6 +224,7 @@ const ComponentRenderer = React.memo(({
           ...component.style,
           width: '100%',
           height: '100%',
+          margin: '0px', // Set margin to 0 for child components
         },
       },
       onUpdate: handleUpdate, // Use the new handleUpdate function
@@ -285,8 +286,8 @@ const ComponentRenderer = React.memo(({
       overflow: "hidden",
       boxSizing: 'border-box',
       borderRadius: style.borderRadius || props.borderRadius || generalComponentStyle.borderRadius || '4px',
-      padding: style.padding || "0px",
-      margin: style.margin || "0px",
+      padding: "0px",
+      margin: style.margin || "0px", // Keep this line
       backgroundColor: style.backgroundColor || 'transparent',
       boxShadow: style.boxShadow || 'none',
       opacity: style.opacity || 1,
