@@ -188,7 +188,19 @@ const ComponentRenderer = React.memo(({
   }, [isViewMode, component.type, toolbarState, onToolbarOpen, onToolbarClose, component.id]);
 
   const handleUpdate = useCallback((id, updates) => {
-    onUpdate(id, updates);
+    const updatedComponent = { ...component, ...updates };
+    if (updatedComponent.type === "FLEX_CONTAINER") {
+      // Ensure layout properties are correctly updated
+      updatedComponent.style = {
+        ...updatedComponent.style,
+        flexDirection: updates.style?.flexDirection || component.style.flexDirection,
+        flexWrap: updates.style?.flexWrap || component.style.flexWrap,
+        alignItems: updates.style?.alignItems || component.style.alignItems,
+        justifyContent: updates.style?.justifyContent || component.style.justifyContent,
+        alignContent: updates.style?.alignContent || component.style.alignContent,
+      };
+    }
+    onUpdate(id, updatedComponent);
     if (editingRef.current) {
       setTimeout(() => {
         const textElement = componentRef.current.querySelector('[contenteditable="true"]');
@@ -203,7 +215,7 @@ const ComponentRenderer = React.memo(({
         }
       }, 0);
     }
-  }, [onUpdate]);
+  }, [onUpdate, component]);
 
   const handleToolbarClose = useCallback(() => {
     setToolbarState({ show: false, position: { x: 0, y: 0 } });
@@ -304,10 +316,11 @@ const ComponentRenderer = React.memo(({
     if (type === "FLEX_CONTAINER") {
       Object.assign(componentStyle, {
         display: "flex",
-        flexDirection: props.direction || "row",
-        flexWrap: props.wrap || "nowrap",
-        alignItems: props.alignItems || "stretch",
-        justifyContent: props.justifyContent || "flex-start",
+        flexDirection: style.flexDirection || props.direction || "row",
+        flexWrap: style.flexWrap || props.wrap || "nowrap",
+        alignItems: style.alignItems || props.alignItems || "stretch",
+        justifyContent: style.justifyContent || props.justifyContent || "flex-start",
+        alignContent: style.alignContent || props.alignContent || "stretch",
         gap: style.gap || "0px",
       });
 
