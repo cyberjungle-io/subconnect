@@ -15,7 +15,6 @@ const TextRenderer = ({
   isToolbarOpen
 }) => {
   const textRef = useRef(null);
-  const [showPlaceholder, setShowPlaceholder] = useState(!component.style.content);
   const [localContent, setLocalContent] = useState(component.style.content || '');
 
   const getTextStyle = () => {
@@ -43,22 +42,8 @@ const TextRenderer = ({
 
   const ElementType = component.style.headingLevel || 'p';
 
-  const getPlaceholderText = () => {
-    if (!isToolbarOpen && !isEditing) {
-      return "Double Tap to Open Toolbar";
-    } else if (isToolbarOpen && !isEditing) {
-      return "Double Tap to Type Text";
-    } else if (isEditing) {
-      return "Type Text";
-    }
-    return "";
-  };
-
-  const placeholderText = getPlaceholderText();
-
   useEffect(() => {
     setLocalContent(component.style.content || '');
-    setShowPlaceholder(!component.style.content);
   }, [component.style.content]);
 
   useEffect(() => {
@@ -81,13 +66,11 @@ const TextRenderer = ({
   }, [isEditing]);
 
   const handleFocus = () => {
-    setShowPlaceholder(false);
+    // Remove setShowPlaceholder(false);
   };
 
   const handleBlur = () => {
-    if (!localContent.trim()) {
-      setShowPlaceholder(true);
-    }
+    // Remove placeholder-related logic
   };
 
   const handleInput = (e) => {
@@ -105,7 +88,6 @@ const TextRenderer = ({
       const caretOffset = preCaretRange.toString().length;
 
       setLocalContent(sanitizedContent);
-      setShowPlaceholder(!sanitizedContent.trim());
       onUpdate(component.id, { style: { ...component.style, content: sanitizedContent } });
 
       // Restore cursor position
@@ -144,10 +126,7 @@ const TextRenderer = ({
       <ElementType
         ref={textRef}
         className="w-full h-full overflow-hidden"
-        style={{
-          ...textStyle,
-          color: showPlaceholder ? '#999' : (component.style.color || '#000000'), // Use placeholder color only when showing placeholder
-        }}
+        style={textStyle}
         contentEditable={isEditing}
         onDoubleClick={onDoubleClick}
         onFocus={handleFocus}
@@ -155,15 +134,15 @@ const TextRenderer = ({
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         suppressContentEditableWarning={true}
-        dangerouslySetInnerHTML={{ __html: showPlaceholder ? placeholderText : sanitizeHtml(localContent) }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(localContent) }}
       />
       {isToolbarOpen && !isViewMode && (
         <TextControls
           style={component.style}
           onStyleChange={(newStyle) => onUpdate(component.id, { style: newStyle })}
           isToolbarOpen={isToolbarOpen}
-          content={localContent} // Add this prop
-          onContentChange={(newContent) => { // Add this prop
+          content={localContent}
+          onContentChange={(newContent) => {
             setLocalContent(newContent);
             onUpdate(component.id, { style: { ...component.style, content: newContent } });
           }}
