@@ -3,7 +3,6 @@ import { useDrop, useDrag } from "react-dnd";
 import { useSelector, useDispatch } from 'react-redux';
 import { deleteComponents, renameComponent } from '../../../features/editorSlice'; // Update this import
 
-import ContainerRenderer from "./ContainerRenderer";
 import HeadingRenderer from "./HeadingRenderer";
 import TextRenderer from "./TextRenderer";
 import ImageRenderer from "./ImageRenderer";
@@ -81,9 +80,7 @@ const ComponentRenderer = React.memo(({
   const dispatch = useDispatch();
   const componentRef = useRef(null);
   const { isDragging, isOver, dragRef, dropRef } = useDragDrop(component, onMoveComponent, onAddChild, isDragModeEnabled);
-  const [isHovered, setIsHovered] = useState(false);
-  const [showToolbar, setShowToolbar] = useState(false);
-  const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
+  const [toolbarState, setToolbarState] = useState({ show: false, position: { x: 0, y: 0 } });
   const [isEditing, setIsEditing] = useState(false);
   const editingRef = useRef(false);
 
@@ -118,19 +115,6 @@ const ComponentRenderer = React.memo(({
 
   const isThisComponentSelected = selectedIds?.includes(component.id) || false;
   const highlightColor = getHighlightColor(depth);
-
-  const getContainerStyles = () => {
-    if (component.type !== "FLEX_CONTAINER") return {};
-
-    return {
-      display: "flex",
-      flexDirection: component.props.direction || "row",
-      flexWrap: component.props.wrap || "nowrap",
-      alignItems: component.props.alignItems || "stretch",
-      justifyContent: component.props.justifyContent || "flex-start",
-      gap: component.props.gap || "0px",
-    };
-  };
 
   const renderChildren = () => {
     if (!component.children || component.children.length === 0) {
@@ -188,22 +172,20 @@ const ComponentRenderer = React.memo(({
     }
 
     if (component.type === "TEXT") {
-      if (!showToolbar) {
-        setToolbarPosition({ x, y });
-        setShowToolbar(true);
+      if (!toolbarState.show) {
+        setToolbarState({ show: true, position: { x, y } });
         onToolbarOpen(component.id);
       }
       setIsEditing(true);
     } else {
-      setToolbarPosition({ x, y });
-      setShowToolbar(!showToolbar);
-      if (!showToolbar) {
+      setToolbarState(prev => ({ show: !prev.show, position: { x, y } }));
+      if (!toolbarState.show) {
         onToolbarOpen(component.id);
       } else {
         onToolbarClose();
       }
     }
-  }, [isViewMode, component.type, showToolbar, onToolbarOpen, onToolbarClose, component.id]);
+  }, [isViewMode, component.type, toolbarState, onToolbarOpen, onToolbarClose, component.id]);
 
   const handleUpdate = useCallback((id, updates) => {
     onUpdate(id, updates);
@@ -224,7 +206,7 @@ const ComponentRenderer = React.memo(({
   }, [onUpdate]);
 
   const handleToolbarClose = useCallback(() => {
-    setShowToolbar(false);
+    setToolbarState({ show: false, position: { x: 0, y: 0 } });
     setIsEditing(false);
     onToolbarClose();
   }, [onToolbarClose]);
@@ -270,7 +252,7 @@ const ComponentRenderer = React.memo(({
   
     switch (component.type) {
       case "FLEX_CONTAINER":
-        return <ContainerRenderer {...sharedProps} />;
+        return renderChildren();
       case "HEADING":
         return <HeadingRenderer {...sharedProps} />;
       case "TEXT":
@@ -291,9 +273,9 @@ const ComponentRenderer = React.memo(({
         return null;
     }
   };
+
   const getComponentStyle = () => {
     const { style, type, props } = component;
-    
     const generalComponentStyle = globalSettings?.generalComponentStyle || defaultGlobalSettings.generalComponentStyle;
     
     const componentStyle = {
@@ -302,81 +284,62 @@ const ComponentRenderer = React.memo(({
       position: 'relative',
       overflow: "hidden",
       boxSizing: 'border-box',
+      borderRadius: style.borderRadius || props.borderRadius || generalComponentStyle.borderRadius || '4px',
+      padding: style.padding || "0px",
+      margin: style.margin || "0px",
+      backgroundColor: style.backgroundColor || 'transparent',
+      boxShadow: style.boxShadow || 'none',
+      opacity: style.opacity || 1,
+      transform: style.transform || 'none',
+      transition: style.transition || 'none',
     };
 
-    // Apply border radius if not explicitly set in component style
-    if (!style.borderRadius) {
-      componentStyle.borderRadius = generalComponentStyle.borderRadius || '4px';
-    }
-
-    // Override with component-specific styles
-    if (style.showBorder === false) {
-      componentStyle.border = "none";
-    } else {
+    if (style.showBorder !== false) {
       componentStyle.borderWidth = style.borderWidth || '1px';
       componentStyle.borderStyle = style.borderStyle || 'solid';
       componentStyle.borderColor = style.borderColor || '#000';
     }
-    
-    componentStyle.borderRadius = style.borderRadius || props.borderRadius || '4px';
-    componentStyle.padding = style.padding || "0px";
-    componentStyle.margin = style.margin || "0px";
-    componentStyle.backgroundColor = style.backgroundColor || 'transparent';
-    componentStyle.boxShadow = style.boxShadow || 'none';
-    componentStyle.opacity = style.opacity || 1;
-    componentStyle.transform = style.transform || 'none';
-    componentStyle.transition = style.transition || 'none';
 
     if (type === "FLEX_CONTAINER") {
-      componentStyle.display = "flex";
-      componentStyle.flexDirection = props.direction || "row";
-      componentStyle.flexWrap = props.wrap || "nowrap";
-      componentStyle.alignItems = props.alignItems || "stretch";
-      componentStyle.justifyContent = props.justifyContent || "flex-start";
-      componentStyle.gap = style.gap || "0px";
-      
-      if (!isFlexChild) {
-        // Top-level FLEX_CONTAINER
-        if (globalComponentLayout === "horizontal") {
-          componentStyle.width = style.width || "100%";
-        } else {
-          componentStyle.height = style.height || "100%";
-        }
-      } else {
-        // Nested FLEX_CONTAINER
-        componentStyle.flexGrow = style.flexGrow || 0;
-        componentStyle.flexShrink = style.flexShrink || 1;
-        componentStyle.flexBasis = style.flexBasis || 'auto';
-        componentStyle.width = style.width || 'auto';
-        componentStyle.height = style.height || 'auto';
-      }
+      Object.assign(componentStyle, {
+        display: "flex",
+        flexDirection: props.direction || "row",
+        flexWrap: props.wrap || "nowrap",
+        alignItems: props.alignItems || "stretch",
+        justifyContent: props.justifyContent || "flex-start",
+        gap: style.gap || "0px",
+      });
 
-      // Apply ComponentControls styles
-      componentStyle.backgroundColor = style.backgroundColor || 'transparent';
-      componentStyle.borderColor = style.borderColor || '#000';
-      componentStyle.borderStyle = style.borderStyle || 'solid';
-      componentStyle.borderWidth = style.borderWidth || '1px';
-      componentStyle.borderRadius = style.borderRadius || '0px';
-      componentStyle.boxShadow = style.boxShadow || 'none';
-    } else {
-      // For non-FLEX_CONTAINER components
-      if (isFlexChild) {
-        componentStyle.flexGrow = style.flexGrow || 0;
-        componentStyle.flexShrink = style.flexShrink || 1;
-        componentStyle.flexBasis = style.flexBasis || 'auto';
+      if (!isFlexChild) {
+        componentStyle[globalComponentLayout === "horizontal" ? "width" : "height"] = style[globalComponentLayout === "horizontal" ? "width" : "height"] || "100%";
+      } else {
+        Object.assign(componentStyle, {
+          flexGrow: style.flexGrow || 0,
+          flexShrink: style.flexShrink || 1,
+          flexBasis: style.flexBasis || 'auto',
+          width: style.width || 'auto',
+          height: style.height || 'auto',
+        });
       }
-      componentStyle.width = style.width || 'auto';
-      componentStyle.height = style.height || 'auto';
+    } else if (isFlexChild) {
+      Object.assign(componentStyle, {
+        flexGrow: style.flexGrow || 0,
+        flexShrink: style.flexShrink || 1,
+        flexBasis: style.flexBasis || 'auto',
+        width: style.width || 'auto',
+        height: style.height || 'auto',
+      });
     }
-  
+
     if (type === "CHART") {
-      componentStyle.minWidth = style.minWidth || "200px";
-      componentStyle.minHeight = style.minHeight || "150px";
-      componentStyle.width = style.width || "100%";
-      componentStyle.height = style.height || "100%";
+      Object.assign(componentStyle, {
+        minWidth: style.minWidth || "200px",
+        minHeight: style.minHeight || "150px",
+        width: style.width || "100%",
+        height: style.height || "100%",
+      });
     }
-  
-    console.log(`Component ${component.id} style:`, componentStyle);
+
     return componentStyle;
   };
 
@@ -391,18 +354,10 @@ const ComponentRenderer = React.memo(({
 
   const getSize = (dimension) => {
     const size = component.style[dimension];
-    if (size === undefined || size === null) return { size: 100, unit: '%' };
+    if (!size) return { size: 100, unit: '%' };
     
-    if (typeof size === 'number') {
-      return { size, unit: 'px' };
-    }
-    
-    if (typeof size === 'string') {
-      const match = size.match(/^([\d.]+)(.*)$/);
-      return match ? { size: parseFloat(match[1]), unit: match[2] || 'px' } : { size: 100, unit: '%' };
-    }
-    
-    return { size: 100, unit: '%' };
+    const match = String(size).match(/^([\d.]+)(.*)$/);
+    return match ? { size: parseFloat(match[1]), unit: match[2] || 'px' } : { size: 100, unit: '%' };
   };
 
   const { size: width, unit: widthUnit } = getSize('width');
@@ -431,8 +386,6 @@ const ComponentRenderer = React.memo(({
           }
         }}
         onDoubleClick={handleDoubleClick}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
         className={`
           ${isViewMode ? "" : isThisComponentSelected ? "shadow-lg" : ""}
           ${isViewMode ? "" : isOver ? "bg-blue-100" : ""}
@@ -467,11 +420,11 @@ const ComponentRenderer = React.memo(({
           </>
         )}
       </div>
-      {showToolbar && (
+      {toolbarState.show && (
         <FloatingToolbar
           componentId={component.id}
           componentType={component.type}
-          initialPosition={toolbarPosition}
+          initialPosition={toolbarState.position}
           onClose={handleToolbarClose}
           style={component.style}
           props={component.props}
