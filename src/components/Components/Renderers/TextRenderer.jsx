@@ -67,6 +67,19 @@ const TextRenderer = ({
     }
   }, [isEditing]);
 
+  useEffect(() => {
+    if (isEditing && textRef.current) {
+      const length = textRef.current.textContent.length;
+      const range = document.createRange();
+      const selection = window.getSelection();
+      range.setStart(textRef.current.firstChild || textRef.current, length);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      textRef.current.focus();
+    }
+  }, [isEditing]);
+
   const handleFocus = () => {
     setShowPlaceholder(false);
   };
@@ -78,12 +91,34 @@ const TextRenderer = ({
   };
 
   const handleInput = (e) => {
-    const newContent = e.target.innerHTML; // Change this from innerText to innerHTML
-    setLocalContent(newContent);
-    setShowPlaceholder(!newContent.trim());
-    const sanitizedContent = DOMPurify.sanitize(newContent); // Use DOMPurify instead of sanitizeHtml
+    const element = e.target;
+    const newContent = element.innerHTML;
+    const sanitizedContent = sanitizeHtml(newContent);
+
     if (validateHtmlContent(sanitizedContent)) {
+      // Get cursor position relative to text content
+      const selection = window.getSelection();
+      const range = selection.getRangeAt(0);
+      const preCaretRange = range.cloneRange();
+      preCaretRange.selectNodeContents(element);
+      preCaretRange.setEnd(range.endContainer, range.endOffset);
+      const caretOffset = preCaretRange.toString().length;
+
+      setLocalContent(sanitizedContent);
+      setShowPlaceholder(!sanitizedContent.trim());
       onUpdate(component.id, { style: { ...component.style, content: sanitizedContent } });
+
+      // Restore cursor position
+      setTimeout(() => {
+        const textNode = element.firstChild;
+        if (textNode) {
+          const newRange = document.createRange();
+          newRange.setStart(textNode, Math.min(caretOffset, textNode.length));
+          newRange.collapse(true);
+          selection.removeAllRanges();
+          selection.addRange(newRange);
+        }
+      }, 0);
     }
   };
 
@@ -120,7 +155,7 @@ const TextRenderer = ({
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         suppressContentEditableWarning={true}
-        dangerouslySetInnerHTML={{ __html: showPlaceholder ? placeholderText : DOMPurify.sanitize(localContent) }}
+        dangerouslySetInnerHTML={{ __html: showPlaceholder ? placeholderText : sanitizeHtml(localContent) }}
       />
       {isToolbarOpen && !isViewMode && (
         <TextControls
