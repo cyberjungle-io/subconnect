@@ -302,6 +302,10 @@ const MainEditor = () => {
     // You might want to scroll to the selected component in the Canvas here
   };
 
+  const handleDeselectAll = useCallback(() => {
+    dispatch(setSelectedIds([]));
+  }, [dispatch]);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.ctrlKey || event.metaKey) {
@@ -357,6 +361,7 @@ const MainEditor = () => {
                 onStyleChange={handleUpdateComponent} // Added this line
                 isDragModeEnabled={isDragModeEnabled}
                 isSpacingVisible={isSpacingVisible}
+                onDeselectAll={handleDeselectAll}
               />
             ) : (
               <ViewerMode components={components} globalSettings={globalSettings} />

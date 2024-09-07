@@ -13,6 +13,7 @@ const Canvas = ({
   onMoveComponent,
   globalSettings = {},
   isDragModeEnabled,
+  onDeselectAll, // Add this prop
 }) => {
   const { backgroundColor = '#ffffff', componentLayout = 'vertical', style = {} } = useSelector(state => state.editor.globalSettings || {});
   const canvasRef = useRef(null);
@@ -95,6 +96,15 @@ const Canvas = ({
     setIsClickFromToolbar(true);
   }, []);
 
+  const handleCanvasDoubleClick = useCallback(
+    (event) => {
+      if (event.target === canvasRef.current) {
+        onDeselectAll();
+      }
+    },
+    [onDeselectAll]
+  );
+
   const canvasStyle = {
     backgroundColor,
     padding: `${style.paddingTop || '0px'} ${style.paddingRight || '0px'} ${style.paddingBottom || '0px'} ${style.paddingLeft || '0px'}`,
@@ -124,6 +134,7 @@ const Canvas = ({
       style={canvasStyle}
       onClick={handleCanvasClick}
       onMouseDown={() => setIsClickFromToolbar(false)}
+      onDoubleClick={handleCanvasDoubleClick}
     >
       {components.map((component) => (
         <ComponentRenderer
@@ -145,6 +156,7 @@ const Canvas = ({
           onToolbarOpen={handleToolbarOpen}
           onToolbarClose={handleToolbarClose}
           isToolbarOpen={openToolbarId === component.id}
+          onDeselect={onDeselectAll}
         />
       ))}
     </div>

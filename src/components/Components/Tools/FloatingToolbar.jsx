@@ -188,6 +188,19 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
     };
   }, [isMouseDown, handleMouseUp]);
 
+  useEffect(() => {
+    const handleDoubleClickOutside = (event) => {
+      if (toolbarRef.current && !toolbarRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('dblclick', handleDoubleClickOutside);
+    return () => {
+      document.removeEventListener('dblclick', handleDoubleClickOutside);
+    };
+  }, [onClose]);
+
   const handleIconClick = (tooltip) => {
     setActiveControl(activeControl === tooltip ? null : tooltip);
   };

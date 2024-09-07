@@ -76,6 +76,7 @@ const ComponentRenderer = React.memo(({
   onToolbarOpen,
   onToolbarClose,
   isToolbarOpen,
+  onDeselect, // Add this prop
 }) => {
   const dispatch = useDispatch();
   const componentRef = useRef(null);
@@ -141,6 +142,7 @@ const ComponentRenderer = React.memo(({
         onToolbarOpen={onToolbarOpen}
         onToolbarClose={onToolbarClose}
         isToolbarOpen={isToolbarOpen}
+        onDeselect={onDeselect}
       />
     ));
   };
@@ -183,9 +185,10 @@ const ComponentRenderer = React.memo(({
         onToolbarOpen(component.id);
       } else {
         onToolbarClose();
+        onDeselect(); // Deselect when closing toolbar
       }
     }
-  }, [isViewMode, component.type, toolbarState, onToolbarOpen, onToolbarClose, component.id]);
+  }, [isViewMode, component.type, toolbarState, onToolbarOpen, onToolbarClose, onDeselect]);
 
   const handleUpdate = useCallback((id, updates) => {
     const updatedComponent = { ...component, ...updates };
@@ -439,7 +442,10 @@ const ComponentRenderer = React.memo(({
           componentId={component.id}
           componentType={component.type}
           initialPosition={toolbarState.position}
-          onClose={handleToolbarClose}
+          onClose={() => {
+            handleToolbarClose();
+            onDeselect(); // Deselect when closing toolbar
+          }}
           style={component.style}
           props={component.props}
           content={component.content}
