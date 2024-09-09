@@ -51,23 +51,19 @@ export const logoutUser = createAsyncThunk(
 
 export const checkAuthStatus = createAsyncThunk(
   'user/checkAuthStatus',
-  async (_, { dispatch }) => {
+  async (_, { dispatch, rejectWithValue }) => {
     const token = localStorage.getItem('w3s_token');
     if (token) {
       try {
         const userData = await w3sService.verifyToken(token);
-        const projects = await w3sService.getProjects();
-        dispatch(fetchProjects.fulfilled(projects));
-        if (projects.length > 0) {
-          dispatch(setCurrentProject(projects[0]));
-        }
+        await dispatch(fetchProjects());
         return userData;
       } catch (error) {
         localStorage.removeItem('w3s_token');
-        throw error;
+        return rejectWithValue(error.message);
       }
     }
-    return null;
+    return rejectWithValue('No token found');
   }
 );
 

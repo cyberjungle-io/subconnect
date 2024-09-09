@@ -267,6 +267,11 @@ const MainEditor = () => {
   };
 
   const handleSaveProject = () => {
+    if (!currentUser) {
+      dispatch(showToast({ message: 'Please log in to save the project', type: 'error' }));
+      return;
+    }
+
     console.log("Saving Project");
     
     if (currentProject && currentProject._id) {

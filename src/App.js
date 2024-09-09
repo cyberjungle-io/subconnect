@@ -12,6 +12,8 @@ import MainEditor from './components/Editor/MainEditor';
 import { fetchProject } from './w3s/w3sSlice';
 import { setEditorMode } from './features/editorSlice';
 import { fetchQueries } from './w3s/w3sSlice';
+import { PersistGate } from 'redux-persist/integration/react';
+import { persistor } from './store/store';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -61,7 +63,9 @@ function App() {
 
   return (
     <Provider store={store}>
-      <AppContent />
+      <PersistGate loading={null} persistor={persistor}>
+        <AppContent />
+      </PersistGate>
     </Provider>
   );
 }

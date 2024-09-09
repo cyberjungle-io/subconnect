@@ -77,6 +77,9 @@ const w3sService = {
       return response.data;
     } catch (error) {
       console.error('Token verification error:', error.response || error);
+      if (error.response && error.response.status === 401) {
+        throw new Error('Invalid or expired token');
+      }
       throw error.response?.data || error.message || 'An unexpected error occurred';
     }
   },
