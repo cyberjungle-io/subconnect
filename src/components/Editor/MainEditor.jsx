@@ -39,12 +39,14 @@ import { updateProject } from '../../w3s/w3sSlice';
 import { showToast } from '../../features/toastSlice';
 import { useParams } from 'react-router-dom';
 import { fetchProject } from '../../w3s/w3sSlice';
+import { fetchQueries } from '../../w3s/w3sSlice';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
   const { components, selectedIds, mode, currentPage, isDragModeEnabled } = useSelector(state => state.editor);
   const { data: currentProject, status: projectStatus, error: projectError } = useSelector(state => state.w3s.currentProject);
   const { projectId } = useParams();
+  const isLoggedIn = useSelector(state => state.user.isLoggedIn);
 
   useEffect(() => {
     if (projectId) {
@@ -60,11 +62,26 @@ const MainEditor = () => {
     }
   }, [currentProject, dispatch]);
 
+  useEffect(() => {
+    let intervalId;
+    if (isLoggedIn) {
+      dispatch(fetchQueries());
+      intervalId = setInterval(() => {
+        dispatch(fetchQueries());
+      }, 60000); // 60000 ms = 1 minute
+    }
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isLoggedIn, dispatch]);
+
   const [isPanelVisible, setIsPanelVisible] = useState(true);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
-  const globalSettings = useSelector(state => state.editor.globalSettings); // Get globalSettings from Redux
-  const currentUser = useSelector(state => state.user.currentUser); // Get current user from Redux
+  const globalSettings = useSelector(state => state.editor.globalSettings);
+  const currentUser = useSelector(state => state.user.currentUser);
   const [isSpacingVisible, setIsSpacingVisible] = useState(false);
   const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
   const [componentTreePosition, setComponentTreePosition] = useState({ x: 0, y: 0 });

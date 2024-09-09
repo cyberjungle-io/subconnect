@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaTimes, FaDatabase, FaCode, FaGlobe, FaSave, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
 import { fetchQueries, deleteQuery } from '../../w3s/w3sSlice';
@@ -6,6 +6,7 @@ import { loadSavedQuery } from '../../features/graphQLSlice';
 import GraphQLQueryTab from './GraphQLQueryTab';
 
 const DataModal = ({ isOpen, onClose }) => {
+  const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState('GraphQL Query');
 
   const tabs = [
@@ -21,6 +22,12 @@ const DataModal = ({ isOpen, onClose }) => {
       onClose();
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+      dispatch(fetchQueries());
+    }
+  }, [isOpen, dispatch]);
 
   if (!isOpen) return null;
 

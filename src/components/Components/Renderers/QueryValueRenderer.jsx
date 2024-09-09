@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { executeQuery } from '../../../features/graphQLSlice';
+import { fetchQueries } from '../../../w3s/w3sSlice';
 
 const QueryValueRenderer = ({ component }) => {
   const dispatch = useDispatch();
@@ -10,7 +11,19 @@ const QueryValueRenderer = ({ component }) => {
   const query = useSelector(state => state.w3s.queries.list.find(q => q._id === component.props.queryId));
 
   useEffect(() => {
-    if (component.props.queryId && query) {
+    if (component.props.queryId) {
+      if (!query) {
+        dispatch(fetchQueries()).then(() => {
+          executeQueryAndSetValue();
+        });
+      } else {
+        executeQueryAndSetValue();
+      }
+    }
+  }, [dispatch, component.props.queryId, component.props.field, query]);
+
+  const executeQueryAndSetValue = () => {
+    if (query) {
       setLoading(true);
       setError(null);
       dispatch(executeQuery({ endpoint: query.endpoint, query: query.queryString }))
@@ -22,7 +35,7 @@ const QueryValueRenderer = ({ component }) => {
               for (let i = 0; i < fieldPath.length; i++) {
                 const key = fieldPath[i];
                 if (Array.isArray(result)) {
-                  result = result[0]; // Always take the first element of an array
+                  result = result[0];
                 }
                 if (result && typeof result === 'object') {
                   result = result[key];
@@ -42,7 +55,7 @@ const QueryValueRenderer = ({ component }) => {
           setLoading(false);
         });
     }
-  }, [dispatch, component.props.queryId, component.props.field, query]);
+  };
 
   const renderContent = () => {
     if (loading) {
