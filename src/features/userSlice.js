@@ -25,6 +25,8 @@ export const loginUser = createAsyncThunk(
       const response = await w3sService.login(credentials);
       // Save token to local storage
       localStorage.setItem('w3s_token', response.token);
+      // Wait for a short time to ensure the token is stored
+      await new Promise(resolve => setTimeout(resolve, 100));
       // Return user data with token
       return { ...response.user, token: response.token };
     } catch (error) {

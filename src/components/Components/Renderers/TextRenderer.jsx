@@ -52,18 +52,26 @@ const TextRenderer = ({
     }
   }, [isEditing]);
 
-  useEffect(() => {
-    if (isEditing && textRef.current) {
-      const length = textRef.current.textContent.length;
-      const range = document.createRange();
-      const selection = window.getSelection();
-      range.setStart(textRef.current.firstChild || textRef.current, length);
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
-      textRef.current.focus();
+  // Replace the existing placeCaretAtEnd function with this improved version
+  const placeCaretAtEnd = (element) => {
+    if (element) {
+      element.focus();
+      if (typeof window.getSelection != "undefined"
+          && typeof document.createRange != "undefined") {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        range.collapse(false);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      } else if (typeof document.body.createTextRange != "undefined") {
+        const textRange = document.body.createTextRange();
+        textRange.moveToElementText(element);
+        textRange.collapse(false);
+        textRange.select();
+      }
     }
-  }, [isEditing]);
+  };
 
   const handleFocus = () => {
     // Remove setShowPlaceholder(false);
@@ -95,22 +103,6 @@ const TextRenderer = ({
     }
   };
 
-  // Add this new function
-  const placeCaretAtEnd = (element) => {
-    if (element.firstChild) {
-      const range = document.createRange();
-      const selection = window.getSelection();
-      range.selectNodeContents(element);
-      range.collapse(false);
-      selection.removeAllRanges();
-      selection.addRange(range);
-      element.focus();
-    } else {
-      // If the element is empty, just focus it
-      element.focus();
-    }
-  };
-
   return (
     <>
       <ElementType
@@ -124,7 +116,7 @@ const TextRenderer = ({
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         suppressContentEditableWarning={true}
-        dangerouslySetInnerHTML={{ __html: sanitizeHtml(localContent) }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(localContent) }}
       />
       {isToolbarOpen && !isViewMode && (
         <TextControls

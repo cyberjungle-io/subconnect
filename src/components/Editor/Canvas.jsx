@@ -14,6 +14,7 @@ const Canvas = ({
   globalSettings = {},
   isDragModeEnabled,
   onDeselectAll, // Add this prop
+  isViewMode = false, // Add this prop
 }) => {
   const { backgroundColor = '#ffffff', componentLayout = 'vertical', style = {} } = useSelector(state => state.editor.globalSettings || {});
   const canvasRef = useRef(null);
@@ -157,6 +158,7 @@ const Canvas = ({
           onToolbarClose={handleToolbarClose}
           isToolbarOpen={openToolbarId === component.id}
           onDeselect={onDeselectAll}
+          isViewMode={isViewMode} // Add this prop
         />
       ))}
     </div>

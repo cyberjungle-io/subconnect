@@ -55,12 +55,6 @@ function AppContent() {
 }
 
 function App() {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(fetchQueries());
-  }, [dispatch]);
-
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>

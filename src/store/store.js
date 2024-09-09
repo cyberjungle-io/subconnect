@@ -18,7 +18,7 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: 'subconnect', // Changed from 'root' to 'subconnect'
   storage,
-  whitelist: ['editor', 'w3s', 'user'],
+  whitelist: ['editor', 'w3s', 'user', 'graphQL'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

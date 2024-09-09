@@ -90,10 +90,11 @@ const ComponentRenderer = React.memo(({
   }, [isEditing]);
 
   const handleClick = useCallback((event) => {
+    if (isViewMode) return; // Add this line
     event.stopPropagation();
     const isMultiSelect = event.ctrlKey || event.metaKey;
     onSelect(component.id, isMultiSelect);
-  }, [component.id, onSelect]);
+  }, [component.id, onSelect, isViewMode]); // Add isViewMode to dependencies
 
   // Add this effect to handle the delete key press
   useEffect(() => {
@@ -398,7 +399,7 @@ const ComponentRenderer = React.memo(({
         }}
         onClick={(e) => {
           e.stopPropagation();
-          if (!isToolbarOpen) {
+          if (!isViewMode && !isToolbarOpen) {
             handleClick(e);
           }
         }}

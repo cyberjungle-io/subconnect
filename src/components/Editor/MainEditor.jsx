@@ -363,13 +363,18 @@ const MainEditor = () => {
                 onAddComponent={handleAddComponent}
                 onMoveComponent={handleMoveComponent}
                 globalSettings={globalSettings}
-                onStyleChange={handleUpdateComponent} // Added this line
+                onStyleChange={handleUpdateComponent}
                 isDragModeEnabled={isDragModeEnabled}
                 isSpacingVisible={isSpacingVisible}
                 onDeselectAll={handleDeselectAll}
+                isViewMode={false}
               />
             ) : (
-              <ViewerMode components={components} globalSettings={globalSettings} />
+              <ViewerMode
+                components={components}
+                globalSettings={globalSettings}
+                isViewMode={true}
+              />
             )}
           </div>
           {mode === 'edit' && currentUser && isFloatingMenuVisible && (
