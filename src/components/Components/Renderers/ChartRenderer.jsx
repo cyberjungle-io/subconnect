@@ -18,12 +18,12 @@ const ChartRenderer = ({ component }) => {
     if (!data || !Array.isArray(data)) return [];
     return data.map(item => {
       const formattedItem = { 
-        [`accountSnapshots.${nameKey}`]: format(parseISO(item.updatedTime), 'yyyy-MM-dd'),
+        [nameKey]: format(parseISO(item.updatedTime), 'yyyy-MM-dd'),
         'accountSnapshots.delegationValue': parseFloat(item.delegationValue) || 0,
         'accountSnapshots.cumulativeStakePoolOwnerRewards': parseFloat(item.cumulativeStakePoolOwnerRewards) || 0
       };
       return formattedItem;
-    }).sort((a, b) => new Date(a[`accountSnapshots.${nameKey}`]) - new Date(b[`accountSnapshots.${nameKey}`]));
+    }).sort((a, b) => new Date(a[nameKey]) - new Date(b[nameKey]));
   };
 
   useEffect(() => {
