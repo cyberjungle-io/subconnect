@@ -94,6 +94,8 @@ const TextRenderer = ({
       setTimeout(() => {
         placeCaretAtEnd(element);
       }, 0);
+    } else {
+      console.warn('Invalid HTML content:', newContent);
     }
   };
 
