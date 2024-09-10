@@ -92,14 +92,13 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
             <div className="relative mr-3" ref={pageListRef}>
               <button
                 onClick={toggleProjectInfo}
-                className="flex items-center space-x-2 px-3 py-1.5 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+                className="flex flex-col items-start px-3 py-1.5 pr-8 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
               >
-                <span>Project Info</span>
-                {expandedSections.currentProject ? (
-                  <FaChevronUp className="transform transition-transform ml-2" />
-                ) : (
-                  <FaChevronDown className="transform transition-transform ml-2" />
+                <span className="font-semibold">{currentProject.name}</span>
+                {currentPage && (
+                  <span className="text-xs text-gray-600">{currentPage.name}</span>
                 )}
+                <FaChevronDown className={`absolute right-2 top-1/2 transform -translate-y-1/2 transition-transform ${expandedSections.currentProject ? 'rotate-180' : ''}`} />
               </button>
               {expandedSections.currentProject && (
                 <div className="absolute top-full left-0 mt-1 w-64 bg-[#e8e8e8] rounded shadow-lg z-[990] border border-[#c0c0c0]">
