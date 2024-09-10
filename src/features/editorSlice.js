@@ -415,6 +415,10 @@ export const editorSlice = createSlice({
         component.props.strokeColor = color;
       }
     },
+    resetEditorState: (state) => {
+      // Reset the entire state to the initial state
+      return initialState;
+    },
   },
 });
 
@@ -457,6 +461,7 @@ export const {
   setDragModeEnabled,
   toggleFloatingMenu,
   updateWhiteboardStrokeColor,
+  resetEditorState,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;
