@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye, FaFolderOpen, FaDatabase, FaTools } from 'react-icons/fa';
@@ -26,6 +26,20 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
   const { currentUser } = useSelector((state) => state.user);
   const { mode, currentPage } = useSelector((state) => state.editor);
   const currentProject = useSelector((state) => state.w3s.currentProject.data);
+  const pageListRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (pageListRef.current && !pageListRef.current.contains(event.target)) {
+        setExpandedSections(prev => ({ ...prev, currentProject: false }));
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleLogout = async () => {
     await dispatch(logoutUser());
@@ -75,7 +89,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
         
         {mode === 'edit' && currentUser && currentProject && (
           <>
-            <div className="relative mr-3">
+            <div className="relative mr-3" ref={pageListRef}>
               <button
                 onClick={toggleProjectInfo}
                 className="flex items-center space-x-2 px-3 py-1.5 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
