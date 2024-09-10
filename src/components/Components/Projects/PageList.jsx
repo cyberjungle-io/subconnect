@@ -47,18 +47,18 @@ const PageList = ({
             value={newPageName}
             onChange={(e) => setNewPageName(e.target.value)}
             placeholder="New Page Name"
-            className="w-full px-2 py-1 text-sm bg-gray-700 border border-gray-600 rounded-l focus:outline-none focus:ring-1 focus:ring-blue-500 text-white"
+            className="w-full px-2 py-1 text-sm bg-white border border-[#c0c0c0] rounded-l focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-800"
           />
           <button
             onClick={handleCreatePage}
-            className="px-2 py-1 bg-blue-500 text-white rounded-r hover:bg-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="px-2 py-1 bg-[#d0d0d0] text-gray-800 rounded-r hover:bg-[#c0c0c0] focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
           >
             <FaPlus />
           </button>
         </div>
       </div>
       {currentProject.pages.length === 0 ? (
-        <p className="text-sm text-gray-400 px-3">No pages found. Create a new one to get started!</p>
+        <p className="text-sm text-gray-600 px-3">No pages found. Create a new one to get started!</p>
       ) : (
         <ul className="space-y-1 px-3 pb-2">
           {currentProject.pages.map((page, index) => (
@@ -66,8 +66,8 @@ const PageList = ({
               key={index}
               className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors duration-200 ${
                 page._id === selectedPageId
-                  ? "bg-gray-600"
-                  : "hover:bg-gray-700"
+                  ? "bg-[#d0d0d0]"
+                  : "hover:bg-[#e0e0e0]"
               }`}
               onClick={() => onSelectPage(page)}
             >
@@ -77,7 +77,7 @@ const PageList = ({
                   e.stopPropagation();
                   onDeletePage(index);
                 }}
-                className="text-gray-400 hover:text-red-500"
+                className="text-gray-600 hover:text-red-500 transition-colors"
               >
                 <FaTrash />
               </button>
