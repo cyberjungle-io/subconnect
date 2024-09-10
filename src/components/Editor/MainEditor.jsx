@@ -225,7 +225,9 @@ const MainEditor = () => {
   };
 
   const handleToggleDragMode = () => {
-    dispatch(setDragModeEnabled(!isDragModeEnabled));
+    if (mode === 'edit') {
+      dispatch(setDragModeEnabled(!isDragModeEnabled));
+    }
   };
 
   const handleToggleSpacingVisibility = () => {
@@ -234,49 +236,55 @@ const MainEditor = () => {
   };
 
   const handleToggleComponentTree = useCallback(() => {
-    setIsComponentTreeVisible((prev) => {
-      if (!prev) {
-        const floatingRightMenu = floatingRightMenuRef.current;
-        if (floatingRightMenu) {
-          const rect = floatingRightMenu.getBoundingClientRect();
-          setComponentTreePosition({
-            x: rect.left - 270, // 270 = 264 (width of ComponentTree) + 6 (gap)
-            y: rect.top,
-          });
+    if (mode === 'edit') {
+      setIsComponentTreeVisible((prev) => {
+        if (!prev) {
+          const floatingRightMenu = floatingRightMenuRef.current;
+          if (floatingRightMenu) {
+            const rect = floatingRightMenu.getBoundingClientRect();
+            setComponentTreePosition({
+              x: rect.left - 270,
+              y: rect.top,
+            });
+          }
         }
-      }
-      return !prev;
-    });
-  }, []);
+        return !prev;
+      });
+    }
+  }, [mode]);
 
   const handleToggleComponentPalette = useCallback(() => {
-    setIsComponentPaletteVisible((prev) => {
-      if (!prev) {
+    if (mode === 'edit') {
+      setIsComponentPaletteVisible((prev) => {
+        if (!prev) {
+          const floatingRightMenu = floatingRightMenuRef.current;
+          if (floatingRightMenu) {
+            const rect = floatingRightMenu.getBoundingClientRect();
+            setComponentPalettePosition({
+              x: rect.left - 270,
+              y: rect.top,
+            });
+          }
+        }
+        return !prev;
+      });
+    }
+  }, [mode]);
+
+  const handleToggleGlobalSettings = () => {
+    if (mode === 'edit') {
+      if (!isGlobalSettingsVisible) {
         const floatingRightMenu = floatingRightMenuRef.current;
         if (floatingRightMenu) {
           const rect = floatingRightMenu.getBoundingClientRect();
-          setComponentPalettePosition({
+          setGlobalSettingsPosition({
             x: rect.left - 270,
             y: rect.top,
           });
         }
       }
-      return !prev;
-    });
-  }, []);
-
-  const handleToggleGlobalSettings = () => {
-    if (!isGlobalSettingsVisible) {
-      const floatingRightMenu = floatingRightMenuRef.current;
-      if (floatingRightMenu) {
-        const rect = floatingRightMenu.getBoundingClientRect();
-        setGlobalSettingsPosition({
-          x: rect.left - 270,
-          y: rect.top,
-        });
-      }
+      setIsGlobalSettingsVisible(!isGlobalSettingsVisible);
     }
-    setIsGlobalSettingsVisible(!isGlobalSettingsVisible);
   };
 
   const handleUpdateGlobalSettings = (updates) => {
@@ -330,7 +338,7 @@ const MainEditor = () => {
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (event.ctrlKey || event.metaKey) {
+      if (mode === 'edit' && (event.ctrlKey || event.metaKey)) {
         if (event.key === 'q') {
           event.preventDefault();
           handleToggleComponentPalette();
@@ -346,7 +354,7 @@ const MainEditor = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [mode, handleToggleComponentPalette, handleToggleComponentTree]);
 
   if (projectStatus === 'loading') {
     return <div>Loading project...</div>;
@@ -407,6 +415,7 @@ const MainEditor = () => {
               onToggleDragMode={handleToggleDragMode}
               isDragModeEnabled={isDragModeEnabled}
               onToggleSpacingVisibility={handleToggleSpacingVisibility}
+              isEditMode={mode === 'edit'}
             />
           )}
           <ComponentTree

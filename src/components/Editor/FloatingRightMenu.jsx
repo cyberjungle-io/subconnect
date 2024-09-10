@@ -18,6 +18,7 @@ const FloatingRightMenu = ({
   isComponentPaletteVisible,
   isGlobalSettingsVisible,
   isDragModeEnabled,
+  isEditMode, // Add this prop
 }) => {
   const buttonClass = (isActive) => `
     p-2 mb-2 rounded-full
@@ -25,39 +26,49 @@ const FloatingRightMenu = ({
       ? 'bg-[#cce7ff] text-blue-600 border border-blue-300' 
       : 'hover:bg-[#d9ecff] border border-transparent'
     }
+    ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}
   `;
 
   return (
     <div className="fixed right-8 top-1/3 transform -translate-y-1/2 w-12 bg-[#e6f3ff] border border-[#b3d9ff] rounded-lg shadow-xl z-[960] flex flex-col items-center py-2">
       <button
-        onClick={onShowComponentPalette}
+        onClick={isEditMode ? onShowComponentPalette : undefined}
         className={buttonClass(isComponentPaletteVisible)}
         title="Toggle Component Palette"
+        disabled={!isEditMode}
       >
         <FourSquaresIcon />
       </button>
       <button
-        onClick={onShowComponentTree}
+        onClick={isEditMode ? onShowComponentTree : undefined}
         className={buttonClass(isComponentTreeVisible)}
         title="Toggle Component Tree"
+        disabled={!isEditMode}
       >
         <FaTree />
       </button>
       <button
-        onClick={onShowGlobalSettings}
+        onClick={isEditMode ? onShowGlobalSettings : undefined}
         className={buttonClass(isGlobalSettingsVisible)}
         title="Toggle Global Settings"
+        disabled={!isEditMode}
       >
         <FaGlobe />
       </button>
       <button
-        onClick={onToggleDragMode}
+        onClick={isEditMode ? onToggleDragMode : undefined}
         className={buttonClass(isDragModeEnabled)}
         title="Toggle Drag Mode"
+        disabled={!isEditMode}
       >
         <FaHandPointer />
       </button>
-      <button onClick={onToggleSpacingVisibility} className={buttonClass(false)} title="Toggle Spacing Visibility">
+      <button 
+        onClick={isEditMode ? onToggleSpacingVisibility : undefined} 
+        className={buttonClass(false)} 
+        title="Toggle Spacing Visibility"
+        disabled={!isEditMode}
+      >
         <FaEye />
       </button>
     </div>
