@@ -87,7 +87,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
 
       <div className="flex items-center space-x-5 relative z-10">
         
-        {mode === 'edit' && currentUser && currentProject && (
+        {currentUser && currentProject && (
           <>
             <div className="relative mr-3" ref={pageListRef}>
               <button
@@ -123,13 +123,15 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
                 </div>
               )}
             </div>
-            <button
-              onClick={onSaveProject}
-              className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
-              title="Save Project"
-            >
-              <FaSave className="text-base" />
-            </button>
+            {mode === 'edit' && (
+              <button
+                onClick={onSaveProject}
+                className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+                title="Save Project"
+              >
+                <FaSave className="text-base" />
+              </button>
+            )}
           </>
         )}
         {currentUser && (

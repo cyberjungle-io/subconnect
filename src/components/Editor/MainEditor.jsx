@@ -367,6 +367,8 @@ const MainEditor = () => {
           onOpenDataModal={handleOpenDataModal}
           mode={mode}
           currentUser={currentUser}
+          currentProject={currentProject}
+          currentPage={currentPage}
         />
         <div className="flex flex-grow overflow-hidden">
           <div className="flex-grow overflow-auto">
