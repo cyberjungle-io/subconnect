@@ -112,20 +112,6 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const generalContent = (
     <>
       <div className="mb-2">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Chart Type</label>
-        <select
-          name="chartType"
-          value={props?.chartType || 'line'}
-          onChange={handleChange}
-          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option value="line">Line Chart</option>
-          <option value="bar">Bar Chart</option>
-          <option value="area">Area Chart</option>
-          <option value="pie">Pie Chart</option>
-        </select>
-      </div>
-      <div className="mb-2">
         <label className="block text-sm font-medium text-gray-700 mb-1">Chart Title</label>
         <input
           type="text"
@@ -135,60 +121,6 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
           className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
-    </>
-  );
-
-  const dataSourceContent = (
-    <>
-      <div className="mb-2">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Select Query</label>
-        <select
-          name="selectedQueryId"
-          value={props?.selectedQueryId || ''}
-          onChange={handleChange}
-          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option value="">Select a query</option>
-          {queries.map(query => (
-            <option key={query._id} value={query._id}>{query.name}</option>
-          ))}
-        </select>
-      </div>
-      {queriesStatus === 'loading' && <p>Loading queries...</p>}
-      {queriesStatus === 'failed' && <p>Failed to load queries</p>}
-      {queriesStatus === 'succeeded' && queries.length === 0 && <p>No queries available</p>}
-      {selectedQuery && (
-        <>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Data Keys (Y-axis)</label>
-            <select
-              multiple
-              name="dataKeys"
-              value={props?.dataKeys || []}
-              onChange={handleChange}
-              className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              {availableFields.map(field => (
-                <option key={field._id} value={field.name}>{field.name}</option>
-              ))}
-            </select>
-          </div>
-          <div className="mb-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name Key (X-axis)</label>
-            <select
-              name="nameKey"
-              value={props?.nameKey || ''}
-              onChange={handleChange}
-              className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              <option value="">Select a field</option>
-              {availableFields.map(field => (
-                <option key={field._id} value={field.name}>{field.name}</option>
-              ))}
-            </select>
-          </div>
-        </>
-      )}
     </>
   );
 
@@ -261,7 +193,6 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
   return (
     <div className="chart-controls">
       {renderSection("General", "general", generalContent)}
-      {renderSection("Data Source", "dataSource", dataSourceContent)}
       {renderSection("Styling", "styling", stylingContent)}
       {renderSection("Advanced", "advanced", advancedContent)}
     </div>

@@ -13,6 +13,7 @@ import WhiteboardControls from './WhiteboardControls';
 import ButtonControls from './ButtonControls';
 import QueryValueControls from './QueryValueControls';
 import BasicTextControls from './BasicTextControls';
+import ChartDataControls from './ChartDataControls';
 import { useDispatch } from 'react-redux';
 import { renameComponent } from '../../../features/editorSlice';
 
@@ -44,6 +45,7 @@ const iconMap = {
     { icon: FaBorderStyle, tooltip: 'Border' },
     { icon: FaPalette, tooltip: 'Background' },
     { icon: FaChartBar, tooltip: 'Chart Controls' },
+    { icon: FaDatabase, tooltip: 'Chart Data' },
   ],
   VIDEO: [
     { icon: FaExpand, tooltip: 'Size' },
@@ -239,6 +241,8 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         return <LayoutControls {...sharedProps} />;
       case 'Chart Controls':
         return <ChartControls {...sharedProps} />;
+      case 'Chart Data':
+        return <ChartDataControls {...sharedProps} />;
       case 'Video Controls':
         return <VideoControls {...sharedProps} />;
       case 'Whiteboard Controls':
