@@ -68,6 +68,7 @@ const ChartRenderer = ({ component }) => {
       yAxisDataType: component.props.yAxisDataType || 'number',
       dateFormat: component.props.dateFormat || 'MM/dd/yyyy',
       numberFormat: component.props.numberFormat || '0,0.[00]',
+      showDataPoints: component.props.showDataPoints !== false, // Add this line
     };
   }, [component.props, chartData]);
 
@@ -140,7 +141,7 @@ const ChartRenderer = ({ component }) => {
                 dataKey={key}
                 stroke={chartProps.lineColors[key] || chartProps.colors[index % chartProps.colors.length]}
                 strokeWidth={chartProps.lineWidth}
-                dot={{ r: chartProps.dataPointSize }}
+                dot={chartProps.showDataPoints ? { r: chartProps.dataPointSize } : false} // Modify this line
               />
             ))}
           </LineChart>

@@ -72,6 +72,10 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
       newValue = Array.from(e.target.selectedOptions, option => option.value);
     }
 
+    if (name === 'showDataPoints') {
+      newValue = checked;
+    }
+
     const updatedProps = {
       ...props,
       [name]: newValue
@@ -229,30 +233,28 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
         <label className="flex items-center">
           <input
             type="checkbox"
-            name="showLegend"
-            checked={props?.showLegend || false}
+            name="showDataPoints"
+            checked={props?.showDataPoints !== false}
             onChange={handleChange}
             className="mr-2"
           />
-          <span className="text-sm font-medium text-gray-700">Show Legend</span>
+          <span className="text-sm font-medium text-gray-700">Show Data Points</span>
         </label>
       </div>
-      {props?.showLegend && (
-        <div className="mb-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Legend Position</label>
-          <select
-            name="legendPosition"
-            value={props?.legendPosition || 'bottom'}
-            onChange={handleChange}
-            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="top">Top</option>
-            <option value="right">Right</option>
-            <option value="bottom">Bottom</option>
-            <option value="left">Left</option>
-          </select>
-        </div>
-      )}
+      <div className="mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Legend Position</label>
+        <select
+          name="legendPosition"
+          value={props?.legendPosition || 'bottom'}
+          onChange={handleChange}
+          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          <option value="top">Top</option>
+          <option value="right">Right</option>
+          <option value="bottom">Bottom</option>
+          <option value="left">Left</option>
+        </select>
+      </div>
     </>
   );
 
