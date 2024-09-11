@@ -40,7 +40,7 @@ const findComponentById = (components, id) => {
 const updateComponentById = (components, id, updates) => {
   return components.map((component) => {
     if (component.id === id) {
-      const updatedComponent = {
+      return {
         ...component,
         ...updates,
         style: {
@@ -52,14 +52,6 @@ const updateComponentById = (components, id, updates) => {
           ...(updates.props || {}),
         },
       };
-
-      // Handle whiteboard updates
-      if (component.type === 'WHITEBOARD' && updates.props && updates.props.imageData) {
-        updatedComponent.props.imageData = updates.props.imageData;
-      }
-
-      console.log(`Updating component ${id}:`, updatedComponent);
-      return updatedComponent;
     }
     if (component.children) {
       return {
@@ -70,6 +62,7 @@ const updateComponentById = (components, id, updates) => {
     return component;
   });
 };
+
 const deleteComponentById = (components, id) => {
   return components.filter((component) => {
     if (component.id === id) {

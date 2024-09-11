@@ -192,7 +192,18 @@ const ComponentRenderer = React.memo(({
   }, [isViewMode, component.type, toolbarState, onToolbarOpen, onToolbarClose, onDeselect]);
 
   const handleUpdate = useCallback((id, updates) => {
-    const updatedComponent = { ...component, ...updates };
+    const updatedComponent = {
+      ...component,
+      ...updates,
+      style: {
+        ...component.style,
+        ...(updates.style || {}),
+      },
+      props: {
+        ...component.props,
+        ...(updates.props || {}),
+      },
+    };
     if (updatedComponent.type === "FLEX_CONTAINER") {
       // Ensure layout properties are correctly updated
       updatedComponent.style = {
