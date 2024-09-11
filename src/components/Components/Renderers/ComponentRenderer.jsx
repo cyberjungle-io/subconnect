@@ -313,13 +313,15 @@ const ComponentRenderer = React.memo(({
       overflow: "hidden",
       boxSizing: 'border-box',
       borderRadius: style.borderRadius || props.borderRadius || generalComponentStyle.borderRadius || '4px',
-      padding: "0px",
-      margin: style.margin || "0px", // Keep this line
+      padding: style.padding || "0px",
+      margin: style.margin || "0px",
       backgroundColor: style.backgroundColor || 'transparent',
       boxShadow: style.boxShadow || 'none',
       opacity: style.opacity || 1,
       transform: style.transform || 'none',
       transition: style.transition || 'none',
+      maxWidth: '100%', // Add this line
+      maxHeight: '100%', // Add this line
     };
 
     if (style.showBorder !== false) {
@@ -340,7 +342,7 @@ const ComponentRenderer = React.memo(({
       });
 
       if (!isFlexChild) {
-        componentStyle[globalComponentLayout === "horizontal" ? "width" : "height"] = style[globalComponentLayout === "horizontal" ? "width" : "height"] || "100%";
+        componentStyle[globalComponentLayout === "horizontal" ? "width" : "height"] = "100%";
       } else {
         Object.assign(componentStyle, {
           flexGrow: style.flexGrow || 0,
