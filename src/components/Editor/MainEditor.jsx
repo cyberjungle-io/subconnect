@@ -56,9 +56,16 @@ const MainEditor = () => {
 
   useEffect(() => {
     if (currentProject && currentProject.pages.length > 0) {
-      dispatch(setCurrentPage(currentProject.pages[0]));
-      dispatch(loadPageContent(currentProject.pages[0].content));
-      dispatch(setEditorMode('view'));
+      const storedPageId = localStorage.getItem('currentPageId');
+      const pageToLoad = storedPageId
+        ? currentProject.pages.find(page => page._id === storedPageId)
+        : currentProject.pages[0];
+
+      if (pageToLoad) {
+        dispatch(setCurrentPage(pageToLoad));
+        dispatch(loadPageContent(pageToLoad.content));
+        dispatch(setEditorMode('view'));
+      }
     }
   }, [currentProject, dispatch]);
 
@@ -67,17 +74,6 @@ const MainEditor = () => {
       localStorage.setItem('currentPageId', currentPage._id);
     }
   }, [currentPage]);
-
-  useEffect(() => {
-    const storedPageId = localStorage.getItem('currentPageId');
-    if (currentProject && currentProject.pages && storedPageId) {
-      const storedPage = currentProject.pages.find(page => page._id === storedPageId);
-      if (storedPage) {
-        dispatch(setCurrentPage(storedPage));
-        dispatch(loadPageContent(storedPage.content));
-      }
-    }
-  }, [currentProject, dispatch]);
 
   useEffect(() => {
     let intervalId;
@@ -323,7 +319,7 @@ const MainEditor = () => {
       const updatedProject = {
         ...currentProject,
         pages: currentProject.pages.map(page => {
-          if (page.name === currentPage.name) {
+          if (page._id === currentPage._id) {
             return {
               ...page,
               content: {
