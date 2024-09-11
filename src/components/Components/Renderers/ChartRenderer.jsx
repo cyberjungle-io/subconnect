@@ -69,6 +69,8 @@ const ChartRenderer = ({ component }) => {
       dateFormat: component.props.dateFormat || 'MM/dd/yyyy',
       numberFormat: component.props.numberFormat || '0,0.[00]',
       showDataPoints: component.props.showDataPoints !== false, // Add this line
+      showXAxis: component.props.showXAxis !== false,
+      showYAxis: component.props.showYAxis !== false,
     };
   }, [component.props, chartData]);
 
@@ -102,27 +104,34 @@ const ChartRenderer = ({ component }) => {
   };
 
   const renderChart = () => {
+    const margin = {
+      top: 20,
+      right: 30,
+      bottom: chartProps.showXAxis ? 50 : 20,
+      left: chartProps.showYAxis ? 50 : 20
+    };
+
     const CommonProps = {
       data: chartProps.data,
-      margin: { top: 20, right: 30, left: 50, bottom: 50 },
+      margin: margin,
     };
 
     const domain = calculateDomain(chartProps.data, chartProps.dataKeys);
 
     const CommonAxisProps = {
-      XAxis: {
+      XAxis: chartProps.showXAxis ? {
         dataKey: chartProps.nameKey,
         angle: chartProps.xAxisAngle,
         tickFormatter: formatXAxis,
         height: 60,
         children: chartProps.xAxisLabel && <Label value={chartProps.xAxisLabel} offset={-10} position="insideBottom" />
-      },
-      YAxis: {
+      } : { tick: false, axisLine: false },
+      YAxis: chartProps.showYAxis ? {
         angle: chartProps.yAxisAngle,
         tickFormatter: formatYAxis,
         domain: domain,
         children: chartProps.yAxisLabel && <Label value={chartProps.yAxisLabel} angle={-90} position="insideLeft" offset={-40} />
-      }
+      } : { tick: false, axisLine: false }
     };
 
     switch (chartProps.chartType) {
@@ -131,7 +140,7 @@ const ChartRenderer = ({ component }) => {
           <LineChart {...CommonProps}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis {...CommonAxisProps.XAxis} />
-            <YAxis {...CommonAxisProps.YAxis} />
+            <YAxis {...CommonAxisProps.YAxis} domain={domain} />
             <Tooltip />
             {chartProps.showLegend && <Legend verticalAlign={chartProps.legendPosition} />}
             {chartProps.dataKeys.map((key, index) => (
@@ -141,7 +150,7 @@ const ChartRenderer = ({ component }) => {
                 dataKey={key}
                 stroke={chartProps.lineColors[key] || chartProps.colors[index % chartProps.colors.length]}
                 strokeWidth={chartProps.lineWidth}
-                dot={chartProps.showDataPoints ? { r: chartProps.dataPointSize } : false} // Modify this line
+                dot={chartProps.showDataPoints ? { r: chartProps.dataPointSize } : false}
               />
             ))}
           </LineChart>
@@ -151,7 +160,7 @@ const ChartRenderer = ({ component }) => {
           <BarChart {...CommonProps}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis {...CommonAxisProps.XAxis} />
-            <YAxis {...CommonAxisProps.YAxis} />
+            <YAxis {...CommonAxisProps.YAxis} domain={domain} />
             <Tooltip />
             {chartProps.showLegend && <Legend verticalAlign={chartProps.legendPosition} />}
             {chartProps.dataKeys.map((key, index) => (
@@ -168,7 +177,7 @@ const ChartRenderer = ({ component }) => {
           <AreaChart {...CommonProps}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis {...CommonAxisProps.XAxis} />
-            <YAxis {...CommonAxisProps.YAxis} />
+            <YAxis {...CommonAxisProps.YAxis} domain={domain} />
             <Tooltip />
             {chartProps.showLegend && <Legend verticalAlign={chartProps.legendPosition} />}
             {chartProps.dataKeys.map((key, index) => (

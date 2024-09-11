@@ -174,6 +174,30 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
         </label>
       </div>
       <div className="mb-2">
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            name="showXAxis"
+            checked={props?.showXAxis !== false}
+            onChange={handleChange}
+            className="mr-2"
+          />
+          <span className="text-sm font-medium text-gray-700">Show X Axis</span>
+        </label>
+      </div>
+      <div className="mb-2">
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            name="showYAxis"
+            checked={props?.showYAxis !== false}
+            onChange={handleChange}
+            className="mr-2"
+          />
+          <span className="text-sm font-medium text-gray-700">Show Y Axis</span>
+        </label>
+      </div>
+      <div className="mb-2">
         <label className="block text-sm font-medium text-gray-700 mb-1">Legend Position</label>
         <select
           name="legendPosition"
