@@ -110,6 +110,13 @@ export const editorSlice = createSlice({
       let defaultStyle = {};
       let depth = 0;
 
+      // Add this check
+      if (!state.globalSettings) {
+        state.globalSettings = defaultGlobalSettings;
+      }
+
+      const componentLayout = state.globalSettings.componentLayout || 'vertical';
+
       if (parentId) {
         const parent = findComponentById(state.components, parentId);
         if (parent) {
@@ -119,7 +126,7 @@ export const editorSlice = createSlice({
 
       if (!parentId) {
         if (type === "FLEX_CONTAINER") {
-          if (state.globalSettings.componentLayout === "horizontal") {
+          if (componentLayout === "horizontal") {
             defaultStyle = {
               width: '100%',
               height: '200px',
@@ -130,7 +137,7 @@ export const editorSlice = createSlice({
               height: '100%',
             };
           }
-        } else if (state.globalSettings.componentLayout === "vertical") {
+        } else if (componentLayout === "vertical") {
           defaultStyle = {
             width: '200px',
             height: 'auto',

@@ -11,7 +11,7 @@ const Canvas = ({
   onUpdateComponent,
   onAddComponent,
   onMoveComponent,
-  globalSettings = {},
+  globalSettings = {}, // Provide a default empty object
   isDragModeEnabled,
   onDeselectAll, // Add this prop
   isViewMode = false, // Add this prop

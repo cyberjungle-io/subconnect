@@ -68,7 +68,7 @@ const ComponentRenderer = React.memo(({
   parent = null,
   globalComponentLayout,
   isViewMode = false,
-  globalSettings = defaultGlobalSettings,
+  globalSettings = defaultGlobalSettings, // Provide a default value
   isTopLevel = false, // Add this prop
   onStyleChange, // Add this prop
   onToolbarInteraction, // Add this prop
