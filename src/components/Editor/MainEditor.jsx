@@ -63,6 +63,23 @@ const MainEditor = () => {
   }, [currentProject, dispatch]);
 
   useEffect(() => {
+    if (currentPage) {
+      localStorage.setItem('currentPageId', currentPage._id);
+    }
+  }, [currentPage]);
+
+  useEffect(() => {
+    const storedPageId = localStorage.getItem('currentPageId');
+    if (currentProject && currentProject.pages && storedPageId) {
+      const storedPage = currentProject.pages.find(page => page._id === storedPageId);
+      if (storedPage) {
+        dispatch(setCurrentPage(storedPage));
+        dispatch(loadPageContent(storedPage.content));
+      }
+    }
+  }, [currentProject, dispatch]);
+
+  useEffect(() => {
     let intervalId;
     if (isLoggedIn) {
       dispatch(fetchQueries());
@@ -211,6 +228,7 @@ const MainEditor = () => {
         }
       }));
     }
+    localStorage.setItem('currentPageId', page._id);
   };
 
   const handleDeletePage = (pageIndex) => {
