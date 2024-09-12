@@ -16,11 +16,14 @@ const ChartRenderer = ({ component }) => {
 
   const formatData = (data, dataKeys, nameKey) => {
     if (!data || !Array.isArray(data)) return [];
+    console.log('Data keys formatdata:', dataKeys);
+    console.log('Name key formatdata:', nameKey);
     return data.map(item => {
       const formattedItem = { 
         [nameKey]: format(parseISO(item.updatedTime), 'yyyy-MM-dd'),
-        'accountSnapshots.delegationValue': parseFloat(item.delegationValue) || 0,
-        'accountSnapshots.cumulativeStakePoolOwnerRewards': parseFloat(item.cumulativeStakePoolOwnerRewards) || 0
+        [dataKeys[0]]: parseFloat(item.delegationValue) || 0,
+        // Change this line:
+        [dataKeys[1]]: parseFloat(item.cumulativeStakePoolOwnerRewards) || 0
       };
       return formattedItem;
     }).sort((a, b) => new Date(a[nameKey]) - new Date(b[nameKey]));
