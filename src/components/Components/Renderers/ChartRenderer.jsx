@@ -16,15 +16,23 @@ const ChartRenderer = ({ component }) => {
 
   const formatData = (data, dataKeys, nameKey) => {
     if (!data || !Array.isArray(data)) return [];
-    console.log('Data keys formatdata:', dataKeys);
-    console.log('Name key formatdata:', nameKey);
+    
     return data.map(item => {
-      const formattedItem = { 
-        [nameKey]: format(parseISO(item.updatedTime), 'yyyy-MM-dd'),
-        [dataKeys[0]]: parseFloat(item.delegationValue) || 0,
-        // Change this line:
-        [dataKeys[1]]: parseFloat(item.cumulativeStakePoolOwnerRewards) || 0
+      const formattedItem = {
+        [nameKey]: format(parseISO(item.updatedTime), 'yyyy-MM-dd')
       };
+  
+      dataKeys.forEach(key => {
+        const [objectKey, valueKey] = key.split('.');
+        if (item[objectKey] && item[objectKey][valueKey]) {
+          formattedItem[key] = parseFloat(item[objectKey][valueKey]) || 0;
+        } else if (item[valueKey]) {
+          formattedItem[key] = parseFloat(item[valueKey]) || 0;
+        } else {
+          formattedItem[key] = 0;
+        }
+      });
+  
       return formattedItem;
     }).sort((a, b) => new Date(a[nameKey]) - new Date(b[nameKey]));
   };
