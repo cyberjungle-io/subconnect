@@ -27,7 +27,8 @@ import {
   updateResponsiveProperties,
   loadPageContent,
   setCurrentPage,
-  setDragModeEnabled
+  setDragModeEnabled,
+  updateCanvasSettings
 } from '../../features/editorSlice';
 import { updateProject as updateW3SProject } from '../../w3s/w3sSlice';
 import Toast from '../common/Toast';
@@ -40,6 +41,7 @@ import { showToast } from '../../features/toastSlice';
 import { useParams } from 'react-router-dom';
 import { fetchProject } from '../../w3s/w3sSlice';
 import { fetchQueries } from '../../w3s/w3sSlice';
+import FloatingToolbar from '../Components/Tools/FloatingToolbar';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
@@ -47,6 +49,9 @@ const MainEditor = () => {
   const { data: currentProject, status: projectStatus, error: projectError } = useSelector(state => state.w3s.currentProject);
   const { projectId } = useParams();
   const isLoggedIn = useSelector(state => state.user.isLoggedIn);
+  const canvasSettings = useSelector(state => state.editor.canvasSettings);
+  const [isCanvasSettingsVisible, setIsCanvasSettingsVisible] = useState(false);
+  const [canvasToolbarPosition, setCanvasToolbarPosition] = useState({ x: 100, y: 100 });
 
   useEffect(() => {
     if (projectId) {
@@ -350,6 +355,18 @@ const MainEditor = () => {
     dispatch(setSelectedIds([]));
   }, [dispatch]);
 
+  const handleUpdateCanvasSettings = useCallback((updates) => {
+    dispatch(updateCanvasSettings(updates));
+  }, [dispatch]);
+
+  const handleShowCanvasSettings = useCallback(() => {
+    setIsCanvasSettingsVisible(true);
+  }, []);
+
+  const handleCloseCanvasSettings = useCallback(() => {
+    setIsCanvasSettingsVisible(false);
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (mode === 'edit' && (event.ctrlKey || event.metaKey)) {
@@ -409,6 +426,8 @@ const MainEditor = () => {
                 isSpacingVisible={isSpacingVisible}
                 onDeselectAll={handleDeselectAll}
                 isViewMode={false}
+                canvasSettings={canvasSettings}
+                onUpdateCanvasSettings={handleUpdateCanvasSettings}
               />
             ) : (
               <ViewerMode
@@ -430,6 +449,8 @@ const MainEditor = () => {
               isDragModeEnabled={isDragModeEnabled}
               onToggleSpacingVisibility={handleToggleSpacingVisibility}
               isEditMode={mode === 'edit'}
+              onShowCanvasSettings={handleShowCanvasSettings}
+              isCanvasSettingsVisible={isCanvasSettingsVisible}
             />
           )}
           <ComponentTree
@@ -464,6 +485,18 @@ const MainEditor = () => {
       <ProjectModal
           isOpen={isProjectModalOpen}
           onClose={handleCloseProjectModal}
+        />
+      )}
+      {isCanvasSettingsVisible && (
+        <FloatingToolbar
+          componentId="canvas"
+          componentType="CANVAS"
+          initialPosition={canvasToolbarPosition}
+          onClose={handleCloseCanvasSettings}
+          style={canvasSettings.style}
+          props={canvasSettings}
+          onStyleChange={handleUpdateCanvasSettings}
+          onToolbarInteraction={() => {}}
         />
       )}
       <Toast />

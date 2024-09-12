@@ -15,8 +15,10 @@ const Canvas = ({
   isDragModeEnabled,
   onDeselectAll, // Add this prop
   isViewMode = false, // Add this prop
+  onUpdateCanvasSettings,
 }) => {
   const { backgroundColor = '#ffffff', componentLayout = 'vertical', style = {} } = useSelector(state => state.editor.globalSettings || {});
+  const canvasSettings = useSelector(state => state.editor.canvasSettings);
   const canvasRef = useRef(null);
   const [, drop] = useDrop({
     accept: "COMPONENT",
@@ -107,10 +109,7 @@ const Canvas = ({
   );
 
   const canvasStyle = {
-    backgroundColor,
-    padding: `${style.paddingTop || '0px'} ${style.paddingRight || '0px'} ${style.paddingBottom || '0px'} ${style.paddingLeft || '0px'}`,
-    margin: `${style.marginTop || '0px'} ${style.marginRight || '0px'} ${style.marginBottom || '0px'} ${style.marginLeft || '0px'}`,
-    gap: style.gap || '0px',
+    ...canvasSettings.style,
     display: 'flex',
     flexDirection: componentLayout === 'vertical' ? 'row' : 'column',
     flexWrap: 'nowrap',

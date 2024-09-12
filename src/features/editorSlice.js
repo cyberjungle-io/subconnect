@@ -22,6 +22,14 @@ const initialState = {
   },
   isDragModeEnabled: false,
   isFloatingMenuVisible: false,
+  canvasSettings: {
+    style: {
+      backgroundColor: '#ffffff',
+      padding: '20px',
+      margin: '0px',
+      gap: '20px',
+    },
+  },
 };
 
 const findComponentById = (components, id) => {
@@ -419,6 +427,12 @@ export const editorSlice = createSlice({
       // Reset the entire state to the initial state
       return initialState;
     },
+    updateCanvasSettings: (state, action) => {
+      state.canvasSettings = {
+        ...state.canvasSettings,
+        ...action.payload,
+      };
+    },
   },
 });
 
@@ -462,6 +476,7 @@ export const {
   toggleFloatingMenu,
   updateWhiteboardStrokeColor,
   resetEditorState,
+  updateCanvasSettings,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

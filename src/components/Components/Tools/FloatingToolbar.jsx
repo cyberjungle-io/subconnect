@@ -76,6 +76,11 @@ const iconMap = {
     { icon: FaDatabase, tooltip: 'Query Controls' },
     { icon: FaFont, tooltip: 'Text Controls' },
   ],
+  CANVAS: [
+    { icon: FaArrowsAlt, tooltip: 'Spacing' },
+    { icon: FaPalette, tooltip: 'Background' },
+    // Add any other controls you want for the canvas
+  ],
 };
 
 const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose, style, props, content, onStyleChange, onToolbarInteraction }) => {

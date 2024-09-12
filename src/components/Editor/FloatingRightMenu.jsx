@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTree, FaGlobe, FaEye, FaHandPointer } from 'react-icons/fa';
+import { FaTree, FaGlobe, FaEye, FaHandPointer, FaPaintBrush } from 'react-icons/fa';
 
 // Add this new custom icon component
 const FourSquaresIcon = () => (
@@ -19,6 +19,8 @@ const FloatingRightMenu = ({
   isGlobalSettingsVisible,
   isDragModeEnabled,
   isEditMode, // Add this prop
+  onShowCanvasSettings,
+  isCanvasSettingsVisible,
 }) => {
   const buttonClass = (isActive) => `
     p-2 mb-2 rounded-full
@@ -70,6 +72,14 @@ const FloatingRightMenu = ({
         disabled={!isEditMode}
       >
         <FaEye />
+      </button>
+      <button
+        onClick={isEditMode ? onShowCanvasSettings : undefined}
+        className={buttonClass(isCanvasSettingsVisible)}
+        title="Toggle Canvas Settings"
+        disabled={!isEditMode}
+      >
+        <FaPaintBrush />
       </button>
     </div>
   );
