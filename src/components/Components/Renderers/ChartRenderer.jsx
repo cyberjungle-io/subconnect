@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { executeQuery } from '../../../features/graphQLSlice'; // Make sure to import this
 import {
   LineChart, BarChart, AreaChart, PieChart,
   Line, Bar, Area, Pie, Cell,
@@ -10,9 +11,11 @@ import { format, parseISO } from 'date-fns';
 import numeral from 'numeral';
 
 const ChartRenderer = ({ component }) => {
-  const [key, setKey] = useState(0);
+  const dispatch = useDispatch();
   const [chartData, setChartData] = useState([]);
+  const [key, setKey] = useState(0); // Add this line
   const queryResult = useSelector(state => state.graphQL.queryResult);
+  const queries = useSelector(state => state.w3s?.queries?.list ?? []);
 
   const formatData = (data, dataKeys, nameKey) => {
     if (!data || !Array.isArray(data)) return [];
@@ -48,21 +51,25 @@ const ChartRenderer = ({ component }) => {
   };
 
   useEffect(() => {
-    console.log('Raw queryResult:', queryResult);
-    console.log('Component props:', component.props);
+    const selectedQuery = queries.find(q => q._id === component.props.selectedQueryId);
+    if (selectedQuery && component.props.dataKeys?.length > 0 && component.props.nameKey) {
+      dispatch(executeQuery({
+        endpoint: selectedQuery.endpoint,
+        query: selectedQuery.queryString
+      }));
+    }
+  }, [component.props.selectedQueryId, component.props.dataKeys, component.props.nameKey, dispatch, queries]);
 
+  useEffect(() => {
     if (queryResult && queryResult.data) {
       const dataKey = Object.keys(queryResult.data)[0];
-      console.log('Data key:', dataKey);
       const rawData = queryResult.data[dataKey];
-      console.log('Raw data:', rawData);
       const formattedData = formatData(rawData, component.props.dataKeys, component.props.nameKey);
       setChartData(formattedData);
-      console.log('Updated Formatted Chart Data:', formattedData);
     }
   }, [queryResult, component.props.dataKeys, component.props.nameKey]);
 
-  // Use useMemo to memoize the chart props
+  // Update chartProps to use chartData instead of component.props.data
   const chartProps = useMemo(() => {
     return {
       chartType: component.props.chartType || 'line',
