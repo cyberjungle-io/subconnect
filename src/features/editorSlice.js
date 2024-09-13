@@ -111,7 +111,6 @@ export const editorSlice = createSlice({
       let defaultStyle = {};
       let depth = 0;
 
-      // Add this check
       if (!state.globalSettings) {
         state.globalSettings = defaultGlobalSettings;
       }
@@ -151,13 +150,18 @@ export const editorSlice = createSlice({
         }
       }
 
+      const timestamp = Date.now();
+      const randomString = Math.random().toString(36).substring(2, 15);
+      const uniqueId = `${type}_${timestamp}_${randomString}`;
+
       const newComponent = createComponentWithDepth(type, {
+        id: uniqueId,
         style: {
           ...defaultStyle,
           ...otherProps.style,
         },
         isDraggingDisabled: false,
-        name: `${type} ${uuidv4().substr(0, 4)}`, // Add a default name
+        name: `${type} ${uniqueId.substr(0, 8)}`,
         ...otherProps,
       }, depth);
 
@@ -363,7 +367,18 @@ export const editorSlice = createSlice({
     },
     loadPageContent: (state, action) => {
       const { components, globalSettings } = action.payload;
-      state.components = components;
+      const regenerateIds = (component) => {
+        const timestamp = Date.now();
+        const randomString = Math.random().toString(36).substring(2, 15);
+        const uniqueId = `${component.type}_${timestamp}_${randomString}`;
+        return {
+          ...component,
+          id: uniqueId,
+          name: `${component.type} ${uniqueId.substr(0, 8)}`,
+          children: component.children ? component.children.map(regenerateIds) : undefined,
+        };
+      };
+      state.components = components.map(regenerateIds);
       state.globalSettings = globalSettings;
     },
     setCurrentPage: (state, action) => {
