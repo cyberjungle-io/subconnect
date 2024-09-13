@@ -211,6 +211,30 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
           <option value="left">Left</option>
         </select>
       </div>
+      <div className="mb-2">
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            name="showGrid"
+            checked={props?.showGrid !== false}
+            onChange={handleChange}
+            className="mr-2"
+          />
+          <span className="text-sm font-medium text-gray-700">Show Grid</span>
+        </label>
+      </div>
+      <div className="mb-2">
+        <label className="flex items-center">
+          <input
+            type="checkbox"
+            name="showLegend"
+            checked={props?.showLegend !== false}
+            onChange={handleChange}
+            className="mr-2"
+          />
+          <span className="text-sm font-medium text-gray-700">Show Legend</span>
+        </label>
+      </div>
     </>
   );
 

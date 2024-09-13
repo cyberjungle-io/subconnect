@@ -86,7 +86,7 @@ const ChartRenderer = ({ component }) => {
       lineColors: component.props.lineColors || {},
       lineWidth: component.props.lineWidth || 2,
       dataPointSize: component.props.dataPointSize || 5,
-      showLegend: component.props.showLegend || true,
+      showLegend: component.props.showLegend !== false,
       legendPosition: component.props.legendPosition || 'bottom',
       xAxisLabel: component.props.xAxisLabel || '',
       yAxisLabel: component.props.yAxisLabel || '',
@@ -99,6 +99,7 @@ const ChartRenderer = ({ component }) => {
       showDataPoints: component.props.showDataPoints !== false, // Add this line
       showXAxis: component.props.showXAxis !== false,
       showYAxis: component.props.showYAxis !== false,
+      showGrid: component.props.showGrid !== false, // Add this line
     };
   }, [component.props, chartData]);
 
@@ -166,8 +167,7 @@ const ChartRenderer = ({ component }) => {
       case 'line':
         return (
           <LineChart {...CommonProps}>
-            chartProps.showGrid && <CartesianGrid strokeDasharray="3 3" />,
-            <XAxis {...CommonAxisProps.XAxis} />,
+            {chartProps.showGrid && <CartesianGrid strokeDasharray="3 3" />}
             <XAxis {...CommonAxisProps.XAxis} />
             <YAxis {...CommonAxisProps.YAxis} domain={domain} />
             <Tooltip />
@@ -187,7 +187,7 @@ const ChartRenderer = ({ component }) => {
       case 'bar':
         return (
           <BarChart {...CommonProps}>
-            <CartesianGrid strokeDasharray="3 3" />
+            {chartProps.showGrid && <CartesianGrid strokeDasharray="3 3" />}
             <XAxis {...CommonAxisProps.XAxis} />
             <YAxis {...CommonAxisProps.YAxis} domain={domain} />
             <Tooltip />
@@ -204,7 +204,7 @@ const ChartRenderer = ({ component }) => {
       case 'area':
         return (
           <AreaChart {...CommonProps}>
-            <CartesianGrid strokeDasharray="3 3" />
+            {chartProps.showGrid && <CartesianGrid strokeDasharray="3 3" />}
             <XAxis {...CommonAxisProps.XAxis} />
             <YAxis {...CommonAxisProps.YAxis} domain={domain} />
             <Tooltip />
