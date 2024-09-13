@@ -81,7 +81,7 @@ const ChartRenderer = ({ component }) => {
       titleColor: component.props.titleColor || '#000000',
       titleAlign: component.props.titleAlign || 'center',
       width: component.props.width || '100%',
-      height: component.props.height || 400,
+      height: component.props.height || '100%',
       colors: component.props.colors || ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#00C49F'],
       lineColors: component.props.lineColors || {},
       lineWidth: component.props.lineWidth || 2,
@@ -134,9 +134,9 @@ const ChartRenderer = ({ component }) => {
   const renderChart = () => {
     const margin = {
       top: 20,
-      right: 30,
-      bottom: chartProps.showXAxis ? 50 : 20,
-      left: chartProps.showYAxis ? 50 : 20
+      right: chartProps.showYAxis ? 30 : 10,
+      bottom: chartProps.showXAxis ? 50 : 10,
+      left: chartProps.showYAxis ? 50 : 10
     };
 
     const CommonProps = {
@@ -153,20 +153,21 @@ const ChartRenderer = ({ component }) => {
         tickFormatter: formatXAxis,
         height: 60,
         children: chartProps.xAxisLabel && <Label value={chartProps.xAxisLabel} offset={-10} position="insideBottom" />
-      } : { tick: false, axisLine: false },
+      } : { height: 0, tick: false, axisLine: false },
       YAxis: chartProps.showYAxis ? {
         angle: chartProps.yAxisAngle,
         tickFormatter: formatYAxis,
         domain: domain,
         children: chartProps.yAxisLabel && <Label value={chartProps.yAxisLabel} angle={-90} position="insideLeft" offset={-40} />
-      } : { tick: false, axisLine: false }
+      } : { width: 0, tick: false, axisLine: false }
     };
 
     switch (chartProps.chartType) {
       case 'line':
         return (
           <LineChart {...CommonProps}>
-            <CartesianGrid strokeDasharray="3 3" />
+            chartProps.showGrid && <CartesianGrid strokeDasharray="3 3" />,
+            <XAxis {...CommonAxisProps.XAxis} />,
             <XAxis {...CommonAxisProps.XAxis} />
             <YAxis {...CommonAxisProps.YAxis} domain={domain} />
             <Tooltip />
@@ -258,7 +259,7 @@ const ChartRenderer = ({ component }) => {
           {chartProps.title}
         </h3>
       )}
-      <ResponsiveContainer width={chartProps.width} height={chartProps.height}>
+      <ResponsiveContainer width="100%" height={chartProps.height}>
         {renderChart()}
       </ResponsiveContainer>
     </div>
