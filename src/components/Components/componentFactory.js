@@ -33,9 +33,12 @@ export const createComponent = (type, props = {}) => {
 
   
   if (type === 'CHART') {
-    newComponent.chartConfig = { 
-      ...config.defaultChartConfig, 
-      ...props.chartConfig 
+    newComponent.props = {
+      ...newComponent.props,
+      dataKeys: props.dataKeys || [],
+      nameKey: props.nameKey || 'name',
+      chartType: props.chartType || 'line',
+      // Add any other necessary default props for charts
     };
   }
  

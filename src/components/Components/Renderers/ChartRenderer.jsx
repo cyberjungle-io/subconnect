@@ -18,9 +18,16 @@ const ChartRenderer = ({ component }) => {
     if (!data || !Array.isArray(data)) return [];
     
     return data.map(item => {
-      const formattedItem = {
-        [nameKey]: format(parseISO(item.updatedTime), 'yyyy-MM-dd')
-      };
+      const formattedItem = {};
+      
+      // Check if updatedTime exists and is a valid date string
+      if (item.updatedTime && !isNaN(Date.parse(item.updatedTime))) {
+        formattedItem[nameKey] = format(parseISO(item.updatedTime), 'yyyy-MM-dd');
+      } else {
+        // Use a fallback value or skip this item
+        formattedItem[nameKey] = 'N/A';
+        console.warn('Invalid or missing updatedTime:', item.updatedTime);
+      }
   
       dataKeys.forEach(key => {
         const [objectKey, valueKey] = key.split('.');
@@ -34,7 +41,10 @@ const ChartRenderer = ({ component }) => {
       });
   
       return formattedItem;
-    }).sort((a, b) => new Date(a[nameKey]) - new Date(b[nameKey]));
+    }).sort((a, b) => {
+      if (a[nameKey] === 'N/A' || b[nameKey] === 'N/A') return 0;
+      return new Date(a[nameKey]) - new Date(b[nameKey]);
+    });
   };
 
   useEffect(() => {
