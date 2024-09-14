@@ -203,6 +203,22 @@ const QueryValueControls = ({ props, onPropsChange }) => {
             </select>
           </label>
         </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Decimal Places:
+            <input
+              type="number"
+              name="decimalPlaces"
+              value={props.decimalPlaces || 0}
+              onChange={handleChange}
+              min="0"
+              max="20"
+              className="mt-1 block w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            />
+          </label>
+        </div>
+
       </div>
     </div>
   );
