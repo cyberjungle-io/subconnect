@@ -57,6 +57,75 @@ const QueryValueRenderer = ({ component }) => {
     }
   };
 
+  const formatValue = (value) => {
+    if (value === null || value === undefined) {
+      return "No data available";
+    }
+
+    let formattedValue = value;
+
+    // Convert to number if possible
+    if (!isNaN(value)) {
+      formattedValue = Number(value);
+
+      // Convert to percentage if needed
+      if (component.props.isPercentage) {
+        formattedValue *= 100;
+      }
+
+      // Apply decimal places
+      if (component.props.decimalPlaces !== undefined) {
+        formattedValue = formattedValue.toFixed(component.props.decimalPlaces);
+      }
+
+      // Apply comma separation
+      if (component.props.useCommas) {
+        formattedValue = Number(formattedValue).toLocaleString();
+      }
+
+      // Add percentage sign if needed
+      if (component.props.isPercentage) {
+        formattedValue += '%';
+      }
+    }
+
+    const prefixStyle = {
+      color: component.props.prefixColor || 'inherit',
+      fontSize: `${component.props.prefixSize || 14}px`,
+    };
+
+    const suffixStyle = {
+      color: component.props.suffixColor || 'inherit',
+      fontSize: `${component.props.suffixSize || 14}px`,
+    };
+
+    const suffixPosition = component.props.suffixPosition || 'middle';
+
+    return (
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        {component.props.prefix && <span style={prefixStyle}>{component.props.prefix}</span>}
+        <div style={{ position: 'relative', display: 'inline-block' }}>
+          <span>{formattedValue}</span>
+          {component.props.suffix && (
+            <span 
+              style={{
+                ...suffixStyle,
+                position: 'absolute',
+                left: '100%',
+                marginLeft: '4px',
+                ...(suffixPosition === 'top' && { top: '25%', transform: 'translateY(-100%)' }),
+                ...(suffixPosition === 'middle' && { top: '50%', transform: 'translateY(-50%)' }),
+                ...(suffixPosition === 'bottom' && { bottom: '25%', transform: 'translateY(100%)' }),
+              }}
+            >
+              {component.props.suffix}
+            </span>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const renderContent = () => {
     if (loading) {
       return "Loading...";
@@ -64,10 +133,7 @@ const QueryValueRenderer = ({ component }) => {
     if (error) {
       return `Error: ${error}`;
     }
-    if (value === null || value === undefined) {
-      return "No data available";
-    }
-    return `${value}`;
+    return formatValue(value);
   };
 
   const labelStyle = {

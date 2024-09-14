@@ -104,6 +104,105 @@ const QueryValueControls = ({ props, onPropsChange }) => {
             <span className="text-sm text-gray-600">{JSON.stringify(queryResult)}</span>
           </div>
         )}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Prefix:
+            <input
+              type="text"
+              name="prefix"
+              value={props.prefix || ''}
+              onChange={handleChange}
+              className="mt-1 block w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              placeholder="e.g. $"
+            />
+          </label>
+          <input
+            type="color"
+            name="prefixColor"
+            value={props.prefixColor || '#000000'}
+            onChange={handleChange}
+            className="mt-1 block"
+          />
+          <input
+            type="number"
+            name="prefixSize"
+            value={props.prefixSize || 14}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            placeholder="Font size (px)"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Suffix:
+            <input
+              type="text"
+              name="suffix"
+              value={props.suffix || ''}
+              onChange={handleChange}
+              className="mt-1 block w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              placeholder="e.g. USD"
+            />
+          </label>
+          <input
+            type="color"
+            name="suffixColor"
+            value={props.suffixColor || '#000000'}
+            onChange={handleChange}
+            className="mt-1 block"
+          />
+          <input
+            type="number"
+            name="suffixSize"
+            value={props.suffixSize || 14}
+            onChange={handleChange}
+            className="mt-1 block w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            placeholder="Font size (px)"
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <input
+              type="checkbox"
+              name="isPercentage"
+              checked={props.isPercentage || false}
+              onChange={(e) => handleChange({ target: { name: 'isPercentage', value: e.target.checked } })}
+              className="mr-2"
+            />
+            Display as Percentage
+          </label>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            <input
+              type="checkbox"
+              name="useCommas"
+              checked={props.useCommas || false}
+              onChange={(e) => handleChange({ target: { name: 'useCommas', value: e.target.checked } })}
+              className="mr-2"
+            />
+            Use Comma Separation
+          </label>
+        </div>
+
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Suffix Position:
+            <select
+              name="suffixPosition"
+              value={props.suffixPosition || 'middle'}
+              onChange={handleChange}
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            >
+              <option value="top">Top</option>
+              <option value="middle">Middle</option>
+              <option value="bottom">Bottom</option>
+            </select>
+          </label>
+        </div>
       </div>
     </div>
   );
