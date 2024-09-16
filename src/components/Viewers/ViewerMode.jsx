@@ -7,13 +7,11 @@ import { defaultGlobalSettings } from '../../utils/defaultGlobalSettings';
 
 const ViewerMode = ({ components }) => {
   const globalSettings = useSelector(state => state.editor.globalSettings);
-  const { backgroundColor, componentLayout, style, chartStyle } = { ...defaultGlobalSettings, ...globalSettings };
+  const canvasSettings = useSelector(state => state.editor.canvasSettings);
+  const { backgroundColor = '#ffffff', componentLayout = 'vertical', style = {} } = { ...defaultGlobalSettings, ...globalSettings };
 
   const canvasStyle = {
-    backgroundColor,
-    padding: `${style.paddingTop || '0px'} ${style.paddingRight || '0px'} ${style.paddingBottom || '0px'} ${style.paddingLeft || '0px'}`,
-    margin: `${style.marginTop || '0px'} ${style.marginRight || '0px'} ${style.marginBottom || '0px'} ${style.marginLeft || '0px'}`,
-    gap: style.gap || '0px',
+    ...canvasSettings.style,
     display: 'flex',
     flexDirection: componentLayout === 'vertical' ? 'row' : 'column',
     flexWrap: 'nowrap',
@@ -23,17 +21,20 @@ const ViewerMode = ({ components }) => {
     width: '100%',
     height: '100%',
     position: 'relative',
+    padding: '20px', // Uniform padding on all sides
+    gap: '20px', // Gap between components
   };
 
   return (
-    <div className="viewer-mode" style={canvasStyle}>
+    <div className="viewer-mode canvas-area w-full h-full bg-gray-100 overflow-auto" style={canvasStyle}>
       {components.map(component => (
         <ComponentRenderer
           key={component.id}
           component={component}
           isViewMode={true}
           globalComponentLayout={componentLayout}
-          globalChartStyle={chartStyle}
+          globalSettings={globalSettings}
+          isTopLevel={true}
         />
       ))}
     </div>
