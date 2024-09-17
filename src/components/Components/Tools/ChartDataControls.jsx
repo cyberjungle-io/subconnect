@@ -20,7 +20,7 @@ const ChartDataControls = ({ props, onPropsChange }) => {
 
   const handleSeriesNameChange = (dataKey, newName) => {
     const updatedSeriesNames = { ...(props.seriesNames || {}), [dataKey]: newName };
-    onPropsChange({ seriesNames: updatedSeriesNames });
+    onPropsChange({ ...props, seriesNames: updatedSeriesNames });
   };
 
   useEffect(() => {
@@ -137,6 +137,7 @@ const ChartDataControls = ({ props, onPropsChange }) => {
           ))}
         </div>
       )}
+ 
     </div>
   );
 };

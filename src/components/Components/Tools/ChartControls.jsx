@@ -7,7 +7,6 @@ import { executeQuery } from '../../../features/graphQLSlice';
 const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const [expandedSections, setExpandedSections] = useState({
     general: true,
-    dataSource: false,
     styling: false,
     advanced: false,
   });
@@ -238,33 +237,9 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
     </>
   );
 
-  const handleSeriesNameChange = (dataKey, newName) => {
-    const updatedSeriesNames = { ...(props.seriesNames || {}), [dataKey]: newName };
-    memoizedOnPropsChange({ ...props, seriesNames: updatedSeriesNames });
-  };
-
-  const dataSourceContent = (
-    <>
-      {props.dataKeys && props.dataKeys.map((dataKey) => (
-        <div key={dataKey} className="mb-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Series Name for {dataKey}
-          </label>
-          <input
-            type="text"
-            value={props.seriesNames?.[dataKey] || dataKey}
-            onChange={(e) => handleSeriesNameChange(dataKey, e.target.value)}
-            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-      ))}
-    </>
-  );
-
   return (
     <div className="chart-controls">
       {renderSection("General", "general", generalContent)}
-      {renderSection("Data Source", "dataSource", dataSourceContent)}
       {renderSection("Styling", "styling", stylingContent)}
       {renderSection("Advanced", "advanced", advancedContent)}
     </div>
