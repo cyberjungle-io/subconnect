@@ -18,6 +18,11 @@ const ChartDataControls = ({ props, onPropsChange }) => {
     onPropsChange({ [key]: value });
   };
 
+  const handleSeriesNameChange = (dataKey, newName) => {
+    const updatedSeriesNames = { ...(props.seriesNames || {}), [dataKey]: newName };
+    onPropsChange({ seriesNames: updatedSeriesNames });
+  };
+
   useEffect(() => {
     if (props?.selectedQueryId) {
       const query = queries.find(q => q._id === props.selectedQueryId);
@@ -115,6 +120,22 @@ const ChartDataControls = ({ props, onPropsChange }) => {
             </select>
           </div>
         </>
+      )}
+      {selectedQuery && props.dataKeys && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Series Names</label>
+          {props.dataKeys.map((dataKey) => (
+            <div key={dataKey} className="mt-2">
+              <label className="block text-xs text-gray-500">{dataKey}</label>
+              <input
+                type="text"
+                value={props.seriesNames?.[dataKey] || dataKey}
+                onChange={(e) => handleSeriesNameChange(dataKey, e.target.value)}
+                className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );

@@ -100,6 +100,7 @@ const ChartRenderer = ({ component }) => {
       showXAxis: component.props.showXAxis !== false,
       showYAxis: component.props.showYAxis !== false,
       showGrid: component.props.showGrid !== false, // Add this line
+      seriesNames: component.props.seriesNames || {},
     };
   }, [component.props, chartData]);
 
@@ -177,6 +178,7 @@ const ChartRenderer = ({ component }) => {
                 key={key}
                 type="monotone"
                 dataKey={key}
+                name={chartProps.seriesNames[key] || key}
                 stroke={chartProps.lineColors[key] || chartProps.colors[index % chartProps.colors.length]}
                 strokeWidth={chartProps.lineWidth}
                 dot={chartProps.showDataPoints ? { r: chartProps.dataPointSize } : false}
@@ -196,6 +198,7 @@ const ChartRenderer = ({ component }) => {
               <Bar
                 key={key}
                 dataKey={key}
+                name={chartProps.seriesNames[key] || key}
                 fill={chartProps.colors[index % chartProps.colors.length]}
               />
             ))}
@@ -214,6 +217,7 @@ const ChartRenderer = ({ component }) => {
                 key={key}
                 type="monotone"
                 dataKey={key}
+                name={chartProps.seriesNames[key] || key}
                 fill={chartProps.colors[index % chartProps.colors.length]}
                 stroke={chartProps.colors[index % chartProps.colors.length]}
               />
@@ -221,12 +225,15 @@ const ChartRenderer = ({ component }) => {
           </AreaChart>
         );
       case 'pie':
+        // For pie charts, we'll use the first data key and its series name
+        const pieDataKey = chartProps.dataKeys[0];
         return (
           <PieChart>
             <Pie
               data={chartProps.data}
-              dataKey={chartProps.dataKeys[0]}
+              dataKey={pieDataKey}
               nameKey={chartProps.nameKey}
+              name={chartProps.seriesNames[pieDataKey] || pieDataKey}
               cx="50%"
               cy="50%"
               outerRadius={80}
