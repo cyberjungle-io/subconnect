@@ -3,6 +3,21 @@ import { useDrop } from "react-dnd";
 import { useSelector } from 'react-redux';
 import ComponentRenderer from "../Components/Renderers/ComponentRenderer";
 
+export const getCanvasStyle = (canvasSettings, componentLayout) => ({
+  ...canvasSettings.style,
+  display: 'flex',
+  flexDirection: componentLayout === 'vertical' ? 'row' : 'column',
+  flexWrap: 'nowrap',
+  alignItems: 'stretch',
+  alignContent: 'stretch',
+  minHeight: "500px",
+  width: '100%',
+  height: '100%',
+  position: 'relative',
+  padding: '20px', // Uniform padding on all sides
+  gap: '20px', // Gap between components
+});
+
 const Canvas = ({
   components,
   selectedIds,
@@ -108,21 +123,7 @@ const Canvas = ({
     [onDeselectAll]
   );
 
-  const canvasStyle = {
-    ...canvasSettings.style,
-    display: 'flex',
-    flexDirection: componentLayout === 'vertical' ? 'row' : 'column',
-    flexWrap: 'nowrap',
-    alignItems: 'stretch',
-    alignContent: 'stretch',
-    minHeight: "500px",
-    width: '100%',
-    height: '100%',
-    position: 'relative',
-    padding: '20px', // Uniform padding on all sides
-    gap: '20px', // Gap between components
-  };
-
+  const canvasStyle = getCanvasStyle(canvasSettings, componentLayout);
 
   return (
     <div
