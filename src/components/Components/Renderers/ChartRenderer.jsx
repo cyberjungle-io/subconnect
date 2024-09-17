@@ -199,7 +199,7 @@ const ChartRenderer = ({ component }) => {
                 key={key}
                 dataKey={key}
                 name={chartProps.seriesNames[key] || key}
-                fill={chartProps.colors[index % chartProps.colors.length]}
+                fill={chartProps.lineColors[key] || chartProps.colors[index % chartProps.colors.length]}
               />
             ))}
           </BarChart>
@@ -218,8 +218,8 @@ const ChartRenderer = ({ component }) => {
                 type="monotone"
                 dataKey={key}
                 name={chartProps.seriesNames[key] || key}
-                fill={chartProps.colors[index % chartProps.colors.length]}
-                stroke={chartProps.colors[index % chartProps.colors.length]}
+                fill={chartProps.lineColors[key] || chartProps.colors[index % chartProps.colors.length]}
+                stroke={chartProps.lineColors[key] || chartProps.colors[index % chartProps.colors.length]}
               />
             ))}
           </AreaChart>

@@ -234,8 +234,27 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
           <span className="text-sm font-medium text-gray-700">Show Legend</span>
         </label>
       </div>
+      {props.dataKeys && props.dataKeys.length > 0 && (
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Series Colors</label>
+          {props.dataKeys.map((dataKey) => (
+            <div key={dataKey} className="flex items-center mb-2">
+              <span className="text-sm text-gray-600 mr-2">{props.seriesNames?.[dataKey] || dataKey}:</span>
+              <ColorPicker
+                color={props.lineColors?.[dataKey] || props.colors?.[props.dataKeys.indexOf(dataKey) % props.colors.length]}
+                onChange={(color) => handleSeriesColorChange(dataKey, color)}
+              />
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
+
+  const handleSeriesColorChange = (dataKey, color) => {
+    const updatedLineColors = { ...(props.lineColors || {}), [dataKey]: color };
+    memoizedOnPropsChange({ ...props, lineColors: updatedLineColors });
+  };
 
   return (
     <div className="chart-controls">
