@@ -3,6 +3,7 @@ import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import ColorPicker from '../../common/ColorPicker';
 import { useSelector, useDispatch } from 'react-redux';
 import { executeQuery } from '../../../features/graphQLSlice';
+import { format } from 'date-fns';
 
 const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const [expandedSections, setExpandedSections] = useState({
@@ -248,6 +249,61 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
           ))}
         </div>
       )}
+      
+      <div className="mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1">X Axis Data Type</label>
+        <select
+          name="xAxisDataType"
+          value={props?.xAxisDataType || 'category'}
+          onChange={handleChange}
+          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          <option value="category">Category</option>
+          <option value="date">Date</option>
+          <option value="number">Number</option>
+        </select>
+      </div>
+
+      {props?.xAxisDataType === 'date' && (
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Date Format</label>
+          <input
+            type="text"
+            name="dateFormat"
+            value={props?.dateFormat || 'MM/dd/yyyy'}
+            onChange={handleChange}
+            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <small className="text-gray-500">e.g., MM/dd/yyyy, yyyy-MM-dd, dd MMM yyyy</small>
+        </div>
+      )}
+
+      {(props?.xAxisDataType === 'number' || props?.yAxisDataType === 'number') && (
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Number Format</label>
+          <input
+            type="text"
+            name="numberFormat"
+            value={props?.numberFormat || '0,0.[00]'}
+            onChange={handleChange}
+            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <small className="text-gray-500">e.g., 0,0.[00], $0,0.00, 0%</small>
+        </div>
+      )}
+
+      <div className="mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-1">Y Axis Data Type</label>
+        <select
+          name="yAxisDataType"
+          value={props?.yAxisDataType || 'number'}
+          onChange={handleChange}
+          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          <option value="number">Number</option>
+          <option value="category">Category</option>
+        </select>
+      </div>
     </>
   );
 

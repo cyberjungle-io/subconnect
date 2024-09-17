@@ -110,17 +110,17 @@ const ChartRenderer = ({ component }) => {
 
   const formatXAxis = (tickItem) => {
     if (chartProps.xAxisDataType === 'date') {
-      return format(parseISO(tickItem), chartProps.dateFormat);
+      return format(parseISO(tickItem), chartProps.dateFormat || 'MM/dd/yyyy');
     }
     if (chartProps.xAxisDataType === 'number') {
-      return numeral(tickItem).format(chartProps.numberFormat);
+      return numeral(tickItem).format(chartProps.numberFormat || '0,0.[00]');
     }
     return tickItem;
   };
 
   const formatYAxis = (tickItem) => {
     if (chartProps.yAxisDataType === 'number') {
-      return numeral(tickItem).format(chartProps.numberFormat);
+      return numeral(tickItem).format(chartProps.numberFormat || '0,0.[00]');
     }
     return tickItem;
   };
