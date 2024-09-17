@@ -6,6 +6,7 @@ import { w3sReducer } from '../w3s';
 import userReducer from '../features/userSlice';
 import toastReducer from '../features/toastSlice';
 import graphQLReducer from '../features/graphQLSlice';
+import savedComponentsReducer from '../features/savedComponentsSlice';
 
 const rootReducer = combineReducers({
   editor: editorReducer,
@@ -13,6 +14,7 @@ const rootReducer = combineReducers({
   user: userReducer,
   toast: toastReducer,
   graphQL: graphQLReducer,
+  savedComponents: savedComponentsReducer, // Add this line
 });
 
 const persistConfig = {

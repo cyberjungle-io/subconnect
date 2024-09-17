@@ -42,6 +42,7 @@ import { useParams } from 'react-router-dom';
 import { fetchProject } from '../../w3s/w3sSlice';
 import { fetchQueries } from '../../w3s/w3sSlice';
 import FloatingToolbar from '../Components/Tools/FloatingToolbar';
+import { v4 as uuidv4 } from 'uuid';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
@@ -130,17 +131,28 @@ const MainEditor = () => {
     setIsDataModalOpen(false);
   };
 
-  const handleAddComponent = (componentType, parentId = null, position = null) => {
-    const newComponentData = {
-      type: componentType, 
-      style: { 
-        width: position ? position.width : 350, 
-        height: position ? position.height : 300,
-        left: position ? position.x : 0,
-        top: position ? position.y : 0,
-      },
-      parentId
-    };
+  const handleAddComponent = (componentData, parentId = null, position = null) => {
+    let newComponentData;
+    if (typeof componentData === 'string') {
+      // It's a regular component type
+      newComponentData = {
+        type: componentData,
+        style: {
+          width: position ? position.width : 350,
+          height: position ? position.height : 300,
+          left: position ? position.x : 0,
+          top: position ? position.y : 0,
+        },
+        parentId,
+      };
+    } else {
+      // It's a saved component
+      newComponentData = {
+        ...componentData,
+        id: uuidv4(), // Generate a new ID for the component
+        parentId,
+      };
+    }
 
     dispatch(addComponent(newComponentData));
   };

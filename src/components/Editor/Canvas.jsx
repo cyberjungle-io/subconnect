@@ -2,6 +2,7 @@ import React, { useRef, useCallback, useState } from "react";
 import { useDrop } from "react-dnd";
 import { useSelector } from 'react-redux';
 import ComponentRenderer from "../Components/Renderers/ComponentRenderer";
+import { v4 as uuidv4 } from 'uuid'; // Import uuidv4 for generating new IDs
 
 export const getCanvasStyle = (canvasSettings, componentLayout) => ({
   ...canvasSettings.style,
@@ -36,7 +37,7 @@ const Canvas = ({
   const canvasSettings = useSelector(state => state.editor.canvasSettings);
   const canvasRef = useRef(null);
   const [, drop] = useDrop({
-    accept: "COMPONENT",
+    accept: ["COMPONENT", "SAVED_COMPONENT"],
     drop: (item, monitor) => {
       if (monitor.didDrop()) return;
 
@@ -77,10 +78,25 @@ const Canvas = ({
                  (componentLayout === 'horizontal' && dropPosition.x < compRect.right);
         });
 
-        if (item.id && isDragModeEnabled) {
-          onMoveComponent(item.id, null, insertIndex);
+        if (item.type === "SAVED_COMPONENT") {
+          // Handle saved component drop
+          const newComponentData = {
+            ...item.savedComponent,
+            id: uuidv4(), // Generate a new ID for the component
+            style: {
+              ...item.savedComponent.style,
+              left: dropPosition.x,
+              top: dropPosition.y,
+            },
+          };
+          onAddComponent(newComponentData, null, insertIndex);
         } else {
-          onAddComponent(item.type, null, insertIndex);
+          // Existing logic for regular components
+          if (item.id && isDragModeEnabled) {
+            onMoveComponent(item.id, null, insertIndex);
+          } else {
+            onAddComponent(item.type, null, insertIndex);
+          }
         }
       }
     },

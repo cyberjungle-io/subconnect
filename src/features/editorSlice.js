@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { v4 as uuidv4 } from "uuid";
 import {
   alignComponentsUtil,
@@ -7,6 +7,7 @@ import {
 import { componentConfig } from "../components/Components/componentConfig";
 import { createComponent, updateComponent as updateComponentUtil } from "../components/Components/componentFactory";
 import { defaultGlobalSettings } from '../utils/defaultGlobalSettings';
+import { saveComponent } from './savedComponentsSlice';
 
 const initialState = {
   components: [],
@@ -102,13 +103,27 @@ const createComponentWithDepth = (type, props, depth = 0) => {
   });
 };
 
+// Create the thunk
+export const saveComponentThunk = createAsyncThunk(
+  'editor/saveComponent',
+  async (component, { dispatch, getState }) => {
+    const savedComponent = {
+      ...component,
+      id: `saved_${component.id}`,
+      name: `Saved ${component.name || component.type}`,
+    };
+    dispatch(saveComponent(savedComponent));
+    return savedComponent;
+  }
+);
+
 export const editorSlice = createSlice({
   name: "editor",
   initialState,
   reducers: {
     addComponent: (state, action) => {
-      const { type, parentId, ...otherProps } = action.payload;
-      let defaultStyle = {};
+      const { type, parentId, savedComponent, position, ...otherProps } = action.payload;
+      let newComponent;
       let depth = 0;
 
       if (!state.globalSettings) {
@@ -124,50 +139,71 @@ export const editorSlice = createSlice({
         }
       }
 
-      if (!parentId) {
-        if (type === "FLEX_CONTAINER") {
-          if (componentLayout === "horizontal") {
-            defaultStyle = {
-              width: '100%',
-              height: '200px',
-            };
-          } else {
-            defaultStyle = {
-              width: '200px',
-              height: '100%',
-            };
-          }
-        } else if (componentLayout === "vertical") {
-          defaultStyle = {
-            width: '200px',
-            height: 'auto',
-          };
-        } else {
-          defaultStyle = {
-            width: '100%',
-            height: '200px',
-          };
-        }
-      }
-
       const timestamp = Date.now();
       const randomString = Math.random().toString(36).substring(2, 15);
       const uniqueId = `${type}_${timestamp}_${randomString}`;
 
-      const newComponent = createComponentWithDepth(type, {
-        id: uniqueId,
-        style: {
-          ...defaultStyle,
-          ...otherProps.style,
-        },
-        isDraggingDisabled: false,
-        name: `${type} ${uniqueId.substr(0, 8)}`,
-        ...otherProps,
-      }, depth);
+      if (type === "SAVED_COMPONENT" && savedComponent) {
+        // Handle saved component
+        newComponent = {
+          ...savedComponent,
+          id: uniqueId,
+          name: `Copy of ${savedComponent.name}`,
+          depth,
+          style: {
+            ...savedComponent.style,
+            left: position ? position.x : (savedComponent.style.left || 0),
+            top: position ? position.y : (savedComponent.style.top || 0),
+          },
+        };
+      } else {
+        // Handle regular component
+        let defaultStyle = {};
+
+        if (!parentId) {
+          if (type === "FLEX_CONTAINER") {
+            if (componentLayout === "horizontal") {
+              defaultStyle = {
+                width: '100%',
+                height: '200px',
+              };
+            } else {
+              defaultStyle = {
+                width: '200px',
+                height: '100%',
+              };
+            }
+          } else if (componentLayout === "vertical") {
+            defaultStyle = {
+              width: '200px',
+              height: 'auto',
+            };
+          } else {
+            defaultStyle = {
+              width: '100%',
+              height: '200px',
+            };
+          }
+        }
+
+        newComponent = createComponentWithDepth(type, {
+          id: uniqueId,
+          style: {
+            ...defaultStyle,
+            ...otherProps.style,
+            left: position ? position.x : 0,
+            top: position ? position.y : 0,
+          },
+          isDraggingDisabled: false,
+          name: `${type} ${uniqueId.substr(0, 8)}`,
+          ...otherProps,
+        }, depth);
+      }
 
       if (parentId) {
         const parent = findComponentById(state.components, parentId);
         if (parent) {
+          if (!parent.children) parent.children = [];
           parent.children.push(newComponent);
         }
       } else {
@@ -448,6 +484,12 @@ export const editorSlice = createSlice({
         ...action.payload,
       };
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(saveComponentThunk.fulfilled, (state, action) => {
+      // You can add any additional state updates here if needed
+      console.log('Component saved:', action.payload);
+    });
   },
 });
 

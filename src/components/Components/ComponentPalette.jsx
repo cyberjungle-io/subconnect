@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
 import { FaSquare, FaFont, FaImage, FaTable, FaChartBar, FaTimes } from 'react-icons/fa';
 import { componentTypes, componentConfig } from './componentConfig';
+import { useSelector } from 'react-redux';
 
-const DraggableComponent = ({ type, icon: Icon, label }) => {
+const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
   const [{ isDragging }, drag] = useDrag({
     type: 'COMPONENT',
-    item: { type },
+    item: { type, savedComponent }, // Include savedComponent in the item
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -28,6 +29,7 @@ const DraggableComponent = ({ type, icon: Icon, label }) => {
 const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChange, onAddComponent }) => {
   const [position, setPosition] = useState(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
+  const savedComponents = useSelector(state => state.savedComponents);
 
   useEffect(() => {
     if (!isDragging) {
@@ -91,6 +93,15 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
             />
           );
         })}
+        {savedComponents.map((component) => (
+          <DraggableComponent
+            key={component.id}
+            type="SAVED_COMPONENT"
+            icon={componentConfig[component.type]?.icon}
+            label={component.name}
+            savedComponent={component}
+          />
+        ))}
       </div>
       <div
         className="absolute top-0 left-0 right-0 h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
