@@ -101,6 +101,10 @@ const ChartRenderer = ({ component }) => {
       showYAxis: component.props.showYAxis !== false,
       showGrid: component.props.showGrid !== false, // Add this line
       seriesNames: component.props.seriesNames || {},
+      tooltipBackgroundColor: component.props.tooltipBackgroundColor || '#ffffff',
+      tooltipBorderColor: component.props.tooltipBorderColor || '#cccccc',
+      tooltipTextColor: component.props.tooltipTextColor || '#000000',
+      tooltipValueFormat: component.props.tooltipValueFormat || '0,0.[00]',
     };
   }, [component.props, chartData]);
 
@@ -131,6 +135,40 @@ const ChartRenderer = ({ component }) => {
     const maxValue = Math.max(...allValues);
     const padding = (maxValue - minValue) * 0.1;
     return [minValue - padding, maxValue + padding];
+  };
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload || !payload.length) {
+      return null;
+    }
+
+    const tooltipStyle = {
+      backgroundColor: chartProps.tooltipBackgroundColor,
+      border: `1px solid ${chartProps.tooltipBorderColor}`,
+      padding: '10px',
+      borderRadius: '4px',
+    };
+
+    const labelStyle = {
+      marginBottom: '5px',
+      fontWeight: 'bold',
+      color: chartProps.tooltipTextColor,
+    };
+
+    const valueStyle = {
+      color: chartProps.tooltipTextColor,
+    };
+
+    return (
+      <div style={tooltipStyle}>
+        <p style={labelStyle}>{`${label}`}</p>
+        {payload.map((entry, index) => (
+          <p key={`item-${index}`} style={valueStyle}>
+            {`${entry.name}: ${numeral(entry.value).format(chartProps.tooltipValueFormat)}`}
+          </p>
+        ))}
+      </div>
+    );
   };
 
   const renderChart = () => {
@@ -164,6 +202,10 @@ const ChartRenderer = ({ component }) => {
       } : { width: 0, tick: false, axisLine: false }
     };
 
+    const CommonTooltipProps = {
+      content: <CustomTooltip />,
+    };
+
     switch (chartProps.chartType) {
       case 'line':
         return (
@@ -171,7 +213,7 @@ const ChartRenderer = ({ component }) => {
             {chartProps.showGrid && <CartesianGrid strokeDasharray="3 3" />}
             <XAxis {...CommonAxisProps.XAxis} />
             <YAxis {...CommonAxisProps.YAxis} domain={domain} />
-            <Tooltip />
+            <Tooltip {...CommonTooltipProps} />
             {chartProps.showLegend && <Legend verticalAlign={chartProps.legendPosition} />}
             {chartProps.dataKeys.map((key, index) => (
               <Line
@@ -192,7 +234,7 @@ const ChartRenderer = ({ component }) => {
             {chartProps.showGrid && <CartesianGrid strokeDasharray="3 3" />}
             <XAxis {...CommonAxisProps.XAxis} />
             <YAxis {...CommonAxisProps.YAxis} domain={domain} />
-            <Tooltip />
+            <Tooltip {...CommonTooltipProps} />
             {chartProps.showLegend && <Legend verticalAlign={chartProps.legendPosition} />}
             {chartProps.dataKeys.map((key, index) => (
               <Bar
@@ -210,7 +252,7 @@ const ChartRenderer = ({ component }) => {
             {chartProps.showGrid && <CartesianGrid strokeDasharray="3 3" />}
             <XAxis {...CommonAxisProps.XAxis} />
             <YAxis {...CommonAxisProps.YAxis} domain={domain} />
-            <Tooltip />
+            <Tooltip {...CommonTooltipProps} />
             {chartProps.showLegend && <Legend verticalAlign={chartProps.legendPosition} />}
             {chartProps.dataKeys.map((key, index) => (
               <Area
@@ -243,7 +285,7 @@ const ChartRenderer = ({ component }) => {
                 <Cell key={`cell-${index}`} fill={chartProps.colors[index % chartProps.colors.length]} />
               ))}
             </Pie>
-            <Tooltip />
+            <Tooltip {...CommonTooltipProps} />
             {chartProps.showLegend && <Legend verticalAlign={chartProps.legendPosition} />}
           </PieChart>
         );

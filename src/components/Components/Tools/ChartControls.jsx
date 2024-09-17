@@ -304,6 +304,42 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
           <option value="category">Category</option>
         </select>
       </div>
+
+      <div className="mb-4">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Tooltip Customization</h4>
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tooltip Background Color</label>
+          <ColorPicker
+            color={props?.tooltipBackgroundColor || '#ffffff'}
+            onChange={(color) => handleChange({ target: { name: 'tooltipBackgroundColor', value: color } })}
+          />
+        </div>
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tooltip Border Color</label>
+          <ColorPicker
+            color={props?.tooltipBorderColor || '#cccccc'}
+            onChange={(color) => handleChange({ target: { name: 'tooltipBorderColor', value: color } })}
+          />
+        </div>
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tooltip Text Color</label>
+          <ColorPicker
+            color={props?.tooltipTextColor || '#000000'}
+            onChange={(color) => handleChange({ target: { name: 'tooltipTextColor', value: color } })}
+          />
+        </div>
+        <div className="mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Tooltip Value Format</label>
+          <input
+            type="text"
+            name="tooltipValueFormat"
+            value={props?.tooltipValueFormat || '0,0.[00]'}
+            onChange={handleChange}
+            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <small className="text-gray-500">e.g., 0,0.[00], $0,0.00, 0%</small>
+        </div>
+      </div>
     </>
   );
 
