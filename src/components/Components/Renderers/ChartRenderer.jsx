@@ -143,8 +143,8 @@ const ChartRenderer = ({ component }) => {
     }
 
     const tooltipStyle = {
-      backgroundColor: chartProps.tooltipBackgroundColor,
-      border: `1px solid ${chartProps.tooltipBorderColor}`,
+      backgroundColor: component.props.tooltipBackgroundColor || '#ffffff',
+      border: `1px solid ${component.props.tooltipBorderColor || '#cccccc'}`,
       padding: '10px',
       borderRadius: '4px',
     };
@@ -152,21 +152,22 @@ const ChartRenderer = ({ component }) => {
     const labelStyle = {
       marginBottom: '5px',
       fontWeight: 'bold',
-      color: chartProps.tooltipTextColor,
-    };
-
-    const valueStyle = {
-      color: chartProps.tooltipTextColor,
+      color: component.props.tooltipTextColor || '#000000',
     };
 
     return (
       <div style={tooltipStyle}>
         <p style={labelStyle}>{`${label}`}</p>
-        {payload.map((entry, index) => (
-          <p key={`item-${index}`} style={valueStyle}>
-            {`${entry.name}: ${numeral(entry.value).format(chartProps.tooltipValueFormat)}`}
-          </p>
-        ))}
+        {payload.map((entry, index) => {
+          const seriesColor = component.props.lineColors?.[entry.dataKey] || 
+                              component.props.colors?.[index % component.props.colors.length] ||
+                              entry.color;
+          return (
+            <p key={`item-${index}`} style={{ color: seriesColor }}>
+              {`${entry.name}: ${numeral(entry.value).format(component.props.tooltipValueFormat || '0,0.[00]')}`}
+            </p>
+          );
+        })}
       </div>
     );
   };
