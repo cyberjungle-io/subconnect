@@ -131,25 +131,25 @@ const MainEditor = () => {
     setIsDataModalOpen(false);
   };
 
-  const handleAddComponent = (componentData, parentId = null, position = null) => {
+  const handleAddComponent = (componentType, parentId = null, position = null, savedComponent = null) => {
     let newComponentData;
-    if (typeof componentData === 'string') {
+    if (savedComponent) {
+      // It's a saved component
+      newComponentData = {
+        ...savedComponent,
+        id: uuidv4(), // Generate a new ID for the component
+        parentId,
+      };
+    } else {
       // It's a regular component type
       newComponentData = {
-        type: componentData,
+        type: componentType,
         style: {
           width: position ? position.width : 350,
           height: position ? position.height : 300,
           left: position ? position.x : 0,
           top: position ? position.y : 0,
         },
-        parentId,
-      };
-    } else {
-      // It's a saved component
-      newComponentData = {
-        ...componentData,
-        id: uuidv4(), // Generate a new ID for the component
         parentId,
       };
     }

@@ -68,7 +68,7 @@ const Canvas = ({
         if (item.id && isDragModeEnabled) {
           onMoveComponent(item.id, flexContainerAtPosition.id);
         } else {
-          onAddComponent(item.type, flexContainerAtPosition.id);
+          onAddComponent(item.type, flexContainerAtPosition.id, null, item.savedComponent);
         }
       } else {
         // If not dropping into a FLEX_CONTAINER, add to canvas
@@ -78,25 +78,10 @@ const Canvas = ({
                  (componentLayout === 'horizontal' && dropPosition.x < compRect.right);
         });
 
-        if (item.type === "SAVED_COMPONENT") {
-          // Handle saved component drop
-          const newComponentData = {
-            ...item.savedComponent,
-            id: uuidv4(), // Generate a new ID for the component
-            style: {
-              ...item.savedComponent.style,
-              left: dropPosition.x,
-              top: dropPosition.y,
-            },
-          };
-          onAddComponent(newComponentData, null, insertIndex);
+        if (item.id && isDragModeEnabled) {
+          onMoveComponent(item.id, null, insertIndex);
         } else {
-          // Existing logic for regular components
-          if (item.id && isDragModeEnabled) {
-            onMoveComponent(item.id, null, insertIndex);
-          } else {
-            onAddComponent(item.type, null, insertIndex);
-          }
+          onAddComponent(item.type, null, insertIndex, item.savedComponent);
         }
       }
     },

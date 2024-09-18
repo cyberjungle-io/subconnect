@@ -142,7 +142,8 @@ export const editorSlice = createSlice({
       const timestamp = Date.now();
       const randomString = Math.random().toString(36).substring(2, 15);
       const uniqueId = `${timestamp}_${randomString}`;
-      if (type === "SAVED_COMPONENT" && savedComponent) {
+
+      if (savedComponent) {
         // Handle saved component
         newComponent = {
           ...savedComponent,
