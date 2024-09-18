@@ -7,11 +7,14 @@ import { useSelector } from 'react-redux';
 const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
   const [{ isDragging }, drag] = useDrag({
     type: 'COMPONENT',
-    item: { type, savedComponent }, // Include savedComponent in the item
+    item: { type, savedComponent },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
   });
+
+  // Remove 'Saved ' prefix if present
+  const displayLabel = label.startsWith('Saved ') ? label.slice(6) : label;
 
   return (
     <div
@@ -21,7 +24,11 @@ const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
       } w-full aspect-square transition-all duration-200`}
     >
       <Icon className="text-2xl mb-1 text-gray-600" />
-      <span className="text-xs font-medium text-center truncate w-full">{label}</span>
+      <div className="w-full h-8 overflow-hidden">
+        <p className="text-xs font-medium text-center leading-4 overflow-hidden overflow-ellipsis">
+          {displayLabel.length > 30 ? displayLabel.slice(0, 27) + '...' : displayLabel}
+        </p>
+      </div>
     </div>
   );
 };

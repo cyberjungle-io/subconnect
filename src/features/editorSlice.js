@@ -110,7 +110,7 @@ export const saveComponentThunk = createAsyncThunk(
     const savedComponent = {
       ...component,
       id: `saved_${component.id}`,
-      name: `Saved ${component.name || component.type}`,
+      name: component.name || component.type,
     };
     dispatch(saveComponent(savedComponent));
     return savedComponent;
@@ -141,8 +141,7 @@ export const editorSlice = createSlice({
 
       const timestamp = Date.now();
       const randomString = Math.random().toString(36).substring(2, 15);
-      const uniqueId = `${type}_${timestamp}_${randomString}`;
-
+      const uniqueId = `${timestamp}_${randomString}`;
       if (type === "SAVED_COMPONENT" && savedComponent) {
         // Handle saved component
         newComponent = {
@@ -195,7 +194,7 @@ export const editorSlice = createSlice({
             top: position ? position.y : 0,
           },
           isDraggingDisabled: false,
-          name: `${type} ${uniqueId.substr(0, 8)}`,
+          name: `${type}_${uniqueId.substr(0, 8)}`,
           ...otherProps,
         }, depth);
       }
@@ -410,7 +409,7 @@ export const editorSlice = createSlice({
         return {
           ...component,
           id: uniqueId,
-          name: `${component.type} ${uniqueId.substr(0, 8)}`,
+          name: `${component.type}_${uniqueId.substr(0, 8)}`,
           children: component.children ? component.children.map(regenerateIds) : undefined,
         };
       };
