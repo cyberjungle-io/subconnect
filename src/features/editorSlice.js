@@ -110,7 +110,7 @@ export const saveComponentThunk = createAsyncThunk(
     const savedComponent = {
       ...component,
       id: `saved_${component.id}`,
-      name: component.name || component.type,
+      name: component.props.name || component.type,
     };
     dispatch(saveComponent(savedComponent));
     return savedComponent;

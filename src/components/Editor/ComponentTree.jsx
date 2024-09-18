@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { componentConfig } from '../Components/componentConfig';
 import { useDispatch } from 'react-redux';
-import { FaTimes, FaSave } from 'react-icons/fa';
+import { FaTimes } from 'react-icons/fa';
 import FloatingToolbar from '../Components/Tools/FloatingToolbar';
 import { saveComponentThunk } from '../../features/editorSlice'; // Import the thunk instead
 
@@ -27,19 +27,6 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) 
   const isSelected = component.id === selectedComponentId;
 
   const Icon = componentConfig[component.type]?.icon || (() => null);
-
-  const handleSaveComponent = (e) => {
-    e.stopPropagation();
-    dispatch(saveComponentThunk(component))
-      .then(() => {
-        // You can add a success message or any other action here
-        console.log('Component saved successfully');
-      })
-      .catch((error) => {
-        // Handle any errors
-        console.error('Error saving component:', error);
-      });
-  };
 
   return (
     <div className={`mb-1 ${depth > 0 ? 'ml-3' : ''}`}>
@@ -68,13 +55,6 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) 
           <span className="ml-1 truncate flex-grow">
             {component.name || component.type}
           </span>
-          <button
-            onClick={handleSaveComponent}
-            className="ml-auto text-gray-500 hover:text-blue-600"
-            title="Save Component"
-          >
-            <FaSave />
-          </button>
         </div>
       </div>
       {isOpen && hasChildren && (

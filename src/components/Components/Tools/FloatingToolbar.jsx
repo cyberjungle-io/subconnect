@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaHeading, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase } from 'react-icons/fa';
+import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaHeading, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave } from 'react-icons/fa';
 import SizeControls from './SizeControls';
 import LayoutControls from './LayoutControls';
 import BorderControls from './BorderControls';
@@ -15,7 +15,7 @@ import QueryValueControls from './QueryValueControls';
 import BasicTextControls from './BasicTextControls';
 import ChartDataControls from './ChartDataControls';
 import { useDispatch } from 'react-redux';
-import { renameComponent } from '../../../features/editorSlice';
+import { renameComponent, saveComponentThunk } from '../../../features/editorSlice';
 
 const iconMap = {
   FLEX_CONTAINER: [
@@ -299,6 +299,17 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
     e.stopPropagation(); // Prevent dragging when typing
   };
 
+  const handleSaveComponent = (e) => {
+    e.stopPropagation();
+    dispatch(saveComponentThunk({ id: componentId, type: componentType, style, props, content }))
+      .then(() => {
+        console.log('Component saved successfully');
+      })
+      .catch((error) => {
+        console.error('Error saving component:', error);
+      });
+  };
+
   return (
     <div
       ref={toolbarRef}
@@ -350,9 +361,18 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
               {props.name || componentType}
             </h3>
           )}
-          <button onClick={onClose} className="text-gray-700 hover:text-gray-900">
-            <FaTimes />
-          </button>
+          <div className="flex items-center">
+            <button
+              onClick={handleSaveComponent}
+              className="mr-2 text-gray-500 hover:text-blue-600"
+              title="Save Component"
+            >
+              <FaSave />
+            </button>
+            <button onClick={onClose} className="text-gray-700 hover:text-gray-900">
+              <FaTimes />
+            </button>
+          </div>
         </div>
         <div className="flex mb-2 space-x-2">
           {icons.map((iconData, index) => (
