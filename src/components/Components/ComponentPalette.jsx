@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import { FaSquare, FaFont, FaImage, FaTable, FaChartBar, FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa';
+import { FaSquare, FaFont, FaImage, FaTable, FaChartBar, FaTimes, FaChevronDown, FaChevronRight, FaPencilAlt } from 'react-icons/fa';
 import { componentTypes, componentConfig } from './componentConfig';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { renameSavedComponent } from '../../features/savedComponentsSlice';
 
 const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
   const [{ isDragging }, drag] = useDrag({
@@ -13,22 +14,56 @@ const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
     }),
   });
 
+  const dispatch = useDispatch();
+  const [isHovered, setIsHovered] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newName, setNewName] = useState(label);
+
+  const handleRename = () => {
+    if (newName.trim() !== '') {
+      dispatch(renameSavedComponent({ id: savedComponent.id, newName: newName.trim() }));
+      setIsEditing(false);
+    }
+  };
+
   // Remove 'Saved ' prefix if present
   const displayLabel = label.startsWith('Saved ') ? label.slice(6) : label;
 
   return (
     <div
       ref={drag}
-      className={`flex flex-col items-center justify-center p-2 bg-[#fafcff] border border-[#d1e3ff] rounded-lg shadow hover:shadow-md hover:bg-[#f5f9ff] hover:border-[#b3d1ff] cursor-move ${
+      className={`relative flex flex-col items-center justify-center p-2 bg-[#fafcff] border border-[#d1e3ff] rounded-lg shadow hover:shadow-md hover:bg-[#f5f9ff] hover:border-[#b3d1ff] cursor-move ${
         isDragging ? 'opacity-50' : ''
       } w-24 h-24 transition-all duration-200`}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <Icon className="text-2xl mb-1 text-gray-600" />
       <div className="w-full h-8 overflow-hidden">
-        <p className="text-xs font-medium text-center leading-4 overflow-hidden">
-          {displayLabel}
-        </p>
+        {isEditing ? (
+          <input
+            type="text"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            onBlur={handleRename}
+            onKeyPress={(e) => e.key === 'Enter' && handleRename()}
+            className="w-full text-xs font-medium text-center"
+            autoFocus
+          />
+        ) : (
+          <p className="text-xs font-medium text-center leading-4 overflow-hidden">
+            {displayLabel}
+          </p>
+        )}
       </div>
+      {isHovered && savedComponent && !isEditing && (
+        <button
+          className="absolute top-1 right-1 text-gray-500 hover:text-gray-700"
+          onClick={() => setIsEditing(true)}
+        >
+          <FaPencilAlt size={12} />
+        </button>
+      )}
     </div>
   );
 };
