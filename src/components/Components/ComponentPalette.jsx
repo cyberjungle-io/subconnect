@@ -21,12 +21,12 @@ const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
       ref={drag}
       className={`flex flex-col items-center justify-center p-2 bg-[#fafcff] border border-[#d1e3ff] rounded-lg shadow hover:shadow-md hover:bg-[#f5f9ff] hover:border-[#b3d1ff] cursor-move ${
         isDragging ? 'opacity-50' : ''
-      } w-full aspect-square transition-all duration-200`}
+      } w-24 h-24 transition-all duration-200`}
     >
       <Icon className="text-2xl mb-1 text-gray-600" />
       <div className="w-full h-8 overflow-hidden">
-        <p className="text-xs font-medium text-center leading-4 overflow-hidden overflow-ellipsis">
-          {displayLabel.length > 30 ? displayLabel.slice(0, 27) + '...' : displayLabel}
+        <p className="text-xs font-medium text-center leading-4 overflow-hidden">
+          {displayLabel}
         </p>
       </div>
     </div>
