@@ -293,7 +293,7 @@ const MainEditor = () => {
             const rect = floatingRightMenu.getBoundingClientRect();
             setComponentPalettePosition({
               x: rect.left - 270,
-              y: rect.top,
+              y: Math.max(rect.top, 10), // Ensure minimum top position of 10px
             });
           }
         }

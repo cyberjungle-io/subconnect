@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import { FaSquare, FaFont, FaImage, FaTable, FaChartBar, FaTimes } from 'react-icons/fa';
+import { FaSquare, FaFont, FaImage, FaTable, FaChartBar, FaTimes, FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import { componentTypes, componentConfig } from './componentConfig';
 import { useSelector } from 'react-redux';
 
@@ -30,6 +30,8 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
   const [position, setPosition] = useState(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
   const savedComponents = useSelector(state => state.savedComponents);
+  const [isPrimitivesExpanded, setIsPrimitivesExpanded] = useState(true);
+  const [isSavedExpanded, setIsSavedExpanded] = useState(false);
 
   useEffect(() => {
     if (!isDragging) {
@@ -45,7 +47,7 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
     const handleMouseMove = (e) => {
       const newPosition = {
         x: e.clientX - startX,
-        y: e.clientY - startY,
+        y: Math.max(e.clientY - startY, 10), // Ensure minimum top position of 10px
       };
       setPosition(newPosition);
       onPositionChange(newPosition);
@@ -59,6 +61,14 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
+  };
+
+  const togglePrimitives = () => {
+    setIsPrimitivesExpanded(!isPrimitivesExpanded);
+  };
+
+  const toggleSavedComponents = () => {
+    setIsSavedExpanded(!isSavedExpanded);
   };
 
   if (!isVisible) return null;
@@ -81,27 +91,51 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
           <FaTimes />
         </button>
       </div>
-      <div className="grid grid-cols-2 gap-2">
-        {Object.entries(componentTypes).map(([key, type]) => {
-          const config = componentConfig[type];
-          return (
-            <DraggableComponent
-              key={key}
-              type={type}
-              icon={config.icon}
-              label={config.name}
-            />
-          );
-        })}
-        {savedComponents.map((component) => (
-          <DraggableComponent
-            key={component.id}
-            type="SAVED_COMPONENT"
-            icon={componentConfig[component.type]?.icon}
-            label={component.name}
-            savedComponent={component}
-          />
-        ))}
+      <div className="mb-4">
+        <button
+          className="flex items-center justify-between w-full text-left text-gray-500 hover:text-gray-700 mb-2 py-2 transition-colors duration-200"
+          onClick={togglePrimitives}
+        >
+          <span className="font-medium">Primitives</span>
+          {isPrimitivesExpanded ? <FaChevronDown /> : <FaChevronRight />}
+        </button>
+        {isPrimitivesExpanded && (
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            {Object.entries(componentTypes).map(([key, type]) => {
+              const config = componentConfig[type];
+              return (
+                <DraggableComponent
+                  key={key}
+                  type={type}
+                  icon={config.icon}
+                  label={config.name}
+                />
+              );
+            })}
+          </div>
+        )}
+      </div>
+      <div className="border-t border-[#cce0ff] pt-4">
+        <button
+          className="flex items-center justify-between w-full text-left text-gray-500 hover:text-gray-700 mb-2 py-2 transition-colors duration-200"
+          onClick={toggleSavedComponents}
+        >
+          <span className="font-medium">Saved Components</span>
+          {isSavedExpanded ? <FaChevronDown /> : <FaChevronRight />}
+        </button>
+        {isSavedExpanded && (
+          <div className="grid grid-cols-2 gap-2 mt-2">
+            {savedComponents.map((component) => (
+              <DraggableComponent
+                key={component.id}
+                type="SAVED_COMPONENT"
+                icon={componentConfig[component.type]?.icon}
+                label={component.name}
+                savedComponent={component}
+              />
+            ))}
+          </div>
+        )}
       </div>
       <div
         className="absolute top-0 left-0 right-0 h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
