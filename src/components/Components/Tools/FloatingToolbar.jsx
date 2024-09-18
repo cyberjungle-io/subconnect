@@ -331,37 +331,40 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       />
       <div className="px-4 pt-1 pb-3">
         <div
-          className={`flex justify-between items-center mb-3 ${isEditing ? '' : 'cursor-move'}`}
+          className={`flex items-center mb-3 ${isEditing ? '' : 'cursor-move'}`}
           onMouseDown={handleMouseDown}
         >
-          {isEditing ? (
-            <input
-              ref={inputRef}
-              value={editedName}
-              onChange={(e) => setEditedName(e.target.value)}
-              onBlur={handleRename}
-              onKeyDown={handleKeyDown}
-              className="text-lg font-semibold text-gray-700 bg-white border border-gray-300 rounded px-1 py-0 w-full select-text"
-              style={{
-                userSelect: 'text',
-                WebkitUserSelect: 'text',
-                MozUserSelect: 'text',
-                msUserSelect: 'text',
-              }}
-              onClick={(e) => e.stopPropagation()}
-            />
-          ) : (
-            <h3 
-              className="text-lg font-semibold text-gray-700 cursor-text"
-              onDoubleClick={(e) => {
-                e.stopPropagation();
-                setIsEditing(true);
-              }}
-            >
-              {props.name || componentType}
-            </h3>
-          )}
-          <div className="flex items-center">
+          <div className="flex-grow mr-2 min-w-0">
+            {isEditing ? (
+              <input
+                ref={inputRef}
+                value={editedName}
+                onChange={(e) => setEditedName(e.target.value)}
+                onBlur={handleRename}
+                onKeyDown={handleKeyDown}
+                className="text-lg font-semibold text-gray-500 bg-white border border-gray-300 rounded px-1 py-0 w-full select-text"
+                style={{
+                  userSelect: 'text',
+                  WebkitUserSelect: 'text',
+                  MozUserSelect: 'text',
+                  msUserSelect: 'text',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <h3 
+                className="text-lg font-semibold text-gray-500 cursor-text truncate"
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(true);
+                }}
+                title={props.name || componentType}
+              >
+                {props.name || componentType}
+              </h3>
+            )}
+          </div>
+          <div className="flex-shrink-0 flex items-center">
             <button
               onClick={handleSaveComponent}
               className="mr-2 text-gray-500 hover:text-blue-600"
@@ -369,7 +372,11 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
             >
               <FaSave />
             </button>
-            <button onClick={onClose} className="text-gray-700 hover:text-gray-900">
+            <button 
+              onClick={onClose} 
+              className="text-gray-500 hover:text-blue-600"
+              title="Close"
+            >
               <FaTimes />
             </button>
           </div>
