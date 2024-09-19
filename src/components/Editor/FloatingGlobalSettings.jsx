@@ -4,6 +4,23 @@ import SpacingControls from '../Components/Tools/SpacingControls';
 import BackgroundControls from '../Components/Tools/BackgroundControls';
 
 const FloatingGlobalSettings = ({ initialPosition, onClose, globalSettings, onUpdateGlobalSettings }) => {
+  // Add a default value for globalSettings
+  const safeGlobalSettings = globalSettings || {
+    backgroundColor: '#ffffff',
+    componentLayout: 'vertical',
+    style: {
+      paddingTop: '0px',
+      paddingRight: '0px',
+      paddingBottom: '0px',
+      paddingLeft: '0px',
+      marginTop: '0px',
+      marginRight: '0px',
+      marginBottom: '0px',
+      marginLeft: '0px',
+      gap: '0px'
+    }
+  };
+
   const [position, setPosition] = useState(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -52,8 +69,8 @@ const FloatingGlobalSettings = ({ initialPosition, onClose, globalSettings, onUp
 
   const renderActiveControl = () => {
     const sharedProps = {
-      style: globalSettings.style,
-      onStyleChange: (updates) => onUpdateGlobalSettings({ style: { ...globalSettings.style, ...updates } }),
+      style: safeGlobalSettings.style,
+      onStyleChange: (updates) => onUpdateGlobalSettings({ style: { ...safeGlobalSettings.style, ...updates } }),
     };
 
     switch (activeControl) {
@@ -68,10 +85,10 @@ const FloatingGlobalSettings = ({ initialPosition, onClose, globalSettings, onUp
                   id="globalBorderRadius"
                   type="number"
                   className="properties-input"
-                  value={(globalSettings.generalComponentStyle?.borderRadius || '4px').replace('px', '')}
+                  value={(safeGlobalSettings.generalComponentStyle?.borderRadius || '4px').replace('px', '')}
                   onChange={(e) => onUpdateGlobalSettings({
                     generalComponentStyle: {
-                      ...globalSettings.generalComponentStyle,
+                      ...safeGlobalSettings.generalComponentStyle,
                       borderRadius: `${e.target.value}px`
                     }
                   })}

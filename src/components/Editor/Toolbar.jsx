@@ -78,6 +78,8 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
     dispatch(toggleFloatingMenu());
   };
 
+  const isFloatingMenuVisible = useSelector(state => state.editor.isFloatingMenuVisible);
+
   return (
     <div className="bg-gradient-to-b from-[#e8e8e8] to-[#d4d4d4] text-gray-800 px-4 py-3 flex justify-between items-center border-b border-[#c0c0c0] shadow-sm relative">
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iLjA1IiBkPSJNMCAwaDMwMHYzMDBIMHoiLz48L3N2Zz4=')] opacity-30 mix-blend-overlay"></div>
@@ -164,7 +166,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
             {mode === 'edit' && (
               <button
                 onClick={handleToggleFloatingMenu}
-                className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+                className={`flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors ${isFloatingMenuVisible ? 'bg-[#d0d0d0]' : ''}`}
                 title="Toggle Floating Menu"
               >
                 <FaTools className="text-base" />

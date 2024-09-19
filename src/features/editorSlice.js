@@ -13,7 +13,21 @@ const initialState = {
   components: [],
   selectedIds: [],
   clipboard: null,
-  globalSettings: defaultGlobalSettings,
+  globalSettings: {
+    backgroundColor: '#ffffff',
+    componentLayout: 'vertical',
+    style: {
+      paddingTop: '0px',
+      paddingRight: '0px',
+      paddingBottom: '0px',
+      paddingLeft: '0px',
+      marginTop: '0px',
+      marginRight: '0px',
+      marginBottom: '0px',
+      marginLeft: '0px',
+      gap: '0px'
+    }
+  },
   mode: 'edit',
   currentPage: null,
   whiteboardState: {
@@ -22,7 +36,7 @@ const initialState = {
     strokeColor: '#000000',
   },
   isDragModeEnabled: false,
-  isFloatingMenuVisible: false,
+  isFloatingMenuVisible: true,
   canvasSettings: {
     style: {
       backgroundColor: '#ffffff',
@@ -482,6 +496,16 @@ export const editorSlice = createSlice({
       state.canvasSettings = {
         ...state.canvasSettings,
         ...action.payload,
+      };
+    },
+    updateGlobalSettings: (state, action) => {
+      state.globalSettings = {
+        ...state.globalSettings,
+        ...action.payload,
+        style: {
+          ...state.globalSettings.style,
+          ...(action.payload.style || {}),
+        },
       };
     },
   },

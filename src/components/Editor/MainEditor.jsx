@@ -1,48 +1,28 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import Canvas from './Canvas';
-
 import Toolbar from './Toolbar';
-import DataModal from './DataModal';
 import ProjectModal from '../Components/Projects/ProjectModal';
 import ViewerMode from '../Viewers/ViewerMode';
-import { FaEdit } from 'react-icons/fa';
 import { 
   setEditorMode, 
-  updateGlobalSettings,
   addComponent,
   updateComponent,
-  deleteComponent,
   setSelectedIds,
-  alignComponents,
-  distributeComponents,
-  copyComponents,
-  pasteComponents,
   moveComponent,
-  updateComponentSpacing,
-  updateGlobalSpacing,
-  updateHeadingProperties,
-  updateResponsiveProperties,
   loadPageContent,
   setCurrentPage,
-  setDragModeEnabled,
-  updateCanvasSettings
 } from '../../features/editorSlice';
 import { updateProject as updateW3SProject } from '../../w3s/w3sSlice';
 import Toast from '../common/Toast';
-import FloatingRightMenu from './FloatingRightMenu';
-import ComponentTree from './ComponentTree';
-import ComponentPalette from '../Components/ComponentPalette';
-import FloatingGlobalSettings from './FloatingGlobalSettings';
 import { updateProject } from '../../w3s/w3sSlice';
 import { showToast } from '../../features/toastSlice';
 import { useParams } from 'react-router-dom';
-import { fetchProject } from '../../w3s/w3sSlice';
-import { fetchQueries } from '../../w3s/w3sSlice';
-import FloatingToolbar from '../Components/Tools/FloatingToolbar';
+import { fetchProject, fetchQueries } from '../../w3s/w3sSlice';
 import { v4 as uuidv4 } from 'uuid';
+import FloatingMenusManager from './FloatingMenusManager';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
@@ -51,8 +31,9 @@ const MainEditor = () => {
   const { projectId } = useParams();
   const isLoggedIn = useSelector(state => state.user.isLoggedIn);
   const canvasSettings = useSelector(state => state.editor.canvasSettings);
-  const [isCanvasSettingsVisible, setIsCanvasSettingsVisible] = useState(false);
-  const [canvasToolbarPosition, setCanvasToolbarPosition] = useState({ x: 100, y: 100 });
+  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
+  const globalSettings = useSelector(state => state.editor.globalSettings);
+  const currentUser = useSelector(state => state.user.currentUser);
 
   useEffect(() => {
     if (projectId) {
@@ -96,21 +77,6 @@ const MainEditor = () => {
     };
   }, [isLoggedIn, dispatch]);
 
-  const [isPanelVisible, setIsPanelVisible] = useState(true);
-  const [isDataModalOpen, setIsDataModalOpen] = useState(false);
-  const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
-  const globalSettings = useSelector(state => state.editor.globalSettings);
-  const currentUser = useSelector(state => state.user.currentUser);
-  const [isSpacingVisible, setIsSpacingVisible] = useState(false);
-  const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
-  const [componentTreePosition, setComponentTreePosition] = useState({ x: 0, y: 0 });
-  const [isComponentPaletteVisible, setIsComponentPaletteVisible] = useState(false);
-  const [componentPalettePosition, setComponentPalettePosition] = useState({ x: 0, y: 0 });
-  const floatingRightMenuRef = useRef(null);
-  const [isGlobalSettingsVisible, setIsGlobalSettingsVisible] = useState(false);
-  const [globalSettingsPosition, setGlobalSettingsPosition] = useState({ x: 0, y: 0 });
-  const isFloatingMenuVisible = useSelector(state => state.editor.isFloatingMenuVisible);
-
   const handleOpenProjectModal = useCallback(() => {
     console.log('Attempting to open Project Modal');
     setIsProjectModalOpen(true);
@@ -121,23 +87,15 @@ const MainEditor = () => {
     setIsProjectModalOpen(false);
   }, []);
 
-
-  const handleOpenDataModal = () => {
-    setIsDataModalOpen(true);
-  };
-
-
   const handleAddComponent = (componentType, parentId = null, position = null, savedComponent = null) => {
     let newComponentData;
     if (savedComponent) {
-      // It's a saved component
       newComponentData = {
         ...savedComponent,
-        id: uuidv4(), // Generate a new ID for the component
+        id: uuidv4(),
         parentId,
       };
     } else {
-      // It's a regular component type
       newComponentData = {
         type: componentType,
         style: {
@@ -162,33 +120,29 @@ const MainEditor = () => {
   };
 
   const handleSelectComponent = (id, isMultiSelect) => {
-    if (isMultiSelect) {
-      dispatch(setSelectedIds(selectedIds.includes(id) 
-        ? selectedIds.filter(selectedId => selectedId !== id)
-        : [...selectedIds, id]
-      ));
-    } else {
-      dispatch(setSelectedIds([id]));
+    if (mode === 'edit') {
+      if (isMultiSelect) {
+        dispatch(setSelectedIds(selectedIds.includes(id) 
+          ? selectedIds.filter(selectedId => selectedId !== id)
+          : [...selectedIds, id]
+        ));
+      } else {
+        dispatch(setSelectedIds([id]));
+      }
     }
   };
 
   const handleClearSelection = () => {
-    dispatch(setSelectedIds([]));
-  };
-
-
-  const findComponentById = (components, id) => {
-    for (let component of components) {
-      if (component.id === id) {
-        return component;
-      }
-      if (component.children) {
-        const found = findComponentById(component.children, id);
-        if (found) return found;
-      }
+    if (mode === 'edit') {
+      dispatch(setSelectedIds([]));
     }
-    return null;
   };
+
+  const handleDeselectAll = useCallback(() => {
+    if (mode === 'edit') {
+      dispatch(setSelectedIds([]));
+    }
+  }, [dispatch, mode]);
 
   const handleSelectPage = (page) => {
     dispatch(setCurrentPage(page));
@@ -222,77 +176,6 @@ const MainEditor = () => {
       const updatedPages = currentProject.pages.filter((_, index) => index !== pageIndex);
       dispatch(updateW3SProject({ ...currentProject, pages: updatedPages }));
     }
-  };
-
-  const handleLoadPageContent = (pageContent) => {
-    dispatch(loadPageContent(pageContent));
-  };
-
-  const handleToggleDragMode = () => {
-    if (mode === 'edit') {
-      dispatch(setDragModeEnabled(!isDragModeEnabled));
-    }
-  };
-
-  const handleToggleSpacingVisibility = () => {
-    setIsSpacingVisible(!isSpacingVisible);
-    // Implement spacing visibility logic here
-  };
-
-  const handleToggleComponentTree = useCallback(() => {
-    if (mode === 'edit') {
-      setIsComponentTreeVisible((prev) => {
-        if (!prev) {
-          const floatingRightMenu = floatingRightMenuRef.current;
-          if (floatingRightMenu) {
-            const rect = floatingRightMenu.getBoundingClientRect();
-            setComponentTreePosition({
-              x: rect.left - 270,
-              y: rect.top,
-            });
-          }
-        }
-        return !prev;
-      });
-    }
-  }, [mode]);
-
-  const handleToggleComponentPalette = useCallback(() => {
-    if (mode === 'edit') {
-      setIsComponentPaletteVisible((prev) => {
-        if (!prev) {
-          const floatingRightMenu = floatingRightMenuRef.current;
-          if (floatingRightMenu) {
-            const rect = floatingRightMenu.getBoundingClientRect();
-            setComponentPalettePosition({
-              x: rect.left - 270,
-              y: Math.max(rect.top, 10), // Ensure minimum top position of 10px
-            });
-          }
-        }
-        return !prev;
-      });
-    }
-  }, [mode]);
-
-  const handleToggleGlobalSettings = () => {
-    if (mode === 'edit') {
-      if (!isGlobalSettingsVisible) {
-        const floatingRightMenu = floatingRightMenuRef.current;
-        if (floatingRightMenu) {
-          const rect = floatingRightMenu.getBoundingClientRect();
-          setGlobalSettingsPosition({
-            x: rect.left - 270,
-            y: rect.top,
-          });
-        }
-      }
-      setIsGlobalSettingsVisible(!isGlobalSettingsVisible);
-    }
-  };
-
-  const handleUpdateGlobalSettings = (updates) => {
-    dispatch(updateGlobalSettings(updates));
   };
 
   const handleSaveProject = () => {
@@ -331,47 +214,6 @@ const MainEditor = () => {
     }
   };
 
-  const handleSelectComponentFromTree = (componentId) => {
-    dispatch(setSelectedIds([componentId]));
-    // You might want to scroll to the selected component in the Canvas here
-  };
-
-  const handleDeselectAll = useCallback(() => {
-    dispatch(setSelectedIds([]));
-  }, [dispatch]);
-
-  const handleUpdateCanvasSettings = useCallback((updates) => {
-    dispatch(updateCanvasSettings(updates));
-  }, [dispatch]);
-
-  const handleShowCanvasSettings = useCallback(() => {
-    setIsCanvasSettingsVisible(true);
-  }, []);
-
-  const handleCloseCanvasSettings = useCallback(() => {
-    setIsCanvasSettingsVisible(false);
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (mode === 'edit' && (event.ctrlKey || event.metaKey)) {
-        if (event.key === 'q') {
-          event.preventDefault();
-          handleToggleComponentPalette();
-        } else if (event.key === 'e') {
-          event.preventDefault();
-          handleToggleComponentTree();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [mode, handleToggleComponentPalette, handleToggleComponentTree]);
-
   if (projectStatus === 'loading') {
     return <div>Loading project...</div>;
   }
@@ -388,7 +230,6 @@ const MainEditor = () => {
           onDeletePage={handleDeletePage}
           onSaveProject={handleSaveProject}
           onOpenProjectModal={handleOpenProjectModal}
-          onOpenDataModal={handleOpenDataModal}
           mode={mode}
           currentUser={currentUser}
           currentProject={currentProject}
@@ -408,80 +249,26 @@ const MainEditor = () => {
                 globalSettings={globalSettings}
                 onStyleChange={handleUpdateComponent}
                 isDragModeEnabled={isDragModeEnabled}
-                isSpacingVisible={isSpacingVisible}
-                onDeselectAll={handleDeselectAll}
                 isViewMode={false}
                 canvasSettings={canvasSettings}
-                onUpdateCanvasSettings={handleUpdateCanvasSettings}
+                onDeselectAll={handleDeselectAll}
               />
             ) : (
               <ViewerMode
                 components={components}
                 globalSettings={globalSettings}
                 isViewMode={true}
+                onDeselectAll={handleDeselectAll}
               />
             )}
           </div>
-          {mode === 'edit' && currentUser && isFloatingMenuVisible && (
-            <FloatingRightMenu
-              onShowComponentTree={handleToggleComponentTree}
-              isComponentTreeVisible={isComponentTreeVisible}
-              onShowComponentPalette={handleToggleComponentPalette}
-              isComponentPaletteVisible={isComponentPaletteVisible}
-              onShowGlobalSettings={handleToggleGlobalSettings}
-              isGlobalSettingsVisible={isGlobalSettingsVisible}
-              onToggleDragMode={handleToggleDragMode}
-              isDragModeEnabled={isDragModeEnabled}
-              onToggleSpacingVisibility={handleToggleSpacingVisibility}
-              isEditMode={mode === 'edit'}
-              onShowCanvasSettings={handleShowCanvasSettings}
-              isCanvasSettingsVisible={isCanvasSettingsVisible}
-            />
-          )}
-          <ComponentTree
-            components={components}
-            onSelectComponent={handleSelectComponentFromTree}
-            selectedComponentId={selectedIds?.[0]}
-            isVisible={isComponentTreeVisible}
-            onClose={handleToggleComponentTree}
-            initialPosition={componentTreePosition}
-            onPositionChange={setComponentTreePosition}
-            onUpdateComponent={handleUpdateComponent}
-          />
-          <ComponentPalette
-            isVisible={isComponentPaletteVisible}
-            onClose={handleToggleComponentPalette}
-            initialPosition={componentPalettePosition}
-            onPositionChange={setComponentPalettePosition}
-            onAddComponent={handleAddComponent}
-          />
-          {isGlobalSettingsVisible && (
-            <FloatingGlobalSettings
-              initialPosition={globalSettingsPosition}
-              onClose={handleToggleGlobalSettings}
-              globalSettings={globalSettings}
-              onUpdateGlobalSettings={handleUpdateGlobalSettings}
-            />
-          )}
+          <FloatingMenusManager />
         </div>
-        
       </div>
       {isProjectModalOpen && (
-      <ProjectModal
+        <ProjectModal
           isOpen={isProjectModalOpen}
           onClose={handleCloseProjectModal}
-        />
-      )}
-      {isCanvasSettingsVisible && (
-        <FloatingToolbar
-          componentId="canvas"
-          componentType="CANVAS"
-          initialPosition={canvasToolbarPosition}
-          onClose={handleCloseCanvasSettings}
-          style={canvasSettings.style}
-          props={canvasSettings}
-          onStyleChange={handleUpdateCanvasSettings}
-          onToolbarInteraction={() => {}}
         />
       )}
       <Toast />
