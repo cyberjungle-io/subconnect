@@ -322,6 +322,8 @@ const ComponentRenderer = React.memo(({
       transition: style.transition || 'none',
       maxWidth: '100%', // Add this line
       maxHeight: '100%', // Add this line
+      height: type === 'TEXT' ? 'auto' : style.height || 'auto', // Add this line
+      minHeight: type === 'TEXT' ? style.height || 'auto' : undefined, // Add this line
     };
 
     if (style.showBorder !== false) {

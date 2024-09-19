@@ -7,7 +7,7 @@ const PRESETS = {
   'Banner': { width: '100%', height: '150px' },
 };
 
-const SizeControls = ({ style = {}, onStyleChange }) => {
+const SizeControls = ({ style = {}, onStyleChange, componentType }) => {
   const [width, setWidth] = useState('');
   const [height, setHeight] = useState('');
   const [activePreset, setActivePreset] = useState(null);
@@ -27,14 +27,20 @@ const SizeControls = ({ style = {}, onStyleChange }) => {
   const setDimension = useCallback((dimension, value) => {
     if (value === 'auto') {
       handleChange(dimension, 'auto');
+      if (componentType === 'TEXT' && dimension === 'height') {
+        handleChange('minHeight', style.height || 'auto');
+      }
     } else {
       const numericValue = parseFloat(value);
       const unit = value.replace(/[0-9.-]/g, '') || 'px';
       if (!isNaN(numericValue)) {
         handleChange(dimension, `${numericValue}${unit}`);
+        if (componentType === 'TEXT' && dimension === 'height') {
+          handleChange('minHeight', `${numericValue}${unit}`);
+        }
       }
     }
-  }, [handleChange]);
+  }, [handleChange, componentType, style.height]);
 
   const setPercentage = useCallback((dimension, percentage) => {
     setDimension(dimension, `${percentage}%`);

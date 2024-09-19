@@ -21,7 +21,8 @@ const TextRenderer = ({
     const generalComponentStyle = globalSettings?.generalComponentStyle || {};
     return {
       width: '100%',
-      height: '100%',
+      height: 'auto', // Change this to 'auto'
+      minHeight: component.style.height || 'auto', // Add this line
       fontFamily: component.style.fontFamily || generalComponentStyle.fontFamily,
       fontSize: component.style.fontSize || generalComponentStyle.fontSize,
       color: component.style.color || generalComponentStyle.color || '#000000', // Default to black
@@ -34,6 +35,7 @@ const TextRenderer = ({
       textDecoration: component.style.textDecoration || 'none',
       padding: component.style.padding || '5px',
       cursor: isEditing ? 'text' : 'default',
+      overflow: 'hidden', // Add this line
       ...component.style,
     };
   };
@@ -88,7 +90,13 @@ const TextRenderer = ({
 
     if (validateHtmlContent(sanitizedContent)) {
       setLocalContent(sanitizedContent);
-      onUpdate(component.id, { style: { ...component.style, content: sanitizedContent } });
+      onUpdate(component.id, { 
+        style: { 
+          ...component.style, 
+          content: sanitizedContent,
+          height: 'auto', // Set height to 'auto' when content changes
+        } 
+      });
 
       // Use placeCaretAtEnd instead of trying to restore the exact position
       setTimeout(() => {
