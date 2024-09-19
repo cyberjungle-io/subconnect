@@ -97,11 +97,6 @@ const TextRenderer = ({
           height: 'auto', // Set height to 'auto' when content changes
         } 
       });
-
-      // Use placeCaretAtEnd instead of trying to restore the exact position
-      setTimeout(() => {
-        placeCaretAtEnd(element);
-      }, 0);
     } else {
       console.warn('Invalid HTML content:', newContent);
     }
