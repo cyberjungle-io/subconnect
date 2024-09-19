@@ -17,6 +17,7 @@ export const getCanvasStyle = (canvasSettings, componentLayout) => ({
   position: 'relative',
   padding: '20px', // Uniform padding on all sides
   gap: '20px', // Gap between components
+  overflowY: 'auto', // Allow vertical overflow
 });
 
 const Canvas = ({

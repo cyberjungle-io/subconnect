@@ -421,8 +421,8 @@ const MainEditor = () => {
           currentProject={currentProject}
           currentPage={currentPage}
         />
-        <div className="flex flex-grow overflow-hidden">
-          <div className="flex-grow overflow-auto">
+        <div className="flex flex-grow">
+          <div className="flex-grow overflow-y-auto">
             {mode === 'edit' && currentUser ? (
               <Canvas
                 components={components}
