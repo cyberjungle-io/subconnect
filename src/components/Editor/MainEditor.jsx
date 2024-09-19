@@ -121,15 +121,11 @@ const MainEditor = () => {
     setIsProjectModalOpen(false);
   }, []);
 
-  const handleTogglePanel = () => {
-    setIsPanelVisible(!isPanelVisible);
-  };
+
   const handleOpenDataModal = () => {
     setIsDataModalOpen(true);
   };
-  const handleCloseDataModal = () => {
-    setIsDataModalOpen(false);
-  };
+
 
   const handleAddComponent = (componentType, parentId = null, position = null, savedComponent = null) => {
     let newComponentData;
@@ -157,20 +153,12 @@ const MainEditor = () => {
     dispatch(addComponent(newComponentData));
   };
 
-  const handleUpdateGlobalSpacing = (updates) => {
-    dispatch(updateGlobalSpacing(updates));
-  };
-
   const handleUpdateComponent = (id, updates) => {
     dispatch(updateComponent({ id, updates }));
   };
 
   const handleMoveComponent = (componentId, newParentId, newPosition = null) => {
     dispatch(moveComponent({ componentId, newParentId, newPosition }));
-  };
-
-  const handleDeleteComponent = (id) => {
-    dispatch(deleteComponent(id));
   };
 
   const handleSelectComponent = (id, isMultiSelect) => {
@@ -188,21 +176,6 @@ const MainEditor = () => {
     dispatch(setSelectedIds([]));
   };
 
-  const handleAlign = (alignment) => {
-    dispatch(alignComponents(alignment));
-  };
-
-  const handleDistribute = (direction) => {
-    dispatch(distributeComponents(direction));
-  };
-
-  const handleCopy = () => {
-    dispatch(copyComponents());
-  };
-
-  const handlePaste = () => {
-    dispatch(pasteComponents());
-  };
 
   const findComponentById = (components, id) => {
     for (let component of components) {
