@@ -17,33 +17,40 @@ const QueryValueControls = ({ props, onPropsChange }) => {
   }, [dispatch, queriesStatus]);
 
   useEffect(() => {
-    if (props.queryId && props.field) {
+    if (props.queryId) {
       setIsRunningQuery(true);
       const selectedQuery = queries.find(query => query._id === props.queryId);
       if (selectedQuery) {
         dispatch(executeQuery({ endpoint: selectedQuery.endpoint, query: selectedQuery.queryString }))
           .then((action) => {
             if (action.payload && action.payload.data) {
-              let result = action.payload.data;
-              props.field.split('.').forEach(key => {
-                result = result && result[key];
-              });
-              if (Array.isArray(result) && result.length > 0) {
-                result = result[0];
-              }
-              setQueryResult(result);
+              // Store the entire result without processing
+              setQueryResult(action.payload.data);
             }
           })
           .finally(() => setIsRunningQuery(false));
       }
     }
-  }, [dispatch, props.queryId, props.field, queries]);
+  }, [dispatch, props.queryId, queries]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'queryId') {
       onPropsChange({ ...props, queryId: value, field: '' });
       setQueryResult(null);
+    } else if (name === 'field') {
+      onPropsChange({ ...props, [name]: value });
+      // Process the selected field when it's chosen
+      if (queryResult && value) {
+        let result = queryResult;
+        value.split('.').forEach(key => {
+          result = result && result[key];
+        });
+        if (Array.isArray(result) && result.length > 0) {
+          result = result[0];
+        }
+        setQueryResult(result);
+      }
     } else {
       onPropsChange({ ...props, [name]: value });
     }
@@ -101,7 +108,9 @@ const QueryValueControls = ({ props, onPropsChange }) => {
         {!isRunningQuery && queryResult !== null && (
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Query Result:</label>
-            <span className="text-sm text-gray-600">{JSON.stringify(queryResult)}</span>
+            <span className="text-sm text-gray-600">
+              {typeof queryResult === 'object' ? JSON.stringify(queryResult) : queryResult}
+            </span>
           </div>
         )}
         <div className="mb-4">

@@ -64,6 +64,12 @@ const QueryValueRenderer = ({ component }) => {
 
     let formattedValue = value;
 
+    // Handle object or array values
+    if (typeof value === 'object') {
+      formattedValue = JSON.stringify(value);
+      return formattedValue;
+    }
+
     // Convert to number if possible
     if (!isNaN(value)) {
       formattedValue = Number(value);
