@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import { FaSquare, FaFont, FaImage, FaTable, FaChartBar, FaTimes, FaChevronDown, FaChevronRight, FaPencilAlt } from 'react-icons/fa';
+import { FaTimes, FaPencilAlt, FaFolderOpen } from 'react-icons/fa';
+import FourSquaresIcon from '../common/CustomIcons/FourSquareIcon';
 import { componentTypes, componentConfig } from './componentConfig';
 import { useSelector, useDispatch } from 'react-redux';
 import { renameSavedComponent } from '../../features/savedComponentsSlice';
@@ -72,8 +73,7 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
   const [position, setPosition] = useState(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
   const savedComponents = useSelector(state => state.savedComponents);
-  const [isPrimitivesExpanded, setIsPrimitivesExpanded] = useState(true);
-  const [isSavedExpanded, setIsSavedExpanded] = useState(false);
+  const [currentView, setCurrentView] = useState('Primitives');
 
   useEffect(() => {
     if (!isDragging) {
@@ -105,14 +105,6 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
     document.addEventListener('mouseup', handleMouseUp);
   };
 
-  const togglePrimitives = () => {
-    setIsPrimitivesExpanded(!isPrimitivesExpanded);
-  };
-
-  const toggleSavedComponents = () => {
-    setIsSavedExpanded(!isSavedExpanded);
-  };
-
   if (!isVisible) return null;
 
   return (
@@ -128,20 +120,32 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
       }}
     >
       <div className="flex justify-between items-center mb-4 pt-2">
-        <h3 className="text-lg font-semibold text-gray-700">Component Palette</h3>
-        <button onClick={onClose} className="text-gray-700 hover:text-gray-900">
-          <FaTimes />
-        </button>
+        <h3 className="text-md font-semibold text-gray-700">Component Palette</h3>
+        <div className="flex items-center">
+          {currentView === 'Primitives' ? (
+            <button
+              onClick={() => setCurrentView('SavedComponents')}
+              className="text-gray-700 hover:text-gray-900 p-1"
+              title="Saved Components"
+            >
+              <FaFolderOpen />
+            </button>
+          ) : (
+            <button
+              onClick={() => setCurrentView('Primitives')}
+              className="text-gray-700 hover:text-gray-900 p-1"
+              title="Primitives"
+            >
+              <FourSquaresIcon />
+            </button>
+          )}
+          <button onClick={onClose} className="text-gray-700 hover:text-gray-900 p-1 ">
+            <FaTimes />
+          </button>
+        </div>
       </div>
-      <div className="mb-4">
-        <button
-          className="flex items-center justify-between w-full text-left text-gray-500 hover:text-gray-700 mb-2 py-2 transition-colors duration-200"
-          onClick={togglePrimitives}
-        >
-          <span className="font-medium">Primitives</span>
-          {isPrimitivesExpanded ? <FaChevronDown /> : <FaChevronRight />}
-        </button>
-        {isPrimitivesExpanded && (
+      {currentView === 'Primitives' ? (
+        <div className="mb-4">
           <div className="grid grid-cols-2 gap-2 mt-2">
             {Object.entries(componentTypes).map(([key, type]) => {
               const config = componentConfig[type];
@@ -155,17 +159,9 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
               );
             })}
           </div>
-        )}
-      </div>
-      <div className="border-t border-[#cce0ff] pt-4">
-        <button
-          className="flex items-center justify-between w-full text-left text-gray-500 hover:text-gray-700 mb-2 py-2 transition-colors duration-200"
-          onClick={toggleSavedComponents}
-        >
-          <span className="font-medium">Saved Components</span>
-          {isSavedExpanded ? <FaChevronDown /> : <FaChevronRight />}
-        </button>
-        {isSavedExpanded && (
+        </div>
+      ) : (
+        <div className="border-t border-[#cce0ff] pt-4">
           <div className="grid grid-cols-2 gap-2 mt-2">
             {savedComponents.map((component) => (
               <DraggableComponent
@@ -177,8 +173,8 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
               />
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
       <div
         className="absolute top-0 left-0 right-0 h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         onMouseDown={handleDragStart}

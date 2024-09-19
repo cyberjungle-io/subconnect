@@ -1,12 +1,6 @@
 import React from 'react';
 import { FaTree, FaGlobe, FaEye, FaHandPointer, FaPaintBrush } from 'react-icons/fa';
-
-// Add this new custom icon component
-const FourSquaresIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="1em" height="1em">
-    <path d="M10 3H3v7h7V3zm11 0h-7v7h7V3zm0 11h-7v7h7v-7z" />
-  </svg>
-);
+import FourSquaresIcon from '../common/CustomIcons/FourSquareIcon';
 
 const FloatingRightMenu = ({
   onShowComponentTree,
