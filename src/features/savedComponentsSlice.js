@@ -9,12 +9,11 @@ const savedComponentsSlice = createSlice({
     },
     renameSavedComponent: (state, action) => {
       const { id, newName } = action.payload;
-      const component = state.find(c => c.id === id);
+      const component = state.find(comp => comp.id === id);
       if (component) {
         component.name = newName;
       }
     },
-    // ... other reducers if needed
   },
 });
 

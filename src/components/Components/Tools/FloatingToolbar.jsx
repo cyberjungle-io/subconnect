@@ -301,7 +301,8 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
 
   const handleSaveComponent = (e) => {
     e.stopPropagation();
-    dispatch(saveComponentThunk({ id: componentId, type: componentType, style, props, content }))
+    const componentToSave = { id: componentId, type: componentType, style, props, content };
+    dispatch(saveComponentThunk(componentToSave))
       .then(() => {
         console.log('Component saved successfully');
       })

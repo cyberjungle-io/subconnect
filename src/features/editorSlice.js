@@ -120,7 +120,7 @@ const createComponentWithDepth = (type, props, depth = 0) => {
 // Create the thunk
 export const saveComponentThunk = createAsyncThunk(
   'editor/saveComponent',
-  async (component, { dispatch, getState }) => {
+  async (component, { dispatch }) => {
     const savedComponent = {
       ...component,
       id: `saved_${component.id}`,
