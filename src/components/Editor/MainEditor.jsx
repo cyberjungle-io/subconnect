@@ -198,6 +198,7 @@ const MainEditor = () => {
               content: {
                 components: components,
                 globalSettings: globalSettings,
+                canvasSettings: canvasSettings  // Include canvasSettings here
               },
             };
           }

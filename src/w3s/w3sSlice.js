@@ -38,7 +38,8 @@ export const createProject = createAsyncThunk(
         name: 'Main',
         content: {
           components: [],
-          globalSettings: {}
+          globalSettings: {},
+          canvasSettings: {}
         }
       };
       
@@ -284,12 +285,11 @@ const w3sSlice = createSlice({
 
       // Update Project
       .addCase(updateProject.fulfilled, (state, action) => {
-        const index = state.projects.list.findIndex(project => project.id === action.payload.id);
+        const updatedProject = action.payload;
+        state.currentProject.data = updatedProject;
+        const index = state.projects.list.findIndex(project => project._id === updatedProject._id);
         if (index !== -1) {
-          state.projects.list[index] = action.payload;
-        }
-        if (state.currentProject.data && state.currentProject.data.id === action.payload.id) {
-          state.currentProject.data = action.payload;
+          state.projects.list[index] = updatedProject;
         }
       })
 

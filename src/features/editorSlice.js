@@ -416,7 +416,7 @@ export const editorSlice = createSlice({
       state.mode = action.payload;
     },
     loadPageContent: (state, action) => {
-      const { components, globalSettings } = action.payload;
+      const { components, globalSettings, canvasSettings } = action.payload;
       const regenerateIds = (component) => {
         const timestamp = Date.now();
         const randomString = Math.random().toString(36).substring(2, 15);
@@ -430,6 +430,7 @@ export const editorSlice = createSlice({
       };
       state.components = components.map(regenerateIds);
       state.globalSettings = globalSettings;
+      state.canvasSettings = canvasSettings || state.canvasSettings; // Use existing canvasSettings if not provided
     },
     setCurrentPage: (state, action) => {
       state.currentPage = action.payload;
@@ -493,6 +494,7 @@ export const editorSlice = createSlice({
       return initialState;
     },
     updateCanvasSettings: (state, action) => {
+      console.log('Updating canvas settings:', action.payload);
       state.canvasSettings = {
         ...state.canvasSettings,
         ...action.payload,
