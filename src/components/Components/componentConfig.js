@@ -10,6 +10,7 @@ export const componentTypes = {
   VIDEO: 'VIDEO',
   WHITEBOARD: 'WHITEBOARD',
   QUERY_VALUE: 'QUERY_VALUE',
+  SAVED_COMPONENT: 'SAVED_COMPONENT',
 };
 
 export const componentConfig = {
@@ -192,5 +193,19 @@ export const componentConfig = {
       formatting: 'none',
       borderRadius: '4px'
     }
+  },
+  [componentTypes.SAVED_COMPONENT]: {
+    name: 'Saved Component',
+    icon: FaDatabase, // You can choose a different icon if you prefer
+    acceptsChildren: true, // This might depend on the saved component's original type
+    createComponent: (savedComponent) => {
+      // This function will create a new component based on the saved component's data
+      const baseConfig = componentConfig[savedComponent.type];
+      return {
+        ...baseConfig,
+        ...savedComponent,
+        type: savedComponent.type, // Use the original type
+      };
+    },
   },
 };

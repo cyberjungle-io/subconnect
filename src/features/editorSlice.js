@@ -4,7 +4,7 @@ import {
   alignComponentsUtil,
   distributeComponentsUtil,
 } from "../utils/alignmentUtils";
-import { componentConfig } from "../components/Components/componentConfig";
+import { componentConfig, componentTypes } from "../components/Components/componentConfig";
 import { createComponent, updateComponent as updateComponentUtil } from "../components/Components/componentFactory";
 import { defaultGlobalSettings } from '../utils/defaultGlobalSettings';
 import { saveComponent } from './savedComponentsSlice';

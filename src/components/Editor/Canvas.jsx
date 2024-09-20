@@ -2,7 +2,8 @@ import React, { useRef, useCallback, useState } from "react";
 import { useDrop } from "react-dnd";
 import { useSelector } from 'react-redux';
 import ComponentRenderer from "../Components/Renderers/ComponentRenderer";
-import { v4 as uuidv4 } from 'uuid'; // Import uuidv4 for generating new IDs
+import { v4 as uuidv4 } from 'uuid';
+import { componentTypes } from '../Components/componentConfig';
 
 export const getCanvasStyle = (canvasSettings, componentLayout) => ({
   ...canvasSettings.style,
@@ -15,9 +16,9 @@ export const getCanvasStyle = (canvasSettings, componentLayout) => ({
   width: '100%',
   height: '100%',
   position: 'relative',
-  padding: '20px', // Uniform padding on all sides
-  gap: '20px', // Gap between components
-  overflowY: 'auto', // Allow vertical overflow
+  padding: '20px',
+  gap: '20px',
+  overflowY: 'auto',
 });
 
 const Canvas = ({
@@ -28,10 +29,10 @@ const Canvas = ({
   onUpdateComponent,
   onAddComponent,
   onMoveComponent,
-  globalSettings = {}, // Provide a default empty object
+  globalSettings = {},
   isDragModeEnabled,
-  onDeselectAll, // Add this prop
-  isViewMode = false, // Add this prop
+  onDeselectAll,
+  isViewMode = false,
   onUpdateCanvasSettings,
 }) => {
   const { backgroundColor = '#ffffff', componentLayout = 'vertical', style = {} } = useSelector(state => state.editor.globalSettings || {});
@@ -46,7 +47,7 @@ const Canvas = ({
       const canvasElement = canvasRef.current;
 
       if (!offset || !canvasElement) {
-        onAddComponent(item.type, null);
+        onAddComponent(item.type, null, null, item.savedComponent);
         return;
       }
 
@@ -56,7 +57,6 @@ const Canvas = ({
         y: offset.y - canvasBounds.top,
       };
 
-      // Find the FLEX_CONTAINER at the drop position
       const flexContainerAtPosition = components.find(comp => {
         if (comp.type !== 'FLEX_CONTAINER') return false;
         const compRect = canvasRef.current.querySelector(`[data-id="${comp.id}"]`).getBoundingClientRect();
@@ -65,14 +65,12 @@ const Canvas = ({
       });
 
       if (flexContainerAtPosition) {
-        // If dropping into a FLEX_CONTAINER, add as a child
         if (item.id && isDragModeEnabled) {
           onMoveComponent(item.id, flexContainerAtPosition.id);
         } else {
           onAddComponent(item.type, flexContainerAtPosition.id, null, item.savedComponent);
         }
       } else {
-        // If not dropping into a FLEX_CONTAINER, add to canvas
         const insertIndex = components.findIndex(comp => {
           const compRect = canvasRef.current.querySelector(`[data-id="${comp.id}"]`).getBoundingClientRect();
           return (componentLayout === 'vertical' && dropPosition.y < compRect.bottom) ||
@@ -147,8 +145,8 @@ const Canvas = ({
           selectedIds={selectedIds}
           onSelect={onSelectComponent}
           onUpdate={onUpdateComponent}
-          onAddChild={(parentId, childType) =>
-            onAddComponent(childType, parentId)
+          onAddChild={(parentId, childType, savedComponent) =>
+            onAddComponent(childType, parentId, null, savedComponent)
           }
           onMoveComponent={onMoveComponent}
           globalComponentLayout={componentLayout}
@@ -160,7 +158,7 @@ const Canvas = ({
           onToolbarClose={handleToolbarClose}
           isToolbarOpen={openToolbarId === component.id}
           onDeselect={onDeselectAll}
-          isViewMode={isViewMode} // Add this prop
+          isViewMode={isViewMode}
         />
       ))}
     </div>
