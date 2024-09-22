@@ -98,7 +98,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
               >
                 <span className="font-semibold">{currentProject.name}</span>
                 {currentPage && (
-                  <div className="current-page-name text-xs text-gray-600">Page: {currentPage.name}</div>
+                  <div className="current-page-name text-xs text-gray-600">{currentPage.name}</div>
                 )}
                 <FaChevronDown className={`absolute right-2 top-1/2 transform -translate-y-1/2 transition-transform ${expandedSections.currentProject ? 'rotate-180' : ''}`} />
               </button>
