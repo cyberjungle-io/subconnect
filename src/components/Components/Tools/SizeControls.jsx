@@ -116,7 +116,7 @@ const SizeControls = ({ style = {}, onStyleChange, componentType }) => {
               : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
           }`}
         >
-          Fit Content
+         Content
         </button>
         <button
           onClick={handleFitVertical}
@@ -126,7 +126,7 @@ const SizeControls = ({ style = {}, onStyleChange, componentType }) => {
               : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
           }`}
         >
-          Fit Vertical
+          Vertical
         </button>
         <button
           onClick={handleFitHorizontal}
@@ -136,7 +136,7 @@ const SizeControls = ({ style = {}, onStyleChange, componentType }) => {
               : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
           }`}
         >
-          Fit Horizontal
+           Horizontal
         </button>
       </div>
     </div>
@@ -237,7 +237,7 @@ const SizeControls = ({ style = {}, onStyleChange, componentType }) => {
       <div className="control-section-content">
         <h4 className="text-sm font-medium text-gray-700 mb-2">Presets</h4>
         {renderPresetButtons()}
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Fit Content</h4>
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Fit</h4>
         {renderFitButtons()}
         {renderSection('Width', 'width', width, (v) => setDimension('width', v))}
         {renderSection('Height', 'height', height, (v) => setDimension('height', v))}
