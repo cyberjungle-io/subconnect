@@ -109,7 +109,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
                       <div className="current-project-info">
                         <div className="current-project-name text-sm font-semibold text-gray-800">{currentProject.name}</div>
                         {currentPage && (
-                          <div className="current-page-name text-xs text-gray-600">Page: {currentPage.name}</div>
+                          <div className="current-page-name text-xs text-gray-600">{currentPage.name}</div>
                         )}
                       </div>
                     </div>
