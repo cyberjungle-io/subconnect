@@ -84,14 +84,14 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
 
   const renderSection = (title, content) => (
     <div className="control-section mb-8">
-      <h2 className="control-section-title text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-300">{title}</h2>
+      <h2 className="control-section-title text-xl font-semibold text-gray-800 mb-4">{title}</h2>
       <div className="control-section-content">
         {content}
       </div>
     </div>
   );
 
-  const generalContent = (
+  const titleContent = (
     <>
       <div className="mb-2">
         <label className="block text-sm font-medium text-gray-700 mb-1">Chart Title</label>
@@ -103,11 +103,6 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
           className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
       </div>
-    </>
-  );
-
-  const stylingContent = (
-    <>
       <div className="mb-2">
         <label className="block text-sm font-medium text-gray-700 mb-1">Title Font Size</label>
         <input
@@ -167,39 +162,42 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
     return luminance > 0.5 ? '#000000' : '#FFFFFF';
   };
 
-  const advancedContent = (
-    <>
-      <div className="mb-4">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Chart Elements</h4>
+  const chartElementsContent = (
+    <div className="space-y-12">
+      <div>
         <div className="flex flex-wrap gap-2 mb-2">
           {renderToggle("Data Points", "showDataPoints")}
           {renderToggle("Grid", "showGrid")}
           {renderToggle("Legend", "showLegend")}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 mb-4">
           {renderToggle("X Axis", "showXAxis")}
           {renderToggle("Y Axis", "showYAxis")}
         </div>
       </div>
 
-      <div className="mb-2">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Legend Position</label>
-        <select
-          name="legendPosition"
-          value={props?.legendPosition || 'bottom'}
-          onChange={handleChange}
-          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option value="top">Top</option>
-          <option value="right">Right</option>
-          <option value="bottom">Bottom</option>
-          <option value="left">Left</option>
-        </select>
-      </div>
+      {props.showLegend !== false && (
+        <div>
+          <h3 className="text-md font-semibold text-gray-800 mb-2">Legend</h3>
+          <div className="mb-4">
+            <select
+              name="legendPosition"
+              value={props?.legendPosition || 'bottom'}
+              onChange={handleChange}
+              className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="top">Top</option>
+              <option value="right">Right</option>
+              <option value="bottom">Bottom</option>
+              <option value="left">Left</option>
+            </select>
+          </div>
+        </div>
+      )}
 
       {props.dataKeys && props.dataKeys.length > 0 && (
-        <div className="mb-4">
-          <h3 className="text-md font-semibold text-gray-800 mb-2">Series Colors</h3>
+        <div>
+          <h3 className="text-md font-semibold text-gray-800 mb-2">Series</h3>
           {props.dataKeys.map((dataKey) => {
             const seriesColor = props.lineColors?.[dataKey] || props.colors?.[props.dataKeys.indexOf(dataKey) % props.colors.length];
             const textColor = getContrastColor(seriesColor);
@@ -224,65 +222,78 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
         </div>
       )}
       
-      <div className="mb-2">
-        <label className="block text-sm font-medium text-gray-700 mb-1">X Axis Data Type</label>
-        <select
-          name="xAxisDataType"
-          value={props?.xAxisDataType || 'category'}
-          onChange={handleChange}
-          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option value="category">Category</option>
-          <option value="date">Date</option>
-          <option value="number">Number</option>
-        </select>
-      </div>
+      {/* Axis controls */}
+      {(props.showXAxis !== false || props.showYAxis !== false) && (
+        <div>
+          <h3 className="text-md font-semibold text-gray-800 mb-2">Axis</h3>
+          
+          {props.showXAxis !== false && (
+            <>
+              <div className="mb-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">X Axis Data Type</label>
+                <select
+                  name="xAxisDataType"
+                  value={props?.xAxisDataType || 'category'}
+                  onChange={handleChange}
+                  className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="category">Category</option>
+                  <option value="date">Date</option>
+                  <option value="number">Number</option>
+                </select>
+              </div>
 
-      {props?.xAxisDataType === 'date' && (
-        <div className="mb-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Date Format</label>
-          <input
-            type="text"
-            name="dateFormat"
-            value={props?.dateFormat || 'MM/dd/yyyy'}
-            onChange={handleChange}
-            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-          <small className="text-gray-500">e.g., MM/dd/yyyy, yyyy-MM-dd, dd MMM yyyy</small>
+              {props?.xAxisDataType === 'date' && (
+                <div className="mb-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Date Format</label>
+                  <input
+                    type="text"
+                    name="dateFormat"
+                    value={props?.dateFormat || 'MM/dd/yyyy'}
+                    onChange={handleChange}
+                    className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                  <small className="text-gray-500">e.g., MM/dd/yyyy, yyyy-MM-dd, dd MMM yyyy</small>
+                </div>
+              )}
+            </>
+          )}
+
+          {(props.showXAxis !== false && props?.xAxisDataType === 'number') || (props.showYAxis !== false && props?.yAxisDataType === 'number') ? (
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Number Format</label>
+              <input
+                type="text"
+                name="numberFormat"
+                value={props?.numberFormat || '0,0.[00]'}
+                onChange={handleChange}
+                className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              />
+              <small className="text-gray-500">e.g., 0,0.[00], $0,0.00, 0%</small>
+            </div>
+          ) : null}
+
+          {props.showYAxis !== false && (
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Y Axis Data Type</label>
+              <select
+                name="yAxisDataType"
+                value={props?.yAxisDataType || 'number'}
+                onChange={handleChange}
+                className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="number">Number</option>
+                <option value="category">Category</option>
+              </select>
+            </div>
+          )}
         </div>
       )}
 
-      {(props?.xAxisDataType === 'number' || props?.yAxisDataType === 'number') && (
+      <div>
+        <h3 className="text-md font-semibold text-gray-800 mb-2">Tooltip</h3>
         <div className="mb-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Number Format</label>
-          <input
-            type="text"
-            name="numberFormat"
-            value={props?.numberFormat || '0,0.[00]'}
-            onChange={handleChange}
-            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-          <small className="text-gray-500">e.g., 0,0.[00], $0,0.00, 0%</small>
-        </div>
-      )}
-
-      <div className="mb-2">
-        <label className="block text-sm font-medium text-gray-700 mb-1">Y Axis Data Type</label>
-        <select
-          name="yAxisDataType"
-          value={props?.yAxisDataType || 'number'}
-          onChange={handleChange}
-          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        >
-          <option value="number">Number</option>
-          <option value="category">Category</option>
-        </select>
-      </div>
-
-      <div className="mb-4">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Tooltip Customization</h4>
-        <div className="mb-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tooltip Background Color</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
           <ColorPicker
             color={props?.tooltipBackgroundColor || '#ffffff'}
             onChange={(color) => handleChange({ target: { name: 'tooltipBackgroundColor', value: color } })}
@@ -314,7 +325,7 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
           <small className="text-gray-500">e.g., 0,0.[00], $0,0.00, 0%</small>
         </div>
       </div>
-    </>
+    </div>
   );
 
   const handleSeriesColorChange = (dataKey, color) => {
@@ -324,9 +335,8 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
 
   return (
     <div className="chart-controls space-y-12">
-      {renderSection("General", generalContent)}
-      {renderSection("Styling", stylingContent)}
-      {renderSection("Advanced", advancedContent)}
+      {renderSection("Chart Elements", chartElementsContent)}
+      {renderSection("Title", titleContent)}
     </div>
   );
 };
