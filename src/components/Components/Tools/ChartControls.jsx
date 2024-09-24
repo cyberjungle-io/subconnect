@@ -83,8 +83,8 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
   }, [props, memoizedOnPropsChange]);
 
   const renderSection = (title, content) => (
-    <div className="control-section mb-4">
-      <h3 className="control-section-title text-sm font-medium text-gray-700 mb-2">{title}</h3>
+    <div className="control-section mb-8">
+      <h2 className="control-section-title text-xl font-semibold text-gray-800 mb-4 pb-2 border-b border-gray-300">{title}</h2>
       <div className="control-section-content">
         {content}
       </div>
@@ -141,44 +141,47 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
     </>
   );
 
+  const buttonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border flex-grow text-center";
+  const activeButtonClass = `${buttonClass} bg-[#cce7ff] text-blue-700 border-blue-300`;
+  const inactiveButtonClass = `${buttonClass} bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]`;
+
+  const renderToggle = (label, name) => (
+    <button
+      onClick={() => handleChange({ target: { name, type: 'checkbox', checked: !props[name] } })}
+      className={props[name] !== false ? activeButtonClass : inactiveButtonClass}
+    >
+      {label}
+    </button>
+  );
+
+  const getContrastColor = (hexColor) => {
+    // Convert hex to RGB
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+    
+    // Calculate luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    
+    // Return black for light colors, white for dark colors
+    return luminance > 0.5 ? '#000000' : '#FFFFFF';
+  };
+
   const advancedContent = (
     <>
-      <div className="mb-2">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            name="showDataPoints"
-            checked={props?.showDataPoints !== false}
-            onChange={handleChange}
-            className="mr-2"
-          />
-          <span className="text-sm font-medium text-gray-700">Show Data Points</span>
-        </label>
+      <div className="mb-4">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Chart Elements</h4>
+        <div className="flex flex-wrap gap-2 mb-2">
+          {renderToggle("Data Points", "showDataPoints")}
+          {renderToggle("Grid", "showGrid")}
+          {renderToggle("Legend", "showLegend")}
+        </div>
+        <div className="flex gap-2">
+          {renderToggle("X Axis", "showXAxis")}
+          {renderToggle("Y Axis", "showYAxis")}
+        </div>
       </div>
-      <div className="mb-2">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            name="showXAxis"
-            checked={props?.showXAxis !== false}
-            onChange={handleChange}
-            className="mr-2"
-          />
-          <span className="text-sm font-medium text-gray-700">Show X Axis</span>
-        </label>
-      </div>
-      <div className="mb-2">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            name="showYAxis"
-            checked={props?.showYAxis !== false}
-            onChange={handleChange}
-            className="mr-2"
-          />
-          <span className="text-sm font-medium text-gray-700">Show Y Axis</span>
-        </label>
-      </div>
+
       <div className="mb-2">
         <label className="block text-sm font-medium text-gray-700 mb-1">Legend Position</label>
         <select
@@ -193,42 +196,31 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
           <option value="left">Left</option>
         </select>
       </div>
-      <div className="mb-2">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            name="showGrid"
-            checked={props?.showGrid !== false}
-            onChange={handleChange}
-            className="mr-2"
-          />
-          <span className="text-sm font-medium text-gray-700">Show Grid</span>
-        </label>
-      </div>
-      <div className="mb-2">
-        <label className="flex items-center">
-          <input
-            type="checkbox"
-            name="showLegend"
-            checked={props?.showLegend !== false}
-            onChange={handleChange}
-            className="mr-2"
-          />
-          <span className="text-sm font-medium text-gray-700">Show Legend</span>
-        </label>
-      </div>
+
       {props.dataKeys && props.dataKeys.length > 0 && (
-        <div className="mb-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">Series Colors</label>
-          {props.dataKeys.map((dataKey) => (
-            <div key={dataKey} className="flex items-center mb-2">
-              <span className="text-sm text-gray-600 mr-2">{props.seriesNames?.[dataKey] || dataKey}:</span>
-              <ColorPicker
-                color={props.lineColors?.[dataKey] || props.colors?.[props.dataKeys.indexOf(dataKey) % props.colors.length]}
-                onChange={(color) => handleSeriesColorChange(dataKey, color)}
-              />
-            </div>
-          ))}
+        <div className="mb-4">
+          <h3 className="text-md font-semibold text-gray-800 mb-2">Series Colors</h3>
+          {props.dataKeys.map((dataKey) => {
+            const seriesColor = props.lineColors?.[dataKey] || props.colors?.[props.dataKeys.indexOf(dataKey) % props.colors.length];
+            const textColor = getContrastColor(seriesColor);
+            return (
+              <div key={dataKey} className="mb-3">
+                <label 
+                  className="block text-sm font-semibold px-2 py-1 rounded mb-1"
+                  style={{
+                    backgroundColor: seriesColor,
+                    color: textColor
+                  }}
+                >
+                  {props.seriesNames?.[dataKey] || dataKey}
+                </label>
+                <ColorPicker
+                  color={seriesColor}
+                  onChange={(color) => handleSeriesColorChange(dataKey, color)}
+                />
+              </div>
+            );
+          })}
         </div>
       )}
       
@@ -331,7 +323,7 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
   };
 
   return (
-    <div className="chart-controls">
+    <div className="chart-controls space-y-12">
       {renderSection("General", generalContent)}
       {renderSection("Styling", stylingContent)}
       {renderSection("Advanced", advancedContent)}
