@@ -84,7 +84,7 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
 
   const renderSection = (title, content) => (
     <div className="control-section mb-8">
-      <h2 className="control-section-title text-xl font-semibold text-gray-800 mb-4">{title}</h2>
+      <h3 className="text-lg font-semibold text-gray-700 mb-4">{title}</h3>
       <div className="control-section-content">
         {content}
       </div>
