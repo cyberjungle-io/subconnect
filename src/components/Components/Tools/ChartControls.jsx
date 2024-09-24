@@ -150,6 +150,11 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
   );
 
   const getContrastColor = (hexColor) => {
+    // Add a check for undefined or invalid hexColor
+    if (!hexColor || typeof hexColor !== 'string' || hexColor.length !== 7) {
+      return '#000000'; // Default to black if the color is invalid
+    }
+
     // Convert hex to RGB
     const r = parseInt(hexColor.slice(1, 3), 16);
     const g = parseInt(hexColor.slice(3, 5), 16);
@@ -199,7 +204,7 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
         <div>
           <h3 className="text-md font-semibold text-gray-800 mb-2">Series</h3>
           {props.dataKeys.map((dataKey) => {
-            const seriesColor = props.lineColors?.[dataKey] || props.colors?.[props.dataKeys.indexOf(dataKey) % props.colors.length];
+            const seriesColor = props.lineColors?.[dataKey] || props.colors?.[props.dataKeys.indexOf(dataKey) % (props.colors?.length || 1)] || '#000000';
             const textColor = getContrastColor(seriesColor);
             return (
               <div key={dataKey} className="mb-3">
