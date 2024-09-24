@@ -1,20 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaChevronDown, FaChevronRight } from 'react-icons/fa';
 import ColorPicker from '../../common/ColorPicker';
 import { useSelector, useDispatch } from 'react-redux';
 import { executeQuery } from '../../../features/graphQLSlice';
 import { format } from 'date-fns';
 
 const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
-  const [expandedSections, setExpandedSections] = useState({
-    general: true,
-    styling: false,
-    advanced: false,
-  });
-
-  const dispatch = useDispatch();
-  const queries = useSelector(state => state.w3s?.queries?.list ?? []);
-  const queriesStatus = useSelector(state => state.w3s?.queries?.status ?? 'idle');
   const [selectedQuery, setSelectedQuery] = useState(null);
   const [availableFields, setAvailableFields] = useState([]);
   const queryResult = useSelector(state => state.graphQL.queryResult);
@@ -26,6 +16,10 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const memoizedOnPropsChange = useCallback((newProps) => {
     onPropsChange(newProps);
   }, [onPropsChange]);
+
+  const dispatch = useDispatch();
+  const queries = useSelector(state => state.w3s?.queries?.list ?? []);
+  const queriesStatus = useSelector(state => state.w3s?.queries?.status ?? 'idle');
 
   useEffect(() => {
     if (props?.selectedQueryId) {
@@ -88,24 +82,12 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
     memoizedOnPropsChange(updatedProps);
   }, [props, memoizedOnPropsChange]);
 
-  const toggleSection = (section) => {
-    setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
-  };
-
-  const renderSection = (title, sectionKey, content) => (
+  const renderSection = (title, content) => (
     <div className="control-section mb-4">
-      <div
-        className="control-section-header flex items-center cursor-pointer"
-        onClick={() => toggleSection(sectionKey)}
-      >
-        {expandedSections[sectionKey] ? <FaChevronDown className="mr-2" /> : <FaChevronRight className="mr-2" />}
-        <span className="control-section-title text-sm font-medium text-gray-700">{title}</span>
+      <h3 className="control-section-title text-sm font-medium text-gray-700 mb-2">{title}</h3>
+      <div className="control-section-content">
+        {content}
       </div>
-      {expandedSections[sectionKey] && (
-        <div className="control-section-content mt-2">
-          {content}
-        </div>
-      )}
     </div>
   );
 
@@ -350,9 +332,9 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
 
   return (
     <div className="chart-controls">
-      {renderSection("General", "general", generalContent)}
-      {renderSection("Styling", "styling", stylingContent)}
-      {renderSection("Advanced", "advanced", advancedContent)}
+      {renderSection("General", generalContent)}
+      {renderSection("Styling", stylingContent)}
+      {renderSection("Advanced", advancedContent)}
     </div>
   );
 };
