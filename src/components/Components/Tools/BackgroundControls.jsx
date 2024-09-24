@@ -46,16 +46,17 @@ const BackgroundControls = ({ style, onStyleChange }) => {
 
   return (
     <div className="control-section">
+      <h3 className="text-lg font-semibold text-gray-700 mb-4">Background Controls</h3>
       <div className="control-section-content">
         <div className="mb-2">
-          <label className="block text-xs font-medium text-gray-700 mb-1">Background Color</label>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Color</label>
           <ColorPicker
             color={backgroundColor}
             onChange={handleBackgroundChange}
           />
         </div>
         <div className="mb-2">
-          <label className="block text-xs font-medium text-gray-700 mb-1">Background Image</label>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Image</label>
           <input
             type="file"
             accept="image/*,.svg"
