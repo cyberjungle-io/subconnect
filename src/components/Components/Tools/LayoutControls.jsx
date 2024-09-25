@@ -2,7 +2,9 @@ import React from 'react';
 
 const LayoutControls = ({ style, onStyleChange }) => {
   const handlePropChange = (name, value) => {
-    onStyleChange({ [name]: value });
+    // Reverse the flexDirection value
+    const newValue = name === 'flexDirection' ? (value === 'row' ? 'column' : 'row') : value;
+    onStyleChange({ [name]: newValue });
   };
 
   const buttonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border flex-grow text-center";
@@ -60,11 +62,11 @@ const LayoutControls = ({ style, onStyleChange }) => {
         <div className="mb-4">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Direction</h4>
           <div className="flex gap-2">
-            {["row", "column"].map(value => (
+            {["column", "row"].map(value => (
               <button
                 key={value}
                 onClick={() => handlePropChange("flexDirection", value)}
-                className={`${style.flexDirection === value ? activeButtonClass : inactiveButtonClass} flex-1`}
+                className={`${style.flexDirection === (value === 'column' ? 'row' : 'column') ? activeButtonClass : inactiveButtonClass} flex-1`}
               >
                 {value.charAt(0).toUpperCase() + value.slice(1)}
               </button>
