@@ -7,7 +7,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   Label
 } from "recharts";
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, parse } from 'date-fns';
 import numeral from 'numeral';
 
 const ChartRenderer = ({ component }) => {
@@ -114,7 +114,24 @@ const ChartRenderer = ({ component }) => {
 
   const formatXAxis = (tickItem) => {
     if (chartProps.xAxisDataType === 'date') {
-      return format(parseISO(tickItem), chartProps.dateFormat || 'MM/dd/yyyy');
+      try {
+        // First, try to parse the tickItem as an ISO string
+        let date = parseISO(tickItem);
+        
+        // If parsing fails (invalid date), try parsing with the input format
+        if (isNaN(date.getTime())) {
+          date = parse(tickItem, chartProps.dateFormat || 'MM/dd/yyyy', new Date());
+        }
+        
+        // If we have a valid date, format it
+        if (!isNaN(date.getTime())) {
+          return format(date, chartProps.dateFormat || 'MM/dd/yyyy');
+        }
+      } catch (error) {
+        console.error('Error formatting date:', error);
+      }
+      // If all parsing attempts fail, return the original tickItem
+      return tickItem;
     }
     if (chartProps.xAxisDataType === 'number') {
       return numeral(tickItem).format(chartProps.numberFormat || '0,0.[00]');

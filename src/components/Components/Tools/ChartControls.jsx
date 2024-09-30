@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import ColorPicker from '../../common/ColorPicker';
 import { useSelector, useDispatch } from 'react-redux';
 import { executeQuery } from '../../../features/graphQLSlice';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 
 const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const [selectedQuery, setSelectedQuery] = useState(null);
@@ -77,6 +77,14 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
 
     if (name === 'chartType') {
       updatedProps.key = Date.now();
+    }
+
+    if (name === 'dateFormat' && props.xAxisDataType === 'date') {
+      // Update the data with the new date format
+      updatedProps.data = props.data.map(item => ({
+        ...item,
+        [props.nameKey]: format(parse(item[props.nameKey], props.dateFormat, new Date()), newValue)
+      }));
     }
 
     memoizedOnPropsChange(updatedProps);
