@@ -36,6 +36,16 @@ const PricingTier = ({ title, monthlyPrice, yearlyPrice, features, isPopular, is
   </div>
 );
 
+const FAQSection = () => (
+  <div className="mt-20">
+    <h2 className="text-3xl font-extrabold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
+    <div className="max-w-3xl mx-auto">
+      {/* FAQ items will go here */}
+      <p className="text-center text-gray-600">FAQ content coming soon...</p>
+    </div>
+  </div>
+);
+
 const PricingPage = () => {
   const [isYearly, setIsYearly] = useState(false);
 
@@ -95,6 +105,7 @@ const PricingPage = () => {
               <PricingTier key={index} {...tier} isYearly={isYearly} />
             ))}
           </div>
+          <FAQSection />
         </div>
       </div>
     </div>
