@@ -108,9 +108,11 @@ const QueryValueControls = ({ props, onPropsChange }) => {
         {!isRunningQuery && queryResult !== null && (
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Query Result:</label>
-            <span className="text-sm text-gray-600">
-              {typeof queryResult === 'object' ? JSON.stringify(queryResult) : queryResult}
-            </span>
+            <div className="max-h-[150px] overflow-y-auto border border-gray-300 rounded-md p-2 bg-white">
+              <pre className="text-xs text-gray-600 whitespace-pre-wrap">
+                {typeof queryResult === 'object' ? JSON.stringify(queryResult, null, 2) : queryResult}
+              </pre>
+            </div>
           </div>
         )}
         <div className="mb-4">
@@ -227,7 +229,6 @@ const QueryValueControls = ({ props, onPropsChange }) => {
             />
           </label>
         </div>
-
       </div>
     </div>
   );
