@@ -68,26 +68,17 @@ const FAQSection = () => (
         <h3 className="text-lg font-semibold text-gray-900">What types of payment methods do you accept?</h3>
         <p className="mt-2 text-gray-600">We accept major credit cards, PayPal, and bank transfers for our paid plans.</p>
       </div>
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900">Is there a trial period for paid plans?</h3>
-        <p className="mt-2 text-gray-600">Yes, we offer a 14-day free trial for all paid plans. You can explore all features risk-free before committing to a subscription.</p>
-      </div>
+      
       <div>
         <h3 className="text-lg font-semibold text-gray-900">Can I cancel my subscription at any time?</h3>
         <p className="mt-2 text-gray-600">Yes, you can cancel your subscription at any time. Your access will continue until the end of your current billing period.</p>
       </div>
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900">What kind of support is available for each plan?</h3>
-        <p className="mt-2 text-gray-600">All plans have access to our community forums and knowledge base. Paid plans also include email support, with Premium plans receiving priority support.</p>
-      </div>
+      
       <div>
         <h3 className="text-lg font-semibold text-gray-900">How do groups work in the Premium plan?</h3>
         <p className="mt-2 text-gray-600">Groups in the Premium plan allow you to collaborate with team members. You can assign admin or builder access to group members, enabling efficient teamwork on your pages.</p>
       </div>
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900">Are there any discounts for non-profit organizations or educational institutions?</h3>
-        <p className="mt-2 text-gray-600">Yes, we offer special discounts for eligible non-profit organizations and educational institutions. Please contact our sales team for more information.</p>
-      </div>
+      
       <div>
         <h3 className="text-lg font-semibold text-gray-900">Can I share my account with others?</h3>
         <p className="mt-2 text-gray-600">Individual accounts are for personal use only. For team collaboration, we recommend using the groups feature in our Premium plan.</p>
