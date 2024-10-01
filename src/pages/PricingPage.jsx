@@ -39,9 +39,64 @@ const PricingTier = ({ title, monthlyPrice, yearlyPrice, features, isPopular, is
 const FAQSection = () => (
   <div className="mt-20">
     <h2 className="text-3xl font-extrabold text-gray-900 mb-8 text-center">Frequently Asked Questions</h2>
-    <div className="max-w-3xl mx-auto">
-      {/* FAQ items will go here */}
-      <p className="text-center text-gray-600">FAQ content coming soon...</p>
+    <div className="max-w-3xl mx-auto space-y-6">
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">What's the difference between monthly and yearly billing?</h3>
+        <p className="mt-2 text-gray-600">Yearly billing offers a discount compared to monthly billing. You pay for 12 months upfront and get a lower effective monthly rate.</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">Can I upgrade or downgrade my plan at any time?</h3>
+        <p className="mt-2 text-gray-600">Yes, you can change your plan at any time. If you upgrade, you'll have immediate access to new features. If you downgrade, the changes will take effect at the start of your next billing cycle.</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">What happens if I exceed my page limit?</h3>
+        <p className="mt-2 text-gray-600">If you reach your page limit, you won't be able to create new pages until you upgrade your plan or remove existing pages.</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">Are there any hidden fees or additional costs?</h3>
+        <p className="mt-2 text-gray-600">No, there are no hidden fees. The price you see is the price you pay. All features within your chosen plan are included in the advertised price.</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">What are the AI features included in the Premium plan?</h3>
+        <p className="mt-2 text-gray-600">The Premium plan includes AI-powered features such as an intelligent query system and an AI page builder to help you create and manage content more efficiently.</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">How does the Free plan differ from the paid plans?</h3>
+        <p className="mt-2 text-gray-600">The Free plan allows you to view public pages, interact with pages (with permissions), and build pages without saving. Paid plans offer additional features like saving pages and increased page limits.</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">What types of payment methods do you accept?</h3>
+        <p className="mt-2 text-gray-600">We accept major credit cards, PayPal, and bank transfers for our paid plans.</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">Is there a trial period for paid plans?</h3>
+        <p className="mt-2 text-gray-600">Yes, we offer a 14-day free trial for all paid plans. You can explore all features risk-free before committing to a subscription.</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">Can I cancel my subscription at any time?</h3>
+        <p className="mt-2 text-gray-600">Yes, you can cancel your subscription at any time. Your access will continue until the end of your current billing period.</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">What kind of support is available for each plan?</h3>
+        <p className="mt-2 text-gray-600">All plans have access to our community forums and knowledge base. Paid plans also include email support, with Premium plans receiving priority support.</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">How do groups work in the Premium plan?</h3>
+        <p className="mt-2 text-gray-600">Groups in the Premium plan allow you to collaborate with team members. You can assign admin or builder access to group members, enabling efficient teamwork on your pages.</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">Are there any discounts for non-profit organizations or educational institutions?</h3>
+        <p className="mt-2 text-gray-600">Yes, we offer special discounts for eligible non-profit organizations and educational institutions. Please contact our sales team for more information.</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">Can I share my account with others?</h3>
+        <p className="mt-2 text-gray-600">Individual accounts are for personal use only. For team collaboration, we recommend using the groups feature in our Premium plan.</p>
+      </div>
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">What happens to my pages if I downgrade from Premium to Entry?</h3>
+        <p className="mt-2 text-gray-600">If you have more than 10 pages when downgrading, you'll need to remove excess pages to comply with the Entry plan limit. Your remaining pages and their content will be preserved.</p>
+      </div>
+      
     </div>
   </div>
 );
