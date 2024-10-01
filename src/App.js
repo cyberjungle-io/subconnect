@@ -14,6 +14,7 @@ import { setEditorMode } from './features/editorSlice';
 import { fetchQueries } from './w3s/w3sSlice';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistor } from './store/store';
+import PricingPage from './pages/PricingPage';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -49,6 +50,7 @@ function AppContent() {
             <MainEditor />
           }
         />
+        <Route path="/pricing" element={<PricingPage />} />
       </Routes>
     </Router>
   );
