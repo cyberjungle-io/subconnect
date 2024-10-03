@@ -27,9 +27,9 @@ const LandingPage = () => {
         <h1 className="text-7xl font-bold text-indigo-900">Subconnect</h1>
       </div>
 
-      <main className="flex-grow flex items-start pt-8"> {/* Changed from items-center to items-start and added pt-8 */}
-        <div className="container mx-auto px-4 flex items-center">
-          <div className="w-3/5 pr-12 space-y-8"> {/* Changed space-y-12 to space-y-8 */}
+      <main className="flex-grow flex pt-8 mt-36">
+        <div className="container mx-auto px-4 flex">
+          <div className="w-3/5 pr-12 space-y-8 self-start"> {/* Added self-start */}
             <h2 className="text-6xl font-bold leading-tight text-indigo-900">
               Coordinating the Decentralized Workforce
             </h2>
@@ -40,7 +40,7 @@ const LandingPage = () => {
               Connect Now
             </button>
           </div>
-          <div className="w-2/5">
+          <div className="w-2/5 self-end "> {/* Added self-end and pt-16 */}
             <img src={LandingPageGraphic_2} alt="Landing Page Graphic" className="w-full h-auto" />
           </div>
         </div>
