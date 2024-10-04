@@ -1,4 +1,4 @@
-import { FaColumns, FaFont, FaImage, FaChartBar, FaTable, FaPlayCircle, FaSquare, FaHeading, FaChalkboard, FaDatabase } from 'react-icons/fa';
+import { FaColumns, FaFont, FaImage, FaChartBar, FaTable, FaPlayCircle, FaSquare, FaHeading, FaChalkboard, FaDatabase, FaClipboardList } from 'react-icons/fa';
 
 export const componentTypes = {
   FLEX_CONTAINER: 'FLEX_CONTAINER',
@@ -11,6 +11,7 @@ export const componentTypes = {
   WHITEBOARD: 'WHITEBOARD',
   QUERY_VALUE: 'QUERY_VALUE',
   SAVED_COMPONENT: 'SAVED_COMPONENT',
+  KANBAN: 'KANBAN',
 };
 
 export const componentConfig = {
@@ -207,5 +208,20 @@ export const componentConfig = {
         type: savedComponent.type, // Use the original type
       };
     },
+  },
+  [componentTypes.KANBAN]: {
+    name: 'Kanban Board',
+    icon: FaClipboardList,
+    acceptsChildren: false,
+    defaultSize: { width: '100%', height: '400px' },
+    defaultProps: {
+      columns: [
+        { id: 'col1', title: 'To Do' },
+        { id: 'col2', title: 'In Progress' },
+        { id: 'col3', title: 'Done' }
+      ],
+      tasks: [],
+      borderRadius: '4px'
+    }
   },
 };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaHeading, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave } from 'react-icons/fa';
+import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaHeading, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave, FaClipboardList } from 'react-icons/fa';
 import SizeControls from './SizeControls';
 import LayoutControls from './LayoutControls';
 import BorderControls from './BorderControls';
@@ -14,6 +14,7 @@ import ButtonControls from './ButtonControls';
 import QueryValueControls from './QueryValueControls';
 import BasicTextControls from './BasicTextControls';
 import ChartDataControls from './ChartDataControls';
+import KanbanControls from './KanbanControls';
 import { useDispatch } from 'react-redux';
 import { renameComponent, saveComponentThunk } from '../../../features/editorSlice';
 
@@ -80,6 +81,13 @@ const iconMap = {
     { icon: FaArrowsAlt, tooltip: 'Spacing' },
     { icon: FaPalette, tooltip: 'Background' },
     // Add any other controls you want for the canvas
+  ],
+  KANBAN: [
+    { icon: FaExpand, tooltip: 'Size' },
+    { icon: FaArrowsAlt, tooltip: 'Spacing' },
+    { icon: FaBorderStyle, tooltip: 'Border' },
+    { icon: FaPalette, tooltip: 'Background' },
+    { icon: FaClipboardList, tooltip: 'Kanban Controls' },
   ],
 };
 
@@ -256,6 +264,8 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         return <ButtonControls {...sharedProps} />;
       case 'Query Controls':
         return  <QueryValueControls {...sharedProps} />;
+      case 'Kanban Controls':
+        return <KanbanControls {...sharedProps} />;
       default:
         return null;
     }

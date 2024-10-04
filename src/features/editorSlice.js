@@ -510,6 +510,16 @@ export const editorSlice = createSlice({
         },
       };
     },
+    updateKanbanBoard: (state, action) => {
+      const { id, updates } = action.payload;
+      const component = findComponentById(state.components, id);
+      if (component && component.type === 'KANBAN') {
+        component.props = {
+          ...component.props,
+          ...updates,
+        };
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(saveComponentThunk.fulfilled, (state, action) => {
@@ -560,6 +570,7 @@ export const {
   updateWhiteboardStrokeColor,
   resetEditorState,
   updateCanvasSettings,
+  updateKanbanBoard,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

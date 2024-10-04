@@ -11,6 +11,7 @@ import ChartRenderer from "./ChartRenderer";
 import WhiteboardRenderer from "./WhiteboardRenderer";
 import VideoRenderer from "./VideoRenderer";
 import QueryValueRenderer from "./QueryValueRenderer"; // Add this import
+import KanbanRenderer from "./KanbanRenderer";
 import { getHighlightColor } from '../../../utils/highlightColors'; // We'll create this utility function
 import { FaPencilAlt, FaTimes } from 'react-icons/fa'; // Add FaTimes import
 import FloatingToolbar from '../Tools/FloatingToolbar';
@@ -297,6 +298,8 @@ const ComponentRenderer = React.memo(({
         return <VideoRenderer {...sharedProps} />;
       case "QUERY_VALUE": // Add this case
         return <QueryValueRenderer {...sharedProps} />;
+      case 'KANBAN':
+        return <KanbanRenderer {...sharedProps} isInteractive={isViewMode} />;
       default:
         return null;
     }
@@ -436,7 +439,7 @@ const ComponentRenderer = React.memo(({
             {component.name || component.type}
           </div>
         )}
-        {isThisComponentSelected && (
+        {isThisComponentSelected && !isViewMode && (
           <>
             <ResizeHandle
               onResize={(newSize, unit) => handleResize(newSize, unit, 'width')}
