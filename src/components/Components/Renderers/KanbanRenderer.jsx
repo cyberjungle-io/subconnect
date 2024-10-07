@@ -83,8 +83,8 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
               <h3 style={{ marginBottom: '8px', color: getContrastColor(column.backgroundColor) }}>
                 {column.title}
               </h3>
-              <Droppable droppableId={column.id} isDropDisabled={!isInteractive}>
-                {(provided) => (
+              <Droppable droppableId={column.id} key={column.id}>
+                {(provided, snapshot) => (
                   <div
                     {...provided.droppableProps}
                     ref={provided.innerRef}
@@ -93,24 +93,26 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                       padding: '8px', 
                       borderRadius: '4px', 
                       minHeight: '100px',
-                      backgroundColor: column.innerBackgroundColor || lightenColor(column.backgroundColor || '#f4f5f7', 10)
+                      backgroundColor: column.innerBackgroundColor || lightenColor(column.backgroundColor || '#f4f5f7', 10),
+                      ...(snapshot.isDraggingOver ? { backgroundColor: '#e0e0e0' } : {})
                     }}
                   >
                     {tasks
                       .filter((task) => task.columnId === column.id)
                       .map((task, index) => (
                         <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={!isInteractive}>
-                          {(provided) => (
+                          {(provided, snapshot) => (
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
                               style={{
                                 ...provided.draggableProps.style,
-                                backgroundColor: 'white',
+                                backgroundColor: snapshot.isDragging ? '#f0f0f0' : 'white',
                                 padding: '8px',
                                 marginBottom: '8px',
                                 borderRadius: '4px',
+                                boxShadow: snapshot.isDragging ? '0 5px 10px rgba(0,0,0,0.2)' : 'none',
                               }}
                             >
                               <h4>{task.title}</h4>
