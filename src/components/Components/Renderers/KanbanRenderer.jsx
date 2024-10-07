@@ -7,6 +7,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const [columns, setColumns] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState(null);
+  const [selectedTask, setSelectedTask] = useState(null);
 
   useEffect(() => {
     // Initialize with default columns and tasks if not provided
@@ -72,25 +73,38 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
   }, [columns, isInteractive, onUpdate, component.id, component.props]);
 
-  const handleDoubleClick = useCallback((columnId) => {
+  const handleDoubleClick = useCallback((event, columnId, task = null) => {
     if (isInteractive) {
+      event.stopPropagation();
       setSelectedColumnId(columnId);
+      setSelectedTask(task);
       setIsModalOpen(true);
     }
   }, [isInteractive]);
 
-  const handleAddTask = useCallback((newTask) => {
+  const handleAddOrUpdateTask = useCallback((taskData) => {
     const updatedColumns = { ...columns };
-    const columnId = newTask.columnId || Object.keys(columns)[0];
-    const taskWithId = { ...newTask, id: uuidv4(), columnId };
-    updatedColumns[columnId].tasks.push(taskWithId);
+    const columnId = taskData.columnId || Object.keys(columns)[0];
+
+    if (selectedTask) {
+      // Update existing task
+      updatedColumns[columnId].tasks = updatedColumns[columnId].tasks.map(task =>
+        task.id === selectedTask.id ? { ...task, ...taskData } : task
+      );
+    } else {
+      // Add new task
+      const newTask = { ...taskData, id: uuidv4(), columnId };
+      updatedColumns[columnId].tasks.push(newTask);
+    }
+
     setColumns(updatedColumns);
 
     // Flatten tasks for updating the component
     const allTasks = Object.values(updatedColumns).flatMap(column => column.tasks);
     onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
     setIsModalOpen(false);
-  }, [columns, onUpdate, component.id, component.props]);
+    setSelectedTask(null);
+  }, [columns, onUpdate, component.id, component.props, selectedTask]);
 
   const getTaskDuration = useCallback((task) => {
     const start = new Date(task.createdAt);
@@ -107,7 +121,8 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   }, []);
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+         onDoubleClick={(e) => handleDoubleClick(e, Object.keys(columns)[0])}>
       <DragDropContext onDragEnd={onDragEnd}>
         <div style={{ display: 'flex', height: '100%', overflowX: 'auto' }}>
           {Object.values(columns).map((column) => (
@@ -123,7 +138,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                 borderRadius: '4px',
                 margin: '0 4px'
               }}
-              onDoubleClick={() => handleDoubleClick(column.id)}
+              onDoubleClick={(e) => handleDoubleClick(e, column.id)}
             >
               <h3 style={{ marginBottom: '8px', color: getContrastColor(column.backgroundColor) }}>
                 {column.title}
@@ -151,21 +166,35 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                             {...provided.dragHandleProps}
                             style={{
                               ...provided.draggableProps.style,
-                              backgroundColor: snapshot.isDragging ? '#f0f0f0' : 'white',
+                              backgroundColor: task.color || 'white',
                               padding: '8px',
                               marginBottom: '8px',
                               borderRadius: '4px',
                               boxShadow: snapshot.isDragging ? '0 5px 10px rgba(0,0,0,0.2)' : 'none',
+                              color: getContrastColor(task.color || '#ffffff'),
+                              position: 'relative',
+                              minHeight: '80px', // Ensure enough space for content and duration
                             }}
+                            onDoubleClick={(e) => handleDoubleClick(e, column.id, task)}
                           >
-                            <h4>{task.title}</h4>
-                            <p>Total Duration: {getTaskDuration(task)}</p>
-                            <p>In this column: {getColumnDuration(task)}</p>
+                            <h4 style={{ marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>{task.title}</h4>
                             {task.subtasks && (
-                              <button onClick={() => {/* Navigate to subtasks */}}>
+                              <button 
+                                onClick={() => {/* Navigate to subtasks */}}
+                                style={{ fontSize: '12px', marginTop: '4px' }}
+                              >
                                 View Subtasks
                               </button>
                             )}
+                            <div style={{
+                              position: 'absolute',
+                              bottom: '4px',
+                              right: '4px',
+                              fontSize: '10px',
+                              opacity: 0.7,
+                            }}>
+                              {getTaskDuration(task)} | {getColumnDuration(task)}
+                            </div>
                           </div>
                         )}
                       </Draggable>
@@ -181,9 +210,13 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
       {isInteractive && (
         <KanBanTaskModal
           isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onAddTask={handleAddTask}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedTask(null);
+          }}
+          onAddOrUpdateTask={handleAddOrUpdateTask}
           columnId={selectedColumnId}
+          task={selectedTask}
         />
       )}
     </div>

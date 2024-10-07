@@ -1,19 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId }) => {
+const KanbanTaskModal = ({ isOpen, onClose, onAddOrUpdateTask, columnId, task }) => {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
+  const [taskColor, setTaskColor] = useState('#ffffff'); // Default to white
+
+  useEffect(() => {
+    if (task) {
+      setTaskTitle(task.title);
+      setTaskDescription(task.description || '');
+      setTaskColor(task.color || '#ffffff');
+    } else {
+      setTaskTitle('');
+      setTaskDescription('');
+      setTaskColor('#ffffff');
+    }
+  }, [task]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (taskTitle.trim()) {
-      onAddTask({
-        id: Date.now().toString(),
+      onAddOrUpdateTask({
+        id: task ? task.id : Date.now().toString(),
         title: taskTitle.trim(),
         description: taskDescription.trim(),
         columnId: columnId,
-        createdAt: new Date().toISOString(),
+        createdAt: task ? task.createdAt : new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        color: taskColor,
       });
+      onClose();
+    }
+  };
+
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
       onClose();
     }
   };
@@ -21,9 +42,9 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={handleOverlayClick}>
       <div className="bg-white p-6 rounded-lg w-96">
-        <h2 className="text-xl font-bold mb-4">Add New Task</h2>
+        <h2 className="text-xl font-bold mb-4">{task ? 'Edit Task' : 'Add New Task'}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="taskTitle" className="block text-sm font-medium text-gray-700">
@@ -50,6 +71,18 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId }) => {
               rows="3"
             />
           </div>
+          <div className="mb-4">
+            <label htmlFor="taskColor" className="block text-sm font-medium text-gray-700">
+              Card Color
+            </label>
+            <input
+              type="color"
+              id="taskColor"
+              value={taskColor}
+              onChange={(e) => setTaskColor(e.target.value)}
+              className="mt-1 block w-full h-10 border border-gray-300 rounded-md shadow-sm"
+            />
+          </div>
           <div className="flex justify-end">
             <button
               type="button"
@@ -62,7 +95,7 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId }) => {
               type="submit"
               className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
             >
-              Add Task
+              {task ? 'Update Task' : 'Add Task'}
             </button>
           </div>
         </form>
