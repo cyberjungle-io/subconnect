@@ -4,8 +4,7 @@ import KanBanTaskModal from '../../common/KanBanTaskModal';
 import { v4 as uuidv4 } from 'uuid';
 
 const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
-  const [columns, setColumns] = useState([]);
-  const [tasks, setTasks] = useState([]);
+  const [columns, setColumns] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState(null);
 
@@ -18,8 +17,16 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     ];
     const initialTasks = component.props.tasks || [];
 
-    setColumns(initialColumns);
-    setTasks(initialTasks);
+    // Create a new columns object with tasks
+    const newColumns = initialColumns.reduce((acc, column) => {
+      acc[column.id] = {
+        ...column,
+        tasks: initialTasks.filter(task => task.columnId === column.id)
+      };
+      return acc;
+    }, {});
+
+    setColumns(newColumns);
 
     // Update the component if it doesn't have columns or tasks
     if (!component.props.columns || !component.props.tasks) {
@@ -34,27 +41,36 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   }, [component.id, component.props, onUpdate]);
 
   const onDragEnd = useCallback((result) => {
-    if (!result.destination || !isInteractive) return;
-
     const { source, destination } = result;
-    const updatedTasks = Array.from(tasks);
-    const [reorderedItem] = updatedTasks.splice(source.index, 1);
-    
-    // Find the correct insertion index in the destination column
-    const destinationColumnTasks = updatedTasks.filter(task => task.columnId === destination.droppableId);
-    const insertIndex = destinationColumnTasks.length > 0 
-      ? updatedTasks.indexOf(destinationColumnTasks[destination.index]) 
-      : updatedTasks.length;
 
-    updatedTasks.splice(insertIndex, 0, {
-      ...reorderedItem,
-      columnId: destination.droppableId,
-      movedAt: new Date().toISOString()
-    });
+    if (!destination || !isInteractive) return;
 
-    setTasks(updatedTasks);
-    onUpdate(component.id, { props: { ...component.props, tasks: updatedTasks } });
-  }, [tasks, isInteractive, onUpdate, component.id, component.props]);
+    const sourceColumn = columns[source.droppableId];
+    const destColumn = columns[destination.droppableId];
+    const sourceTasks = [...sourceColumn.tasks];
+    const destTasks = source.droppableId === destination.droppableId ? sourceTasks : [...destColumn.tasks];
+
+    const [removed] = sourceTasks.splice(source.index, 1);
+    destTasks.splice(destination.index, 0, { ...removed, columnId: destination.droppableId, movedAt: new Date().toISOString() });
+
+    const newColumns = {
+      ...columns,
+      [source.droppableId]: {
+        ...sourceColumn,
+        tasks: sourceTasks
+      },
+      [destination.droppableId]: {
+        ...destColumn,
+        tasks: destTasks
+      }
+    };
+
+    setColumns(newColumns);
+
+    // Flatten tasks for updating the component
+    const allTasks = Object.values(newColumns).flatMap(column => column.tasks);
+    onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
+  }, [columns, isInteractive, onUpdate, component.id, component.props]);
 
   const handleDoubleClick = useCallback((columnId) => {
     if (isInteractive) {
@@ -64,11 +80,17 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   }, [isInteractive]);
 
   const handleAddTask = useCallback((newTask) => {
-    const updatedTasks = [...tasks, { ...newTask, id: uuidv4() }];
-    setTasks(updatedTasks);
-    onUpdate(component.id, { props: { ...component.props, tasks: updatedTasks } });
+    const updatedColumns = { ...columns };
+    const columnId = newTask.columnId || Object.keys(columns)[0];
+    const taskWithId = { ...newTask, id: uuidv4(), columnId };
+    updatedColumns[columnId].tasks.push(taskWithId);
+    setColumns(updatedColumns);
+
+    // Flatten tasks for updating the component
+    const allTasks = Object.values(updatedColumns).flatMap(column => column.tasks);
+    onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
     setIsModalOpen(false);
-  }, [tasks, onUpdate, component.id, component.props]);
+  }, [columns, onUpdate, component.id, component.props]);
 
   const getTaskDuration = useCallback((task) => {
     const start = new Date(task.createdAt);
@@ -88,13 +110,13 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <DragDropContext onDragEnd={onDragEnd}>
         <div style={{ display: 'flex', height: '100%', overflowX: 'auto' }}>
-          {columns.map((column) => (
+          {Object.values(columns).map((column) => (
             <div 
               key={column.id} 
               style={{ 
                 display: 'flex', 
                 flexDirection: 'column', 
-                width: `${100 / columns.length}%`, 
+                width: `${100 / Object.keys(columns).length}%`, 
                 minWidth: '200px', 
                 padding: '8px',
                 backgroundColor: column.backgroundColor || '#f4f5f7',
@@ -120,36 +142,34 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                       ...(snapshot.isDraggingOver ? { backgroundColor: '#e0e0e0' } : {})
                     }}
                   >
-                    {tasks
-                      .filter((task) => task.columnId === column.id)
-                      .map((task, index) => (
-                        <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={!isInteractive}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              style={{
-                                ...provided.draggableProps.style,
-                                backgroundColor: snapshot.isDragging ? '#f0f0f0' : 'white',
-                                padding: '8px',
-                                marginBottom: '8px',
-                                borderRadius: '4px',
-                                boxShadow: snapshot.isDragging ? '0 5px 10px rgba(0,0,0,0.2)' : 'none',
-                              }}
-                            >
-                              <h4>{task.title}</h4>
-                              <p>Total Duration: {getTaskDuration(task)}</p>
-                              <p>In this column: {getColumnDuration(task)}</p>
-                              {task.subtasks && (
-                                <button onClick={() => {/* Navigate to subtasks */}}>
-                                  View Subtasks
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
+                    {column.tasks.map((task, index) => (
+                      <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={!isInteractive}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            style={{
+                              ...provided.draggableProps.style,
+                              backgroundColor: snapshot.isDragging ? '#f0f0f0' : 'white',
+                              padding: '8px',
+                              marginBottom: '8px',
+                              borderRadius: '4px',
+                              boxShadow: snapshot.isDragging ? '0 5px 10px rgba(0,0,0,0.2)' : 'none',
+                            }}
+                          >
+                            <h4>{task.title}</h4>
+                            <p>Total Duration: {getTaskDuration(task)}</p>
+                            <p>In this column: {getColumnDuration(task)}</p>
+                            {task.subtasks && (
+                              <button onClick={() => {/* Navigate to subtasks */}}>
+                                View Subtasks
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
                     {provided.placeholder}
                   </div>
                 )}
