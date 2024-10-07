@@ -39,7 +39,14 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     const { source, destination } = result;
     const updatedTasks = Array.from(tasks);
     const [reorderedItem] = updatedTasks.splice(source.index, 1);
-    updatedTasks.splice(destination.index, 0, {
+    
+    // Find the correct insertion index in the destination column
+    const destinationColumnTasks = updatedTasks.filter(task => task.columnId === destination.droppableId);
+    const insertIndex = destinationColumnTasks.length > 0 
+      ? updatedTasks.indexOf(destinationColumnTasks[destination.index]) 
+      : updatedTasks.length;
+
+    updatedTasks.splice(insertIndex, 0, {
       ...reorderedItem,
       columnId: destination.droppableId,
       movedAt: new Date().toISOString()
