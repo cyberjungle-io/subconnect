@@ -30,6 +30,7 @@ const ViewerMode = ({ components }) => {
           globalSettings={globalSettings}
           isTopLevel={true}
           onUpdate={handleUpdateComponent}
+          isInteractive={false}
         />
       ))}
     </div>
