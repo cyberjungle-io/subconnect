@@ -1,19 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import KanBanTaskModal from '../../common/KanBanTaskModal';
+import { v4 as uuidv4 } from 'uuid';
 
 const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
-  const [columns, setColumns] = useState(component.props.columns || []);
-  const [tasks, setTasks] = useState(component.props.tasks || []);
+  const [columns, setColumns] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState(null);
 
   useEffect(() => {
-    setColumns(component.props.columns || []);
-    setTasks(component.props.tasks || []);
-  }, [component.props]);
+    // Initialize with default columns and tasks if not provided
+    const initialColumns = component.props.columns || [
+      { id: 'col1', title: 'To Do' },
+      { id: 'col2', title: 'In Progress' },
+      { id: 'col3', title: 'Done' }
+    ];
+    const initialTasks = component.props.tasks || [];
 
-  const onDragEnd = (result) => {
+    setColumns(initialColumns);
+    setTasks(initialTasks);
+
+    // Update the component if it doesn't have columns or tasks
+    if (!component.props.columns || !component.props.tasks) {
+      onUpdate(component.id, {
+        props: {
+          ...component.props,
+          columns: initialColumns,
+          tasks: initialTasks
+        }
+      });
+    }
+  }, [component.id, component.props, onUpdate]);
+
+  const onDragEnd = useCallback((result) => {
     if (!result.destination || !isInteractive) return;
 
     const { source, destination } = result;
@@ -26,40 +46,36 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     });
 
     setTasks(updatedTasks);
-    updateComponentProps(updatedTasks);
-  };
+    onUpdate(component.id, { props: { ...component.props, tasks: updatedTasks } });
+  }, [tasks, isInteractive, onUpdate, component.id, component.props]);
 
-  const handleDoubleClick = (columnId) => {
+  const handleDoubleClick = useCallback((columnId) => {
     if (isInteractive) {
       setSelectedColumnId(columnId);
       setIsModalOpen(true);
     }
-  };
+  }, [isInteractive]);
 
-  const handleAddTask = (newTask) => {
-    const updatedTasks = [...tasks, newTask];
+  const handleAddTask = useCallback((newTask) => {
+    const updatedTasks = [...tasks, { ...newTask, id: uuidv4() }];
     setTasks(updatedTasks);
-    updateComponentProps(updatedTasks);
-    setIsModalOpen(false);
-  };
-
-  const updateComponentProps = (updatedTasks) => {
     onUpdate(component.id, { props: { ...component.props, tasks: updatedTasks } });
-  };
+    setIsModalOpen(false);
+  }, [tasks, onUpdate, component.id, component.props]);
 
-  const getTaskDuration = (task) => {
+  const getTaskDuration = useCallback((task) => {
     const start = new Date(task.createdAt);
     const end = task.completedAt ? new Date(task.completedAt) : new Date();
     const duration = Math.floor((end - start) / (1000 * 60 * 60 * 24)); // in days
     return `${duration} day${duration !== 1 ? 's' : ''}`;
-  };
+  }, []);
 
-  const getColumnDuration = (task) => {
+  const getColumnDuration = useCallback((task) => {
     const start = new Date(task.movedAt || task.createdAt);
     const end = new Date();
     const duration = Math.floor((end - start) / (1000 * 60 * 60 * 24)); // in days
     return `${duration} day${duration !== 1 ? 's' : ''}`;
-  };
+  }, []);
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
