@@ -264,9 +264,20 @@ const BorderControls = ({ style, onStyleChange }) => {
     </div>
   );
 
-  const renderStyleControl = () => (
+  const toggleContent = (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-2">Border Style</label>
+      <button
+        onClick={toggleBorder}
+        className={showBorder ? activeButtonClass : inactiveButtonClass}
+      >
+        {showBorder ? 'Border' : 'Border'}
+      </button>
+    </div>
+  );
+
+  const styleContent = (
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-700 mb-2">Style</label>
       <select
         value={borderStyle}
         onChange={(e) => {
@@ -287,9 +298,43 @@ const BorderControls = ({ style, onStyleChange }) => {
     </div>
   );
 
-  const renderColorControl = () => (
+  const widthContent = (
     <div className="mb-4">
-      <label className="block text-sm font-medium text-gray-700 mb-2">Border Color</label>
+      
+      {renderInputGroup(
+        'Width',
+        borderWidth,
+        {
+          top: (v) => setBorderWidth({ ...borderWidth, top: v }),
+          right: (v) => setBorderWidth({ ...borderWidth, right: v }),
+          bottom: (v) => setBorderWidth({ ...borderWidth, bottom: v }),
+          left: (v) => setBorderWidth({ ...borderWidth, left: v }),
+        },
+        'width'
+      )}
+    </div>
+  );
+
+  const radiusContent = (
+    <div className="mb-4">
+      
+      {renderInputGroup(
+        'Radius',
+        borderRadius,
+        {
+          topLeft: (v) => setBorderRadius({ ...borderRadius, topLeft: v }),
+          topRight: (v) => setBorderRadius({ ...borderRadius, topRight: v }),
+          bottomRight: (v) => setBorderRadius({ ...borderRadius, bottomRight: v }),
+          bottomLeft: (v) => setBorderRadius({ ...borderRadius, bottomLeft: v }),
+        },
+        'radius'
+      )}
+    </div>
+  );
+
+  const colorContent = (
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
       <ColorPicker
         color={borderColor}
         onChange={(color) => {
@@ -301,46 +346,14 @@ const BorderControls = ({ style, onStyleChange }) => {
   );
 
   return (
-    <div className="control-section">
-      <h3 className="text-lg font-semibold text-gray-700 mb-4">Border Controls</h3>
-
-      <div className="mb-4">
-        <button
-          onClick={toggleBorder}
-          className={showBorder ? activeButtonClass : inactiveButtonClass}
-        >
-          {showBorder ? 'Border' : 'Border'}
-        </button>
-      </div>
-
+    <div className="border-controls space-y-4">
+      {toggleContent}
       {showBorder && (
         <>
-          {renderInputGroup(
-            'Border Width',
-            borderWidth,
-            {
-              top: (v) => setBorderWidth({ ...borderWidth, top: v }),
-              right: (v) => setBorderWidth({ ...borderWidth, right: v }),
-              bottom: (v) => setBorderWidth({ ...borderWidth, bottom: v }),
-              left: (v) => setBorderWidth({ ...borderWidth, left: v }),
-            },
-            'width'
-          )}
-
-          {renderStyleControl()}
-          {renderColorControl()}
-
-          {renderInputGroup(
-            'Border Radius',
-            borderRadius,
-            {
-              topLeft: (v) => setBorderRadius({ ...borderRadius, topLeft: v }),
-              topRight: (v) => setBorderRadius({ ...borderRadius, topRight: v }),
-              bottomRight: (v) => setBorderRadius({ ...borderRadius, bottomRight: v }),
-              bottomLeft: (v) => setBorderRadius({ ...borderRadius, bottomLeft: v }),
-            },
-            'radius'
-          )}
+          {styleContent}
+          {widthContent}
+          {radiusContent}
+          {colorContent}
         </>
       )}
     </div>
