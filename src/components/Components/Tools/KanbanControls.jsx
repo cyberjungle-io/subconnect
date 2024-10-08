@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
@@ -6,6 +6,8 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const [newColumnTitle, setNewColumnTitle] = useState('');
   const [selectedColumn, setSelectedColumn] = useState(null);
   const [draggedColumn, setDraggedColumn] = useState(null);
+  const [dropIndicatorIndex, setDropIndicatorIndex] = useState(null);
+  const listRef = useRef(null);
 
   const addColumn = () => {
     if (newColumnTitle.trim()) {
@@ -48,20 +50,42 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+    
+    if (listRef.current) {
+      const listRect = listRef.current.getBoundingClientRect();
+      const mouseY = e.clientY - listRect.top;
+      const itemHeight = listRect.height / props.columns.length;
+      let index = Math.floor(mouseY / itemHeight);
+      
+      // Allow dropping at the end of the list
+      if (index >= props.columns.length) {
+        index = props.columns.length;
+      }
+      
+      setDropIndicatorIndex(index);
+    }
+  }, [props.columns]);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggedColumn(null);
+    setDropIndicatorIndex(null);
   }, []);
 
-  const handleDrop = useCallback((e, targetColumn) => {
+  const handleDrop = useCallback((e) => {
     e.preventDefault();
-    if (draggedColumn && draggedColumn.id !== targetColumn.id) {
-      const newColumns = [...(props.columns || [])];
-      const draggedIndex = newColumns.findIndex(col => col.id === draggedColumn.id);
-      const targetIndex = newColumns.findIndex(col => col.id === targetColumn.id);
-      newColumns.splice(draggedIndex, 1);
-      newColumns.splice(targetIndex, 0, draggedColumn);
+    if (draggedColumn && dropIndicatorIndex !== null) {
+      const newColumns = [...props.columns];
+      const fromIndex = newColumns.findIndex(col => col.id === draggedColumn.id);
+      newColumns.splice(fromIndex, 1);
+      
+      // If dropping at the end, use the length of the array as the insert index
+      const insertIndex = dropIndicatorIndex >= newColumns.length ? newColumns.length : dropIndicatorIndex;
+      newColumns.splice(insertIndex, 0, draggedColumn);
+      
       onPropsChange({ columns: newColumns });
     }
-    setDraggedColumn(null);
-  }, [draggedColumn, props.columns, onPropsChange]);
+    handleDragEnd();
+  }, [draggedColumn, dropIndicatorIndex, props.columns, onPropsChange]);
 
   return (
     <div className="kanban-controls">
@@ -100,30 +124,47 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
             </button>
           </div>
         )}
-        <ul className="min-h-[50px]">
-          {(props.columns || []).map((column) => (
-            <li
-              key={column.id}
-              draggable
-              onDragStart={(e) => handleDragStart(e, column)}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, column)}
-              className={`mb-2 flex items-center justify-between p-2 rounded cursor-move ${selectedColumn?.id === column.id ? 'bg-gray-200' : ''}`}
-              onClick={() => setSelectedColumn(column)}
-            >
-              <span>{column.title}</span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPropsChange({ columns: (props.columns || []).filter(c => c.id !== column.id) });
-                }}
-                className="text-red-500 hover:text-red-700"
+        <p className="text-xs text-gray-600 italic mb-2">Drag and Drop to Reorder</p>
+        <ul 
+          ref={listRef}
+          className="min-h-[50px] relative"
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onDragEnd={handleDragEnd}
+        >
+          {dropIndicatorIndex !== null && (
+            <li 
+              className="absolute w-full bg-blue-100 border-2 border-blue-300 rounded-lg transition-all duration-300 ease-in-out animate-pulse"
+              style={{ 
+                top: `${dropIndicatorIndex * (100 / props.columns.length)}%`,
+                height: `${100 / props.columns.length}%`
+              }}
+            />
+          )}
+          {(props.columns || []).map((column, index) => (
+            <React.Fragment key={column.id}>
+              <li
+                draggable
+                onDragStart={(e) => handleDragStart(e, column)}
+                className={`mb-2 flex items-center justify-between p-2 rounded cursor-move 
+                  ${selectedColumn?.id === column.id ? 'bg-gray-200' : ''}
+                  ${draggedColumn?.id === column.id ? 'opacity-50' : ''}`}
+                onClick={() => setSelectedColumn(column)}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </li>
+                <span>{column.title}</span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPropsChange({ columns: (props.columns || []).filter(c => c.id !== column.id) });
+                  }}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </li>
+            </React.Fragment>
           ))}
         </ul>
       </div>
