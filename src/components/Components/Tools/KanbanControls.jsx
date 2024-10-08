@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [newColumnTitle, setNewColumnTitle] = useState('');
   const [selectedColumn, setSelectedColumn] = useState(null);
+  const [draggedColumn, setDraggedColumn] = useState(null);
 
   const addColumn = () => {
     if (newColumnTitle.trim()) {
       const newColumn = { id: uuidv4(), title: newColumnTitle.trim() };
-      onPropsChange({ columns: [...props.columns, newColumn] });
+      onPropsChange({ columns: [...(props.columns || []), newColumn] });
       setNewColumnTitle('');
       setIsAddingColumn(false);
     }
@@ -22,7 +23,7 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
 
   const updateColumnColor = (color) => {
     if (selectedColumn) {
-      const updatedColumns = props.columns.map(column => 
+      const updatedColumns = (props.columns || []).map(column => 
         column.id === selectedColumn.id ? { ...column, backgroundColor: color } : column
       );
       onPropsChange({ columns: updatedColumns });
@@ -31,12 +32,36 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
 
   const updateInnerColumnColor = (color) => {
     if (selectedColumn) {
-      const updatedColumns = props.columns.map(column => 
+      const updatedColumns = (props.columns || []).map(column => 
         column.id === selectedColumn.id ? { ...column, innerBackgroundColor: color } : column
       );
       onPropsChange({ columns: updatedColumns });
     }
   };
+
+  const handleDragStart = useCallback((e, column) => {
+    setDraggedColumn(column);
+    e.dataTransfer.setData('text/plain', column.id);
+    e.dataTransfer.effectAllowed = 'move';
+  }, []);
+
+  const handleDragOver = useCallback((e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }, []);
+
+  const handleDrop = useCallback((e, targetColumn) => {
+    e.preventDefault();
+    if (draggedColumn && draggedColumn.id !== targetColumn.id) {
+      const newColumns = [...(props.columns || [])];
+      const draggedIndex = newColumns.findIndex(col => col.id === draggedColumn.id);
+      const targetIndex = newColumns.findIndex(col => col.id === targetColumn.id);
+      newColumns.splice(draggedIndex, 1);
+      newColumns.splice(targetIndex, 0, draggedColumn);
+      onPropsChange({ columns: newColumns });
+    }
+    setDraggedColumn(null);
+  }, [draggedColumn, props.columns, onPropsChange]);
 
   return (
     <div className="kanban-controls">
@@ -75,18 +100,22 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
             </button>
           </div>
         )}
-        <ul>
-          {props.columns.map((column) => (
-            <li 
-              key={column.id} 
-              className={`mb-2 flex items-center justify-between p-2 rounded cursor-pointer ${selectedColumn?.id === column.id ? 'bg-gray-200' : ''}`}
+        <ul className="min-h-[50px]">
+          {(props.columns || []).map((column) => (
+            <li
+              key={column.id}
+              draggable
+              onDragStart={(e) => handleDragStart(e, column)}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, column)}
+              className={`mb-2 flex items-center justify-between p-2 rounded cursor-move ${selectedColumn?.id === column.id ? 'bg-gray-200' : ''}`}
               onClick={() => setSelectedColumn(column)}
             >
               <span>{column.title}</span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onPropsChange({ columns: props.columns.filter(c => c.id !== column.id) });
+                  onPropsChange({ columns: (props.columns || []).filter(c => c.id !== column.id) });
                 }}
                 className="text-red-500 hover:text-red-700"
               >
