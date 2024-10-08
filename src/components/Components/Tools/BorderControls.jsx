@@ -4,6 +4,7 @@ import ColorPicker from '../../common/ColorPicker';
 const UNITS = ['px', '%', 'em', 'rem', 'vw', 'vh'];
 
 const BorderControls = ({ style, onStyleChange }) => {
+  const [showBorder, setShowBorder] = useState(true);
   const [borderWidth, setBorderWidth] = useState({ top: '0px', right: '0px', bottom: '0px', left: '0px' });
   const [borderStyle, setBorderStyle] = useState('solid');
   const [borderColor, setBorderColor] = useState('#000000');
@@ -26,6 +27,7 @@ const BorderControls = ({ style, onStyleChange }) => {
       setBorderRadius({ topLeft, topRight: topRight || topLeft, bottomRight: bottomRight || topLeft, bottomLeft: bottomLeft || topRight || topLeft });
       setAllBorderRadius(topLeft);
     }
+    setShowBorder(style.borderWidth !== '0px');
   }, [style]);
 
   const debouncedStyleChange = useCallback((updates) => {
@@ -106,6 +108,80 @@ const BorderControls = ({ style, onStyleChange }) => {
     }
   }, []);
 
+  const toggleBorder = useCallback(() => {
+    setShowBorder(prev => !prev);
+    if (showBorder) {
+      // If turning off the border, save the current state and set border to none
+      onStyleChange({
+        borderWidth: '0px',
+        borderStyle: 'none',
+        borderColor: 'transparent',
+        borderRadius: '0px'
+      });
+    } else {
+      // If turning on the border, restore the previous state
+      onStyleChange({
+        borderWidth: `${borderWidth.top} ${borderWidth.right} ${borderWidth.bottom} ${borderWidth.left}`,
+        borderStyle,
+        borderColor,
+        borderRadius: `${borderRadius.topLeft} ${borderRadius.topRight} ${borderRadius.bottomRight} ${borderRadius.bottomLeft}`
+      });
+    }
+  }, [showBorder, borderWidth, borderStyle, borderColor, borderRadius, onStyleChange]);
+
+  const buttonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border flex-grow text-center";
+  const activeButtonClass = `${buttonClass} bg-[#cce7ff] text-blue-700 border-blue-300`;
+  const inactiveButtonClass = `${buttonClass} bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]`;
+
+  const renderInput = (side, value, setter, property) => (
+    <div className="flex flex-col items-center">
+      <span className="text-xs text-gray-500 mb-1">{side}</span>
+      <div className="flex">
+        <input
+          type="text"
+          value={value.replace(/[^\d.-]/g, '')}
+          onChange={(e) => {
+            const numericValue = e.target.value.replace(/^0+/, '');
+            const newValue = (numericValue || '0') + (value.match(/[a-z%]+/i) || 'px');
+            setter(newValue);
+            if (property.includes('Width')) {
+              handleSingleBorderWidthChange(side.toLowerCase(), newValue);
+            } else {
+              handleSingleBorderRadiusChange(side.toLowerCase().replace(' ', ''), newValue);
+            }
+          }}
+          onKeyDown={(e) => handleKeyDown(e, 
+            (newValue) => property.includes('Width')
+              ? handleSingleBorderWidthChange(side.toLowerCase(), newValue)
+              : handleSingleBorderRadiusChange(side.toLowerCase().replace(' ', ''), newValue),
+            value
+          )}
+          className="w-12 p-1 text-xs border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        />
+        <select
+          value={value.match(/[a-z%]+/i) || 'px'}
+          onChange={(e) => {
+            const numericPart = value.replace(/[^\d.-]/g, '') || '0';
+            const newValue = numericPart + e.target.value;
+            setter(newValue);
+            if (property.includes('Width')) {
+              handleSingleBorderWidthChange(side.toLowerCase(), newValue);
+            } else {
+              handleSingleBorderRadiusChange(side.toLowerCase().replace(' ', ''), newValue);
+            }
+          }}
+          className="p-1 text-xs border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+        >
+          {UNITS.map((u) => (
+            <option key={u} value={u}>
+              {u}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
+
   const renderInputGroup = (label, values, setters, properties) => (
     <div className="mb-4">
       <h4 className="text-sm font-medium text-gray-700 mb-2">{label}</h4>
@@ -149,98 +225,18 @@ const BorderControls = ({ style, onStyleChange }) => {
           </select>
         </div>
       )}
-      <div className="flex flex-col gap-2">
-        <div className="flex justify-between">
-          {(label === 'Border Width' ? ['Top', 'Bottom'] : ['Top Left', 'Top Right']).map((side) => (
-            <div key={side} className="flex flex-col w-[48%]">
-              <span className="text-xs text-gray-500 mb-1">{side}</span>
-              <div className="flex">
-                <input
-                  type="text"
-                  value={(values[side.toLowerCase().replace(' ', '')] || '').split(/(\d+)/)[1] || ''}
-                  onChange={(e) => {
-                    const newValue = e.target.value + ((values[side.toLowerCase().replace(' ', '')] || '').split(/(\d+)/)[2] || 'px');
-                    if (label === 'Border Width') {
-                      handleSingleBorderWidthChange(side.toLowerCase(), newValue);
-                    } else {
-                      handleSingleBorderRadiusChange(side.toLowerCase().replace(' ', ''), newValue);
-                    }
-                  }}
-                  onKeyDown={(e) => handleKeyDown(e, 
-                    (newValue) => label === 'Border Width' 
-                      ? handleSingleBorderWidthChange(side.toLowerCase(), newValue)
-                      : handleSingleBorderRadiusChange(side.toLowerCase().replace(' ', ''), newValue),
-                    values[side.toLowerCase().replace(' ', '')] || '0px'
-                  )}
-                  className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-                <select
-                  value={(values[side.toLowerCase().replace(' ', '')] || '').split(/(\d+)/)[2] || 'px'}
-                  onChange={(e) => {
-                    const newValue = ((values[side.toLowerCase().replace(' ', '')] || '').split(/(\d+)/)[1] || '0') + e.target.value;
-                    if (label === 'Border Width') {
-                      handleSingleBorderWidthChange(side.toLowerCase(), newValue);
-                    } else {
-                      handleSingleBorderRadiusChange(side.toLowerCase().replace(' ', ''), newValue);
-                    }
-                  }}
-                  className="p-2 text-sm border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  {UNITS.map((u) => (
-                    <option key={u} value={u}>
-                      {u}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          ))}
+      <div className="grid grid-cols-4 gap-x-0 gap-y-1 w-42 mx-auto">
+        <div className="col-start-2 col-span-2">
+          {renderInput(label === 'Border Width' ? 'Top' : 'Top Left', values[label === 'Border Width' ? 'top' : 'topLeft'], setters[label === 'Border Width' ? 'top' : 'topLeft'], properties)}
         </div>
-        <div className="flex justify-between">
-          {(label === 'Border Width' ? ['Left', 'Right'] : ['Bottom Left', 'Bottom Right']).map((side) => (
-            <div key={side} className="flex flex-col w-[48%]">
-              <span className="text-xs text-gray-500 mb-1">{side}</span>
-              <div className="flex">
-                <input
-                  type="text"
-                  value={(values[side.toLowerCase().replace(' ', '')] || '').split(/(\d+)/)[1] || ''}
-                  onChange={(e) => {
-                    const newValue = e.target.value + ((values[side.toLowerCase().replace(' ', '')] || '').split(/(\d+)/)[2] || 'px');
-                    if (label === 'Border Width') {
-                      handleSingleBorderWidthChange(side.toLowerCase(), newValue);
-                    } else {
-                      handleSingleBorderRadiusChange(side.toLowerCase().replace(' ', ''), newValue);
-                    }
-                  }}
-                  onKeyDown={(e) => handleKeyDown(e, 
-                    (newValue) => label === 'Border Width' 
-                      ? handleSingleBorderWidthChange(side.toLowerCase(), newValue)
-                      : handleSingleBorderRadiusChange(side.toLowerCase().replace(' ', ''), newValue),
-                    values[side.toLowerCase().replace(' ', '')] || '0px'
-                  )}
-                  className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-                <select
-                  value={(values[side.toLowerCase().replace(' ', '')] || '').split(/(\d+)/)[2] || 'px'}
-                  onChange={(e) => {
-                    const newValue = ((values[side.toLowerCase().replace(' ', '')] || '').split(/(\d+)/)[1] || '0') + e.target.value;
-                    if (label === 'Border Width') {
-                      handleSingleBorderWidthChange(side.toLowerCase(), newValue);
-                    } else {
-                      handleSingleBorderRadiusChange(side.toLowerCase().replace(' ', ''), newValue);
-                    }
-                  }}
-                  className="p-2 text-sm border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  {UNITS.map((u) => (
-                    <option key={u} value={u}>
-                      {u}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          ))}
+        <div className="col-start-1 col-span-2 row-start-2 justify-self-end pr-2">
+          {renderInput(label === 'Border Width' ? 'Left' : 'Bottom Left', values[label === 'Border Width' ? 'left' : 'bottomLeft'], setters[label === 'Border Width' ? 'left' : 'bottomLeft'], properties)}
+        </div>
+        <div className="col-start-3 col-span-2 row-start-2 justify-self-start pl-2">
+          {renderInput(label === 'Border Width' ? 'Right' : 'Top Right', values[label === 'Border Width' ? 'right' : 'topRight'], setters[label === 'Border Width' ? 'right' : 'topRight'], properties)}
+        </div>
+        <div className="col-start-2 col-span-2 row-start-3">
+          {renderInput(label === 'Border Width' ? 'Bottom' : 'Bottom Right', values[label === 'Border Width' ? 'bottom' : 'bottomRight'], setters[label === 'Border Width' ? 'bottom' : 'bottomRight'], properties)}
         </div>
       </div>
     </div>
@@ -286,31 +282,44 @@ const BorderControls = ({ style, onStyleChange }) => {
     <div className="control-section">
       <h3 className="text-lg font-semibold text-gray-700 mb-4">Border Controls</h3>
 
-      {renderInputGroup(
-        'Border Width',
-        borderWidth,
-        {
-          top: (v) => setBorderWidth({ ...borderWidth, top: v }),
-          right: (v) => setBorderWidth({ ...borderWidth, right: v }),
-          bottom: (v) => setBorderWidth({ ...borderWidth, bottom: v }),
-          left: (v) => setBorderWidth({ ...borderWidth, left: v }),
-        },
-        'width'
-      )}
+      <div className="mb-4">
+        <button
+          onClick={toggleBorder}
+          className={showBorder ? activeButtonClass : inactiveButtonClass}
+        >
+          {showBorder ? 'Border' : 'Border'}
+        </button>
+      </div>
 
-      {renderStyleControl()}
-      {renderColorControl()}
+      {showBorder && (
+        <>
+          {renderInputGroup(
+            'Border Width',
+            borderWidth,
+            {
+              top: (v) => setBorderWidth({ ...borderWidth, top: v }),
+              right: (v) => setBorderWidth({ ...borderWidth, right: v }),
+              bottom: (v) => setBorderWidth({ ...borderWidth, bottom: v }),
+              left: (v) => setBorderWidth({ ...borderWidth, left: v }),
+            },
+            'width'
+          )}
 
-      {renderInputGroup(
-        'Border Radius',
-        borderRadius,
-        {
-          topLeft: (v) => setBorderRadius({ ...borderRadius, topLeft: v }),
-          topRight: (v) => setBorderRadius({ ...borderRadius, topRight: v }),
-          bottomRight: (v) => setBorderRadius({ ...borderRadius, bottomRight: v }),
-          bottomLeft: (v) => setBorderRadius({ ...borderRadius, bottomLeft: v }),
-        },
-        'radius'
+          {renderStyleControl()}
+          {renderColorControl()}
+
+          {renderInputGroup(
+            'Border Radius',
+            borderRadius,
+            {
+              topLeft: (v) => setBorderRadius({ ...borderRadius, topLeft: v }),
+              topRight: (v) => setBorderRadius({ ...borderRadius, topRight: v }),
+              bottomRight: (v) => setBorderRadius({ ...borderRadius, bottomRight: v }),
+              bottomLeft: (v) => setBorderRadius({ ...borderRadius, bottomLeft: v }),
+            },
+            'radius'
+          )}
+        </>
       )}
     </div>
   );
