@@ -6,12 +6,12 @@ const UNITS = ['px', '%', 'em', 'rem', 'vw', 'vh'];
 
 const BorderControls = ({ style, onStyleChange }) => {
   const [showBorder, setShowBorder] = useState(true);
-  const [borderWidth, setBorderWidth] = useState({ top: '0px', right: '0px', bottom: '0px', left: '0px' });
+  const [borderWidth, setBorderWidth] = useState({ top: '1px', right: '1px', bottom: '1px', left: '1px' });
   const [borderStyle, setBorderStyle] = useState('solid');
   const [borderColor, setBorderColor] = useState('#000000');
-  const [borderRadius, setBorderRadius] = useState({ topLeft: '0px', topRight: '0px', bottomRight: '0px', bottomLeft: '0px' });
-  const [allBorderWidth, setAllBorderWidth] = useState('0px');
-  const [allBorderRadius, setAllBorderRadius] = useState('0px');
+  const [borderRadius, setBorderRadius] = useState({ topLeft: '1px', topRight: '1px', bottomRight: '1px', bottomLeft: '1px' });
+  const [allBorderWidth, setAllBorderWidth] = useState('1px');
+  const [allBorderRadius, setAllBorderRadius] = useState('1px');
   const [showAllBorderWidth, setShowAllBorderWidth] = useState(true);
   const [showAllBorderRadius, setShowAllBorderRadius] = useState(true);
 
@@ -22,6 +22,9 @@ const BorderControls = ({ style, onStyleChange }) => {
       const [top, right, bottom, left] = style.borderWidth.split(' ');
       setBorderWidth({ top, right: right || top, bottom: bottom || top, left: left || right || top });
       setAllBorderWidth(top);
+    } else {
+      setBorderWidth({ top: '1px', right: '1px', bottom: '1px', left: '1px' });
+      setAllBorderWidth('1px');
     }
     if (style.borderStyle) setBorderStyle(style.borderStyle);
     if (style.borderColor) setBorderColor(style.borderColor);
@@ -29,6 +32,9 @@ const BorderControls = ({ style, onStyleChange }) => {
       const [topLeft, topRight, bottomRight, bottomLeft] = style.borderRadius.split(' ');
       setBorderRadius({ topLeft, topRight: topRight || topLeft, bottomRight: bottomRight || topLeft, bottomLeft: bottomLeft || topRight || topLeft });
       setAllBorderRadius(topLeft);
+    } else {
+      setBorderRadius({ topLeft: '1px', topRight: '1px', bottomRight: '1px', bottomLeft: '1px' });
+      setAllBorderRadius('1px');
     }
     setShowBorder(style.borderWidth !== '0px');
   }, [style]);
@@ -111,6 +117,29 @@ const BorderControls = ({ style, onStyleChange }) => {
     }
   }, []);
 
+  const handleIndividualInputKeyDown = useCallback((e, side, currentValue, property) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const step = e.shiftKey ? 10 : 1;
+      let numericPart = parseFloat(currentValue) || 0;
+      const unit = currentValue.replace(/[^a-z%]+/i, '') || 'px';
+
+      if (e.key === 'ArrowUp') {
+        numericPart += step;
+      } else {
+        numericPart = Math.max(0, numericPart - step);
+      }
+
+      const newValue = `${numericPart}${unit}`;
+      
+      if (property === 'width') {
+        handleSingleBorderWidthChange(side, newValue);
+      } else {
+        handleSingleBorderRadiusChange(side, newValue);
+      }
+    }
+  }, [handleSingleBorderWidthChange, handleSingleBorderRadiusChange]);
+
   const toggleBorder = useCallback(() => {
     setShowBorder(prev => !prev);
     if (showBorder) {
@@ -142,32 +171,27 @@ const BorderControls = ({ style, onStyleChange }) => {
       <div className="flex">
         <input
           type="text"
-          value={value.replace(/[^\d.-]/g, '')}
+          value={value ? value.replace(/[^\d.-]/g, '') : '1'}
           onChange={(e) => {
             const numericValue = e.target.value.replace(/^0+/, '');
-            const newValue = (numericValue || '0') + (value.match(/[a-z%]+/i) || 'px');
+            const newValue = (numericValue || '1') + (value?.match(/[a-z%]+/i) || 'px');
             setter(newValue);
-            if (property.includes('Width')) {
+            if (property === 'width') {
               handleSingleBorderWidthChange(side.toLowerCase(), newValue);
             } else {
               handleSingleBorderRadiusChange(side.toLowerCase().replace(' ', ''), newValue);
             }
           }}
-          onKeyDown={(e) => handleKeyDown(e, 
-            (newValue) => property.includes('Width')
-              ? handleSingleBorderWidthChange(side.toLowerCase(), newValue)
-              : handleSingleBorderRadiusChange(side.toLowerCase().replace(' ', ''), newValue),
-            value
-          )}
+          onKeyDown={(e) => handleIndividualInputKeyDown(e, side.toLowerCase().replace(' ', ''), value, property)}
           className="w-12 p-1 text-xs border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
         <select
-          value={value.match(/[a-z%]+/i) || 'px'}
+          value={value?.match(/[a-z%]+/i) || 'px'}
           onChange={(e) => {
-            const numericPart = value.replace(/[^\d.-]/g, '') || '0';
+            const numericPart = value?.replace(/[^\d.-]/g, '') || '1';
             const newValue = numericPart + e.target.value;
             setter(newValue);
-            if (property.includes('Width')) {
+            if (property === 'width') {
               handleSingleBorderWidthChange(side.toLowerCase(), newValue);
             } else {
               handleSingleBorderRadiusChange(side.toLowerCase().replace(' ', ''), newValue);
@@ -185,12 +209,42 @@ const BorderControls = ({ style, onStyleChange }) => {
     </div>
   );
 
-  const renderInputGroup = (label, values, setters, properties) => (
+  const toggleAllBorderWidth = () => {
+    setShowAllBorderWidth(prev => {
+      if (prev) {
+        // Switching to individual view, ensure all sides have a value
+        setBorderWidth(current => ({
+          top: current.top || allBorderWidth,
+          right: current.right || allBorderWidth,
+          bottom: current.bottom || allBorderWidth,
+          left: current.left || allBorderWidth
+        }));
+      }
+      return !prev;
+    });
+  };
+
+  const toggleAllBorderRadius = () => {
+    setShowAllBorderRadius(prev => {
+      if (prev) {
+        // Switching to individual view, ensure all corners have a value
+        setBorderRadius(current => ({
+          topLeft: current.topLeft || allBorderRadius,
+          topRight: current.topRight || allBorderRadius,
+          bottomRight: current.bottomRight || allBorderRadius,
+          bottomLeft: current.bottomLeft || allBorderRadius
+        }));
+      }
+      return !prev;
+    });
+  };
+
+  const renderInputGroup = (label, values, setters, property) => (
     <div className="mb-4">
       <div className="flex justify-between items-center mb-2">
         <h4 className="text-sm font-medium text-gray-700">{label}</h4>
         <button
-          onClick={() => label === 'Border Width' ? setShowAllBorderWidth(!showAllBorderWidth) : setShowAllBorderRadius(!showAllBorderRadius)}
+          onClick={() => label === 'Border Width' ? toggleAllBorderWidth() : toggleAllBorderRadius()}
           className="p-1 rounded-md transition-colors duration-200"
         >
           {(label === 'Border Width' ? showAllBorderWidth : showAllBorderRadius) ? 
@@ -242,20 +296,20 @@ const BorderControls = ({ style, onStyleChange }) => {
         <div className="grid grid-cols-3 gap-1 w-42 mx-auto">
           {label === 'Border Width' ? (
             <>
-              <div className="col-start-2">{renderInput('Top', values.top, setters.top, properties)}</div>
-              <div className="col-start-1 row-start-2">{renderInput('Left', values.left, setters.left, properties)}</div>
-              <div className="col-start-3 row-start-2">{renderInput('Right', values.right, setters.right, properties)}</div>
-              <div className="col-start-2 row-start-3">{renderInput('Bottom', values.bottom, setters.bottom, properties)}</div>
+              <div className="col-start-2">{renderInput('Top', values.top, setters.top, property)}</div>
+              <div className="col-start-1 row-start-2">{renderInput('Left', values.left, setters.left, property)}</div>
+              <div className="col-start-3 row-start-2">{renderInput('Right', values.right, setters.right, property)}</div>
+              <div className="col-start-2 row-start-3">{renderInput('Bottom', values.bottom, setters.bottom, property)}</div>
             </>
           ) : (
             <>
               <div className="col-span-3 row-start-1 flex justify-between px-4">
-                <div className='me-2'>{renderInput('Top Left', values.topLeft, setters.topLeft, properties)}</div>
-                <div className='ms-2'>{renderInput('Top Right', values.topRight, setters.topRight, properties)}</div>
+                <div className='me-2'>{renderInput('Top Left', values.topLeft, setters.topLeft, property)}</div>
+                <div className='ms-2'>{renderInput('Top Right', values.topRight, setters.topRight, property)}</div>
               </div>
               <div className="col-span-3 row-start-3 flex justify-between px-4">
-                <div className='me-2'>{renderInput('Bottom Left', values.bottomLeft, setters.bottomLeft, properties)}</div>
-                <div className='ms-2'>{renderInput('Bottom Right', values.bottomRight, setters.bottomRight, properties)}</div>
+                <div className='me-2'>{renderInput('Bottom Left', values.bottomLeft, setters.bottomLeft, property)}</div>
+                <div className='ms-2'>{renderInput('Bottom Right', values.bottomRight, setters.bottomRight, property)}</div>
               </div>
             </>
           )}
@@ -300,15 +354,14 @@ const BorderControls = ({ style, onStyleChange }) => {
 
   const widthContent = (
     <div className="mb-4">
-      
       {renderInputGroup(
-        'Width',
+        'Border Width',
         borderWidth,
         {
-          top: (v) => setBorderWidth({ ...borderWidth, top: v }),
-          right: (v) => setBorderWidth({ ...borderWidth, right: v }),
-          bottom: (v) => setBorderWidth({ ...borderWidth, bottom: v }),
-          left: (v) => setBorderWidth({ ...borderWidth, left: v }),
+          top: (v) => handleSingleBorderWidthChange('top', v),
+          right: (v) => handleSingleBorderWidthChange('right', v),
+          bottom: (v) => handleSingleBorderWidthChange('bottom', v),
+          left: (v) => handleSingleBorderWidthChange('left', v),
         },
         'width'
       )}
@@ -317,15 +370,14 @@ const BorderControls = ({ style, onStyleChange }) => {
 
   const radiusContent = (
     <div className="mb-4">
-      
       {renderInputGroup(
-        'Radius',
+        'Border Radius',
         borderRadius,
         {
-          topLeft: (v) => setBorderRadius({ ...borderRadius, topLeft: v }),
-          topRight: (v) => setBorderRadius({ ...borderRadius, topRight: v }),
-          bottomRight: (v) => setBorderRadius({ ...borderRadius, bottomRight: v }),
-          bottomLeft: (v) => setBorderRadius({ ...borderRadius, bottomLeft: v }),
+          topLeft: (v) => handleSingleBorderRadiusChange('topLeft', v),
+          topRight: (v) => handleSingleBorderRadiusChange('topRight', v),
+          bottomRight: (v) => handleSingleBorderRadiusChange('bottomRight', v),
+          bottomLeft: (v) => handleSingleBorderRadiusChange('bottomLeft', v),
         },
         'radius'
       )}
