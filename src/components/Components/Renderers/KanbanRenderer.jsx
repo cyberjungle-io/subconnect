@@ -106,19 +106,31 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     setSelectedTask(null);
   }, [columns, onUpdate, component.id, component.props, selectedTask]);
 
+  const getFormattedDuration = useCallback((start, end) => {
+    const durationInMinutes = Math.floor((end - start) / (1000 * 60));
+    
+    if (durationInMinutes < 60) {
+      return `${durationInMinutes} min${durationInMinutes !== 1 ? 's' : ''}`;
+    } else if (durationInMinutes < 1440) { // Less than 24 hours
+      const hours = Math.floor(durationInMinutes / 60);
+      return `${hours} hour${hours !== 1 ? 's' : ''}`;
+    } else {
+      const days = Math.floor(durationInMinutes / 1440);
+      return `${days} day${days !== 1 ? 's' : ''}`;
+    }
+  }, []);
+
   const getTaskDuration = useCallback((task) => {
     const start = new Date(task.createdAt);
     const end = task.completedAt ? new Date(task.completedAt) : new Date();
-    const duration = Math.floor((end - start) / (1000 * 60 * 60 * 24)); // in days
-    return `${duration} day${duration !== 1 ? 's' : ''}`;
-  }, []);
+    return getFormattedDuration(start, end);
+  }, [getFormattedDuration]);
 
   const getColumnDuration = useCallback((task) => {
     const start = new Date(task.movedAt || task.createdAt);
     const end = new Date();
-    const duration = Math.floor((end - start) / (1000 * 60 * 60 * 24)); // in days
-    return `${duration} day${duration !== 1 ? 's' : ''}`;
-  }, []);
+    return getFormattedDuration(start, end);
+  }, [getFormattedDuration]);
 
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
