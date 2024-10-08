@@ -14,6 +14,7 @@ const BorderControls = ({ style, onStyleChange }) => {
   const [allBorderRadius, setAllBorderRadius] = useState('1px');
   const [showAllBorderWidth, setShowAllBorderWidth] = useState(true);
   const [showAllBorderRadius, setShowAllBorderRadius] = useState(true);
+  const [previousBorderState, setPreviousBorderState] = useState(null);
 
   const updateTimeoutRef = useRef(null);
 
@@ -144,6 +145,12 @@ const BorderControls = ({ style, onStyleChange }) => {
     setShowBorder(prev => !prev);
     if (showBorder) {
       // If turning off the border, save the current state and set border to none
+      setPreviousBorderState({
+        borderWidth: `${borderWidth.top} ${borderWidth.right} ${borderWidth.bottom} ${borderWidth.left}`,
+        borderStyle,
+        borderColor,
+        borderRadius: `${borderRadius.topLeft} ${borderRadius.topRight} ${borderRadius.bottomRight} ${borderRadius.bottomLeft}`
+      });
       onStyleChange({
         borderWidth: '0px',
         borderStyle: 'none',
@@ -151,13 +158,22 @@ const BorderControls = ({ style, onStyleChange }) => {
         borderRadius: '0px'
       });
     } else {
-      // If turning on the border, restore the previous state
-      onStyleChange({
-        borderWidth: `${borderWidth.top} ${borderWidth.right} ${borderWidth.bottom} ${borderWidth.left}`,
-        borderStyle,
-        borderColor,
-        borderRadius: `${borderRadius.topLeft} ${borderRadius.topRight} ${borderRadius.bottomRight} ${borderRadius.bottomLeft}`
-      });
+      // If turning on the border, restore the previous state or use default values
+      const newState = previousBorderState || {
+        borderWidth: '1px',
+        borderStyle: 'solid',
+        borderColor: '#000000',
+        borderRadius: '0px'
+      };
+      onStyleChange(newState);
+      
+      // Update local state
+      const [top, right, bottom, left] = newState.borderWidth.split(' ');
+      setBorderWidth({ top, right: right || top, bottom: bottom || top, left: left || right || top });
+      setBorderStyle(newState.borderStyle);
+      setBorderColor(newState.borderColor);
+      const [topLeft, topRight, bottomRight, bottomLeft] = newState.borderRadius.split(' ');
+      setBorderRadius({ topLeft, topRight: topRight || topLeft, bottomRight: bottomRight || topLeft, bottomLeft: bottomLeft || topRight || topLeft });
     }
   }, [showBorder, borderWidth, borderStyle, borderColor, borderRadius, onStyleChange]);
 
