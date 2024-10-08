@@ -103,25 +103,29 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
         </div>
         {isAddingColumn && (
           <div className="flex items-center mb-2">
-            <input
-              type="text"
-              value={newColumnTitle}
-              onChange={(e) => setNewColumnTitle(e.target.value)}
-              className="flex-grow mr-2 p-2 border rounded"
-              placeholder="New Column Name"
-            />
-            <button
-              onClick={addColumn}
-              className="px-2 py-1 bg-green-500 text-white rounded mr-1"
-            >
-              ✓
-            </button>
-            <button
-              onClick={cancelAddColumn}
-              className="px-2 py-1 bg-red-500 text-white rounded"
-            >
-              ✕
-            </button>
+            <div className="relative flex-grow">
+              <input
+                type="text"
+                value={newColumnTitle}
+                onChange={(e) => setNewColumnTitle(e.target.value)}
+                className="w-full pr-16 p-2 border rounded"
+                placeholder="New Column Name"
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center">
+                <button
+                  onClick={addColumn}
+                  className="h-full px-2 text-green-600 hover:text-green-800"
+                >
+                  ✓
+                </button>
+                <button
+                  onClick={cancelAddColumn}
+                  className="h-full px-2 text-red-600 hover:text-red-800"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
           </div>
         )}
         <p className="text-xs text-gray-600 italic mb-2">Drag and Drop to Reorder</p>
