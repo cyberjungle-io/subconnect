@@ -376,6 +376,12 @@ const ComponentRenderer = React.memo(({
       });
     }
 
+    // Add this condition for top-level components
+    if (isTopLevel) {
+      componentStyle.width = '100%';
+      componentStyle.height = '300px';
+    }
+
     return componentStyle;
   };
 
