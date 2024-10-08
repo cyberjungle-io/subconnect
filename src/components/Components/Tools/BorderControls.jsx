@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ColorPicker from '../../common/ColorPicker';
+import { FaLink, FaUnlink } from 'react-icons/fa'; // Import chain link icons
 
 const UNITS = ['px', '%', 'em', 'rem', 'vw', 'vh'];
 
@@ -11,6 +12,8 @@ const BorderControls = ({ style, onStyleChange }) => {
   const [borderRadius, setBorderRadius] = useState({ topLeft: '0px', topRight: '0px', bottomRight: '0px', bottomLeft: '0px' });
   const [allBorderWidth, setAllBorderWidth] = useState('0px');
   const [allBorderRadius, setAllBorderRadius] = useState('0px');
+  const [showAllBorderWidth, setShowAllBorderWidth] = useState(true);
+  const [showAllBorderRadius, setShowAllBorderRadius] = useState(true);
 
   const updateTimeoutRef = useRef(null);
 
@@ -135,7 +138,7 @@ const BorderControls = ({ style, onStyleChange }) => {
 
   const renderInput = (side, value, setter, property) => (
     <div className="flex flex-col items-center">
-      <span className="text-xs text-gray-500 mb-1">{side}</span>
+      <span className="text-xs text-gray-500 mb-1 text-center">{side}</span>
       <div className="flex">
         <input
           type="text"
@@ -184,8 +187,19 @@ const BorderControls = ({ style, onStyleChange }) => {
 
   const renderInputGroup = (label, values, setters, properties) => (
     <div className="mb-4">
-      <h4 className="text-sm font-medium text-gray-700 mb-2">{label}</h4>
-      {(label === 'Border Width' || label === 'Border Radius') && (
+      <div className="flex justify-between items-center mb-2">
+        <h4 className="text-sm font-medium text-gray-700">{label}</h4>
+        <button
+          onClick={() => label === 'Border Width' ? setShowAllBorderWidth(!showAllBorderWidth) : setShowAllBorderRadius(!showAllBorderRadius)}
+          className="p-1 rounded-md transition-colors duration-200"
+        >
+          {(label === 'Border Width' ? showAllBorderWidth : showAllBorderRadius) ? 
+            <FaLink className="w-3 h-3 text-gray-400" /> : 
+            <FaUnlink className="w-3 h-3 text-gray-400" />
+          }
+        </button>
+      </div>
+      {(label === 'Border Width' ? showAllBorderWidth : showAllBorderRadius) ? (
         <div className="flex mb-2">
           <input
             type="text"
@@ -224,21 +238,29 @@ const BorderControls = ({ style, onStyleChange }) => {
             ))}
           </select>
         </div>
+      ) : (
+        <div className="grid grid-cols-3 gap-1 w-42 mx-auto">
+          {label === 'Border Width' ? (
+            <>
+              <div className="col-start-2">{renderInput('Top', values.top, setters.top, properties)}</div>
+              <div className="col-start-1 row-start-2">{renderInput('Left', values.left, setters.left, properties)}</div>
+              <div className="col-start-3 row-start-2">{renderInput('Right', values.right, setters.right, properties)}</div>
+              <div className="col-start-2 row-start-3">{renderInput('Bottom', values.bottom, setters.bottom, properties)}</div>
+            </>
+          ) : (
+            <>
+              <div className="col-span-3 row-start-1 flex justify-between px-4">
+                <div className='me-2'>{renderInput('Top Left', values.topLeft, setters.topLeft, properties)}</div>
+                <div className='ms-2'>{renderInput('Top Right', values.topRight, setters.topRight, properties)}</div>
+              </div>
+              <div className="col-span-3 row-start-3 flex justify-between px-4">
+                <div className='me-2'>{renderInput('Bottom Left', values.bottomLeft, setters.bottomLeft, properties)}</div>
+                <div className='ms-2'>{renderInput('Bottom Right', values.bottomRight, setters.bottomRight, properties)}</div>
+              </div>
+            </>
+          )}
+        </div>
       )}
-      <div className="grid grid-cols-4 gap-x-0 gap-y-1 w-42 mx-auto">
-        <div className="col-start-2 col-span-2">
-          {renderInput(label === 'Border Width' ? 'Top' : 'Top Left', values[label === 'Border Width' ? 'top' : 'topLeft'], setters[label === 'Border Width' ? 'top' : 'topLeft'], properties)}
-        </div>
-        <div className="col-start-1 col-span-2 row-start-2 justify-self-end pr-2">
-          {renderInput(label === 'Border Width' ? 'Left' : 'Bottom Left', values[label === 'Border Width' ? 'left' : 'bottomLeft'], setters[label === 'Border Width' ? 'left' : 'bottomLeft'], properties)}
-        </div>
-        <div className="col-start-3 col-span-2 row-start-2 justify-self-start pl-2">
-          {renderInput(label === 'Border Width' ? 'Right' : 'Top Right', values[label === 'Border Width' ? 'right' : 'topRight'], setters[label === 'Border Width' ? 'right' : 'topRight'], properties)}
-        </div>
-        <div className="col-start-2 col-span-2 row-start-3">
-          {renderInput(label === 'Border Width' ? 'Bottom' : 'Bottom Right', values[label === 'Border Width' ? 'bottom' : 'bottomRight'], setters[label === 'Border Width' ? 'bottom' : 'bottomRight'], properties)}
-        </div>
-      </div>
     </div>
   );
 
