@@ -48,33 +48,41 @@ const Canvas = ({
       if (!offset || !canvasElement) return;
 
       const canvasBounds = canvasElement.getBoundingClientRect();
+      const scrollTop = canvasElement.scrollTop;
       const dropPosition = {
         x: offset.x - canvasBounds.left,
-        y: offset.y - canvasBounds.top,
+        y: offset.y - canvasBounds.top + scrollTop,
       };
 
       const flexContainerAtPosition = components.find(comp => {
         if (comp.type !== 'FLEX_CONTAINER') return false;
-        const compRect = canvasRef.current.querySelector(`[data-id="${comp.id}"]`).getBoundingClientRect();
-        return dropPosition.x >= compRect.left && dropPosition.x <= compRect.right &&
-               dropPosition.y >= compRect.top && dropPosition.y <= compRect.bottom;
+        const compElement = canvasRef.current.querySelector(`[data-id="${comp.id}"]`);
+        if (!compElement) return false;
+        const compRect = compElement.getBoundingClientRect();
+        return dropPosition.x >= compRect.left - canvasBounds.left && 
+               dropPosition.x <= compRect.right - canvasBounds.left &&
+               dropPosition.y >= compRect.top - canvasBounds.top + scrollTop && 
+               dropPosition.y <= compRect.bottom - canvasBounds.top + scrollTop;
       });
 
       if (flexContainerAtPosition) {
-        const flexRect = canvasRef.current.querySelector(`[data-id="${flexContainerAtPosition.id}"]`).getBoundingClientRect();
+        const flexElement = canvasRef.current.querySelector(`[data-id="${flexContainerAtPosition.id}"]`);
+        const flexRect = flexElement.getBoundingClientRect();
         const flexChildren = flexContainerAtPosition.children || [];
         
         let insertIndex = flexChildren.length;
         let indicatorPosition = { 
           x: flexRect.left - canvasBounds.left, 
-          y: flexRect.top - canvasBounds.top 
+          y: flexRect.top - canvasBounds.top + scrollTop
         };
         let indicatorWidth = 50; // Default width
         let indicatorHeight = flexRect.height;
 
         for (let i = 0; i < flexChildren.length; i++) {
-          const childRect = canvasRef.current.querySelector(`[data-id="${flexChildren[i].id}"]`).getBoundingClientRect();
-          if (dropPosition.x < childRect.right - canvasBounds.left) {
+          const childElement = canvasRef.current.querySelector(`[data-id="${flexChildren[i].id}"]`);
+          if (!childElement) continue;
+          const childRect = childElement.getBoundingClientRect();
+          if (dropPosition.x < childRect.left - canvasBounds.left) {
             insertIndex = i;
             indicatorPosition.x = childRect.left - canvasBounds.left;
             indicatorWidth = Math.min(50, childRect.width);
@@ -84,8 +92,11 @@ const Canvas = ({
 
         // If it's after all children, position it at the end
         if (insertIndex === flexChildren.length && flexChildren.length > 0) {
-          const lastChildRect = canvasRef.current.querySelector(`[data-id="${flexChildren[flexChildren.length - 1].id}"]`).getBoundingClientRect();
-          indicatorPosition.x = lastChildRect.right - canvasBounds.left;
+          const lastChildElement = canvasRef.current.querySelector(`[data-id="${flexChildren[flexChildren.length - 1].id}"]`);
+          if (lastChildElement) {
+            const lastChildRect = lastChildElement.getBoundingClientRect();
+            indicatorPosition.x = lastChildRect.right - canvasBounds.left;
+          }
         }
 
         setGhostIndicator({
@@ -96,14 +107,17 @@ const Canvas = ({
           flexDirection: flexContainerAtPosition.style.flexDirection || 'row',
         });
       } else {
-        const lastComponentRect = components.length > 0
-          ? canvasRef.current.querySelector(`[data-id="${components[components.length - 1].id}"]`).getBoundingClientRect()
-          : { bottom: canvasBounds.top };
-
-        const indicatorY = Math.max(
-          lastComponentRect.bottom - canvasBounds.top,
-          dropPosition.y
-        );
+        let indicatorY = dropPosition.y;
+        if (components.length > 0) {
+          const lastComponentElement = canvasRef.current.querySelector(`[data-id="${components[components.length - 1].id}"]`);
+          if (lastComponentElement) {
+            const lastComponentRect = lastComponentElement.getBoundingClientRect();
+            indicatorY = Math.max(
+              lastComponentRect.bottom - canvasBounds.top + scrollTop,
+              dropPosition.y
+            );
+          }
+        }
 
         setGhostIndicator({
           position: {
@@ -115,17 +129,17 @@ const Canvas = ({
           isFlexContainer: false,
         });
 
-        // Auto-scroll logic
-        const scrollThreshold = 100; // pixels from top/bottom to trigger scroll
-        const maxScrollSpeed = 15; // maximum pixels to scroll per frame
+        // Adjusted auto-scroll logic
+        const scrollThreshold = 150;
+        const maxScrollSpeed = 15;
 
         let scrollSpeed = 0;
-        if (dropPosition.y < scrollThreshold) {
+        if (offset.y - canvasBounds.top < scrollThreshold) {
           // Near top edge, scroll up
-          scrollSpeed = -getScrollSpeed(dropPosition.y, scrollThreshold, maxScrollSpeed);
-        } else if (dropPosition.y > canvasBounds.height - scrollThreshold) {
+          scrollSpeed = -getScrollSpeed(offset.y - canvasBounds.top, scrollThreshold, maxScrollSpeed);
+        } else if (offset.y - canvasBounds.top > canvasBounds.height - scrollThreshold) {
           // Near bottom edge, scroll down
-          scrollSpeed = getScrollSpeed(canvasBounds.height - dropPosition.y, scrollThreshold, maxScrollSpeed);
+          scrollSpeed = getScrollSpeed(canvasBounds.height - (offset.y - canvasBounds.top), scrollThreshold, maxScrollSpeed);
         }
 
         if (scrollSpeed !== 0) {
@@ -238,7 +252,18 @@ const Canvas = ({
     if (scrollAnimationRef.current) return;
     
     const scroll = () => {
-      canvasRef.current.scrollTop += speed;
+      const canvasElement = canvasRef.current;
+      canvasElement.scrollTop += speed;
+      
+      // Update ghost indicator position after scrolling
+      setGhostIndicator(prev => ({
+        ...prev,
+        position: {
+          ...prev.position,
+          y: prev.position.y,  // Keep the y position relative to the canvas
+        },
+      }));
+      
       scrollAnimationRef.current = requestAnimationFrame(scroll);
     };
     scrollAnimationRef.current = requestAnimationFrame(scroll);

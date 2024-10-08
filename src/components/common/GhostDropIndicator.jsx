@@ -4,7 +4,7 @@ const GhostDropIndicator = ({ position, width, height, isFlexContainer, flexDire
   const style = {
     position: 'absolute',
     left: `${position.x}px`,
-    top: `${position.y}px`,
+    top: `${position.y}px`, // Use top instead of transform
     width: `${width}px`,
     height: `${height}px`,
     backgroundColor: 'rgba(0, 0, 255, 0.2)',
