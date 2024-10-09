@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaHeading, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave, FaClipboardList } from 'react-icons/fa';
+import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave, FaClipboardList } from 'react-icons/fa';
 import SizeControls from './SizeControls';
 import LayoutControls from './LayoutControls';
 import BorderControls from './BorderControls';
@@ -88,7 +88,7 @@ const iconMap = {
     { icon: FaBorderStyle, tooltip: 'Border' },
     { icon: FaPalette, tooltip: 'Background' },
     { icon: FaClipboardList, tooltip: 'Kanban Controls' },
-    { icon: FaHeading, tooltip: 'Header Text' }, // Add this new icon for Kanban header text controls
+    { icon: FaFont, tooltip: 'Text Styling' }, // Changed from FaHeading to FaFont
   ],
 };
 
@@ -267,7 +267,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         return  <QueryValueControls {...sharedProps} />;
       case 'Kanban Controls':
         return <KanbanControls {...sharedProps} />;
-      case 'Header Text':
+      case 'Text Styling': // Changed from 'Header Text' to 'Text Styling'
         return componentType === 'KANBAN' ? (
           <div>
             <BasicTextControls 
