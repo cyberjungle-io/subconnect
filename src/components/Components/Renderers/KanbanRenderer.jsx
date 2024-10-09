@@ -92,7 +92,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
       );
     } else {
       // Add new task
-      const newTask = { ...taskData, id: uuidv4(), columnId };
+      const newTask = { ...taskData, id: uuidv4(), columnId, createdAt: new Date().toISOString() };
       updatedColumns[columnId].tasks.push(newTask);
     }
 
@@ -233,7 +233,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
           onAddTask={handleAddOrUpdateTask}
           columnId={selectedColumnId}
           task={selectedTask}
-          isViewMode={!!selectedTask} // Add this prop
+          isViewMode={!!selectedTask}
         />
       )}
     </div>
