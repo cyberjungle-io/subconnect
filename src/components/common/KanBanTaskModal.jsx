@@ -142,7 +142,7 @@ const ViewTaskSection = ({
             rows="3"
           />
         ) : (
-          <p className="mt-1 p-2 w-full min-h-[3em] border border-gray-200 rounded-md text-gray-900">
+          <p className="mt-1 p-2 w-full min-h-[3em] text-gray-900">
             {taskDescription || 'No description'}
           </p>
         )}
