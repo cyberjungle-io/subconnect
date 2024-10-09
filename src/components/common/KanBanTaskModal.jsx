@@ -64,6 +64,7 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
             taskDescription={taskDescription}
             setTaskDescription={setTaskDescription}
             taskColor={taskColor}
+            setTaskColor={setTaskColor}
             isEditingTitle={isEditingTitle}
             setIsEditingTitle={setIsEditingTitle}
             isEditingDescription={isEditingDescription}
@@ -102,7 +103,7 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
 };
 
 const ViewTaskSection = ({
-  taskTitle, setTaskTitle, taskDescription, setTaskDescription, taskColor,
+  taskTitle, setTaskTitle, taskDescription, setTaskDescription, taskColor, setTaskColor,
   isEditingTitle, setIsEditingTitle, isEditingDescription, setIsEditingDescription,
   titleInputRef, descriptionInputRef
 }) => {
@@ -149,10 +150,18 @@ const ViewTaskSection = ({
       </div>
       <div className="mb-4">
         <h3 className="text-sm font-medium text-gray-700 mb-2">Card Color</h3>
-        <div
-          className="w-full h-10 border border-gray-300 rounded-md"
-          style={{ backgroundColor: taskColor }}
-        ></div>
+        <div className="flex items-center">
+          <div
+            className="w-10 h-10 border border-gray-300 rounded-md mr-2"
+            style={{ backgroundColor: taskColor }}
+          ></div>
+          <input
+            type="color"
+            value={taskColor}
+            onChange={(e) => setTaskColor(e.target.value)}
+            className="w-8 h-8"
+          />
+        </div>
       </div>
     </>
   );
