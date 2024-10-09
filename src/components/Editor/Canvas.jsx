@@ -175,8 +175,10 @@ const Canvas = ({
       const flexContainerAtPosition = components.find(comp => {
         if (comp.type !== 'FLEX_CONTAINER') return false;
         const compRect = canvasRef.current.querySelector(`[data-id="${comp.id}"]`).getBoundingClientRect();
-        return dropPosition.x >= compRect.left && dropPosition.x <= compRect.right &&
-               dropPosition.y >= compRect.top && dropPosition.y <= compRect.bottom;
+        return dropPosition.x >= compRect.left - canvasBounds.left && 
+               dropPosition.x <= compRect.right - canvasBounds.left &&
+               dropPosition.y >= compRect.top - canvasBounds.top && 
+               dropPosition.y <= compRect.bottom - canvasBounds.top;
       });
 
       if (flexContainerAtPosition) {
@@ -188,8 +190,8 @@ const Canvas = ({
       } else {
         const insertIndex = components.findIndex(comp => {
           const compRect = canvasRef.current.querySelector(`[data-id="${comp.id}"]`).getBoundingClientRect();
-          return (componentLayout === 'vertical' && dropPosition.y < compRect.bottom) ||
-                 (componentLayout === 'horizontal' && dropPosition.x < compRect.right);
+          return (componentLayout === 'vertical' && dropPosition.y < compRect.bottom - canvasBounds.top) ||
+                 (componentLayout === 'horizontal' && dropPosition.x < compRect.right - canvasBounds.left);
         });
 
         if (item.id && isDragModeEnabled) {
@@ -199,7 +201,7 @@ const Canvas = ({
         }
       }
 
-      // Reset canvas height and stop auto-scroll after drop
+      // Reset canvas height, clear ghost indicator, and stop auto-scroll after drop
       canvasRef.current.style.height = 'auto';
       setGhostIndicator(null);
       stopAutoScroll();
@@ -210,9 +212,25 @@ const Canvas = ({
   const [openToolbarId, setOpenToolbarId] = useState(null);
   const [ghostIndicator, setGhostIndicator] = useState(null);
 
-  useEffect(() => {
-    return () => setGhostIndicator(null);
+  const stopAutoScroll = useCallback(() => {
+    if (scrollAnimationRef.current) {
+      cancelAnimationFrame(scrollAnimationRef.current);
+      scrollAnimationRef.current = null;
+    }
   }, []);
+
+  useEffect(() => {
+    const handleDragEnd = () => {
+      setGhostIndicator(null);
+      stopAutoScroll();
+    };
+
+    window.addEventListener('dragend', handleDragEnd);
+
+    return () => {
+      window.removeEventListener('dragend', handleDragEnd);
+    };
+  }, [stopAutoScroll]);
 
   const handleCanvasClick = useCallback(
     (event) => {
@@ -267,13 +285,6 @@ const Canvas = ({
       scrollAnimationRef.current = requestAnimationFrame(scroll);
     };
     scrollAnimationRef.current = requestAnimationFrame(scroll);
-  }, []);
-
-  const stopAutoScroll = useCallback(() => {
-    if (scrollAnimationRef.current) {
-      cancelAnimationFrame(scrollAnimationRef.current);
-      scrollAnimationRef.current = null;
-    }
   }, []);
 
   const getScrollSpeed = (distance, threshold, maxSpeed) => {
