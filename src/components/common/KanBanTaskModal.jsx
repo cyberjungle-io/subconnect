@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task }) => {
+const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMode }) => {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
   const [taskColor, setTaskColor] = useState('#ffffff');
@@ -30,12 +30,22 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task }) => {
     }
   };
 
+  const handleModalDoubleClick = (e) => {
+    e.stopPropagation(); // Stop the event from propagating
+    if (isViewMode) {
+      // Add your custom logic for double-clicking while viewing a task
+      console.log("Double-clicked while viewing task:", task);
+      // For example, you could toggle an edit mode:
+      // setIsEditing(!isEditing);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={handleOverlayClick}>
-      <div className="bg-white p-6 rounded-lg w-96">
-        {task ? (
+      <div className="bg-white p-6 rounded-lg w-96" onDoubleClick={handleModalDoubleClick}>
+        {isViewMode ? (
           <ViewTaskSection
             taskTitle={taskTitle}
             taskDescription={taskDescription}
@@ -59,7 +69,7 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task }) => {
           >
             Close
           </button>
-          {!task && (
+          {!isViewMode && (
             <button
               onClick={handleSubmit}
               className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"

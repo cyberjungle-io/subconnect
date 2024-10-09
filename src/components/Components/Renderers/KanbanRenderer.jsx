@@ -82,9 +82,8 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     }
   }, [isInteractive]);
 
-  const handleAddOrUpdateTask = useCallback((taskData) => {
+  const handleAddOrUpdateTask = useCallback((columnId, taskData) => {
     const updatedColumns = { ...columns };
-    const columnId = taskData.columnId || Object.keys(columns)[0];
 
     if (selectedTask) {
       // Update existing task
@@ -231,9 +230,10 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
             setIsModalOpen(false);
             setSelectedTask(null);
           }}
-          onAddOrUpdateTask={handleAddOrUpdateTask}
+          onAddTask={handleAddOrUpdateTask}
           columnId={selectedColumnId}
           task={selectedTask}
+          isViewMode={!!selectedTask} // Add this prop
         />
       )}
     </div>
