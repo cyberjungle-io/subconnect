@@ -39,40 +39,26 @@ const Canvas = ({
   const canvasSettings = useSelector(state => state.editor.canvasSettings);
   const canvasRef = useRef(null);
   const scrollAnimationRef = useRef(null);
+  const [canvasBounds, setCanvasBounds] = useState(null);
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      setCanvasBounds(canvasRef.current.getBoundingClientRect());
+    }
+  }, []);
+
   const [, drop] = useDrop({
     accept: ["COMPONENT", "SAVED_COMPONENT"],
     hover: (item, monitor) => {
       const offset = monitor.getClientOffset();
       const canvasElement = canvasRef.current;
 
-      if (!offset || !canvasElement) return;
+      if (!offset || !canvasElement || !canvasBounds) return;
 
-      const canvasBounds = canvasElement.getBoundingClientRect();
       const scrollTop = canvasElement.scrollTop;
       const dropPosition = {
         x: offset.x - canvasBounds.left,
         y: offset.y - canvasBounds.top + scrollTop,
-      };
-
-      // New function to find the deepest flex container at the drop position
-      const findDeepestFlexContainer = (comps, x, y, parentOffset = { x: 0, y: 0 }) => {
-        for (const comp of comps) {
-          if (comp.type !== 'FLEX_CONTAINER') continue;
-          const compElement = canvasRef.current.querySelector(`[data-id="${comp.id}"]`);
-          if (!compElement) continue;
-          const compRect = compElement.getBoundingClientRect();
-          const compPosition = {
-            x: compRect.left - canvasBounds.left + parentOffset.x,
-            y: compRect.top - canvasBounds.top + scrollTop + parentOffset.y,
-          };
-          if (x >= compPosition.x && x <= compPosition.x + compRect.width &&
-              y >= compPosition.y && y <= compPosition.y + compRect.height) {
-            // Check for nested flex containers
-            const nestedResult = findDeepestFlexContainer(comp.children || [], x, y, compPosition);
-            return nestedResult || { container: comp, position: compPosition };
-          }
-        }
-        return null;
       };
 
       const flexContainerResult = findDeepestFlexContainer(components, dropPosition.x, dropPosition.y);
@@ -88,8 +74,10 @@ const Canvas = ({
           x: flexPosition.x, 
           y: flexPosition.y
         };
-        let indicatorWidth = 50; // Default width
+        let indicatorWidth = 2; // Default to a thin vertical line
         let indicatorHeight = flexRect.height;
+
+        const isHorizontal = flexContainerAtPosition.style.flexDirection === 'row';
 
         for (let i = 0; i < flexChildren.length; i++) {
           const childElement = canvasRef.current.querySelector(`[data-id="${flexChildren[i].id}"]`);
@@ -99,20 +87,18 @@ const Canvas = ({
             x: childRect.left - canvasBounds.left,
             y: childRect.top - canvasBounds.top + scrollTop,
           };
-          if (dropPosition.x < childPosition.x) {
+          if ((isHorizontal && dropPosition.x < childPosition.x + childRect.width / 2) ||
+              (!isHorizontal && dropPosition.y < childPosition.y + childRect.height / 2)) {
             insertIndex = i;
-            indicatorPosition.x = childPosition.x;
-            indicatorWidth = Math.min(50, childRect.width);
+            indicatorPosition = {
+              x: isHorizontal ? childPosition.x : flexPosition.x,
+              y: isHorizontal ? flexPosition.y : childPosition.y,
+            };
+            if (!isHorizontal) {
+              indicatorWidth = flexRect.width;
+              indicatorHeight = 2; // Thin horizontal line for vertical flex containers
+            }
             break;
-          }
-        }
-
-        // If it's after all children, position it at the end
-        if (insertIndex === flexChildren.length && flexChildren.length > 0) {
-          const lastChildElement = canvasRef.current.querySelector(`[data-id="${flexChildren[flexChildren.length - 1].id}"]`);
-          if (lastChildElement) {
-            const lastChildRect = lastChildElement.getBoundingClientRect();
-            indicatorPosition.x = lastChildRect.right - canvasBounds.left;
           }
         }
 
@@ -309,6 +295,29 @@ const Canvas = ({
     const ratio = 1 - (distance / threshold);
     return Math.round(maxSpeed * ratio * ratio);
   };
+
+  const findDeepestFlexContainer = useCallback((comps, x, y, parentOffset = { x: 0, y: 0 }) => {
+    if (!canvasBounds || !canvasRef.current) return null;
+    const scrollTop = canvasRef.current.scrollTop;
+
+    for (const comp of comps) {
+      if (comp.type !== 'FLEX_CONTAINER') continue;
+      const compElement = canvasRef.current.querySelector(`[data-id="${comp.id}"]`);
+      if (!compElement) continue;
+      const compRect = compElement.getBoundingClientRect();
+      const compPosition = {
+        x: compRect.left - canvasBounds.left + parentOffset.x,
+        y: compRect.top - canvasBounds.top + scrollTop + parentOffset.y,
+      };
+      if (x >= compPosition.x && x <= compPosition.x + compRect.width &&
+          y >= compPosition.y && y <= compPosition.y + compRect.height) {
+        // Check for nested flex containers
+        const nestedResult = findDeepestFlexContainer(comp.children || [], x, y, compPosition);
+        return nestedResult || { container: comp, position: compPosition };
+      }
+    }
+    return null;
+  }, [canvasBounds]);
 
   const canvasStyle = getCanvasStyle(canvasSettings, componentLayout);
 
