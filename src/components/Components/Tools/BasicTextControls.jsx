@@ -20,7 +20,7 @@ const FONT_OPTIONS = [
   { value: '"Century Gothic", sans-serif', label: 'Century Gothic' },
 ];
 
-const BasicTextControls = ({ style, onStyleChange }) => {
+const BasicTextControls = ({ style, onStyleChange, label = "Text Styling" }) => {
   const [horizontalAlign, setHorizontalAlign] = useState(style.justifyContent || 'flex-start');
   const [verticalAlign, setVerticalAlign] = useState(style.alignItems || 'flex-start');
 
@@ -87,7 +87,7 @@ const BasicTextControls = ({ style, onStyleChange }) => {
 
   return (
     <div className="basic-text-controls">
-      <h3 className="text-lg font-semibold text-gray-700 mb-4">Text Styling</h3>
+      <h3 className="text-lg font-semibold text-gray-700 mb-4">{label}</h3>
       <div className="control-section-content">
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">Font Style</label>

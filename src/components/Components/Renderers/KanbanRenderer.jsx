@@ -152,7 +152,11 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
               }}
               onDoubleClick={(e) => handleDoubleClick(e, column.id)}
             >
-              <h3 style={{ marginBottom: '8px', color: getContrastColor(column.backgroundColor) }}>
+              <h3 style={{ 
+                marginBottom: '8px', 
+                color: getContrastColor(column.backgroundColor),
+                ...component.props.columnHeaderStyle // Apply the columnHeaderStyle here
+              }}>
                 {column.title}
               </h3>
               <Droppable droppableId={column.id} key={column.id}>
@@ -186,6 +190,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                               color: getContrastColor(task.color || '#ffffff'),
                               position: 'relative',
                               minHeight: '80px', // Ensure enough space for content and duration
+                              ...component.props.taskTextStyle, // Apply the taskTextStyle here
                             }}
                             onDoubleClick={(e) => handleDoubleClick(e, column.id, task)}
                           >

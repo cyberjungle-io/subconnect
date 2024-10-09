@@ -88,6 +88,7 @@ const iconMap = {
     { icon: FaBorderStyle, tooltip: 'Border' },
     { icon: FaPalette, tooltip: 'Background' },
     { icon: FaClipboardList, tooltip: 'Kanban Controls' },
+    { icon: FaHeading, tooltip: 'Header Text' }, // Add this new icon for Kanban header text controls
   ],
 };
 
@@ -266,6 +267,23 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         return  <QueryValueControls {...sharedProps} />;
       case 'Kanban Controls':
         return <KanbanControls {...sharedProps} />;
+      case 'Header Text':
+        return componentType === 'KANBAN' ? (
+          <div>
+            <BasicTextControls 
+              {...sharedProps} 
+              style={props.columnHeaderStyle || {}} 
+              onStyleChange={(updates) => onStyleChange({ props: { ...props, columnHeaderStyle: updates } })}
+              label="Column Header Text"
+            />
+            <BasicTextControls 
+              {...sharedProps} 
+              style={props.taskTextStyle || {}} 
+              onStyleChange={(updates) => onStyleChange({ props: { ...props, taskTextStyle: updates } })}
+              label="Task Text"
+            />
+          </div>
+        ) : null;
       default:
         return null;
     }
