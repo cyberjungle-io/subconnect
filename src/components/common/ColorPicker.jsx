@@ -197,8 +197,9 @@ const ColorPicker = ({ color, onChange }) => {
             <div
               key={index}
               className="w-6 h-6 rounded-md cursor-pointer border border-gray-300 shadow-sm"
-              style={{ backgroundColor: themeColor }}
-              onClick={() => onChange(themeColor)}
+              style={{ backgroundColor: typeof themeColor === 'string' ? themeColor : themeColor.value }}
+              onClick={() => onChange(typeof themeColor === 'string' ? themeColor : themeColor.value)}
+              title={themeColor.name || `Color ${index + 1}`}
             />
           ))}
         </div>

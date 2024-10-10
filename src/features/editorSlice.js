@@ -45,7 +45,14 @@ const initialState = {
       gap: '20px',
     },
   },
-  colorTheme: ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'],
+  colorTheme: [
+    { value: '#FF0000', name: 'Color 1' },
+    { value: '#00FF00', name: 'Color 2' },
+    { value: '#0000FF', name: 'Color 3' },
+    { value: '#FFFF00', name: 'Color 4' },
+    { value: '#FF00FF', name: 'Color 5' },
+    { value: '#00FFFF', name: 'Color 6' }
+  ],
 };
 
 const findComponentById = (components, id) => {

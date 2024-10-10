@@ -10,6 +10,7 @@ const ColorThemeControls = () => {
   const dispatch = useDispatch();
   const colorTheme = useSelector(state => state.editor.colorTheme) || DEFAULT_THEME;
   const [localTheme, setLocalTheme] = useState(colorTheme);
+  const [editingIndex, setEditingIndex] = useState(null);
 
   useEffect(() => {
     setLocalTheme(colorTheme);
@@ -17,9 +18,24 @@ const ColorThemeControls = () => {
 
   const handleColorChange = (index, newColor) => {
     const updatedTheme = [...localTheme];
-    updatedTheme[index] = newColor;
+    updatedTheme[index] = { ...updatedTheme[index], value: newColor };
     setLocalTheme(updatedTheme);
     dispatch(updateColorTheme(updatedTheme));
+  };
+
+  const handleNameChange = (index, newName) => {
+    const updatedTheme = localTheme.map((color, i) => 
+      i === index ? { ...color, name: newName } : color
+    );
+    setLocalTheme(updatedTheme);
+    dispatch(updateColorTheme(updatedTheme));
+  };
+
+  const getColorName = (color, index) => {
+    if (color.name !== undefined && color.name !== null) {
+      return color.name;
+    }
+    return `Color ${index + 1}`;
   };
 
   return (
@@ -30,11 +46,28 @@ const ColorThemeControls = () => {
           <div key={index} className="flex flex-col items-center">
             <input
               type="color"
-              value={color}
+              value={typeof color === 'string' ? color : color.value}
               onChange={(e) => handleColorChange(index, e.target.value)}
               className="w-12 h-12 rounded-full cursor-pointer border-2 border-gray-300"
             />
-            <span className="mt-1 text-sm text-gray-600">Color {index + 1}</span>
+            {editingIndex === index ? (
+              <input
+                type="text"
+                value={color.name !== undefined ? color.name : ''}
+                onChange={(e) => handleNameChange(index, e.target.value)}
+                onBlur={() => setEditingIndex(null)}
+                onKeyPress={(e) => e.key === 'Enter' && setEditingIndex(null)}
+                className="mt-1 text-sm text-gray-600 w-full text-center"
+                autoFocus
+              />
+            ) : (
+              <span 
+                className="mt-1 text-sm text-gray-600 cursor-pointer"
+                onDoubleClick={() => setEditingIndex(index)}
+              >
+                {getColorName(color, index)}
+              </span>
+            )}
           </div>
         ))}
       </div>
