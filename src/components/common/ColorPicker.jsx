@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SketchPicker } from 'react-color';
+import { useSelector } from 'react-redux';
 
 const COLOR_FORMATS = ['hex', 'rgb', 'hsl'];
 const COLOR_PRESETS = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
@@ -10,6 +11,7 @@ const ColorPicker = ({ color, onChange }) => {
   const [colorHistory, setColorHistory] = useState([]);
   const [internalColor, setInternalColor] = useState(color);
   const colorSwatchRef = useRef(null);
+  const colorTheme = useSelector(state => state.editor.colorTheme);
 
   useEffect(() => {
     setInternalColor(color);
@@ -181,22 +183,22 @@ const ColorPicker = ({ color, onChange }) => {
             <SketchPicker
               color={internalColor || '#000000'}
               onChange={handleColorChange}
-              presetColors={[...COLOR_PRESETS, ...colorHistory]}
-              disableAlpha={currentFormat === 'hex'}
+              presetColors={colorTheme}
+              disableAlpha={false}
             />
           </div>
         </div>
       )}
       
       <div className="mt-2">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Presets</h4>
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Theme Colors</h4>
         <div className="flex flex-wrap gap-2">
-          {COLOR_PRESETS.map((presetColor) => (
+          {colorTheme.map((themeColor, index) => (
             <div
-              key={presetColor}
+              key={index}
               className="w-6 h-6 rounded-md cursor-pointer border border-gray-300 shadow-sm"
-              style={{ backgroundColor: presetColor }}
-              onClick={() => onChange(presetColor)}
+              style={{ backgroundColor: themeColor }}
+              onClick={() => onChange(themeColor)}
             />
           ))}
         </div>

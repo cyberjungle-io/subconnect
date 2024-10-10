@@ -17,6 +17,7 @@ import ChartDataControls from './ChartDataControls';
 import KanbanControls from './KanbanControls';
 import { useDispatch } from 'react-redux';
 import { renameComponent, saveComponentThunk } from '../../../features/editorSlice';
+import ColorThemeControls from './ColorThemeControls';
 
 const iconMap = {
   FLEX_CONTAINER: [
@@ -80,6 +81,7 @@ const iconMap = {
   CANVAS: [
     { icon: FaArrowsAlt, tooltip: 'Spacing' },
     { icon: FaPalette, tooltip: 'Background' },
+    { icon: FaPalette, tooltip: 'Color Theme' },
     // Add any other controls you want for the canvas
   ],
   KANBAN: [
@@ -284,6 +286,8 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
             />
           </div>
         ) : null;
+      case 'Color Theme':
+        return <ColorThemeControls />;
       default:
         return null;
     }

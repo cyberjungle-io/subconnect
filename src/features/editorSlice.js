@@ -45,6 +45,7 @@ const initialState = {
       gap: '20px',
     },
   },
+  colorTheme: ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'],
 };
 
 const findComponentById = (components, id) => {
@@ -520,6 +521,9 @@ export const editorSlice = createSlice({
         };
       }
     },
+    updateColorTheme: (state, action) => {
+      state.colorTheme = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(saveComponentThunk.fulfilled, (state, action) => {
@@ -571,6 +575,7 @@ export const {
   resetEditorState,
   updateCanvasSettings,
   updateKanbanBoard,
+  updateColorTheme,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;
