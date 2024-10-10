@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import CommentsSection from './CommentsSection'; // You'll need to create this component
 
 const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMode }) => {
   const [taskTitle, setTaskTitle] = useState('');
@@ -8,18 +9,36 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const titleInputRef = useRef(null);
   const descriptionInputRef = useRef(null);
+  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     if (task) {
       setTaskTitle(task.title);
       setTaskDescription(task.description || '');
       setTaskColor(task.color || '#ffffff');
+      setHasChanges(false);
     } else {
       setTaskTitle('');
       setTaskDescription('');
       setTaskColor('#ffffff');
+      setHasChanges(false);
     }
   }, [task]);
+
+  const handleChange = (field, value) => {
+    switch (field) {
+      case 'title':
+        setTaskTitle(value);
+        break;
+      case 'description':
+        setTaskDescription(value);
+        break;
+      case 'color':
+        setTaskColor(value);
+        break;
+    }
+    setHasChanges(true);
+  };
 
   const handleSubmit = () => {
     if (task) {
@@ -56,33 +75,41 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={handleOverlayClick}>
-      <div className="bg-white p-6 rounded-lg w-96" onDoubleClick={handleModalDoubleClick}>
-        {isViewMode ? (
-          <ViewTaskSection
-            taskTitle={taskTitle}
-            setTaskTitle={setTaskTitle}
-            taskDescription={taskDescription}
-            setTaskDescription={setTaskDescription}
-            taskColor={taskColor}
-            setTaskColor={setTaskColor}
-            isEditingTitle={isEditingTitle}
-            setIsEditingTitle={setIsEditingTitle}
-            isEditingDescription={isEditingDescription}
-            setIsEditingDescription={setIsEditingDescription}
-            titleInputRef={titleInputRef}
-            descriptionInputRef={descriptionInputRef}
-          />
-        ) : (
-          <AddNewTaskSection
-            taskTitle={taskTitle}
-            setTaskTitle={setTaskTitle}
-            taskDescription={taskDescription}
-            setTaskDescription={setTaskDescription}
-            taskColor={taskColor}
-            setTaskColor={setTaskColor}
-          />
-        )}
-        <div className="flex justify-end mt-4">
+      <div className={`bg-white rounded-lg ${isViewMode ? 'w-3/4 max-w-6xl' : 'w-96'}`} onDoubleClick={handleModalDoubleClick}>
+        <div className={`p-6 ${isViewMode ? 'flex' : ''}`}>
+          {isViewMode ? (
+            <>
+              <div className="flex-1 pr-6">
+                <ViewTaskSection
+                  taskTitle={taskTitle}
+                  setTaskTitle={setTaskTitle}
+                  taskDescription={taskDescription}
+                  setTaskDescription={setTaskDescription}
+                  taskColor={taskColor}
+                  setTaskColor={setTaskColor}
+                  isEditingTitle={isEditingTitle}
+                  setIsEditingTitle={setIsEditingTitle}
+                  isEditingDescription={isEditingDescription}
+                  setIsEditingDescription={setIsEditingDescription}
+                  titleInputRef={titleInputRef}
+                  descriptionInputRef={descriptionInputRef}
+                  handleChange={handleChange}
+                />
+              </div>
+              <div className="w-1/2 pl-6 border-l">
+                <CommentsSection taskId={task.id} />
+              </div>
+            </>
+          ) : (
+            <AddNewTaskSection
+              taskTitle={taskTitle}
+              taskDescription={taskDescription}
+              taskColor={taskColor}
+              handleChange={handleChange}
+            />
+          )}
+        </div>
+        <div className="flex justify-end mt-4 p-6 bg-gray-50 rounded-b-lg">
           <button
             type="button"
             onClick={onClose}
@@ -90,12 +117,14 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
           >
             Close
           </button>
-          <button
-            onClick={handleSubmit}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-          >
-            {task ? 'Update Task' : 'Add Task'}
-          </button>
+          {(task && hasChanges) || (!task && (taskTitle || taskDescription || taskColor !== '#ffffff')) ? (
+            <button
+              onClick={handleSubmit}
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+            >
+              {task ? 'Update Task' : 'Add Task'}
+            </button>
+          ) : null}
         </div>
       </div>
     </div>
@@ -105,7 +134,7 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
 const ViewTaskSection = ({
   taskTitle, setTaskTitle, taskDescription, setTaskDescription, taskColor, setTaskColor,
   isEditingTitle, setIsEditingTitle, isEditingDescription, setIsEditingDescription,
-  titleInputRef, descriptionInputRef
+  titleInputRef, descriptionInputRef, handleChange
 }) => {
   return (
     <>
@@ -115,7 +144,7 @@ const ViewTaskSection = ({
             ref={titleInputRef}
             type="text"
             value={taskTitle}
-            onChange={(e) => setTaskTitle(e.target.value)}
+            onChange={(e) => handleChange('title', e.target.value)}
             onBlur={() => setIsEditingTitle(false)}
             onKeyPress={(e) => {
               if (e.key === 'Enter') {
@@ -137,7 +166,7 @@ const ViewTaskSection = ({
           <textarea
             ref={descriptionInputRef}
             value={taskDescription}
-            onChange={(e) => setTaskDescription(e.target.value)}
+            onChange={(e) => handleChange('description', e.target.value)}
             onBlur={() => setIsEditingDescription(false)}
             className="mt-1 p-2 w-full min-h-[3em] border border-gray-300 rounded-md text-gray-900"
             rows="3"
@@ -158,7 +187,7 @@ const ViewTaskSection = ({
           <input
             type="color"
             value={taskColor}
-            onChange={(e) => setTaskColor(e.target.value)}
+            onChange={(e) => handleChange('color', e.target.value)}
             className="w-8 h-8"
           />
         </div>
@@ -167,7 +196,7 @@ const ViewTaskSection = ({
   );
 };
 
-const AddNewTaskSection = ({ taskTitle, setTaskTitle, taskDescription, setTaskDescription, taskColor, setTaskColor }) => {
+const AddNewTaskSection = ({ taskTitle, taskDescription, taskColor, handleChange }) => {
   return (
     <>
       <h2 className="text-xl font-bold mb-4">Add New Task</h2>
@@ -179,7 +208,7 @@ const AddNewTaskSection = ({ taskTitle, setTaskTitle, taskDescription, setTaskDe
           type="text"
           id="taskTitle"
           value={taskTitle}
-          onChange={(e) => setTaskTitle(e.target.value)}
+          onChange={(e) => handleChange('title', e.target.value)}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
           required
         />
@@ -191,7 +220,7 @@ const AddNewTaskSection = ({ taskTitle, setTaskTitle, taskDescription, setTaskDe
         <textarea
           id="taskDescription"
           value={taskDescription}
-          onChange={(e) => setTaskDescription(e.target.value)}
+          onChange={(e) => handleChange('description', e.target.value)}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
           rows="3"
         />
@@ -204,7 +233,7 @@ const AddNewTaskSection = ({ taskTitle, setTaskTitle, taskDescription, setTaskDe
           type="color"
           id="taskColor"
           value={taskColor}
-          onChange={(e) => setTaskColor(e.target.value)}
+          onChange={(e) => handleChange('color', e.target.value)}
           className="mt-1 block w-full h-10 border border-gray-300 rounded-md shadow-sm"
         />
       </div>
