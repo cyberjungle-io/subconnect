@@ -323,11 +323,19 @@ const ComponentRenderer = React.memo(({
       opacity: style.opacity || 1,
       transform: style.transform || 'none',
       transition: style.transition || 'none',
-      maxWidth: '100%', // Add this line
-      maxHeight: '100%', // Add this line
-      height: type === 'TEXT' ? 'auto' : style.height || 'auto', // Add this line
-      minHeight: type === 'TEXT' ? style.height || 'auto' : undefined, // Add this line
+      maxWidth: '100%',
+      maxHeight: '100%',
     };
+
+    // Handle height for different component types
+    if (type === 'TEXT') {
+      componentStyle.height = 'auto';
+      componentStyle.minHeight = style.height || 'auto';
+    } else if (isTopLevel) {
+      componentStyle.height = style.height || '300px'; // Use the style height if set, otherwise default to 300px
+    } else {
+      componentStyle.height = style.height || 'auto';
+    }
 
     if (style.showBorder !== false) {
       componentStyle.borderWidth = style.borderWidth || '1px';
@@ -379,7 +387,6 @@ const ComponentRenderer = React.memo(({
     // Add this condition for top-level components
     if (isTopLevel) {
       componentStyle.width = '100%';
-      componentStyle.height = '300px';
     }
 
     return componentStyle;
