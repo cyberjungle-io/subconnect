@@ -3,22 +3,33 @@ import { useSelector, useDispatch } from 'react-redux';
 import { updateColorTheme } from '../../../features/editorSlice';
 
 const DEFAULT_THEME = [
-  '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'
+  { value: '#FF0000', name: 'Color 1' },
+  { value: '#00FF00', name: 'Color 2' },
+  { value: '#0000FF', name: 'Color 3' },
+  { value: '#FFFF00', name: 'Color 4' },
+  { value: '#FF00FF', name: 'Color 5' },
+  { value: '#00FFFF', name: 'Color 6' }
 ];
 
 const ColorThemeControls = () => {
   const dispatch = useDispatch();
-  const colorTheme = useSelector(state => state.editor.colorTheme) || DEFAULT_THEME;
-  const [localTheme, setLocalTheme] = useState(colorTheme);
+  const colorTheme = useSelector(state => state.editor.colorTheme);
+  const [localTheme, setLocalTheme] = useState(colorTheme || DEFAULT_THEME);
   const [editingIndex, setEditingIndex] = useState(null);
 
   useEffect(() => {
-    setLocalTheme(colorTheme);
-  }, [colorTheme]);
+    if (colorTheme && colorTheme.length > 0) {
+      setLocalTheme(colorTheme);
+    } else {
+      setLocalTheme(DEFAULT_THEME);
+      dispatch(updateColorTheme(DEFAULT_THEME));
+    }
+  }, [colorTheme, dispatch]);
 
   const handleColorChange = (index, newColor) => {
-    const updatedTheme = [...localTheme];
-    updatedTheme[index] = { ...updatedTheme[index], value: newColor };
+    const updatedTheme = localTheme.map((color, i) => 
+      i === index ? { ...color, value: newColor } : color
+    );
     setLocalTheme(updatedTheme);
     dispatch(updateColorTheme(updatedTheme));
   };
@@ -32,7 +43,7 @@ const ColorThemeControls = () => {
   };
 
   const getColorName = (color, index) => {
-    if (color.name !== undefined && color.name !== null) {
+    if (color.name !== undefined && color.name !== null && color.name !== '') {
       return color.name;
     }
     return `Color ${index + 1}`;
@@ -46,14 +57,14 @@ const ColorThemeControls = () => {
           <div key={index} className="flex flex-col items-center">
             <input
               type="color"
-              value={typeof color === 'string' ? color : color.value}
+              value={color.value}
               onChange={(e) => handleColorChange(index, e.target.value)}
               className="w-12 h-12 rounded-full cursor-pointer border-2 border-gray-300"
             />
             {editingIndex === index ? (
               <input
                 type="text"
-                value={color.name !== undefined ? color.name : ''}
+                value={color.name || ''}
                 onChange={(e) => handleNameChange(index, e.target.value)}
                 onBlur={() => setEditingIndex(null)}
                 onKeyPress={(e) => e.key === 'Enter' && setEditingIndex(null)}
