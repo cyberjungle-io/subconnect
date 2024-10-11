@@ -16,6 +16,7 @@ import { getHighlightColor } from '../../../utils/highlightColors'; // We'll cre
 import { FaPencilAlt, FaTimes } from 'react-icons/fa'; // Add FaTimes import
 import FloatingToolbar from '../Tools/FloatingToolbar';
 import ResizeHandle from '../../common/ResizeHandle';
+import TableRenderer from "./TableRenderer";
 
 const defaultGlobalSettings = {
   generalComponentStyle: {
@@ -300,6 +301,8 @@ const ComponentRenderer = React.memo(({
         return <QueryValueRenderer {...sharedProps} />;
       case 'KANBAN':
         return <KanbanRenderer {...sharedProps} isInteractive={isViewMode} />;
+      case "TABLE":
+        return <TableRenderer {...sharedProps} />;
       default:
         return null;
     }

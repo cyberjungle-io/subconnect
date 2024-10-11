@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave, FaClipboardList } from 'react-icons/fa';
+import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave, FaClipboardList, FaTable } from 'react-icons/fa';
 import SizeControls from './SizeControls';
 import LayoutControls from './LayoutControls';
 import BorderControls from './BorderControls';
@@ -18,6 +18,8 @@ import KanbanControls from './KanbanControls';
 import { useDispatch } from 'react-redux';
 import { renameComponent, saveComponentThunk } from '../../../features/editorSlice';
 import ColorThemeControls from './ColorThemeControls';
+import TableControls from './TableControls';
+import TableDataControls from './TableDataControls';
 
 const iconMap = {
   FLEX_CONTAINER: [
@@ -91,6 +93,15 @@ const iconMap = {
     { icon: FaPalette, tooltip: 'Background' },
     { icon: FaClipboardList, tooltip: 'Kanban Controls' },
     { icon: FaFont, tooltip: 'Text Styling' }, // Changed from FaHeading to FaFont
+  ],
+  TABLE: [
+    { icon: FaExpand, tooltip: 'Size' },
+    { icon: FaArrowsAlt, tooltip: 'Spacing' },
+    { icon: FaBorderStyle, tooltip: 'Border' },
+    { icon: FaTable, tooltip: 'Table Style' },
+    { icon: FaDatabase, tooltip: 'Table Data' },
+    { icon: FaPalette, tooltip: 'Background' },
+    { icon: FaFont, tooltip: 'Text Styling' },
   ],
 };
 
@@ -288,6 +299,10 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         ) : null;
       case 'Color Theme':
         return <ColorThemeControls />;
+      case 'Table Style':
+        return <TableControls {...sharedProps} />;
+      case 'Table Data':
+        return <TableDataControls {...sharedProps} />;
       default:
         return null;
     }
@@ -408,7 +423,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
             </button>
           </div>
         </div>
-        <div className="flex mb-2 space-x-2">
+        <div className="flex flex-wrap mb-2 gap-2">
           {icons.map((iconData, index) => (
             <button
               key={index}

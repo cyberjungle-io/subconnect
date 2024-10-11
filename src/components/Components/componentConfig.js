@@ -143,12 +143,11 @@ export const componentConfig = {
   [componentTypes.TABLE]: {
     name: 'Table',
     icon: FaTable,
-    acceptsChildren: false,
-    defaultSize: { width: 300, height: 200 },
-    defaultContent: 'Table Placeholder',
     defaultProps: {
-      borderRadius: '4px'
-    }
+      title: 'Table Title',
+      columns: [],
+      selectedQueryId: '',
+    },
   },
   [componentTypes.VIDEO]: {
     name: 'Video',
