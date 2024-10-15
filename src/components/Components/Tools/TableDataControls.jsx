@@ -34,10 +34,13 @@ const TableDataControls = ({ props, onPropsChange }) => {
   }, [selectedQuery, props.columns, dispatch]);
 
   useEffect(() => {
-    if (queryResult && !queryLoading && !queryError) {
-      const dataKey = Object.keys(queryResult.data)[0];
-      const newTableData = queryResult.data[dataKey];
-      setTableData(newTableData);
+    if (queryResult && queryResult.data && !queryLoading && !queryError) {
+      const dataKeys = Object.keys(queryResult.data);
+      if (dataKeys.length > 0) {
+        const dataKey = dataKeys[0];
+        const newTableData = queryResult.data[dataKey];
+        setTableData(newTableData);
+      }
     }
   }, [queryResult, queryLoading, queryError]);
 
