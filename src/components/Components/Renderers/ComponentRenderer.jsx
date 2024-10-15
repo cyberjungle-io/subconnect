@@ -251,9 +251,8 @@ const ComponentRenderer = React.memo(({
         ...component,
         style: {
           ...component.style,
-          width: '100%',
-          height: '100%',
-          margin: '0px', // Set margin to 0 for child components
+          margin: '0px',
+          // Remove width and height overrides
         },
       },
       onUpdate: handleUpdate, // Use the new handleUpdate function
@@ -334,8 +333,13 @@ const ComponentRenderer = React.memo(({
     if (type === 'TEXT') {
       componentStyle.height = 'auto';
       componentStyle.minHeight = style.height || 'auto';
+    } else if (type === 'CHART') {
+      componentStyle.width = style.width || '100%';
+      componentStyle.height = style.height || '300px'; // Provide a default height for charts
+      componentStyle.minWidth = style.minWidth || "200px";
+      componentStyle.minHeight = style.minHeight || "150px";
     } else if (isTopLevel) {
-      componentStyle.height = style.height || '300px'; // Use the style height if set, otherwise default to 300px
+      componentStyle.height = style.height || '300px';
     } else {
       componentStyle.height = style.height || 'auto';
     }
@@ -375,15 +379,6 @@ const ComponentRenderer = React.memo(({
         flexBasis: style.flexBasis || 'auto',
         width: style.width || 'auto',
         height: style.height || 'auto',
-      });
-    }
-
-    if (type === "CHART") {
-      Object.assign(componentStyle, {
-        minWidth: style.minWidth || "200px",
-        minHeight: style.minHeight || "150px",
-        width: style.width || "100%",
-        height: style.height || "100%",
       });
     }
 
