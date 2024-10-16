@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateProject } from "../../../w3s/w3sSlice";
 import { FaPlus, FaTrash } from "react-icons/fa";
@@ -12,6 +12,27 @@ const PageList = ({
   const dispatch = useDispatch();
   const currentProject = useSelector((state) => state.w3s.currentProject.data);
   const [newPageName, setNewPageName] = useState("");
+
+  const toolbarSettings = useSelector(state => state.editor.toolbarSettings) || {};
+
+  // Create a style tag for dynamic hover effect and selected page
+  useEffect(() => {
+    const style = document.createElement('style');
+    const hoverColor = toolbarSettings.buttonHoverColor || '#d0d0d0';
+    style.innerHTML = `
+      .page-list-item:not(.selected):hover {
+        color: ${hoverColor} !important;
+      }
+      .page-list-item.selected {
+        background-color: ${hoverColor} !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, [toolbarSettings.buttonHoverColor]);
 
   const handleCreatePage = () => {
     if (newPageName.trim() && currentProject) {
@@ -64,10 +85,10 @@ const PageList = ({
           {currentProject.pages.map((page, index) => (
             <li
               key={index}
-              className={`flex items-center justify-between p-2 rounded cursor-pointer transition-colors duration-200 ${
+              className={`page-list-item flex items-center justify-between p-2 rounded cursor-pointer transition-colors duration-200 ${
                 page._id === selectedPageId
-                  ? "bg-[#d0d0d0]"
-                  : "hover:bg-[#e0e0e0]"
+                  ? "selected"
+                  : ""
               }`}
               onClick={() => onSelectPage(page)}
             >
