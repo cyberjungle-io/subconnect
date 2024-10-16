@@ -29,7 +29,6 @@ const FloatingMenusManager = () => {
   const [globalSettingsPosition, setGlobalSettingsPosition] = useState({ x: 0, y: 0 });
   const [isCanvasSettingsVisible, setIsCanvasSettingsVisible] = useState(false);
   const [canvasToolbarPosition, setCanvasToolbarPosition] = useState({ x: 100, y: 100 });
-  const [isSpacingVisible, setIsSpacingVisible] = useState(false);
 
   const floatingRightMenuRef = useRef(null);
 
@@ -56,12 +55,6 @@ const FloatingMenusManager = () => {
       dispatch(setDragModeEnabled(!isDragModeEnabled));
     }
   }, [mode, isDragModeEnabled, dispatch]);
-
-  const handleToggleSpacingVisibility = useCallback(() => {
-    if (mode === 'edit') {
-      setIsSpacingVisible(prev => !prev);
-    }
-  }, [mode]);
 
   const handleShowCanvasSettings = useCallback(() => {
     if (mode === 'edit') {
@@ -124,7 +117,7 @@ const FloatingMenusManager = () => {
         isGlobalSettingsVisible={isGlobalSettingsVisible}
         onToggleDragMode={handleToggleDragMode}
         isDragModeEnabled={isDragModeEnabled}
-        onToggleSpacingVisibility={handleToggleSpacingVisibility}
+        
         isEditMode={mode === 'edit'}
         onShowCanvasSettings={handleShowCanvasSettings}
         isCanvasSettingsVisible={isCanvasSettingsVisible}

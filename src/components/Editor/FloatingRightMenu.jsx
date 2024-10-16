@@ -7,12 +7,11 @@ const FloatingRightMenu = ({
   onShowComponentPalette,
   onShowGlobalSettings,
   onToggleDragMode,
-  onToggleSpacingVisibility,
   isComponentTreeVisible,
   isComponentPaletteVisible,
   isGlobalSettingsVisible,
   isDragModeEnabled,
-  isEditMode, // Add this prop
+  isEditMode,
   onShowCanvasSettings,
   isCanvasSettingsVisible,
 }) => {
@@ -58,14 +57,6 @@ const FloatingRightMenu = ({
         disabled={!isEditMode}
       >
         <FaHandPointer />
-      </button>
-      <button 
-        onClick={isEditMode ? onToggleSpacingVisibility : undefined} 
-        className={buttonClass(false)} 
-        title="Toggle Spacing Visibility"
-        disabled={!isEditMode}
-      >
-        <FaEye />
       </button>
       <button
         onClick={isEditMode ? onShowCanvasSettings : undefined}
