@@ -85,7 +85,7 @@ const iconMap = {
     { icon: FaArrowsAlt, tooltip: 'Spacing' },
     { icon: FaPalette, tooltip: 'Background' },
     { icon: FaPalette, tooltip: 'Color Theme' },
-    // Add any other controls you want for the canvas
+    { icon: FaPalette, tooltip: 'Toolbar Settings' }, // Add this line
   ],
   KANBAN: [
     { icon: FaExpand, tooltip: 'Size' },
@@ -252,6 +252,27 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
 
   const icons = iconMap[componentType] || [];
 
+  // Add this condition to render icons for CANVAS type
+  const renderIcons = () => {
+    if (componentType === 'CANVAS') {
+      return (
+        <div className="flex flex-wrap mb-2 gap-2">
+          {icons.map((iconData, index) => (
+            <button
+              key={index}
+              className={buttonClass(activeControl === iconData.tooltip)}
+              title={iconData.tooltip}
+              onClick={() => handleIconClick(iconData.tooltip)}
+            >
+              <iconData.icon />
+            </button>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   const renderActiveControl = () => {
     console.log('Active Control:', activeControl);
     const sharedProps = {
@@ -320,7 +341,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       case 'Table Data':
         return <TableDataControls {...sharedProps} />;
       case 'Toolbar Settings':
-        return <ToolbarControls />;
+        return <ToolbarControls {...sharedProps} />;
       default:
         return null;
     }
@@ -450,20 +471,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
             </button>
           </div>
         </div>
-        {componentType === 'TOOLBAR' && (
-          <div className="flex flex-wrap mb-2 gap-2">
-            {iconMap[componentType].map((iconData, index) => (
-              <button
-                key={index}
-                className={buttonClass(activeControl === iconData.tooltip)}
-                title={iconData.tooltip}
-                onClick={() => handleIconClick(iconData.tooltip)}
-              >
-                <iconData.icon />
-              </button>
-            ))}
-          </div>
-        )}
+        {renderIcons()} {/* Add this line to render the icons */}
       </div>
       <div className="border-t border-[#cce0ff] flex-grow overflow-y-auto">
         <div className="p-4">

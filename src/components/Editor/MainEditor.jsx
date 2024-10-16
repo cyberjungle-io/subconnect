@@ -34,6 +34,7 @@ const MainEditor = () => {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const globalSettings = useSelector(state => state.editor.globalSettings);
   const currentUser = useSelector(state => state.user.currentUser);
+  const toolbarSettings = useSelector(state => state.editor.toolbarSettings);
 
   useEffect(() => {
     if (projectId) {
@@ -251,7 +252,10 @@ const MainEditor = () => {
                 onStyleChange={handleUpdateComponent}
                 isDragModeEnabled={isDragModeEnabled}
                 isViewMode={false}
-                canvasSettings={canvasSettings}
+                canvasSettings={{
+                  ...canvasSettings,
+                  toolbarSettings,
+                }}
                 onDeselectAll={handleDeselectAll}
               />
             ) : (

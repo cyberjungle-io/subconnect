@@ -31,8 +31,6 @@ const FloatingMenusManager = () => {
   const [globalSettingsPosition, setGlobalSettingsPosition] = useState({ x: 0, y: 0 });
   const [isCanvasSettingsVisible, setIsCanvasSettingsVisible] = useState(false);
   const [canvasToolbarPosition, setCanvasToolbarPosition] = useState({ x: 100, y: 100 });
-  const [isToolbarSettingsVisible, setIsToolbarSettingsVisible] = useState(false);
-  const [toolbarSettingsPosition, setToolbarSettingsPosition] = useState({ x: 100, y: 100 });
 
   const floatingRightMenuRef = useRef(null);
 
@@ -76,16 +74,6 @@ const FloatingMenusManager = () => {
 
   const handleUpdateGlobalSettings = useCallback((updates) => {
     dispatch(updateGlobalSettings(updates));
-  }, [dispatch]);
-
-  const handleToggleToolbarSettings = useCallback(() => {
-    if (mode === 'edit') {
-      setIsToolbarSettingsVisible(prev => !prev);
-    }
-  }, [mode]);
-
-  const handleUpdateToolbarSettings = useCallback((updates) => {
-    dispatch(updateToolbarSettings(updates));
   }, [dispatch]);
 
   // Implement hotkeys
@@ -135,8 +123,6 @@ const FloatingMenusManager = () => {
         isEditMode={mode === 'edit'}
         onShowCanvasSettings={handleShowCanvasSettings}
         isCanvasSettingsVisible={isCanvasSettingsVisible}
-        onShowToolbarSettings={handleToggleToolbarSettings}
-        isToolbarSettingsVisible={isToolbarSettingsVisible}
       />
       {isComponentTreeVisible && (
         <ComponentTree
@@ -172,21 +158,11 @@ const FloatingMenusManager = () => {
           initialPosition={canvasToolbarPosition}
           onClose={handleCloseCanvasSettings}
           style={canvasSettings.style}
-          props={canvasSettings}
+          props={{
+            ...canvasSettings,
+            toolbarSettings, // Add this line to pass toolbar settings
+          }}
           onStyleChange={handleUpdateCanvasSettings}
-          onToolbarInteraction={() => {}}
-        />
-      )}
-      {isToolbarSettingsVisible && (
-        <FloatingToolbar
-          componentId="toolbar"
-          componentType="TOOLBAR"
-          initialPosition={toolbarSettingsPosition}
-          onClose={() => setIsToolbarSettingsVisible(false)}
-          style={toolbarSettings}
-          props={{}} // Pass an empty object as props
-          content={null}
-          onStyleChange={handleUpdateToolbarSettings}
           onToolbarInteraction={() => {}}
         />
       )}
