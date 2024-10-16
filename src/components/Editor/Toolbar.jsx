@@ -13,6 +13,48 @@ import ProjectModal from '../Components/Projects/ProjectModal';
 import DataModal from './DataModal';
 import { toggleFloatingMenu } from '../../features/editorSlice';
 
+// Add these helper functions at the top of your file, outside the component
+const hexToRgb = (hex) => {
+  const shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+  hex = hex.replace(shorthandRegex, (m, r, g, b) => r + r + g + g + b + b);
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null;
+};
+
+const rgbToHex = (r, g, b) => '#' + [r, g, b].map(x => {
+  const hex = x.toString(16);
+  return hex.length === 1 ? '0' + hex : hex;
+}).join('');
+
+const generateComplementaryShade = (baseColor) => {
+  const rgb = hexToRgb(baseColor);
+  if (!rgb) return baseColor;
+
+  // Calculate perceived brightness
+  const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+
+  let newR, newG, newB;
+  const contrastFactor = 60; // Increased from 30 to 50 for higher contrast
+
+  if (brightness > 128) {
+    // If background is light, make a darker shade
+    newR = Math.max(0, rgb.r - contrastFactor);
+    newG = Math.max(0, rgb.g - contrastFactor);
+    newB = Math.max(0, rgb.b - contrastFactor);
+  } else {
+    // If background is dark, make a lighter shade
+    newR = Math.min(255, rgb.r + contrastFactor);
+    newG = Math.min(255, rgb.g + contrastFactor);
+    newB = Math.min(255, rgb.b + contrastFactor);
+  }
+
+  return rgbToHex(newR, newG, newB);
+};
+
 const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal }) => {
   const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
@@ -81,12 +123,23 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
 
   const isFloatingMenuVisible = useSelector(state => state.editor.isFloatingMenuVisible);
 
-  // Create a style tag for dynamic hover effect
+  // Calculate complementary shade for input background
+  const inputBackgroundColor = generateComplementaryShade(toolbarSettings.backgroundColor || '#e8e8e8');
+
+  // Create a style tag for dynamic hover effect and placeholder color
   React.useEffect(() => {
     const style = document.createElement('style');
     style.innerHTML = `
       .toolbar-button:hover {
         background-color: ${toolbarSettings.buttonHoverColor || '#d0d0d0'} !important;
+      }
+      .page-list input::placeholder {
+        color: ${toolbarSettings.textColor || '#333333'};
+        opacity: 0.7;
+      }
+      .page-list input:focus {
+        outline: none;
+        box-shadow: none;
       }
     `;
     document.head.appendChild(style);
@@ -94,7 +147,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
     return () => {
       document.head.removeChild(style);
     };
-  }, [toolbarSettings.buttonHoverColor]);
+  }, [toolbarSettings.buttonHoverColor, toolbarSettings.textColor]);
 
   const buttonStyle = {
     backgroundColor: 'transparent',
@@ -172,7 +225,10 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
                         selectedPageId={currentPage?._id}
                         onSelectPage={onSelectPage}
                         onDeletePage={onDeletePage}
-                        toolbarSettings={toolbarSettings}
+                        toolbarSettings={{
+                          ...toolbarSettings,
+                          inputBackgroundColor,
+                        }}
                       />
                     </div>
                   </div>
