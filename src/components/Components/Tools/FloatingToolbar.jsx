@@ -20,6 +20,7 @@ import { renameComponent, saveComponentThunk } from '../../../features/editorSli
 import ColorThemeControls from './ColorThemeControls';
 import TableControls from './TableControls';
 import TableDataControls from './TableDataControls';
+import ToolbarControls from './ToolbarControls';
 
 const iconMap = {
   FLEX_CONTAINER: [
@@ -103,6 +104,9 @@ const iconMap = {
     { icon: FaPalette, tooltip: 'Background' },
     { icon: FaFont, tooltip: 'Text Styling' },
   ],
+  TOOLBAR: [
+    { icon: FaPalette, tooltip: 'Toolbar Settings' },
+  ],
 };
 
 const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose, style, props, content, onStyleChange, onToolbarInteraction }) => {
@@ -115,7 +119,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   const [isMouseDown, setIsMouseDown] = useState(false);
   const toolbarRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState(props.name || componentType);
+  const [editedName, setEditedName] = useState(props?.name || componentType);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -315,6 +319,8 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         return <TableControls {...sharedProps} />;
       case 'Table Data':
         return <TableDataControls {...sharedProps} />;
+      case 'Toolbar Settings':
+        return <ToolbarControls />;
       default:
         return null;
     }
@@ -390,43 +396,51 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
           onMouseDown={handleMouseDown}
         >
           <div className="flex-grow mr-2 min-w-0">
-            {isEditing ? (
-              <input
-                ref={inputRef}
-                value={editedName}
-                onChange={(e) => setEditedName(e.target.value)}
-                onBlur={handleRename}
-                onKeyDown={handleKeyDown}
-                className="text-lg font-semibold text-gray-500 bg-white border border-gray-300 rounded px-1 py-0 w-full select-text"
-                style={{
-                  userSelect: 'text',
-                  WebkitUserSelect: 'text',
-                  MozUserSelect: 'text',
-                  msUserSelect: 'text',
-                }}
-                onClick={(e) => e.stopPropagation()}
-              />
-            ) : (
-              <h3 
-                className="text-lg font-semibold text-gray-500 cursor-text truncate"
-                onDoubleClick={(e) => {
-                  e.stopPropagation();
-                  setIsEditing(true);
-                }}
-                title={props.name || componentType}
-              >
-                {props.name || componentType}
+            {componentType === 'TOOLBAR' ? (
+              <h3 className="text-lg font-semibold text-gray-500 truncate">
+                Toolbar Settings
               </h3>
+            ) : (
+              isEditing ? (
+                <input
+                  ref={inputRef}
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  onBlur={handleRename}
+                  onKeyDown={handleKeyDown}
+                  className="text-lg font-semibold text-gray-500 bg-white border border-gray-300 rounded px-1 py-0 w-full select-text"
+                  style={{
+                    userSelect: 'text',
+                    WebkitUserSelect: 'text',
+                    MozUserSelect: 'text',
+                    msUserSelect: 'text',
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              ) : (
+                <h3 
+                  className="text-lg font-semibold text-gray-500 cursor-text truncate"
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditing(true);
+                  }}
+                  title={props?.name || componentType}
+                >
+                  {props?.name || componentType}
+                </h3>
+              )
             )}
           </div>
           <div className="flex-shrink-0 flex items-center">
-            <button
-              onClick={handleSaveComponent}
-              className="mr-2 text-gray-500 hover:text-blue-600"
-              title="Save Component"
-            >
-              <FaSave />
-            </button>
+            {componentType !== 'TOOLBAR' && (
+              <button
+                onClick={handleSaveComponent}
+                className="mr-2 text-gray-500 hover:text-blue-600"
+                title="Save Component"
+              >
+                <FaSave />
+              </button>
+            )}
             <button 
               onClick={onClose} 
               className="text-gray-500 hover:text-blue-600"
@@ -436,18 +450,20 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
             </button>
           </div>
         </div>
-        <div className="flex flex-wrap mb-2 gap-2">
-          {icons.map((iconData, index) => (
-            <button
-              key={index}
-              className={buttonClass(activeControl === iconData.tooltip)}
-              title={iconData.tooltip}
-              onClick={() => handleIconClick(iconData.tooltip)}
-            >
-              <iconData.icon />
-            </button>
-          ))}
-        </div>
+        {componentType === 'TOOLBAR' && (
+          <div className="flex flex-wrap mb-2 gap-2">
+            {iconMap[componentType].map((iconData, index) => (
+              <button
+                key={index}
+                className={buttonClass(activeControl === iconData.tooltip)}
+                title={iconData.tooltip}
+                onClick={() => handleIconClick(iconData.tooltip)}
+              >
+                <iconData.icon />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <div className="border-t border-[#cce0ff] flex-grow overflow-y-auto">
         <div className="p-4">

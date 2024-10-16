@@ -53,6 +53,10 @@ const initialState = {
     { value: '#FF00FF', name: 'Color 5' },
     { value: '#00FFFF', name: 'Color 6' }
   ],
+  toolbarSettings: {
+    backgroundColor: '#e8e8e8',
+    textColor: '#333333',
+  },
 };
 
 const findComponentById = (components, id) => {
@@ -531,6 +535,12 @@ export const editorSlice = createSlice({
     updateColorTheme: (state, action) => {
       state.colorTheme = action.payload;
     },
+    updateToolbarSettings: (state, action) => {
+      state.toolbarSettings = {
+        ...state.toolbarSettings,
+        ...action.payload,
+      };
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(saveComponentThunk.fulfilled, (state, action) => {
@@ -583,6 +593,7 @@ export const {
   updateCanvasSettings,
   updateKanbanBoard,
   updateColorTheme,
+  updateToolbarSettings,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

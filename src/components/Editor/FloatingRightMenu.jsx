@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTree, FaGlobe, FaEye, FaHandPointer, FaPaintBrush } from 'react-icons/fa';
+import { FaTree, FaGlobe, FaEye, FaHandPointer, FaPaintBrush, FaPalette } from 'react-icons/fa';
 import FourSquaresIcon from '../common/CustomIcons/FourSquareIcon';
 
 const FloatingRightMenu = ({
@@ -14,6 +14,8 @@ const FloatingRightMenu = ({
   isEditMode,
   onShowCanvasSettings,
   isCanvasSettingsVisible,
+  onShowToolbarSettings,
+  isToolbarSettingsVisible,
 }) => {
   const buttonClass = (isActive) => `
     p-2 mb-2 rounded-full
@@ -65,6 +67,14 @@ const FloatingRightMenu = ({
         disabled={!isEditMode}
       >
         <FaPaintBrush />
+      </button>
+      <button
+        onClick={isEditMode ? onShowToolbarSettings : undefined}
+        className={buttonClass(isToolbarSettingsVisible)}
+        title="Toggle Toolbar Settings"
+        disabled={!isEditMode}
+      >
+        <FaPalette />
       </button>
     </div>
   );

@@ -27,6 +27,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
   const { mode, currentPage } = useSelector((state) => state.editor);
   const currentProject = useSelector((state) => state.w3s.currentProject.data);
   const pageListRef = useRef(null);
+  const toolbarSettings = useSelector(state => state.editor.toolbarSettings) || {};
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -80,8 +81,34 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
 
   const isFloatingMenuVisible = useSelector(state => state.editor.isFloatingMenuVisible);
 
+  // Create a style tag for dynamic hover effect
+  React.useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .toolbar-button:hover {
+        background-color: ${toolbarSettings.buttonHoverColor || '#d0d0d0'} !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, [toolbarSettings.buttonHoverColor]);
+
+  const buttonStyle = {
+    backgroundColor: 'transparent',
+    color: toolbarSettings.textColor || '#333333',
+  };
+
   return (
-    <div className="bg-gradient-to-b from-[#e8e8e8] to-[#d4d4d4] text-gray-800 px-4 py-3 flex justify-between items-center border-b border-[#c0c0c0] shadow-sm relative">
+    <div 
+      className="text-gray-800 px-4 py-3 flex justify-between items-center border-b border-[#c0c0c0] shadow-sm relative"
+      style={{
+        backgroundColor: toolbarSettings.backgroundColor || '#e8e8e8',
+        color: toolbarSettings.textColor || '#333333',
+      }}
+    >
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iLjA1IiBkPSJNMCAwaDMwMHYzMDBIMHoiLz48L3N2Zz4=')] opacity-30 mix-blend-overlay"></div>
       <div className="relative z-10">
         <HamburgerMenu />
@@ -94,22 +121,48 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
             <div className="relative mr-3" ref={pageListRef}>
               <button
                 onClick={toggleProjectInfo}
-                className="flex flex-col items-start px-3 py-1.5 pr-8 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+                className="toolbar-button flex flex-col items-start px-3 py-1.5 pr-8 rounded text-sm transition-colors"
+                style={buttonStyle}
               >
                 <span className="font-semibold">{currentProject.name}</span>
                 {currentPage && (
-                  <div className="current-page-name text-xs text-gray-600">{currentPage.name}</div>
+                  <div className="current-page-name text-xs">{currentPage.name}</div>
                 )}
                 <FaChevronDown className={`absolute right-2 top-1/2 transform -translate-y-1/2 transition-transform ${expandedSections.currentProject ? 'rotate-180' : ''}`} />
               </button>
               {expandedSections.currentProject && (
-                <div className="absolute top-full left-0 mt-1 w-64 bg-[#e8e8e8] rounded shadow-lg z-[990] border border-[#c0c0c0]">
+                <div 
+                  className="absolute top-full left-0 mt-1 w-64 rounded shadow-lg z-[990] border"
+                  style={{
+                    backgroundColor: toolbarSettings.backgroundColor || '#e8e8e8',
+                    borderColor: toolbarSettings.textColor || '#c0c0c0',
+                  }}
+                >
                   <div className="current-project-container">
-                    <div className="current-project-header p-3 border-b border-[#c0c0c0]">
+                    <div 
+                      className="current-project-header p-3 border-b"
+                      style={{
+                        borderColor: toolbarSettings.textColor || '#c0c0c0',
+                      }}
+                    >
                       <div className="current-project-info">
-                        <div className="current-project-name text-sm font-semibold text-gray-800">{currentProject.name}</div>
+                        <div 
+                          className="current-project-name text-sm font-semibold"
+                          style={{
+                            color: toolbarSettings.textColor || '#333333',
+                          }}
+                        >
+                          {currentProject.name}
+                        </div>
                         {currentPage && (
-                          <div className="current-page-name text-xs text-gray-600">{currentPage.name}</div>
+                          <div 
+                            className="current-page-name text-xs"
+                            style={{
+                              color: toolbarSettings.textColor || '#666666',
+                            }}
+                          >
+                            {currentPage.name}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -119,6 +172,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
                         selectedPageId={currentPage?._id}
                         onSelectPage={onSelectPage}
                         onDeletePage={onDeletePage}
+                        toolbarSettings={toolbarSettings}
                       />
                     </div>
                   </div>
@@ -128,7 +182,8 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
             {mode === 'edit' && (
               <button
                 onClick={onSaveProject}
-                className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+                className="toolbar-button flex items-center justify-center w-9 h-9 rounded text-sm transition-colors"
+                style={buttonStyle}
                 title="Save Project"
               >
                 <FaSave className="text-base" />
@@ -139,7 +194,8 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
         {currentUser && (
           <button
             onClick={handleOpenProjectModal}
-            className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+            className="toolbar-button flex items-center justify-center w-9 h-9 rounded text-sm transition-colors"
+            style={buttonStyle}
             title="Open Project"
           >
             <FaFolderOpen className="text-base" />
@@ -148,7 +204,8 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
         {currentUser && (
           <button
             onClick={handleOpenDataModal}
-            className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+            className="toolbar-button flex items-center justify-center w-9 h-9 rounded text-sm transition-colors"
+            style={buttonStyle}
             title="Open Data Modal"
           >
             <FaDatabase className="text-base" />
@@ -158,7 +215,8 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
           <>
             <button
               onClick={handleToggleMode}
-              className="flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+              className="toolbar-button flex items-center justify-center w-9 h-9 rounded text-sm transition-colors"
+              style={buttonStyle}
               title={mode === 'edit' ? 'View Mode' : 'Edit Mode'}
             >
               {mode === 'edit' ? <FaEye className="text-base" /> : <FaEdit className="text-base" />}
@@ -166,7 +224,8 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
             {mode === 'edit' && (
               <button
                 onClick={handleToggleFloatingMenu}
-                className={`flex items-center justify-center w-9 h-9 rounded text-sm hover:bg-[#d0d0d0] transition-colors ${isFloatingMenuVisible ? 'bg-[#d0d0d0]' : ''}`}
+                className="toolbar-button flex items-center justify-center w-9 h-9 rounded text-sm transition-colors"
+                style={buttonStyle}
                 title="Toggle Floating Menu"
               >
                 <FaTools className="text-base" />
@@ -177,7 +236,8 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
         {currentUser && (
           <button
             onClick={handleLogout}
-            className="flex items-center space-x-2 px-3 py-1.5 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+            className="toolbar-button flex items-center space-x-2 px-3 py-1.5 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+            style={buttonStyle}
           >
             <FaSignOutAlt />
             <span>Logout</span>
