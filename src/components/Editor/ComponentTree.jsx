@@ -120,18 +120,35 @@ const ComponentTree = ({ components, onSelectComponent, selectedComponentId, isV
     });
   };
 
+  useEffect(() => {
+    const updateTreeSize = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    updateTreeSize();
+    window.addEventListener('resize', updateTreeSize);
+
+    return () => window.removeEventListener('resize', updateTreeSize);
+  }, []);
+
   if (!isVisible) return null;
 
   return (
     <div
-      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl p-4 w-64 max-h-[80vh] overflow-y-auto group select-none"
+      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl p-4 group select-none"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
+        maxWidth: '280px',
+        width: '90%',
+        maxHeight: 'calc(var(--vh, 1vh) * 70)',
+        overflow: 'auto',
         userSelect: 'none',
         WebkitUserSelect: 'none',
         MozUserSelect: 'none',
         msUserSelect: 'none',
+        transform: 'scale(0.8)', // Slightly reduce the size
       }}
     >
       <div

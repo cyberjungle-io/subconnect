@@ -26,7 +26,7 @@ const FloatingRightMenu = ({
   `;
 
   return (
-    <div className="fixed right-8 top-1/3 transform -translate-y-1/2 w-12 bg-[#e6f3ff] border border-[#b3d9ff] rounded-lg shadow-xl z-[960] flex flex-col items-center py-2">
+    <div className="fixed right-2 top-1/2 transform -translate-y-1/2 w-10 bg-[#e6f3ff] border border-[#b3d9ff] rounded-lg shadow-xl z-[960] flex flex-col items-center py-2 scale-90">
       <button
         onClick={isEditMode ? onShowComponentPalette : undefined}
         className={buttonClass(isComponentPaletteVisible)}

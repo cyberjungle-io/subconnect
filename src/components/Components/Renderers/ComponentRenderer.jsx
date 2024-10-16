@@ -86,6 +86,7 @@ const ComponentRenderer = React.memo(({
   const [toolbarState, setToolbarState] = useState({ show: false, position: { x: 0, y: 0 } });
   const [isEditing, setIsEditing] = useState(false);
   const editingRef = useRef(false);
+  const isSpacingVisible = useSelector(state => state.editor.isSpacingVisible);
 
   useEffect(() => {
     editingRef.current = isEditing;
@@ -387,6 +388,11 @@ const ComponentRenderer = React.memo(({
       componentStyle.width = '100%';
     }
 
+    if (isSpacingVisible) {
+      componentStyle.position = 'relative';
+      componentStyle.boxShadow = 'none';
+    }
+
     return componentStyle;
   };
 
@@ -409,6 +415,60 @@ const ComponentRenderer = React.memo(({
 
   const { size: width, unit: widthUnit } = getSize('width');
   const { size: height, unit: heightUnit } = getSize('height');
+
+  const renderSpacingOverlay = () => {
+    if (!isSpacingVisible) return null;
+
+    const { padding, margin, gap } = component.style;
+    const [pt, pr, pb, pl] = (padding || '0px').split(' ').map(val => parseInt(val));
+    const [mt, mr, mb, ml] = (margin || '0px').split(' ').map(val => parseInt(val));
+    const gapValue = parseInt(gap || '0');
+
+    return (
+      <>
+        {/* Padding overlay */}
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          border: `${Math.max(pt, pr, pb, pl)}px solid rgba(255, 0, 0, 0.2)`,
+          pointerEvents: 'none',
+        }} />
+
+        {/* Margin overlay */}
+        <div style={{
+          position: 'absolute',
+          top: -mt,
+          left: -ml,
+          right: -mr,
+          bottom: -mb,
+          border: `${Math.max(mt, mr, mb, ml)}px solid rgba(0, 255, 0, 0.2)`,
+          pointerEvents: 'none',
+        }} />
+
+        {/* Gap overlay (only for flex containers) */}
+        {component.type === "FLEX_CONTAINER" && gapValue > 0 && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: `repeating-linear-gradient(
+              ${component.style.flexDirection === 'column' ? '0deg' : '90deg'},
+              transparent,
+              transparent ${gapValue - 1}px,
+              rgba(0, 0, 255, 0.2) ${gapValue - 1}px,
+              rgba(0, 0, 255, 0.2) ${gapValue}px
+            )`,
+            pointerEvents: 'none',
+          }} />
+        )}
+      </>
+    );
+  };
 
   // Use the same rendering logic for both view and edit modes
   return (
@@ -442,6 +502,7 @@ const ComponentRenderer = React.memo(({
         tabIndex={0}
       >
         {renderContent()}
+        {renderSpacingOverlay()}
         {!isViewMode && isThisComponentSelected && (
           <div 
             className="absolute top-0 right-0 text-white text-xs px-1 z-10"

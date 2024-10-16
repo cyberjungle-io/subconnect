@@ -119,6 +119,18 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   const inputRef = useRef(null);
 
   useEffect(() => {
+    const updateToolbarSize = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    updateToolbarSize();
+    window.addEventListener('resize', updateToolbarSize);
+
+    return () => window.removeEventListener('resize', updateToolbarSize);
+  }, []);
+
+  useEffect(() => {
     if (toolbarRef.current) {
       const toolbarRect = toolbarRef.current.getBoundingClientRect();
       const viewportWidth = window.innerWidth;
@@ -355,7 +367,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   return (
     <div
       ref={toolbarRef}
-      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-[280px] max-h-[80vh] overflow-hidden flex flex-col group select-none"
+      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-[280px] max-h-[calc(var(--vh, 1vh) * 80)] overflow-hidden flex flex-col group select-none"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -363,6 +375,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         WebkitUserSelect: 'none',
         MozUserSelect: 'none',
         msUserSelect: 'none',
+        transform: 'scale(0.8)', // Slightly reduce the size
       }}
       onClick={handleToolbarInteraction}
       onDoubleClick={handleDoubleClick}

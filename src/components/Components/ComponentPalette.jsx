@@ -35,12 +35,12 @@ const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
       ref={drag}
       className={`relative flex flex-col items-center justify-center p-2 bg-[#fafcff] border border-[#d1e3ff] rounded-lg shadow hover:shadow-md hover:bg-[#f5f9ff] hover:border-[#b3d1ff] cursor-move ${
         isDragging ? 'opacity-50' : ''
-      } w-24 h-24 transition-all duration-200`}
+      } w-20 h-20 transition-all duration-200`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Icon className="text-2xl mb-1 text-gray-600" />
-      <div className="w-full h-8 overflow-hidden">
+      <Icon className="text-xl mb-1 text-gray-600" />
+      <div className="w-full h-6 overflow-hidden">
         {isEditing ? (
           <input
             type="text"
@@ -52,7 +52,7 @@ const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
             autoFocus
           />
         ) : (
-          <p className="text-xs font-medium text-center leading-4 overflow-hidden">
+          <p className="text-xs font-medium text-center leading-3 overflow-hidden">
             {displayLabel}
           </p>
         )}
@@ -80,6 +80,18 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
       setPosition(initialPosition);
     }
   }, [initialPosition, isDragging]);
+
+  useEffect(() => {
+    const updatePaletteSize = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    updatePaletteSize();
+    window.addEventListener('resize', updatePaletteSize);
+
+    return () => window.removeEventListener('resize', updatePaletteSize);
+  }, []);
 
   const handleDragStart = (e) => {
     setIsDragging(true);
@@ -113,10 +125,14 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
+        maxWidth: '280px',
+        width: '90%',
+        height: 'auto', // Changed from maxHeight
         userSelect: 'none',
         WebkitUserSelect: 'none',
         MozUserSelect: 'none',
         msUserSelect: 'none',
+        transform: 'scale(0.8)', // Changed to 0.8
       }}
     >
       <div className="flex justify-between items-center mb-4 pt-2">
@@ -144,37 +160,31 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
           </button>
         </div>
       </div>
-      {currentView === 'Primitives' ? (
-        <div className="mb-4">
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            {Object.entries(componentTypes).map(([key, type]) => {
-              const config = componentConfig[type];
-              return (
-                <DraggableComponent
-                  key={key}
-                  type={type}
-                  icon={config.icon}
-                  label={config.name}
-                />
-              );
-            })}
-          </div>
-        </div>
-      ) : (
-        <div className="border-t border-[#cce0ff] pt-4">
-          <div className="grid grid-cols-2 gap-2 mt-2">
-            {savedComponents.map((component) => (
+      <div className="grid grid-cols-3 gap-2 mt-2"> {/* Changed from 2 columns to 3 */}
+        {currentView === 'Primitives' ? (
+          Object.entries(componentTypes).map(([key, type]) => {
+            const config = componentConfig[type];
+            return (
               <DraggableComponent
-                key={component.id}
-                type="SAVED_COMPONENT"
-                icon={componentConfig[component.type]?.icon}
-                label={component.name}
-                savedComponent={component}
+                key={key}
+                type={type}
+                icon={config.icon}
+                label={config.name}
               />
-            ))}
-          </div>
-        </div>
-      )}
+            );
+          })
+        ) : (
+          savedComponents.map((component) => (
+            <DraggableComponent
+              key={component.id}
+              type="SAVED_COMPONENT"
+              icon={componentConfig[component.type]?.icon}
+              label={component.name}
+              savedComponent={component}
+            />
+          ))
+        )}
+      </div>
       <div
         className="absolute top-0 left-0 right-0 h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         onMouseDown={handleDragStart}
