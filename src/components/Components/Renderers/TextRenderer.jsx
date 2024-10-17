@@ -20,12 +20,12 @@ const TextRenderer = ({
   const getTextStyle = () => {
     const generalComponentStyle = globalSettings?.generalComponentStyle || {};
     return {
-      width: '100%',
-      height: 'auto', // Change this to 'auto'
-      minHeight: component.style.height || 'auto', // Add this line
+      width: '100%', // Ensure the text takes full width of its container
+      height: 'auto',
+      minHeight: component.style.height || 'auto',
       fontFamily: component.style.fontFamily || generalComponentStyle.fontFamily,
       fontSize: component.style.fontSize || generalComponentStyle.fontSize,
-      color: component.style.color || generalComponentStyle.color || '#000000', // Default to black
+      color: component.style.color || generalComponentStyle.color || '#000000',
       backgroundColor: 'transparent',
       borderRadius: 'none',
       boxShadow: 'none',
@@ -35,7 +35,8 @@ const TextRenderer = ({
       textDecoration: component.style.textDecoration || 'none',
       padding: component.style.padding || '5px',
       cursor: isEditing ? 'text' : 'default',
-      overflow: 'hidden', // Add this line
+      overflow: 'hidden',
+      wordWrap: 'break-word', // Add this to ensure text wraps within the container
       ...component.style,
     };
   };
