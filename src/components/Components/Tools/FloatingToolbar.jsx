@@ -398,7 +398,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
-        maxHeight: '80vh', // Set maximum height to 80% of viewport height
+        maxHeight: '95vh', // Set maximum height to 80% of viewport height
         userSelect: 'none',
         WebkitUserSelect: 'none',
         MozUserSelect: 'none',
