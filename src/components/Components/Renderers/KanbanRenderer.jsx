@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import KanBanTaskModal from '../../common/KanBanTaskModal';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,6 +8,15 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
+
+  const boardRef = useRef(null);
+
+  const onDragStart = useCallback(() => {
+    if (boardRef.current) {
+      const { parentElement } = boardRef.current;
+      parentElement.style.userSelect = 'none';
+    }
+  }, []);
 
   useEffect(() => {
     // Initialize with default columns and tasks if not provided
@@ -42,6 +51,11 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   }, [component.id, component.props, onUpdate]);
 
   const onDragEnd = useCallback((result) => {
+    if (boardRef.current) {
+      const { parentElement } = boardRef.current;
+      parentElement.style.userSelect = '';
+    }
+
     const { source, destination } = result;
 
     if (!destination || !isInteractive) return;
@@ -132,9 +146,12 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   }, [getFormattedDuration]);
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-         onDoubleClick={(e) => handleDoubleClick(e, Object.keys(columns)[0])}>
-      <DragDropContext onDragEnd={onDragEnd}>
+    <div 
+      ref={boardRef}
+      style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+      onDoubleClick={(e) => handleDoubleClick(e, Object.keys(columns)[0])}
+    >
+      <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
         <div style={{ display: 'flex', height: '100%', overflowX: 'auto' }}>
           {Object.values(columns).map((column) => (
             <div 
@@ -154,7 +171,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
               <h3 style={{ 
                 marginBottom: '8px', 
                 color: getContrastColor(column.backgroundColor),
-                ...component.props.columnHeaderStyle // Apply the columnHeaderStyle here
+                ...component.props.columnHeaderStyle
               }}>
                 {column.title}
               </h3>
@@ -180,7 +197,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
                             style={{
-                              ...provided.draggableProps.style,
+                              userSelect: 'none',
                               backgroundColor: task.color || 'white',
                               padding: '8px',
                               marginBottom: '8px',
@@ -188,8 +205,9 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                               boxShadow: snapshot.isDragging ? '0 5px 10px rgba(0,0,0,0.2)' : 'none',
                               color: getContrastColor(task.color || '#ffffff'),
                               position: 'relative',
-                              minHeight: '80px', // Ensure enough space for content and duration
-                              ...component.props.taskTextStyle, // Apply the taskTextStyle here
+                              minHeight: '80px',
+                              ...component.props.taskTextStyle,
+                              ...provided.draggableProps.style,
                             }}
                             onDoubleClick={(e) => handleDoubleClick(e, column.id, task)}
                           >
