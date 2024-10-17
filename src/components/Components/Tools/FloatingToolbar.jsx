@@ -394,10 +394,11 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   return (
     <div
       ref={toolbarRef}
-      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-[280px] max-h-[calc(var(--vh, 1vh) * 80)] overflow-hidden flex flex-col group select-none"
+      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-[280px] flex flex-col group select-none"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
+        maxHeight: '80vh', // Set maximum height to 80% of viewport height
         userSelect: 'none',
         WebkitUserSelect: 'none',
         MozUserSelect: 'none',
@@ -471,10 +472,10 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
             </button>
           </div>
         </div>
-        {renderIcons()} {/* Add this line to render the icons */}
+        {renderIcons()}
       </div>
-      <div className="border-t border-[#cce0ff] flex-grow overflow-y-auto">
-        <div className="p-4">
+      <div className="border-t border-[#cce0ff] flex-grow overflow-hidden flex flex-col">
+        <div className="p-4 overflow-y-auto flex-grow">
           {renderActiveControl()}
         </div>
       </div>
