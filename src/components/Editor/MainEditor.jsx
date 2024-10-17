@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -35,6 +35,8 @@ const MainEditor = () => {
   const globalSettings = useSelector(state => state.editor.globalSettings);
   const currentUser = useSelector(state => state.user.currentUser);
   const toolbarSettings = useSelector(state => state.editor.toolbarSettings);
+  const canvasRef = useRef(null);
+  const [canvasHeight, setCanvasHeight] = useState('100%');
 
   useEffect(() => {
     if (projectId) {
@@ -214,6 +216,17 @@ const MainEditor = () => {
     }
   };
 
+  const handleCanvasScroll = useCallback(() => {
+    if (canvasRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = canvasRef.current;
+      const scrollThreshold = 100; // pixels from bottom to trigger height increase
+
+      if (scrollHeight - (scrollTop + clientHeight) < scrollThreshold) {
+        setCanvasHeight(prev => `${parseInt(prev) + 200}px`);
+      }
+    }
+  }, []);
+
   if (projectStatus === 'loading') {
     return <div>Loading project...</div>;
   }
@@ -236,7 +249,12 @@ const MainEditor = () => {
           currentPage={currentPage}
         />
         <div className="flex flex-grow">
-          <div className="flex-grow overflow-y-auto">
+          <div 
+            ref={canvasRef}
+            className="flex-grow overflow-y-auto"
+            onScroll={handleCanvasScroll}
+            style={{ height: canvasHeight }}
+          >
             {mode === 'edit' && currentUser ? (
               <Canvas
                 components={components}
@@ -253,6 +271,7 @@ const MainEditor = () => {
                 canvasSettings={{
                   ...canvasSettings,
                   toolbarSettings,
+                  canvasHeight,
                 }}
                 onDeselectAll={handleDeselectAll}
               />

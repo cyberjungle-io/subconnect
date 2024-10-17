@@ -1,10 +1,10 @@
 import React, { useRef, useCallback, useState, useEffect } from "react";
 import { useDrop } from "react-dnd";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import ComponentRenderer from "../Components/Renderers/ComponentRenderer";
-import GhostDropIndicator from "../common/GhostDropIndicator";
 import { v4 as uuidv4 } from 'uuid';
 import { componentTypes } from '../Components/componentConfig';
+import { updateCanvasSettings } from '../../features/editorSlice';
 
 export const getCanvasStyle = (canvasSettings, componentLayout) => ({
   ...canvasSettings.style,
@@ -34,15 +34,19 @@ const Canvas = ({
   onDeselectAll,
   isViewMode = false,
   onUpdateCanvasSettings,
+  canvasSettings,
 }) => {
   const { backgroundColor = '#ffffff', componentLayout = 'vertical', style = {} } = useSelector(state => state.editor.globalSettings || {});
-  const canvasSettings = useSelector(state => state.editor.canvasSettings);
   const canvasRef = useRef(null);
   const scrollAnimationRef = useRef(null);
   const [canvasBounds, setCanvasBounds] = useState(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [scrollPosition, setScrollPosition] = useState({ x: 0, y: 0 });
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  const [canvasHeight, setCanvasHeight] = useState(canvasSettings.canvasHeight || '100%');
+  const [originalCanvasHeight, setOriginalCanvasHeight] = useState(0);
+  const [canvasScrollTop, setCanvasScrollTop] = useState(0);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const updateCanvasBounds = () => {
@@ -53,10 +57,9 @@ const Canvas = ({
 
     const handleScroll = () => {
       if (canvasRef.current) {
-        setScrollPosition({
-          x: canvasRef.current.scrollLeft,
-          y: canvasRef.current.scrollTop
-        });
+        const { scrollLeft, scrollTop } = canvasRef.current;
+        setScrollPosition({ x: scrollLeft, y: scrollTop });
+        setCanvasScrollTop(scrollTop);
       }
     };
 
@@ -82,11 +85,22 @@ const Canvas = ({
       if (canvasRef.current) {
         const { scrollWidth, scrollHeight } = canvasRef.current;
         setCanvasSize({ width: scrollWidth, height: scrollHeight });
+        
+        // Set a minimum height for the canvas
+        const minHeight = Math.max(window.innerHeight, originalCanvasHeight);
+        const newHeight = Math.max(scrollHeight, minHeight);
+        setCanvasHeight(`${newHeight}px`);
+        dispatch(updateCanvasSettings({ canvasHeight: `${newHeight}px` }));
       }
     };
 
     updateCanvasDimensions();
-  }, [components]);
+    window.addEventListener('resize', updateCanvasDimensions);
+
+    return () => {
+      window.removeEventListener('resize', updateCanvasDimensions);
+    };
+  }, [components, originalCanvasHeight, dispatch]);
 
   const getDropPosition = useCallback((offset) => {
     if (!canvasBounds) return null;
@@ -166,77 +180,6 @@ const Canvas = ({
     return { insertIndex, indicatorPosition };
   }, [canvasBounds, scrollPosition]);
 
-  const updateGhostIndicatorForFlexContainer = useCallback((flexContainerResult, dropPosition) => {
-    const { container: flexContainer, position: flexPosition } = flexContainerResult;
-    const flexElement = canvasRef.current.querySelector(`[data-id="${flexContainer.id}"]`);
-    const flexRect = flexElement.getBoundingClientRect();
-    const flexChildren = flexContainer.children || [];
-    
-    const isHorizontal = flexContainer.style.flexDirection === 'row';
-    const { insertIndex, indicatorPosition } = calculateInsertIndexAndPosition(
-      flexChildren, dropPosition, flexPosition, isHorizontal, flexRect
-    );
-
-    setGhostIndicator({
-      position: indicatorPosition,
-      width: isHorizontal ? 2 : flexRect.width,
-      height: isHorizontal ? flexRect.height : 2,
-      isFlexContainer: true,
-      flexDirection: flexContainer.style.flexDirection || 'row',
-    });
-  }, [calculateInsertIndexAndPosition]);
-
-  const updateGhostIndicatorForCanvas = useCallback((dropPosition) => {
-    let indicatorY = dropPosition.y;
-    let insertIndex = components.length;
-
-    for (let i = 0; i < components.length; i++) {
-      const componentElement = canvasRef.current.querySelector(`[data-id="${components[i].id}"]`);
-      if (!componentElement) continue;
-      const componentRect = componentElement.getBoundingClientRect();
-      const componentY = componentRect.top - canvasBounds.top + scrollPosition.y;
-
-      if (dropPosition.y < componentY + componentRect.height / 2) {
-        indicatorY = componentY - 1;
-        insertIndex = i;
-        break;
-      }
-    }
-
-    // If dropping after the last component, adjust the indicator position
-    if (insertIndex === components.length) {
-      if (components.length > 0) {
-        const lastComponentElement = canvasRef.current.querySelector(`[data-id="${components[components.length - 1].id}"]`);
-        const lastComponentRect = lastComponentElement.getBoundingClientRect();
-        indicatorY = lastComponentRect.bottom - canvasBounds.top + scrollPosition.y + 1;
-      } else {
-        indicatorY = dropPosition.y;
-      }
-    }
-
-    // Ensure the indicator doesn't go beyond the canvas size
-    indicatorY = Math.min(indicatorY, canvasSize.height);
-
-    setGhostIndicator({
-      position: { x: 0, y: indicatorY },
-      width: canvasSize.width,
-      height: 2,
-      isFlexContainer: false,
-    });
-  }, [components, canvasBounds, scrollPosition, canvasSize]);
-
-  const updateGhostIndicator = useCallback((dropPosition) => {
-    if (!dropPosition || !canvasBounds) return;
-
-    const flexContainerResult = findDeepestFlexContainer(components, dropPosition.x, dropPosition.y);
-
-    if (flexContainerResult) {
-      updateGhostIndicatorForFlexContainer(flexContainerResult, dropPosition);
-    } else {
-      updateGhostIndicatorForCanvas(dropPosition);
-    }
-  }, [components, canvasBounds, findDeepestFlexContainer, updateGhostIndicatorForFlexContainer, updateGhostIndicatorForCanvas]);
-
   const [, drop] = useDrop({
     accept: ["COMPONENT", "SAVED_COMPONENT"],
     hover: (item, monitor) => {
@@ -244,12 +187,6 @@ const Canvas = ({
       if (!clientOffset || !canvasRef.current || !canvasBounds) return;
 
       handleAutoScroll(clientOffset.y);
-
-      const dropPosition = getDropPosition(clientOffset);
-      if (dropPosition) {
-        setMousePosition(dropPosition);
-        updateGhostIndicator(dropPosition);
-      }
     },
     drop: (item, monitor) => {
       stopAutoScroll();
@@ -260,7 +197,6 @@ const Canvas = ({
 
       if (!offset || !canvasElement) {
         onAddComponent(item.type, null, null, item.savedComponent);
-        setGhostIndicator(null); // Clear the ghost indicator
         return;
       }
 
@@ -301,14 +237,12 @@ const Canvas = ({
 
       // Reset canvas height, clear ghost indicator, and stop auto-scroll after drop
       canvasRef.current.style.height = 'auto';
-      setGhostIndicator(null);
       stopAutoScroll();
     },
   });
 
   const [isClickFromToolbar, setIsClickFromToolbar] = useState(false);
   const [openToolbarId, setOpenToolbarId] = useState(null);
-  const [ghostIndicator, setGhostIndicator] = useState(null);
 
   const stopAutoScroll = useCallback(() => {
     if (scrollAnimationRef.current) {
@@ -319,7 +253,6 @@ const Canvas = ({
 
   useEffect(() => {
     const handleDragEnd = () => {
-      setGhostIndicator(null);
       stopAutoScroll();
     };
 
@@ -374,6 +307,7 @@ const Canvas = ({
         ...prev,
         y: canvasElement.scrollTop
       }));
+      setCanvasScrollTop(canvasElement.scrollTop);
       
       scrollAnimationRef.current = requestAnimationFrame(scroll);
     };
@@ -382,8 +316,8 @@ const Canvas = ({
 
   const handleAutoScroll = useCallback((clientY) => {
     const { top, bottom, height } = canvasRef.current.getBoundingClientRect();
-    const scrollThreshold = 50;
-    const maxScrollSpeed = 10;
+    const scrollThreshold = 100;
+    const maxScrollSpeed = 15;
 
     if (clientY < top + scrollThreshold) {
       const speed = -maxScrollSpeed * (1 - (clientY - top) / scrollThreshold);
@@ -391,12 +325,22 @@ const Canvas = ({
     } else if (clientY > bottom - scrollThreshold) {
       const speed = maxScrollSpeed * (1 - (bottom - clientY) / scrollThreshold);
       startAutoScroll(speed);
+
+      // Dynamically increase canvas height when scrolling near the bottom
+      const newHeight = Math.max(canvasRef.current.scrollHeight + maxScrollSpeed, window.innerHeight);
+      setCanvasHeight(`${newHeight}px`);
+      dispatch(updateCanvasSettings({ canvasHeight: `${newHeight}px` }));
     } else {
       stopAutoScroll();
     }
-  }, [startAutoScroll, stopAutoScroll]);
+  }, [startAutoScroll, stopAutoScroll, dispatch]);
 
   const canvasStyle = getCanvasStyle(canvasSettings, componentLayout);
+
+  useEffect(() => {
+    // Set the original canvas height when the component mounts
+    setOriginalCanvasHeight(window.innerHeight);
+  }, []);
 
   return (
     <div
@@ -405,7 +349,11 @@ const Canvas = ({
         canvasRef.current = node;
       }}
       className="canvas-area w-full h-full bg-gray-100 overflow-auto"
-      style={canvasStyle}
+      style={{
+        ...canvasStyle,
+        height: canvasHeight,
+        minHeight: '100%',
+      }}
       onClick={handleCanvasClick}
       onMouseDown={() => setIsClickFromToolbar(false)}
       onDoubleClick={handleCanvasDoubleClick}
@@ -434,16 +382,6 @@ const Canvas = ({
           isViewMode={isViewMode}
         />
       ))}
-      {ghostIndicator && (
-        <GhostDropIndicator
-          position={ghostIndicator.position}
-          width={ghostIndicator.width}
-          height={ghostIndicator.height}
-          isFlexContainer={ghostIndicator.isFlexContainer}
-          flexDirection={ghostIndicator.flexDirection}
-          isInline={ghostIndicator.isInline}
-        />
-      )}
     </div>
   );
 };
