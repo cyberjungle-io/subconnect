@@ -164,7 +164,8 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                 padding: '8px',
                 backgroundColor: column.backgroundColor || '#f4f5f7',
                 borderRadius: '4px',
-                margin: '0 4px'
+                margin: '0 4px',
+                height: '100%', // Ensure the column takes full height
               }}
               onDoubleClick={(e) => handleDoubleClick(e, column.id)}
             >
@@ -186,7 +187,9 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                       borderRadius: '4px', 
                       minHeight: '100px',
                       backgroundColor: column.innerBackgroundColor || lightenColor(column.backgroundColor || '#f4f5f7', 10),
-                      ...(snapshot.isDraggingOver ? { backgroundColor: '#e0e0e0' } : {})
+                      ...(snapshot.isDraggingOver ? { backgroundColor: '#e0e0e0' } : {}),
+                      overflowY: 'auto', // Make the column scrollable
+                      maxHeight: 'calc(100% - 40px)', // Adjust based on your column header height
                     }}
                   >
                     {column.tasks.map((task, index) => (
