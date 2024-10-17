@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { FaBars, FaTimes } from 'react-icons/fa';
+import { FaBars, FaTimes, FaFolderOpen } from 'react-icons/fa';
 
-const HamburgerMenu = () => {
+const HamburgerMenu = ({ onOpenProjectModal }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleMenu = () => {
@@ -18,6 +18,11 @@ const HamburgerMenu = () => {
       document.body.style.overflow = 'unset';
     };
   }, [isOpen]);
+
+  const handleOpenProject = () => {
+    onOpenProjectModal();
+    toggleMenu();
+  };
 
   return (
     <>
@@ -45,12 +50,13 @@ const HamburgerMenu = () => {
               >
                 Home
               </a>
-              <a
-                href="/projects"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              <button
+                onClick={handleOpenProject}
+                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
               >
-                Projects
-              </a>
+                <FaFolderOpen className="mr-2" />
+                Open Project
+              </button>
               <a
                 href="/pricing"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"

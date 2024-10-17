@@ -164,7 +164,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
     >
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iLjA1IiBkPSJNMCAwaDMwMHYzMDBIMHoiLz48L3N2Zz4=')] opacity-30 mix-blend-overlay"></div>
       <div className="relative z-10">
-        <HamburgerMenu />
+        <HamburgerMenu onOpenProjectModal={onOpenProjectModal} />
       </div>
 
       <div className="flex items-center space-x-5 relative z-10">
@@ -246,16 +246,6 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
               </button>
             )}
           </>
-        )}
-        {currentUser && (
-          <button
-            onClick={handleOpenProjectModal}
-            className="toolbar-button flex items-center justify-center w-9 h-9 rounded text-sm transition-colors"
-            style={buttonStyle}
-            title="Open Project"
-          >
-            <FaFolderOpen className="text-base" />
-          </button>
         )}
         {currentUser && (
           <button
