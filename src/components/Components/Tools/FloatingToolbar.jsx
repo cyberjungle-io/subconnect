@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave, FaClipboardList, FaTable } from 'react-icons/fa';
+import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave, FaClipboardList, FaTable, FaFillDrip, FaBars } from 'react-icons/fa';
 import SizeControls from './SizeControls';
 import LayoutControls from './LayoutControls';
 import BorderControls from './BorderControls';
@@ -83,9 +83,9 @@ const iconMap = {
   ],
   CANVAS: [
     { icon: FaArrowsAlt, tooltip: 'Spacing' },
-    { icon: FaPalette, tooltip: 'Background' },
+    { icon: FaFillDrip, tooltip: 'Background' },
     { icon: FaPalette, tooltip: 'Color Theme' },
-    { icon: FaPalette, tooltip: 'Toolbar Settings' }, // Add this line
+    { icon: FaBars, tooltip: 'Toolbar Settings' },
   ],
   KANBAN: [
     { icon: FaExpand, tooltip: 'Size' },
@@ -252,25 +252,21 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
 
   const icons = iconMap[componentType] || [];
 
-  // Add this condition to render icons for CANVAS type
   const renderIcons = () => {
-    if (componentType === 'CANVAS') {
-      return (
-        <div className="flex flex-wrap mb-2 gap-2">
-          {icons.map((iconData, index) => (
-            <button
-              key={index}
-              className={buttonClass(activeControl === iconData.tooltip)}
-              title={iconData.tooltip}
-              onClick={() => handleIconClick(iconData.tooltip)}
-            >
-              <iconData.icon />
-            </button>
-          ))}
-        </div>
-      );
-    }
-    return null;
+    return (
+      <div className="flex flex-wrap mb-2 gap-2">
+        {icons.map((iconData, index) => (
+          <button
+            key={index}
+            className={buttonClass(activeControl === iconData.tooltip)}
+            title={iconData.tooltip}
+            onClick={() => handleIconClick(iconData.tooltip)}
+          >
+            <iconData.icon />
+          </button>
+        ))}
+      </div>
+    );
   };
 
   const renderActiveControl = () => {
