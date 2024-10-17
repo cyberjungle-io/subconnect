@@ -40,124 +40,219 @@ const Canvas = ({
   const canvasRef = useRef(null);
   const scrollAnimationRef = useRef(null);
   const [canvasBounds, setCanvasBounds] = useState(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [scrollPosition, setScrollPosition] = useState({ x: 0, y: 0 });
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    if (canvasRef.current) {
-      setCanvasBounds(canvasRef.current.getBoundingClientRect());
+    const updateCanvasBounds = () => {
+      if (canvasRef.current) {
+        setCanvasBounds(canvasRef.current.getBoundingClientRect());
+      }
+    };
+
+    const handleScroll = () => {
+      if (canvasRef.current) {
+        setScrollPosition({
+          x: canvasRef.current.scrollLeft,
+          y: canvasRef.current.scrollTop
+        });
+      }
+    };
+
+    updateCanvasBounds(); // Initial bounds calculation
+    window.addEventListener('resize', updateCanvasBounds);
+    
+    const canvasElement = canvasRef.current;
+    if (canvasElement) {
+      canvasElement.addEventListener('scroll', handleScroll);
     }
+
+    return () => {
+      window.removeEventListener('resize', updateCanvasBounds);
+      if (canvasElement) {
+        canvasElement.removeEventListener('scroll', handleScroll);
+      }
+    };
   }, []);
+
+  // Update canvas dimensions when components change
+  useEffect(() => {
+    const updateCanvasDimensions = () => {
+      if (canvasRef.current) {
+        const { scrollWidth, scrollHeight } = canvasRef.current;
+        setCanvasSize({ width: scrollWidth, height: scrollHeight });
+      }
+    };
+
+    updateCanvasDimensions();
+  }, [components]);
+
+  const getDropPosition = useCallback((offset) => {
+    if (!canvasBounds) return null;
+    return {
+      x: offset.x - canvasBounds.left + scrollPosition.x,
+      y: offset.y - canvasBounds.top + scrollPosition.y
+    };
+  }, [canvasBounds, scrollPosition]);
+
+  const findDeepestFlexContainer = useCallback((comps, x, y) => {
+    if (!canvasBounds || !canvasRef.current) return null;
+
+    for (const comp of comps) {
+      if (comp.type !== 'FLEX_CONTAINER') continue;
+      const compElement = canvasRef.current.querySelector(`[data-id="${comp.id}"]`);
+      if (!compElement) continue;
+      const compRect = compElement.getBoundingClientRect();
+      const compPosition = {
+        x: compRect.left - canvasBounds.left + scrollPosition.x,
+        y: compRect.top - canvasBounds.top + scrollPosition.y,
+      };
+      if (x >= compPosition.x && x <= compPosition.x + compRect.width &&
+          y >= compPosition.y && y <= compPosition.y + compRect.height) {
+        // Check for nested flex containers
+        const nestedResult = findDeepestFlexContainer(comp.children || [], x, y);
+        return nestedResult || { container: comp, position: compPosition };
+      }
+    }
+    return null;
+  }, [canvasBounds, scrollPosition]);
+
+  const calculateInsertIndexAndPosition = useCallback((children, dropPosition, containerPosition, isHorizontal, containerRect) => {
+    let insertIndex = children.length;
+    let indicatorPosition = { ...containerPosition };
+
+    if (children.length === 0) {
+      return {
+        insertIndex: 0,
+        indicatorPosition: {
+          x: isHorizontal ? dropPosition.x : containerPosition.x,
+          y: isHorizontal ? containerPosition.y : dropPosition.y,
+        },
+      };
+    }
+
+    for (let i = 0; i < children.length; i++) {
+      const childElement = canvasRef.current.querySelector(`[data-id="${children[i].id}"]`);
+      if (!childElement) continue;
+      const childRect = childElement.getBoundingClientRect();
+      const childPosition = {
+        x: childRect.left - canvasBounds.left + scrollPosition.x,
+        y: childRect.top - canvasBounds.top + scrollPosition.y,
+      };
+
+      if ((isHorizontal && dropPosition.x < childPosition.x + childRect.width / 2) ||
+          (!isHorizontal && dropPosition.y < childPosition.y + childRect.height / 2)) {
+        insertIndex = i;
+        indicatorPosition = {
+          x: isHorizontal ? childPosition.x - 1 : containerPosition.x,
+          y: isHorizontal ? containerPosition.y : childPosition.y - 1,
+        };
+        break;
+      }
+    }
+
+    // If the indicator is after the last child, adjust its position
+    if (insertIndex === children.length) {
+      const lastChild = children[children.length - 1];
+      const lastChildElement = canvasRef.current.querySelector(`[data-id="${lastChild.id}"]`);
+      const lastChildRect = lastChildElement.getBoundingClientRect();
+      indicatorPosition = {
+        x: isHorizontal ? lastChildRect.right - canvasBounds.left + scrollPosition.x + 1 : containerPosition.x,
+        y: isHorizontal ? containerPosition.y : lastChildRect.bottom - canvasBounds.top + scrollPosition.y + 1,
+      };
+    }
+
+    return { insertIndex, indicatorPosition };
+  }, [canvasBounds, scrollPosition]);
+
+  const updateGhostIndicatorForFlexContainer = useCallback((flexContainerResult, dropPosition) => {
+    const { container: flexContainer, position: flexPosition } = flexContainerResult;
+    const flexElement = canvasRef.current.querySelector(`[data-id="${flexContainer.id}"]`);
+    const flexRect = flexElement.getBoundingClientRect();
+    const flexChildren = flexContainer.children || [];
+    
+    const isHorizontal = flexContainer.style.flexDirection === 'row';
+    const { insertIndex, indicatorPosition } = calculateInsertIndexAndPosition(
+      flexChildren, dropPosition, flexPosition, isHorizontal, flexRect
+    );
+
+    setGhostIndicator({
+      position: indicatorPosition,
+      width: isHorizontal ? 2 : flexRect.width,
+      height: isHorizontal ? flexRect.height : 2,
+      isFlexContainer: true,
+      flexDirection: flexContainer.style.flexDirection || 'row',
+    });
+  }, [calculateInsertIndexAndPosition]);
+
+  const updateGhostIndicatorForCanvas = useCallback((dropPosition) => {
+    let indicatorY = dropPosition.y;
+    let insertIndex = components.length;
+
+    for (let i = 0; i < components.length; i++) {
+      const componentElement = canvasRef.current.querySelector(`[data-id="${components[i].id}"]`);
+      if (!componentElement) continue;
+      const componentRect = componentElement.getBoundingClientRect();
+      const componentY = componentRect.top - canvasBounds.top + scrollPosition.y;
+
+      if (dropPosition.y < componentY + componentRect.height / 2) {
+        indicatorY = componentY - 1;
+        insertIndex = i;
+        break;
+      }
+    }
+
+    // If dropping after the last component, adjust the indicator position
+    if (insertIndex === components.length) {
+      if (components.length > 0) {
+        const lastComponentElement = canvasRef.current.querySelector(`[data-id="${components[components.length - 1].id}"]`);
+        const lastComponentRect = lastComponentElement.getBoundingClientRect();
+        indicatorY = lastComponentRect.bottom - canvasBounds.top + scrollPosition.y + 1;
+      } else {
+        indicatorY = dropPosition.y;
+      }
+    }
+
+    // Ensure the indicator doesn't go beyond the canvas size
+    indicatorY = Math.min(indicatorY, canvasSize.height);
+
+    setGhostIndicator({
+      position: { x: 0, y: indicatorY },
+      width: canvasSize.width,
+      height: 2,
+      isFlexContainer: false,
+    });
+  }, [components, canvasBounds, scrollPosition, canvasSize]);
+
+  const updateGhostIndicator = useCallback((dropPosition) => {
+    if (!dropPosition || !canvasBounds) return;
+
+    const flexContainerResult = findDeepestFlexContainer(components, dropPosition.x, dropPosition.y);
+
+    if (flexContainerResult) {
+      updateGhostIndicatorForFlexContainer(flexContainerResult, dropPosition);
+    } else {
+      updateGhostIndicatorForCanvas(dropPosition);
+    }
+  }, [components, canvasBounds, findDeepestFlexContainer, updateGhostIndicatorForFlexContainer, updateGhostIndicatorForCanvas]);
 
   const [, drop] = useDrop({
     accept: ["COMPONENT", "SAVED_COMPONENT"],
     hover: (item, monitor) => {
-      const offset = monitor.getClientOffset();
-      const canvasElement = canvasRef.current;
+      const clientOffset = monitor.getClientOffset();
+      if (!clientOffset || !canvasRef.current || !canvasBounds) return;
 
-      if (!offset || !canvasElement || !canvasBounds) return;
+      handleAutoScroll(clientOffset.y);
 
-      const scrollTop = canvasElement.scrollTop;
-      const dropPosition = {
-        x: offset.x - canvasBounds.left,
-        y: offset.y - canvasBounds.top + scrollTop,
-      };
-
-      const flexContainerResult = findDeepestFlexContainer(components, dropPosition.x, dropPosition.y);
-
-      if (flexContainerResult) {
-        const { container: flexContainerAtPosition, position: flexPosition } = flexContainerResult;
-        const flexElement = canvasRef.current.querySelector(`[data-id="${flexContainerAtPosition.id}"]`);
-        const flexRect = flexElement.getBoundingClientRect();
-        const flexChildren = flexContainerAtPosition.children || [];
-        
-        let insertIndex = flexChildren.length;
-        let indicatorPosition = { 
-          x: flexPosition.x, 
-          y: flexPosition.y
-        };
-        let indicatorWidth = 2; // Default to a thin vertical line
-        let indicatorHeight = flexRect.height;
-
-        const isHorizontal = flexContainerAtPosition.style.flexDirection === 'row';
-
-        for (let i = 0; i < flexChildren.length; i++) {
-          const childElement = canvasRef.current.querySelector(`[data-id="${flexChildren[i].id}"]`);
-          if (!childElement) continue;
-          const childRect = childElement.getBoundingClientRect();
-          const childPosition = {
-            x: childRect.left - canvasBounds.left,
-            y: childRect.top - canvasBounds.top + scrollTop,
-          };
-          if ((isHorizontal && dropPosition.x < childPosition.x + childRect.width / 2) ||
-              (!isHorizontal && dropPosition.y < childPosition.y + childRect.height / 2)) {
-            insertIndex = i;
-            indicatorPosition = {
-              x: isHorizontal ? childPosition.x : flexPosition.x,
-              y: isHorizontal ? flexPosition.y : childPosition.y,
-            };
-            if (!isHorizontal) {
-              indicatorWidth = flexRect.width;
-              indicatorHeight = 2; // Thin horizontal line for vertical flex containers
-            }
-            break;
-          }
-        }
-
-        setGhostIndicator({
-          position: indicatorPosition,
-          width: indicatorWidth,
-          height: indicatorHeight,
-          isFlexContainer: true,
-          flexDirection: flexContainerAtPosition.style.flexDirection || 'row',
-        });
-      } else {
-        let indicatorY = dropPosition.y;
-        if (components.length > 0) {
-          const lastComponentElement = canvasRef.current.querySelector(`[data-id="${components[components.length - 1].id}"]`);
-          if (lastComponentElement) {
-            const lastComponentRect = lastComponentElement.getBoundingClientRect();
-            indicatorY = Math.max(
-              lastComponentRect.bottom - canvasBounds.top + scrollTop,
-              dropPosition.y
-            );
-          }
-        }
-
-        setGhostIndicator({
-          position: {
-            x: 0,
-            y: indicatorY,
-          },
-          width: canvasBounds.width,
-          height: 200,
-          isFlexContainer: false,
-        });
-
-        // Adjusted auto-scroll logic
-        const scrollThreshold = 150;
-        const maxScrollSpeed = 15;
-
-        let scrollSpeed = 0;
-        if (offset.y - canvasBounds.top < scrollThreshold) {
-          // Near top edge, scroll up
-          scrollSpeed = -getScrollSpeed(offset.y - canvasBounds.top, scrollThreshold, maxScrollSpeed);
-        } else if (offset.y - canvasBounds.top > canvasBounds.height - scrollThreshold) {
-          // Near bottom edge, scroll down
-          scrollSpeed = getScrollSpeed(canvasBounds.height - (offset.y - canvasBounds.top), scrollThreshold, maxScrollSpeed);
-        }
-
-        if (scrollSpeed !== 0) {
-          startAutoScroll(scrollSpeed);
-        } else {
-          stopAutoScroll();
-        }
-
-        // Extend canvas if necessary
-        if (indicatorY + 200 > canvasElement.scrollHeight) {
-          canvasElement.style.height = `${indicatorY + 200}px`;
-        }
+      const dropPosition = getDropPosition(clientOffset);
+      if (dropPosition) {
+        setMousePosition(dropPosition);
+        updateGhostIndicator(dropPosition);
       }
     },
     drop: (item, monitor) => {
+      stopAutoScroll();
       if (monitor.didDrop()) return;
 
       const offset = monitor.getClientOffset();
@@ -171,8 +266,8 @@ const Canvas = ({
 
       const canvasBounds = canvasElement.getBoundingClientRect();
       const dropPosition = {
-        x: offset.x - canvasBounds.left,
-        y: offset.y - canvasBounds.top,
+        x: offset.x - canvasBounds.left + scrollPosition.x,
+        y: offset.y - canvasBounds.top + scrollPosition.y,
       };
 
       const flexContainerAtPosition = components.find(comp => {
@@ -275,14 +370,9 @@ const Canvas = ({
     const scroll = () => {
       const canvasElement = canvasRef.current;
       canvasElement.scrollTop += speed;
-      
-      // Update ghost indicator position after scrolling
-      setGhostIndicator(prev => ({
+      setScrollPosition(prev => ({
         ...prev,
-        position: {
-          ...prev.position,
-          y: prev.position.y,  // Keep the y position relative to the canvas
-        },
+        y: canvasElement.scrollTop
       }));
       
       scrollAnimationRef.current = requestAnimationFrame(scroll);
@@ -290,34 +380,21 @@ const Canvas = ({
     scrollAnimationRef.current = requestAnimationFrame(scroll);
   }, []);
 
-  const getScrollSpeed = (distance, threshold, maxSpeed) => {
-    // Quadratic easing function
-    const ratio = 1 - (distance / threshold);
-    return Math.round(maxSpeed * ratio * ratio);
-  };
+  const handleAutoScroll = useCallback((clientY) => {
+    const { top, bottom, height } = canvasRef.current.getBoundingClientRect();
+    const scrollThreshold = 50;
+    const maxScrollSpeed = 10;
 
-  const findDeepestFlexContainer = useCallback((comps, x, y, parentOffset = { x: 0, y: 0 }) => {
-    if (!canvasBounds || !canvasRef.current) return null;
-    const scrollTop = canvasRef.current.scrollTop;
-
-    for (const comp of comps) {
-      if (comp.type !== 'FLEX_CONTAINER') continue;
-      const compElement = canvasRef.current.querySelector(`[data-id="${comp.id}"]`);
-      if (!compElement) continue;
-      const compRect = compElement.getBoundingClientRect();
-      const compPosition = {
-        x: compRect.left - canvasBounds.left + parentOffset.x,
-        y: compRect.top - canvasBounds.top + scrollTop + parentOffset.y,
-      };
-      if (x >= compPosition.x && x <= compPosition.x + compRect.width &&
-          y >= compPosition.y && y <= compPosition.y + compRect.height) {
-        // Check for nested flex containers
-        const nestedResult = findDeepestFlexContainer(comp.children || [], x, y, compPosition);
-        return nestedResult || { container: comp, position: compPosition };
-      }
+    if (clientY < top + scrollThreshold) {
+      const speed = -maxScrollSpeed * (1 - (clientY - top) / scrollThreshold);
+      startAutoScroll(speed);
+    } else if (clientY > bottom - scrollThreshold) {
+      const speed = maxScrollSpeed * (1 - (bottom - clientY) / scrollThreshold);
+      startAutoScroll(speed);
+    } else {
+      stopAutoScroll();
     }
-    return null;
-  }, [canvasBounds]);
+  }, [startAutoScroll, stopAutoScroll]);
 
   const canvasStyle = getCanvasStyle(canvasSettings, componentLayout);
 
