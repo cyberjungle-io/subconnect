@@ -398,12 +398,13 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
-        maxHeight: '95vh', // Set maximum height to 80% of viewport height
+        maxHeight: '95vh',
         userSelect: 'none',
         WebkitUserSelect: 'none',
         MozUserSelect: 'none',
         msUserSelect: 'none',
-        transform: 'scale(0.8)', // Slightly reduce the size
+        transform: 'scale(0.8)',
+        transformOrigin: 'top left', // Add this line
       }}
       onClick={handleToolbarInteraction}
       onDoubleClick={handleDoubleClick}
@@ -476,7 +477,9 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       </div>
       <div className="border-t border-[#cce0ff] flex-grow overflow-hidden flex flex-col">
         <div className="p-4 overflow-y-auto flex-grow">
-          {renderActiveControl()}
+          <div className="transform scale-[0.9] origin-top-left">
+            {renderActiveControl()}
+          </div>
         </div>
       </div>
     </div>
