@@ -10,7 +10,6 @@ import { setEditorMode } from '../../features/editorSlice';
 import HamburgerMenu from '../common/HamburgerMenu';
 import PageList from '../Components/Projects/PageList';
 import ProjectModal from '../Components/Projects/ProjectModal';
-import DataModal from './DataModal';
 import { toggleFloatingMenu } from '../../features/editorSlice';
 
 // Add these helper functions at the top of your file, outside the component
@@ -62,7 +61,6 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
     currentProject: false,
   });
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
-  const [isDataModalOpen, setIsDataModalOpen] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);
@@ -107,14 +105,6 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
 
   const handleCloseProjectModal = () => {
     setIsProjectModalOpen(false);
-  };
-
-  const handleOpenDataModal = () => {
-    setIsDataModalOpen(true);
-  };
-
-  const handleCloseDataModal = () => {
-    setIsDataModalOpen(false);
   };
 
   const handleToggleFloatingMenu = () => {
@@ -248,16 +238,6 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
           </>
         )}
         {currentUser && (
-          <button
-            onClick={handleOpenDataModal}
-            className="toolbar-button flex items-center justify-center w-9 h-9 rounded text-sm transition-colors"
-            style={buttonStyle}
-            title="Open Data Modal"
-          >
-            <FaDatabase className="text-base" />
-          </button>
-        )}
-        {currentUser && (
           <>
             <button
               onClick={handleToggleMode}
@@ -313,11 +293,6 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
           onClose={handleCloseProjectModal}
         />
       )}
-
-      <DataModal
-        isOpen={isDataModalOpen}
-        onClose={handleCloseDataModal}
-      />
     </div>
   );
 };
