@@ -33,7 +33,7 @@ export const componentConfig = {
     name: 'Text',
     icon: FaFont,
     acceptsChildren: false,
-    defaultContent: 'Enter your text here',
+    defaultSize: { width: '100%', height: '200px' },
     defaultProps: {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
@@ -111,6 +111,7 @@ export const componentConfig = {
     name: 'Button',
     icon: FaSquare,
     acceptsChildren: false,
+    defaultSize: { width: 'auto', height: 'auto' },
     defaultContent: 'Click me',
     defaultProps: {
       borderRadius: '4px'
@@ -120,7 +121,7 @@ export const componentConfig = {
     name: 'Chart',
     icon: FaChartBar,
     acceptsChildren: false,
-    defaultSize: { width: 400, height: 300 },
+    defaultSize: { width: '400px', height: '300px' },
     defaultChartConfig: {
       chartType: 'line',
       dataKey: 'value',
@@ -148,12 +149,13 @@ export const componentConfig = {
       columns: [],
       selectedQueryId: '',
     },
+    defaultSize: { width: '100%', height: 'auto' },
   },
   [componentTypes.VIDEO]: {
     name: 'Video',
     icon: FaPlayCircle,
     acceptsChildren: false,
-    defaultSize: { width: 560, height: 315 },
+    defaultSize: { width: '560px', height: '315px' },
     defaultContent: '',
     defaultProps: {
       youtubeUrl: '',
@@ -174,7 +176,7 @@ export const componentConfig = {
     name: 'Whiteboard',
     icon: FaChalkboard,
     acceptsChildren: false,
-    defaultSize: { width: 500, height: 300 },
+    defaultSize: { width: '500px', height: '300px' },
     defaultProps: {
       backgroundColor: '#ffffff',
       strokeColor: '#000000',
