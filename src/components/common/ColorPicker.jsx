@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SketchPicker } from 'react-color';
 import { useSelector } from 'react-redux';
+import ReactDOM from 'react-dom';
 
 const COLOR_FORMATS = ['hex', 'rgb', 'hsl'];
 const COLOR_PRESETS = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
@@ -137,6 +138,51 @@ const ColorPicker = ({ color, onChange }) => {
     return p;
   };
 
+  // Add a new ref for the portal container
+  const portalRef = useRef(null);
+
+  useEffect(() => {
+    // Create a div for the portal
+    portalRef.current = document.createElement('div');
+    document.body.appendChild(portalRef.current);
+
+    // Clean up the portal div on unmount
+    return () => {
+      if (portalRef.current) {
+        document.body.removeChild(portalRef.current);
+      }
+    };
+  }, []);
+
+  const renderColorPickerPortal = () => {
+    if (!displayColorPicker || !portalRef.current) return null;
+
+    return ReactDOM.createPortal(
+      <div className="fixed inset-0 z-[1000]" onClick={() => setDisplayColorPicker(false)}>
+        <div 
+          className="absolute z-[1001]"
+          style={{
+            top: colorSwatchRef.current
+              ? window.innerHeight - colorSwatchRef.current.getBoundingClientRect().top > 300
+                ? colorSwatchRef.current.getBoundingClientRect().bottom + 5
+                : colorSwatchRef.current.getBoundingClientRect().top - 300
+              : 0,
+            left: colorSwatchRef.current ? colorSwatchRef.current.getBoundingClientRect().left : 0,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <SketchPicker
+            color={internalColor || '#000000'}
+            onChange={handleColorChange}
+            presetColors={colorTheme}
+            disableAlpha={false}
+          />
+        </div>
+      </div>,
+      portalRef.current
+    );
+  };
+
   return (
     <div className="color-picker relative">
       <div className="flex items-center mb-2">
@@ -166,29 +212,7 @@ const ColorPicker = ({ color, onChange }) => {
         </select>
       </div>
       
-      {displayColorPicker && (
-        <div className="fixed inset-0 z-[1000]" onClick={() => setDisplayColorPicker(false)}>
-          <div 
-            className="absolute z-[1001]"
-            style={{
-              top: colorSwatchRef.current
-                ? window.innerHeight - colorSwatchRef.current.getBoundingClientRect().top > 300
-                  ? colorSwatchRef.current.getBoundingClientRect().bottom + 5
-                  : colorSwatchRef.current.getBoundingClientRect().top - 300
-                : 0,
-              left: colorSwatchRef.current ? colorSwatchRef.current.getBoundingClientRect().left : 0,
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <SketchPicker
-              color={internalColor || '#000000'}
-              onChange={handleColorChange}
-              presetColors={colorTheme}
-              disableAlpha={false}
-            />
-          </div>
-        </div>
-      )}
+      {renderColorPickerPortal()}
       
       <div className="mt-2">
         <h4 className="text-sm font-medium text-gray-700 mb-2">Theme Colors</h4>
