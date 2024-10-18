@@ -15,6 +15,7 @@ import { fetchQueries } from './w3s/w3sSlice';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistor } from './store/store';
 import PricingPage from './pages/PricingPage';
+import BugReportPage from './pages/BugReportPage';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -51,6 +52,7 @@ function AppContent() {
           }
         />
         <Route path="/pricing" element={<PricingPage />} />
+        <Route path="/bug-report" element={<BugReportPage />} />
       </Routes>
     </Router>
   );

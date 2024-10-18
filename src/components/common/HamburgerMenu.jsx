@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaBars, FaTimes, FaFolderOpen, FaDatabase, FaHome, FaDollarSign, FaCog, FaQuestionCircle } from 'react-icons/fa';
+import { FaBars, FaTimes, FaFolderOpen, FaDatabase, FaHome, FaDollarSign, FaCog, FaQuestionCircle, FaBug } from 'react-icons/fa';
 import DataModal from '../Editor/DataModal'; // Import the DataModal component
 
 const HamburgerMenu = ({ onOpenProjectModal }) => {
@@ -89,6 +89,13 @@ const HamburgerMenu = ({ onOpenProjectModal }) => {
               >
                 <FaCog className="mr-2" />
                 Settings
+              </a>
+              <a
+                href="/bug-report"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+              >
+                <FaBug className="mr-2" />
+                Report a Bug
               </a>
               <a
                 href="/help"
