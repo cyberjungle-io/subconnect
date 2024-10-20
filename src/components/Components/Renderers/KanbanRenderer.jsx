@@ -162,7 +162,38 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
 
     // Flatten tasks for updating the component
     const allTasks = Object.values(updatedColumns).flatMap(column => column.tasks);
+    console.log('allTasks', allTasks);
     onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
+
+    const kanbanData = {
+      componentId: component.props.id, // Changed from id to componentId
+      name: component.props.name,
+      type: component.type,
+      tasks: allTasks
+    };
+    console.log('Kanban Data:', kanbanData);
+    console.log('allTasks', allTasks);
+    console.log('component props ', component.props);
+
+    // Store the kanbanData in w3s
+    dispatch(createComponentData(kanbanData))
+      .unwrap()
+      .then(() => {
+        console.log('Kanban data stored successfully');
+      })
+      .catch((error) => {
+        console.error('Failed to store kanban data:', error);
+        if (error.name === 'TypeError' && error.message.includes('Cannot read properties of undefined (reading \'list\')')) {
+          console.error('Error: The componentData state might not be initialized properly.');
+          // You might want to dispatch an action to initialize the componentData state here
+          // For example: dispatch(initializeComponentDataState());
+        } else {
+          console.error('Error details:', error.stack);
+        }
+      });
+
+
+
     setIsModalOpen(false);
     setSelectedTask(null);
   }, [columns, onUpdate, component.id, component.props, selectedTask]);
@@ -303,6 +334,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
           columnId={selectedColumnId}
           task={selectedTask}
           isViewMode={!!selectedTask}
+          component={component}
         />
       )}
     </div>
