@@ -4,6 +4,7 @@ import KanBanTaskModal from '../../common/KanBanTaskModal';
 import { v4 as uuidv4 } from 'uuid';
 import { useDispatch } from 'react-redux';
 import { createComponentData, updateComponentData } from '../../../w3s/w3sSlice';
+import { w3sService } from '../../../w3s/w3sService'; // Import w3sService
 
 const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const [columns, setColumns] = useState({});
@@ -14,6 +15,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const boardRef = useRef(null);
 
   const dispatch = useDispatch();
+  const dataFetchedRef = useRef(false);
 
   const onDragStart = useCallback(() => {
     if (boardRef.current) {
@@ -23,36 +25,51 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   }, []);
 
   useEffect(() => {
-    // Initialize with default columns and tasks if not provided
-    const initialColumns = component.props.columns || [
-      { id: 'col1', title: 'To Do' },
-      { id: 'col2', title: 'In Progress' },
-      { id: 'col3', title: 'Done' }
-    ];
-    const initialTasks = component.props.tasks || [];
+    console.log('KanbanRenderer component rendered');
+    console.log('Component props:', component.props);
 
-    // Create a new columns object with tasks
-    const newColumns = initialColumns.reduce((acc, column) => {
-      acc[column.id] = {
-        ...column,
-        tasks: initialTasks.filter(task => task.columnId === column.id)
-      };
-      return acc;
-    }, {});
+    const fetchComponentData = async () => {
+      if (dataFetchedRef.current) return;
+      dataFetchedRef.current = true;
 
-    setColumns(newColumns);
-
-    // Update the component if it doesn't have columns or tasks
-    if (!component.props.columns || !component.props.tasks) {
-      onUpdate(component.id, {
-        props: {
-          ...component.props,
-          columns: initialColumns,
-          tasks: initialTasks
+      try {
+        const response = await w3sService.getComponentData(component.props.id);
+        console.log('Fetched component data:', response);
+        
+        if (response && response.length > 0 && response[0].data && response[0].data.tasks) {
+          const fetchedTasks = response[0].data.tasks;
+          console.log('Fetched tasks:', fetchedTasks);
+          initializeColumns(fetchedTasks);
+        } else {
+          initializeColumns(component.props.tasks || []);
         }
-      });
-    }
-  }, [component.id, component.props, onUpdate]);
+      } catch (error) {
+        console.error('Error fetching component data:', error);
+        initializeColumns(component.props.tasks || []);
+      }
+    };
+
+    const initializeColumns = (tasks) => {
+      const initialColumns = component.props.columns || [
+        { id: 'col1', title: 'To Do' },
+        { id: 'col2', title: 'In Progress' },
+        { id: 'col3', title: 'Done' }
+      ];
+
+      const newColumns = initialColumns.reduce((acc, column) => {
+        acc[column.id] = {
+          ...column,
+          tasks: tasks.filter(task => task.columnId === column.id)
+        };
+        return acc;
+      }, {});
+
+      setColumns(newColumns);
+    };
+
+    fetchComponentData();
+
+  }, [component.props.id]); // Only re-run if the component ID changes
 
   const onDragEnd = useCallback((result) => {
     if (boardRef.current) {

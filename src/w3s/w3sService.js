@@ -250,7 +250,7 @@ const w3sService = {
   // Component Data methods
   getComponentData: async () => {
     try {
-      const response = await api.get('/api/componentData');
+      const response = await api.get('/componentData');
       return response.data;
     } catch (error) {
       handleApiError(error);
