@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CommentsSection from './CommentsSection'; // You'll need to create this component
 
-const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMode,component  }) => {
+const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMode  }) => {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
   const [taskColor, setTaskColor] = useState('#ffffff');

@@ -334,7 +334,6 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
           columnId={selectedColumnId}
           task={selectedTask}
           isViewMode={!!selectedTask}
-          component={component}
         />
       )}
     </div>
