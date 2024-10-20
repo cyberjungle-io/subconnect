@@ -246,6 +246,66 @@ const w3sService = {
       handleApiError(error);
     }
   },
+
+  // Component Data methods
+  getComponentData: async () => {
+    try {
+      const response = await api.get('/api/componentData');
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  createComponentData: async (componentData) => {
+    try {
+      console.log('Creating component data:', componentData);
+      const response = await api.post('/componentData', componentData);
+      console.log('Create component data response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating component data:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        console.error('Error status:', error.response.status);
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+      } else {
+        console.error('Error message:', error.message);
+      }
+      handleApiError(error);
+    }
+  },
+
+  updateComponentData: async ({ componentId, data }) => {
+    /* try {
+      console.log('Updating component data:', { componentId, data });
+      const response = await api.put(`/componentData/by-component-id/${componentId}`, data);
+      console.log('Update component data response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating component data:', error);
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        console.error('Error status:', error.response.status);
+      } else if (error.request) {
+        console.error('Error request:', error.request);
+      } else {
+        console.error('Error message:', error.message);
+      }
+      handleApiError(error);
+    } */
+  },
+
+
+  deleteComponentData: async (id) => {
+    try {
+      await api.delete(`/api/componentData/${id}`);
+      return true;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
 };
 
 export { w3sService };

@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import KanBanTaskModal from '../../common/KanBanTaskModal';
 import { v4 as uuidv4 } from 'uuid';
+import { useDispatch } from 'react-redux';
+import { createComponentData, updateComponentData } from '../../../w3s/w3sSlice';
 
 const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const [columns, setColumns] = useState({});
@@ -10,6 +12,8 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const [selectedTask, setSelectedTask] = useState(null);
 
   const boardRef = useRef(null);
+
+  const dispatch = useDispatch();
 
   const onDragStart = useCallback(() => {
     if (boardRef.current) {
@@ -85,7 +89,34 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     // Flatten tasks for updating the component
     const allTasks = Object.values(newColumns).flatMap(column => column.tasks);
     onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
-  }, [columns, isInteractive, onUpdate, component.id, component.props]);
+    const kanbanData = {
+      componentId: component.props.id, // Changed from id to componentId
+      name: component.props.name,
+      type: component.type,
+      tasks: allTasks
+    };
+    console.log('Kanban Data:', kanbanData);
+    console.log('allTasks', allTasks);
+    console.log('component props ', component.props);
+
+    // Store the kanbanData in w3s
+    dispatch(createComponentData(kanbanData))
+      .unwrap()
+      .then(() => {
+        console.log('Kanban data stored successfully');
+      })
+      .catch((error) => {
+        console.error('Failed to store kanban data:', error);
+        if (error.name === 'TypeError' && error.message.includes('Cannot read properties of undefined (reading \'list\')')) {
+          console.error('Error: The componentData state might not be initialized properly.');
+          // You might want to dispatch an action to initialize the componentData state here
+          // For example: dispatch(initializeComponentDataState());
+        } else {
+          console.error('Error details:', error.stack);
+        }
+      });
+
+  }, [columns, isInteractive, onUpdate, component.id, component.props, dispatch]);
 
   const handleDoubleClick = useCallback((event, columnId, task = null) => {
     if (isInteractive) {

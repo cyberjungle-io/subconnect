@@ -191,6 +191,55 @@ export const deleteQuery = createAsyncThunk(
   }
 );
 
+// New async thunks for component data
+export const fetchComponentData = createAsyncThunk(
+  'w3s/fetchComponentData',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.getComponentData();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to fetch component data');
+    }
+  }
+);
+
+export const createComponentData = createAsyncThunk(
+  'w3s/createComponentData',
+  async (componentData, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.createComponentData(componentData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to create component data');
+    }
+  }
+);
+
+export const updateComponentData = createAsyncThunk(
+  'w3s/updateComponentData',
+  async ({ id, data }, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.updateComponentData(id, data);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to update component data');
+    }
+  }
+);
+
+export const deleteComponentData = createAsyncThunk(
+  'w3s/deleteComponentData',
+  async (id, { rejectWithValue }) => {
+    try {
+      await w3sService.deleteComponentData(id);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to delete component data');
+    }
+  }
+);
+
 // Create the setCurrentProject action
 export const setCurrentProject = createAction('w3s/setCurrentProject');
 
@@ -218,6 +267,11 @@ const w3sSlice = createSlice({
       },
       currentQuery: {
         data: null,
+        status: 'idle',
+        error: null,
+      },
+      componentData: {
+        list: [],
         status: 'idle',
         error: null,
       },
@@ -372,6 +426,37 @@ const w3sSlice = createSlice({
         if (state.currentQuery.data && state.currentQuery.data._id === action.payload) {
           state.currentQuery.data = null;
         }
+      })
+
+      // Fetch Component Data
+      .addCase(fetchComponentData.pending, (state) => {
+        state.componentData.status = 'loading';
+      })
+      .addCase(fetchComponentData.fulfilled, (state, action) => {
+        state.componentData.status = 'succeeded';
+        state.componentData.list = action.payload;
+      })
+      .addCase(fetchComponentData.rejected, (state, action) => {
+        state.componentData.status = 'failed';
+        state.componentData.error = action.payload;
+      })
+
+      // Create Component Data
+      .addCase(createComponentData.fulfilled, (state, action) => {
+        //state.componentData.list.push(action.payload);
+      })
+
+      // Update Component Data
+      .addCase(updateComponentData.fulfilled, (state, action) => {
+        const index = state.componentData.list.findIndex(item => item._id === action.payload._id);
+        if (index !== -1) {
+          state.componentData.list[index] = action.payload;
+        }
+      })
+
+      // Delete Component Data
+      .addCase(deleteComponentData.fulfilled, (state, action) => {
+        state.componentData.list = state.componentData.list.filter(item => item._id !== action.payload);
       });
   },
 });
