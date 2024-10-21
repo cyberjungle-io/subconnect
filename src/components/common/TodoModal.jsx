@@ -20,45 +20,43 @@ const TodoModal = ({ task, onSave, onClose }) => {
 
   const renderNewTaskForm = () => (
     <form onSubmit={handleSubmit}>
-      <div style={{ marginBottom: '10px' }}>
-        <label htmlFor="name">Name:</label>
+      <div className="mb-4">
+        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+          Name:
+        </label>
         <input
           type="text"
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
-          style={{ width: '100%', padding: '5px' }}
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
         />
       </div>
-      <div style={{ marginBottom: '10px' }}>
-        <label htmlFor="description">Description:</label>
+      <div className="mb-4">
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+          Description:
+        </label>
         <textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          style={{ width: '100%', padding: '5px' }}
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+          rows="3"
         />
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <button type="submit" style={{
-          backgroundColor: '#4a90e2',
-          color: 'white',
-          border: 'none',
-          padding: '5px 10px',
-          borderRadius: '4px',
-          cursor: 'pointer',
-        }}>
+      <div className="flex justify-between">
+        <button
+          type="submit"
+          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+        >
           Add Task
         </button>
-        <button type="button" onClick={onClose} style={{
-          backgroundColor: '#ccc',
-          color: 'black',
-          border: 'none',
-          padding: '5px 10px',
-          borderRadius: '4px',
-          cursor: 'pointer',
-        }}>
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
           Cancel
         </button>
       </div>
@@ -131,26 +129,19 @@ const TodoModal = ({ task, onSave, onClose }) => {
     </form>
   );
 
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000,
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        padding: '20px',
-        borderRadius: '8px',
-        width: '300px',
-      }}>
-        <h2>{task ? 'Edit Task' : 'Add New Task'}</h2>
+    <div 
+      onClick={handleOverlayClick}
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div className="bg-white rounded-lg p-6 w-96">
+        <h2 className="text-xl font-bold mb-4">{task ? 'Edit Task' : 'Add New Task'}</h2>
         {task ? renderEditTaskForm() : renderNewTaskForm()}
       </div>
     </div>
