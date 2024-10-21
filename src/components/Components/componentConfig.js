@@ -215,7 +215,7 @@ export const componentConfig = {
     name: 'Kanban Board',
     icon: FaClipboardList,
     acceptsChildren: false,
-    defaultSize: { width: '100%', height: '400px' },
+    defaultSize: { width: '100%', height: '400px' }, 
     defaultProps: {
       columns: [
         { id: 'col1', title: 'To Do' },
@@ -234,7 +234,8 @@ export const componentConfig = {
     defaultProps: {
       title: 'Todo List',
       tasks: [],
-      borderRadius: '4px'
+      borderRadius: '4px',
+     
     }
   },
 };

@@ -347,10 +347,14 @@ const ComponentRenderer = React.memo(({
       componentStyle.height = style.height || 'auto';
     }
 
-    if (style.showBorder !== false) {
+    // Only add border for FLEX_CONTAINER
+    if (type === "FLEX_CONTAINER" && style.showBorder !== false) {
       componentStyle.borderWidth = style.borderWidth || '1px';
       componentStyle.borderStyle = style.borderStyle || 'solid';
       componentStyle.borderColor = style.borderColor || '#000';
+    } else {
+      // Remove border for other components
+      componentStyle.border = 'none';
     }
 
     if (type === "FLEX_CONTAINER") {
