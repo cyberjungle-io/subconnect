@@ -295,7 +295,14 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       case 'Spacing':
         return <SpacingControls {...sharedProps} />;
       case 'Border':
-        return <BorderControls {...sharedProps} />;
+        return componentType === 'KANBAN' ? (
+          <BorderControls
+            style={props.columnBorderStyle || {}}
+            onStyleChange={(updates) => onStyleChange({ props: { ...props, columnBorderStyle: updates } })}
+          />
+        ) : (
+          <BorderControls {...sharedProps} />
+        );
       case 'Background':
         return <BackgroundControls {...sharedProps} />;
       case 'Text Controls':

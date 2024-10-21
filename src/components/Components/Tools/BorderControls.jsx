@@ -58,8 +58,8 @@ const BorderControls = ({ style, onStyleChange }) => {
     } else {
       updates[`border${property.charAt(0).toUpperCase() + property.slice(1)}`] = value;
     }
-    debouncedStyleChange(updates);
-  }, [debouncedStyleChange]);
+    onStyleChange(updates);
+  }, [onStyleChange]);
 
   const handleAllBorderWidthChange = useCallback((value) => {
     setAllBorderWidth(value);

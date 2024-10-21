@@ -6,6 +6,28 @@ import { useDispatch } from 'react-redux';
 import { createComponentData, updateComponentData } from '../../../w3s/w3sSlice';
 import { w3sService } from '../../../w3s/w3sService'; // Import w3sService
 
+// Add this helper function at the top of the file, outside the component
+function calculateInnerBorderRadius(outerRadius, padding) {
+  const [paddingTop, paddingRight, paddingBottom, paddingLeft] = padding.split(' ').map(p => parseInt(p));
+  const horizontalPadding = Math.min(paddingLeft, paddingRight);
+  const verticalPadding = Math.min(paddingTop, paddingBottom);
+  const minPadding = Math.min(horizontalPadding, verticalPadding);
+  
+  const innerRadius = Math.max(outerRadius - minPadding, 0);
+  return `${innerRadius}px`;
+}
+
+// Update this helper function
+function calculateTaskCardRadius(innerColumnRadius, columnPadding) {
+  const [paddingTop, paddingRight, paddingBottom, paddingLeft] = columnPadding.split(' ').map(p => parseInt(p));
+  const minPadding = Math.min(paddingTop, paddingRight, paddingBottom, paddingLeft);
+  const innerRadius = parseInt(innerColumnRadius);
+  
+  // Use a factor to create a more proportional radius
+  const factor = 0.7; // Adjust this value to fine-tune the result
+  return Math.max(Math.round(innerRadius * factor), 0) + 'px';
+}
+
 const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const [columns, setColumns] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -16,6 +38,16 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
 
   const dispatch = useDispatch();
   const dataFetchedRef = useRef(false);
+
+  // Add this new state for column border styles
+  const [columnBorderStyle, setColumnBorderStyle] = useState(component.props.columnBorderStyle || {});
+
+  // Add this new state for column inner border radius
+  const [columnInnerBorderRadius, setColumnInnerBorderRadius] = useState('0px');
+  const [columnPadding, setColumnPadding] = useState('16px 8px 12px 8px');
+
+  // Add this new state for task card border radius
+  const [taskCardBorderRadius, setTaskCardBorderRadius] = useState('4px');
 
   const onDragStart = useCallback(() => {
     if (boardRef.current) {
@@ -71,6 +103,25 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     fetchComponentData();
 
   }, [component.props.id]); // Only re-run if the component ID changes
+
+  useEffect(() => {
+    // Update columnBorderStyle and calculate inner border radius when component props change
+    const newColumnBorderStyle = component.props.columnBorderStyle || {};
+    setColumnBorderStyle(newColumnBorderStyle);
+
+    // Get the padding from props or use a default value
+    const newColumnPadding = component.props.columnPadding || '16px 8px 12px 8px';
+    setColumnPadding(newColumnPadding);
+
+    // Calculate inner border radius using all padding values
+    const outerRadius = parseInt(newColumnBorderStyle.borderRadius || '0px');
+    const newInnerRadius = calculateInnerBorderRadius(outerRadius, newColumnPadding);
+    setColumnInnerBorderRadius(newInnerRadius);
+
+    // Calculate task card border radius
+    const newTaskCardRadius = calculateTaskCardRadius(newInnerRadius, newColumnPadding);
+    setTaskCardBorderRadius(newTaskCardRadius);
+  }, [component.props.columnBorderStyle, component.props.columnPadding]);
 
   const onDragEnd = useCallback((result) => {
     if (boardRef.current) {
@@ -241,11 +292,12 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                 flexDirection: 'column', 
                 width: `${100 / Object.keys(columns).length}%`, 
                 minWidth: '200px', 
-                padding: '8px',
+                padding: columnPadding,
                 backgroundColor: column.backgroundColor || '#f4f5f7',
-                borderRadius: '4px',
                 margin: '0 4px',
-                height: '100%', // Ensure the column takes full height
+                height: '100%',
+                // Apply column border styles here
+                ...columnBorderStyle
               }}
               onDoubleClick={(e) => handleDoubleClick(e, column.id)}
             >
@@ -264,12 +316,12 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                     style={{ 
                       flex: 1, 
                       padding: '8px', 
-                      borderRadius: '4px', 
+                      borderRadius: columnInnerBorderRadius,
                       minHeight: '100px',
                       backgroundColor: column.innerBackgroundColor || lightenColor(column.backgroundColor || '#f4f5f7', 10),
                       ...(snapshot.isDraggingOver ? { backgroundColor: '#e0e0e0' } : {}),
-                      overflowY: 'auto', // Make the column scrollable
-                      maxHeight: 'calc(100% - 40px)', // Adjust based on your column header height
+                      overflowY: 'auto',
+                      maxHeight: 'calc(100% - 40px)',
                     }}
                   >
                     {column.tasks.map((task, index) => (
@@ -284,7 +336,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                               backgroundColor: task.color || 'white',
                               padding: '8px',
                               marginBottom: '8px',
-                              borderRadius: '4px',
+                              borderRadius: taskCardBorderRadius, // Apply the calculated border radius here
                               boxShadow: snapshot.isDragging ? '0 5px 10px rgba(0,0,0,0.2)' : 'none',
                               color: getContrastColor(task.color || '#ffffff'),
                               position: 'relative',
