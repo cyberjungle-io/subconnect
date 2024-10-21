@@ -306,6 +306,18 @@ const w3sService = {
       handleApiError(error);
     }
   },
+
+  getComponentDataById: async (componentId) => {
+    try {
+      console.log('Fetching component data by ID:', componentId);
+      const response = await api.get(`/componentData/by-component-id/${componentId}`);
+      console.log('Component data fetch response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching component data by ID:', error);
+      handleApiError(error);
+    }
+  },
 };
 
 export { w3sService };
