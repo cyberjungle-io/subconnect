@@ -6,6 +6,7 @@ import ComponentRenderer from '../Components/Renderers/ComponentRenderer';
 import { defaultGlobalSettings } from '../../utils/defaultGlobalSettings';
 import { getCanvasStyle } from '../Editor/Canvas';
 import { updateComponent } from '../../features/editorSlice';
+import { updateTodoTasks } from '../../features/editorSlice';
 
 const ViewerMode = ({ components }) => {
   const dispatch = useDispatch();
@@ -16,7 +17,11 @@ const ViewerMode = ({ components }) => {
   const canvasStyle = getCanvasStyle(canvasSettings, componentLayout);
 
   const handleUpdateComponent = useCallback((id, updates) => {
-    dispatch(updateComponent({ id, updates }));
+    if (updates.props && updates.props.tasks) {
+      dispatch(updateTodoTasks({ componentId: id, tasks: updates.props.tasks }));
+    } else {
+      dispatch(updateComponent({ id, updates }));
+    }
   }, [dispatch]);
 
   return (

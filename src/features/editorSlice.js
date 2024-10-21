@@ -541,6 +541,13 @@ export const editorSlice = createSlice({
         ...action.payload,
       };
     },
+    updateTodoTasks: (state, action) => {
+      const { componentId, tasks } = action.payload;
+      const component = findComponentById(state.components, componentId);
+      if (component && component.type === 'TODO') {
+        component.props.tasks = tasks;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(saveComponentThunk.fulfilled, (state, action) => {
@@ -594,6 +601,7 @@ export const {
   updateKanbanBoard,
   updateColorTheme,
   updateToolbarSettings,
+  updateTodoTasks,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

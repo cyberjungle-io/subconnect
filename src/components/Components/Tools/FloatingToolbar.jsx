@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave, FaClipboardList, FaTable, FaFillDrip, FaBars } from 'react-icons/fa';
+import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave, FaClipboardList, FaTable, FaFillDrip, FaBars, FaListUl } from 'react-icons/fa';
 import SizeControls from './SizeControls';
 import LayoutControls from './LayoutControls';
 import BorderControls from './BorderControls';
@@ -21,6 +21,7 @@ import ColorThemeControls from './ColorThemeControls';
 import TableControls from './TableControls';
 import TableDataControls from './TableDataControls';
 import ToolbarControls from './ToolbarControls';
+import TodoControls from './TodoControls';
 
 const iconMap = {
   FLEX_CONTAINER: [
@@ -106,6 +107,14 @@ const iconMap = {
   ],
   TOOLBAR: [
     { icon: FaPalette, tooltip: 'Toolbar Settings' },
+  ],
+  TODO: [
+    { icon: FaExpand, tooltip: 'Size' },
+    { icon: FaArrowsAlt, tooltip: 'Spacing' },
+    { icon: FaBorderStyle, tooltip: 'Border' },
+    { icon: FaPalette, tooltip: 'Background' },
+    { icon: FaListUl, tooltip: 'Todo Controls' },
+    { icon: FaFont, tooltip: 'Text Controls' },
   ],
 };
 
@@ -338,6 +347,8 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         return <TableDataControls {...sharedProps} />;
       case 'Toolbar Settings':
         return <ToolbarControls {...sharedProps} />;
+      case 'Todo Controls':
+        return <TodoControls {...sharedProps} />;
       default:
         return null;
     }

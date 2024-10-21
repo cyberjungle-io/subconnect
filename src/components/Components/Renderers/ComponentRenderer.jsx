@@ -17,6 +17,7 @@ import { FaPencilAlt, FaTimes } from 'react-icons/fa'; // Add FaTimes import
 import FloatingToolbar from '../Tools/FloatingToolbar';
 import ResizeHandle from '../../common/ResizeHandle';
 import TableRenderer from "./TableRenderer";
+import TodoRenderer from './TodoRenderer';
 
 const defaultGlobalSettings = {
   generalComponentStyle: {
@@ -302,6 +303,8 @@ const ComponentRenderer = React.memo(({
         return <KanbanRenderer {...sharedProps} isInteractive={isViewMode} />;
       case "TABLE":
         return <TableRenderer {...sharedProps} />;
+      case 'TODO':
+        return <TodoRenderer component={component} isViewMode={isViewMode} onUpdate={onUpdate} />;
       default:
         return null;
     }

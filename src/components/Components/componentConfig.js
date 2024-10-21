@@ -1,4 +1,4 @@
-import { FaColumns, FaFont, FaImage, FaChartBar, FaTable, FaPlayCircle, FaSquare, FaHeading, FaChalkboard, FaDatabase, FaClipboardList } from 'react-icons/fa';
+import { FaColumns, FaFont, FaImage, FaChartBar, FaTable, FaPlayCircle, FaSquare, FaHeading, FaChalkboard, FaDatabase, FaClipboardList, FaListUl } from 'react-icons/fa';
 
 export const componentTypes = {
   FLEX_CONTAINER: 'FLEX_CONTAINER',
@@ -12,6 +12,7 @@ export const componentTypes = {
   QUERY_VALUE: 'QUERY_VALUE',
   SAVED_COMPONENT: 'SAVED_COMPONENT',
   KANBAN: 'KANBAN',
+  TODO: 'TODO',
 };
 
 export const componentConfig = {
@@ -221,6 +222,17 @@ export const componentConfig = {
         { id: 'col2', title: 'In Progress' },
         { id: 'col3', title: 'Done' }
       ],
+      tasks: [],
+      borderRadius: '4px'
+    }
+  },
+  [componentTypes.TODO]: {
+    name: 'Todo List',
+    icon: FaListUl,
+    acceptsChildren: false,
+    defaultSize: { width: '300px', height: 'auto' },
+    defaultProps: {
+      title: 'Todo List',
       tasks: [],
       borderRadius: '4px'
     }

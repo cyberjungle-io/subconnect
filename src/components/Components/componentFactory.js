@@ -41,6 +41,14 @@ export const createComponent = (type, props = {}) => {
       // Add any other necessary default props for charts
     };
   }
+
+  if (type === 'TODO') {
+    newComponent.props = {
+      ...newComponent.props,
+      tasks: props.tasks || [],
+      title: props.title || 'Todo List',
+    };
+  }
  
   if (config.defaultContent && !newComponent.content) {
     newComponent.content = config.defaultContent;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDrag } from 'react-dnd';
-import { FaTimes, FaPencilAlt, FaFolderOpen } from 'react-icons/fa';
+import { FaTimes, FaPencilAlt, FaFolderOpen, FaListUl } from 'react-icons/fa';
 import FourSquaresIcon from '../common/CustomIcons/FourSquareIcon';
 import { componentTypes, componentConfig } from './componentConfig';
 import { useSelector, useDispatch } from 'react-redux';
