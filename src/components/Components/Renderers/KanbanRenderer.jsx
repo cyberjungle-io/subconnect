@@ -33,11 +33,12 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
       dataFetchedRef.current = true;
 
       try {
-        const response = await w3sService.getComponentData(component.props.id);
+        const response = await w3sService.getComponentDataById(component.props.id);
         console.log('Fetched component data:', response);
         
-        if (response && response.length > 0 && response[0].data && response[0].data.tasks) {
-          const fetchedTasks = response[0].data.tasks;
+        if (response && response.data && response.data.tasks) {
+          console.log('Fetched tasks:', response.data.tasks);
+          const fetchedTasks = response.data.tasks;
           console.log('Fetched tasks:', fetchedTasks);
           initializeColumns(fetchedTasks);
         } else {

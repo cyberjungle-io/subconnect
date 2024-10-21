@@ -240,6 +240,19 @@ export const deleteComponentData = createAsyncThunk(
   }
 );
 
+// Add this new async thunk
+export const fetchComponentDataById = createAsyncThunk(
+  'w3s/fetchComponentDataById',
+  async (componentId, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.getComponentDataById(componentId);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to fetch component data');
+    }
+  }
+);
+
 // Create the setCurrentProject action
 export const setCurrentProject = createAction('w3s/setCurrentProject');
 
@@ -457,6 +470,25 @@ const w3sSlice = createSlice({
       // Delete Component Data
       .addCase(deleteComponentData.fulfilled, (state, action) => {
         state.componentData.list = state.componentData.list.filter(item => item._id !== action.payload);
+      })
+
+      // Add these new cases for fetchComponentDataById
+      .addCase(fetchComponentDataById.pending, (state) => {
+        state.componentData.status = 'loading';
+      })
+      .addCase(fetchComponentDataById.fulfilled, (state, action) => {
+        state.componentData.status = 'succeeded';
+        // Update the list if the component data doesn't exist, or replace it if it does
+        const index = state.componentData.list.findIndex(item => item.componentId === action.payload.componentId);
+        if (index !== -1) {
+          state.componentData.list[index] = action.payload;
+        } else {
+          state.componentData.list.push(action.payload);
+        }
+      })
+      .addCase(fetchComponentDataById.rejected, (state, action) => {
+        state.componentData.status = 'failed';
+        state.componentData.error = action.payload;
       });
   },
 });
