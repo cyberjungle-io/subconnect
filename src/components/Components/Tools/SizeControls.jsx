@@ -201,7 +201,7 @@ const SizeControls = ({ style = {}, onStyleChange, componentType }) => {
     </div>
   );
 
-  const renderInput = (name, value, onChange) => {
+  const renderInput = (name, value, onChange, placeholder) => {
     const stringValue = String(value || '');
     const numericValue = parseFloat(stringValue) || '';
     const unit = stringValue.replace(/[0-9.-]/g, '') || 'px';
@@ -215,7 +215,7 @@ const SizeControls = ({ style = {}, onStyleChange, componentType }) => {
             onChange={(e) => onChange(`${e.target.value}${unit}`)}
             onKeyDown={(e) => handleKeyDown(e, name, `${numericValue}${unit}`)}
             className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder={name.charAt(0).toUpperCase() + name.slice(1)}
+            placeholder={placeholder || name.charAt(0).toUpperCase() + name.slice(1)}
           />
           <select
             value={unit}
@@ -236,17 +236,19 @@ const SizeControls = ({ style = {}, onStyleChange, componentType }) => {
   const renderMinMaxInputs = (dimension) => (
     <div className="flex space-x-2 mb-2">
       <div className="flex-1">
-        <span className="text-xs font-medium text-gray-700 mb-1 block">Min {dimension}</span>
+        <span className="text-xs font-medium text-gray-700 mb-1 block">Min</span>
         {renderInput(`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`, 
           dimension === 'width' ? minWidth : minHeight, 
-          (v) => handleMinMaxChange(`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`, v)
+          (v) => handleMinMaxChange(`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`, v),
+          "Min"
         )}
       </div>
       <div className="flex-1">
-        <span className="text-xs font-medium text-gray-700 mb-1 block">Max {dimension}</span>
+        <span className="text-xs font-medium text-gray-700 mb-1 block">Max</span>
         {renderInput(`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`, 
           dimension === 'width' ? maxWidth : maxHeight, 
-          (v) => handleMinMaxChange(`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`, v)
+          (v) => handleMinMaxChange(`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`, v),
+          "Max"
         )}
       </div>
     </div>
