@@ -53,12 +53,15 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
   return (
     <div style={{
       ...style,
+      width: '100%',
+      height: '100%',
       border: '1px solid #ccc',
       borderRadius: '8px',
       padding: '20px',
       backgroundColor: '#f9f9f9',
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-      position: 'relative', // Add this to position the completion indicator
+      position: 'relative',
+      boxSizing: 'border-box',
     }} className="todo-list">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h3 style={{
