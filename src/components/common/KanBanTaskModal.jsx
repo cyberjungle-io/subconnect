@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CommentsSection from './CommentsSection'; // You'll need to create this component
+import { useSelector } from 'react-redux';
 
-const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMode  }) => {
+const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMode }) => {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
   const [taskColor, setTaskColor] = useState('#ffffff');
@@ -10,6 +11,8 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
   const titleInputRef = useRef(null);
   const descriptionInputRef = useRef(null);
   const [hasChanges, setHasChanges] = useState(false);
+  const [linkedTodoList, setLinkedTodoList] = useState(task?.linkedTodoList || null);
+  const todoLists = useSelector(state => state.editor.components.filter(c => c.type === 'TODO'));
 
   useEffect(() => {
     if (task) {
@@ -40,13 +43,17 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
     setHasChanges(true);
   };
 
+  const handleLinkTodoList = (todoListId) => {
+    setLinkedTodoList(todoListId);
+    setHasChanges(true);
+  };
+
   const handleSubmit = () => {
     if (task) {
-      onAddTask(columnId, { ...task, title: taskTitle, description: taskDescription, color: taskColor });
+      onAddTask(columnId, { ...task, title: taskTitle, description: taskDescription, color: taskColor, linkedTodoList });
     } else {
-      onAddTask(columnId, { title: taskTitle, description: taskDescription, color: taskColor });
+      onAddTask(columnId, { title: taskTitle, description: taskDescription, color: taskColor, linkedTodoList });
     }
-    
     onClose();
   };
 
@@ -95,6 +102,9 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
                   titleInputRef={titleInputRef}
                   descriptionInputRef={descriptionInputRef}
                   handleChange={handleChange}
+                  linkedTodoList={linkedTodoList}
+                  todoLists={todoLists}
+                  handleLinkTodoList={handleLinkTodoList}
                 />
               </div>
               <div className="w-1/2 pl-6 border-l">
@@ -107,6 +117,9 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
               taskDescription={taskDescription}
               taskColor={taskColor}
               handleChange={handleChange}
+              linkedTodoList={linkedTodoList}
+              todoLists={todoLists}
+              handleLinkTodoList={handleLinkTodoList}
             />
           )}
         </div>
@@ -135,7 +148,10 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
 const ViewTaskSection = ({
   taskTitle, setTaskTitle, taskDescription, setTaskDescription, taskColor, setTaskColor,
   isEditingTitle, setIsEditingTitle, isEditingDescription, setIsEditingDescription,
-  titleInputRef, descriptionInputRef, handleChange
+  titleInputRef, descriptionInputRef, handleChange,
+  linkedTodoList,
+  todoLists,
+  handleLinkTodoList
 }) => {
   return (
     <>
@@ -193,11 +209,31 @@ const ViewTaskSection = ({
           />
         </div>
       </div>
+      <div className="mb-4">
+        <h3 className="text-sm font-medium text-gray-700 mb-2">Linked Todo List</h3>
+        <select
+          value={linkedTodoList || ''}
+          onChange={(e) => handleLinkTodoList(e.target.value)}
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+        >
+          <option value="">None</option>
+          {todoLists.map((todoList) => (
+            <option key={todoList.id} value={todoList.id}>
+              {todoList.props.title || 'Untitled Todo List'}
+            </option>
+          ))}
+        </select>
+      </div>
     </>
   );
 };
 
-const AddNewTaskSection = ({ taskTitle, taskDescription, taskColor, handleChange }) => {
+const AddNewTaskSection = ({
+  taskTitle, taskDescription, taskColor, handleChange,
+  linkedTodoList,
+  todoLists,
+  handleLinkTodoList
+}) => {
   return (
     <>
       <h2 className="text-xl font-bold mb-4">Add New Task</h2>
@@ -237,6 +273,24 @@ const AddNewTaskSection = ({ taskTitle, taskDescription, taskColor, handleChange
           onChange={(e) => handleChange('color', e.target.value)}
           className="mt-1 block w-full h-10 border border-gray-300 rounded-md shadow-sm"
         />
+      </div>
+      <div className="mb-4">
+        <label htmlFor="linkedTodoList" className="block text-sm font-medium text-gray-700">
+          Linked Todo List
+        </label>
+        <select
+          id="linkedTodoList"
+          value={linkedTodoList || ''}
+          onChange={(e) => handleLinkTodoList(e.target.value)}
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+        >
+          <option value="">None</option>
+          {todoLists.map((todoList) => (
+            <option key={todoList.id} value={todoList.id}>
+              {todoList.props.title || 'Untitled Todo List'}
+            </option>
+          ))}
+        </select>
       </div>
     </>
   );

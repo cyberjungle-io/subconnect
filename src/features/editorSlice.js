@@ -548,6 +548,16 @@ export const editorSlice = createSlice({
         component.props.tasks = tasks;
       }
     },
+    updateKanbanTask: (state, action) => {
+      const { componentId, taskId, updates } = action.payload;
+      const component = findComponentById(state.components, componentId);
+      if (component && component.type === 'KANBAN') {
+        const updatedTasks = component.props.tasks.map(task =>
+          task.id === taskId ? { ...task, ...updates } : task
+        );
+        component.props.tasks = updatedTasks;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(saveComponentThunk.fulfilled, (state, action) => {
@@ -602,6 +612,7 @@ export const {
   updateColorTheme,
   updateToolbarSettings,
   updateTodoTasks,
+  updateKanbanTask,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

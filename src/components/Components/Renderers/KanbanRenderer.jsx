@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import KanBanTaskModal from '../../common/KanBanTaskModal';
 import { v4 as uuidv4 } from 'uuid';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { createComponentData, updateComponentData } from '../../../w3s/w3sSlice';
 import { w3sService } from '../../../w3s/w3sService'; // Import w3sService
 
@@ -73,6 +73,8 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
 
   // Add this new state for task card border radius
   const [taskCardBorderRadius, setTaskCardBorderRadius] = useState('4px');
+
+  const todoLists = useSelector(state => state.editor.components.filter(c => c.type === 'TODO'));
 
   const onDragStart = useCallback(() => {
     if (boardRef.current) {
@@ -301,6 +303,18 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     return getFormattedDuration(start, end);
   }, [getFormattedDuration]);
 
+  const getLinkedTodoListInfo = useCallback((task) => {
+    if (!task.linkedTodoList) return null;
+    const linkedTodoList = todoLists.find(todo => todo.id === task.linkedTodoList);
+    if (!linkedTodoList) return null;
+
+    const completedTasks = linkedTodoList.props.tasks.filter(t => t.completed).length;
+    const totalTasks = linkedTodoList.props.tasks.length;
+    const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+    return `${completedTasks}/${totalTasks} (${completionPercentage}%)`;
+  }, [todoLists]);
+
   return (
     <div 
       ref={boardRef}
@@ -387,6 +401,9 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                               fontSize: '10px',
                               opacity: 0.7,
                             }}>
+                              {getLinkedTodoListInfo(task) && (
+                                <span style={{ marginRight: '8px' }}>{getLinkedTodoListInfo(task)}</span>
+                              )}
                               {getTaskDuration(task)} | {getColumnDuration(task)}
                             </div>
                           </div>
