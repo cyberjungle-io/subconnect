@@ -92,7 +92,6 @@ const iconMap = {
     { icon: FaExpand, tooltip: 'Size' },
     { icon: FaArrowsAlt, tooltip: 'Spacing' },
     { icon: FaBorderStyle, tooltip: 'Border' },
-    { icon: FaPalette, tooltip: 'Background' },
     { icon: FaClipboardList, tooltip: 'Kanban Controls' },
     { icon: FaFont, tooltip: 'Text Styling' }, // Changed from FaHeading to FaFont
   ],
