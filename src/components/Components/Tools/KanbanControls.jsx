@@ -1,5 +1,6 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import ColorPicker from '../../common/ColorPicker';
 
 const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const [isAddingColumn, setIsAddingColumn] = useState(false);
@@ -8,6 +9,7 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const [draggedColumn, setDraggedColumn] = useState(null);
   const [dropIndicatorIndex, setDropIndicatorIndex] = useState(null);
   const listRef = useRef(null);
+  const [isLinkingStyles, setIsLinkingStyles] = useState(false);
 
   const addColumn = () => {
     if (newColumnTitle.trim()) {
@@ -23,19 +25,34 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
     setIsAddingColumn(false);
   };
 
-  const updateColumnColor = (color) => {
-    if (selectedColumn) {
-      const updatedColumns = (props.columns || []).map(column => 
-        column.id === selectedColumn.id ? { ...column, backgroundColor: color } : column
-      );
-      onPropsChange({ columns: updatedColumns });
+  const toggleLinkStyles = () => {
+    setIsLinkingStyles(!isLinkingStyles);
+    if (!isLinkingStyles) {
+      // When enabling linked styles, apply the first column's styles to all columns
+      const firstColumn = props.columns[0];
+      if (firstColumn) {
+        const updatedColumns = props.columns.map(column => ({
+          ...column,
+          backgroundColor: firstColumn.backgroundColor,
+          innerBackgroundColor: firstColumn.innerBackgroundColor,
+        }));
+        onPropsChange({ columns: updatedColumns });
+      }
     }
   };
 
-  const updateInnerColumnColor = (color) => {
-    if (selectedColumn) {
-      const updatedColumns = (props.columns || []).map(column => 
-        column.id === selectedColumn.id ? { ...column, innerBackgroundColor: color } : column
+  const updateAllColumnColors = (color, isInner = false) => {
+    if (isLinkingStyles) {
+      const updatedColumns = props.columns.map(column => ({
+        ...column,
+        [isInner ? 'innerBackgroundColor' : 'backgroundColor']: color,
+      }));
+      onPropsChange({ columns: updatedColumns });
+    } else if (selectedColumn) {
+      const updatedColumns = props.columns.map(column => 
+        column.id === selectedColumn.id 
+          ? { ...column, [isInner ? 'innerBackgroundColor' : 'backgroundColor']: color }
+          : column
       );
       onPropsChange({ columns: updatedColumns });
     }
@@ -98,12 +115,23 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
       <div className="mb-4">
         <div className="flex items-center justify-between mb-2">
           <h4 className="font-medium">Columns</h4>
-          <button
-            onClick={() => setIsAddingColumn(true)}
-            className="text-blue-500 font-bold text-xl"
-          >
-            +
-          </button>
+          <div className="flex items-center">
+            <button
+              onClick={toggleLinkStyles}
+              className={`mr-2 p-1 rounded ${isLinkingStyles ? 'bg-blue-500 text-white' : 'text-blue-500'}`}
+              title={isLinkingStyles ? "Unlink column styles" : "Link column styles"}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setIsAddingColumn(true)}
+              className="text-blue-500 font-bold text-xl"
+            >
+              +
+            </button>
+          </div>
         </div>
         {isAddingColumn && (
           <div className="flex items-center mb-2">
@@ -177,35 +205,35 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
         </ul>
       </div>
 
-      {selectedColumn && (
+      {(selectedColumn || isLinkingStyles) && (
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="font-medium">Customize "{selectedColumn.title}"</h4>
-            <button
-              onClick={deselectColumn}
-              className="text-gray-500 hover:text-gray-700"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
+            <h4 className="font-medium">
+              {isLinkingStyles ? "Customize All Columns" : `Customize "${selectedColumn.title}"`}
+            </h4>
+            {!isLinkingStyles && (
+              <button
+                onClick={deselectColumn}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            )}
           </div>
-          <div className="flex items-center mb-2">
-            <label className="mr-2">Column Color:</label>
-            <input 
-              type="color" 
-              value={selectedColumn.backgroundColor || '#ffffff'}
-              onChange={(e) => updateColumnColor(e.target.value)}
-              className="cursor-pointer"
+          <div className="mb-2">
+            <label className="block mb-1">Column Color:</label>
+            <ColorPicker
+              color={isLinkingStyles ? (props.columns[0]?.backgroundColor || '#ffffff') : (selectedColumn.backgroundColor || '#ffffff')}
+              onChange={(color) => updateAllColumnColors(color, false)}
             />
           </div>
-          <div className="flex items-center">
-            <label className="mr-2">Inner Column Color:</label>
-            <input 
-              type="color" 
-              value={selectedColumn.innerBackgroundColor || '#ffffff'}
-              onChange={(e) => updateInnerColumnColor(e.target.value)}
-              className="cursor-pointer"
+          <div>
+            <label className="block mb-1">Inner Column Color:</label>
+            <ColorPicker
+              color={isLinkingStyles ? (props.columns[0]?.innerBackgroundColor || '#ffffff') : (selectedColumn.innerBackgroundColor || '#ffffff')}
+              onChange={(color) => updateAllColumnColors(color, true)}
             />
           </div>
         </div>
