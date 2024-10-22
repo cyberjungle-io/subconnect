@@ -53,6 +53,20 @@ function getContrastAdjustedColor(baseColor, amount = 20) {
   return `#${(1 << 24 | newR << 16 | newG << 8 | newB).toString(16).slice(1)}`;
 }
 
+// Add this helper function at the top of the file
+const findTodoListById = (components, id) => {
+  for (let component of components) {
+    if (component.id === id && component.type === 'TODO') {
+      return component;
+    }
+    if (component.children) {
+      const found = findTodoListById(component.children, id);
+      if (found) return found;
+    }
+  }
+  return null;
+};
+
 const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const [columns, setColumns] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -74,7 +88,8 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   // Add this new state for task card border radius
   const [taskCardBorderRadius, setTaskCardBorderRadius] = useState('4px');
 
-  const todoLists = useSelector(state => state.editor.components.filter(c => c.type === 'TODO'));
+  const allComponents = useSelector(state => state.editor.components);
+  const todoLists = findTodoLists(allComponents);
 
   const onDragStart = useCallback(() => {
     if (boardRef.current) {
@@ -305,7 +320,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
 
   const getLinkedTodoListInfo = useCallback((task) => {
     if (!task.linkedTodoList) return null;
-    const linkedTodoList = todoLists.find(todo => todo.id === task.linkedTodoList);
+    const linkedTodoList = findTodoListById(todoLists, task.linkedTodoList);
     if (!linkedTodoList) return null;
 
     const completedTasks = linkedTodoList.props.tasks.filter(t => t.completed).length;
@@ -452,9 +467,20 @@ function getContrastColor(hexColor) {
   return luminance > 0.5 ? '#000000' : '#ffffff';
 }
 
-// Helper function to lighten a color
-function lightenColor(color, amount) {
-  return '#' + color.replace(/^#/, '').replace(/../g, color => ('0'+Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2));
-}
+
+
+// Make sure to add the findTodoLists function here as well
+const findTodoLists = (components) => {
+  let todoLists = [];
+  components.forEach(component => {
+    if (component.type === 'TODO') {
+      todoLists.push(component);
+    }
+    if (component.children && component.children.length > 0) {
+      todoLists = todoLists.concat(findTodoLists(component.children));
+    }
+  });
+  return todoLists;
+};
 
 export default KanbanRenderer;
