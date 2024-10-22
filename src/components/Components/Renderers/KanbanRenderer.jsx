@@ -28,6 +28,31 @@ function calculateTaskCardRadius(innerColumnRadius, columnPadding) {
   return Math.max(Math.round(innerRadius * factor), 0) + 'px';
 }
 
+// Add this new helper function at the top of the file, outside the component
+function getContrastAdjustedColor(baseColor, amount = 20) {
+  // If no color is set, return a default light gray
+  if (!baseColor) return '#f4f5f7';
+
+  // Convert hex to RGB
+  const r = parseInt(baseColor.slice(1, 3), 16);
+  const g = parseInt(baseColor.slice(3, 5), 16);
+  const b = parseInt(baseColor.slice(5, 7), 16);
+
+  // Calculate luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+  // Determine whether to lighten or darken
+  const adjust = luminance > 0.5 ? -amount : amount;
+
+  // Adjust the color
+  const newR = Math.max(0, Math.min(255, r + adjust));
+  const newG = Math.max(0, Math.min(255, g + adjust));
+  const newB = Math.max(0, Math.min(255, b + adjust));
+
+  // Convert back to hex
+  return `#${(1 << 24 | newR << 16 | newG << 8 | newB).toString(16).slice(1)}`;
+}
+
 const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const [columns, setColumns] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -318,8 +343,8 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                       padding: '8px', 
                       borderRadius: columnInnerBorderRadius,
                       minHeight: '100px',
-                      backgroundColor: column.innerBackgroundColor || lightenColor(column.backgroundColor || '#f4f5f7', 10),
-                      ...(snapshot.isDraggingOver ? { backgroundColor: '#e0e0e0' } : {}),
+                      backgroundColor: column.innerBackgroundColor || getContrastAdjustedColor(column.backgroundColor),
+                      ...(snapshot.isDraggingOver ? { backgroundColor: getContrastAdjustedColor(column.innerBackgroundColor || column.backgroundColor, 30) } : {}),
                       overflowY: 'auto',
                       maxHeight: 'calc(100% - 40px)',
                     }}
