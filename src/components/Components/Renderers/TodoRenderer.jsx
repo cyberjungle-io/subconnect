@@ -46,6 +46,10 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
     setLastTap({ id: task.id, time: now });
   }, [lastTap]);
 
+  const completedTasks = tasks.filter(task => task.completed).length;
+  const totalTasks = tasks.length;
+  const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
   return (
     <div style={{
       ...style,
@@ -54,6 +58,7 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       padding: '20px',
       backgroundColor: '#f9f9f9',
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      position: 'relative', // Add this to position the completion indicator
     }} className="todo-list">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h3 style={{
@@ -115,6 +120,18 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
           </li>
         ))}
       </ul>
+
+      {/* Add completion percentage indicator */}
+      <div style={{
+        position: 'absolute',
+        bottom: '5px',
+        right: '10px',
+        fontSize: '12px',
+        color: '#888',
+      }}>
+        {completedTasks}/{totalTasks} ({completionPercentage}%)
+      </div>
+
       {isModalOpen && (
         <TodoModal
           task={editingTask}
