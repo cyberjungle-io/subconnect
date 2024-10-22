@@ -165,6 +165,21 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     setTaskCardBorderRadius(newTaskCardRadius);
   }, [component.props.columnBorderStyle, component.props.columnPadding]);
 
+  // Add this new useEffect hook
+  useEffect(() => {
+    // Update columns when component props change
+    if (component.props.columns) {
+      const updatedColumns = component.props.columns.reduce((acc, column) => {
+        acc[column.id] = {
+          ...column,
+          tasks: columns[column.id]?.tasks || []
+        };
+        return acc;
+      }, {});
+      setColumns(updatedColumns);
+    }
+  }, [component.props.columns]);
+
   const onDragEnd = useCallback((result) => {
     if (boardRef.current) {
       const { parentElement } = boardRef.current;
@@ -347,7 +362,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                 width: `${100 / Object.keys(columns).length}%`, 
                 minWidth: '200px', 
                 padding: columnPadding,
-                backgroundColor: column.backgroundColor || '#f4f5f7',
+                backgroundColor: column.backgroundColor || '#f4f5f7', // Use column-specific background color
                 margin: '0 4px',
                 height: '100%',
                 // Apply column border styles here
