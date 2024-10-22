@@ -158,7 +158,10 @@ const ColorPicker = ({ color, onChange }) => {
     if (!displayColorPicker || !portalRef.current) return null;
 
     return ReactDOM.createPortal(
-      <div className="fixed inset-0 z-[1000] bg-black bg-opacity-30" onClick={() => setDisplayColorPicker(false)}>
+      <div 
+        className="fixed inset-0 z-[1000]"
+        onClick={() => setDisplayColorPicker(false)}
+      >
         <div 
           className="absolute z-[1001]"
           style={{
