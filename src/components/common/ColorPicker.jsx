@@ -158,7 +158,7 @@ const ColorPicker = ({ color, onChange }) => {
     if (!displayColorPicker || !portalRef.current) return null;
 
     return ReactDOM.createPortal(
-      <div className="fixed inset-0 z-[1000]" onClick={() => setDisplayColorPicker(false)}>
+      <div className="fixed inset-0 z-[1000] bg-black bg-opacity-30" onClick={() => setDisplayColorPicker(false)}>
         <div 
           className="absolute z-[1001]"
           style={{
@@ -171,12 +171,58 @@ const ColorPicker = ({ color, onChange }) => {
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <SketchPicker
-            color={internalColor || '#000000'}
-            onChange={handleColorChange}
-            presetColors={colorTheme}
-            disableAlpha={false}
-          />
+          <div className="bg-white rounded-lg shadow-xl overflow-hidden flex">
+            <div className="p-3">
+              <SketchPicker
+                color={internalColor || '#000000'}
+                onChange={handleColorChange}
+                disableAlpha={false}
+                presetColors={[]}
+                styles={{
+                  default: {
+                    picker: {
+                      boxShadow: 'none',
+                      padding: '0',
+                      width: '200px',
+                    },
+                    body: { padding: '0' },
+                    saturation: { width: '200px', height: '100px' },
+                    hue: { height: '10px' },
+                    alpha: { height: '10px' },
+                  },
+                }}
+              />
+            </div>
+            <div className="border-l border-gray-200 p-3 w-48">
+              <h4 className="text-xs font-medium text-gray-700 mb-2">Theme Colors</h4>
+              <div className="flex flex-wrap gap-1 mb-4">
+                {colorTheme.map((themeColor, index) => (
+                  <div
+                    key={index}
+                    className="w-5 h-5 rounded-sm cursor-pointer border border-gray-300 shadow-sm transition-transform hover:scale-110"
+                    style={{ backgroundColor: typeof themeColor === 'string' ? themeColor : themeColor.value }}
+                    onClick={() => onChange(typeof themeColor === 'string' ? themeColor : themeColor.value)}
+                    title={themeColor.name || `Color ${index + 1}`}
+                  />
+                ))}
+              </div>
+              {colorHistory.length > 0 && (
+                <>
+                  <h4 className="text-xs font-medium text-gray-700 mb-2">Recent Colors</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {colorHistory.slice(0, 10).map((historyColor, index) => (
+                      <div
+                        key={index}
+                        className="w-5 h-5 rounded-sm cursor-pointer border border-gray-300 shadow-sm transition-transform hover:scale-110"
+                        style={{ backgroundColor: convertColor(historyColor, 'rgb') }}
+                        onClick={() => onChange(convertColor(historyColor, currentFormat))}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>,
       portalRef.current
@@ -213,37 +259,6 @@ const ColorPicker = ({ color, onChange }) => {
       </div>
       
       {renderColorPickerPortal()}
-      
-      <div className="mt-2">
-        <h4 className="text-sm font-medium text-gray-700 mb-2">Theme Colors</h4>
-        <div className="flex flex-wrap gap-2">
-          {colorTheme.map((themeColor, index) => (
-            <div
-              key={index}
-              className="w-6 h-6 rounded-md cursor-pointer border border-gray-300 shadow-sm"
-              style={{ backgroundColor: typeof themeColor === 'string' ? themeColor : themeColor.value }}
-              onClick={() => onChange(typeof themeColor === 'string' ? themeColor : themeColor.value)}
-              title={themeColor.name || `Color ${index + 1}`}
-            />
-          ))}
-        </div>
-      </div>
-      
-      {colorHistory.length > 0 && (
-        <div className="mt-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Recent Colors</h4>
-          <div className="flex flex-wrap gap-2">
-            {colorHistory.map((historyColor, index) => (
-              <div
-                key={index}
-                className="w-6 h-6 rounded-md cursor-pointer border border-gray-300 shadow-sm"
-                style={{ backgroundColor: convertColor(historyColor, 'rgb') }}
-                onClick={() => onChange(convertColor(historyColor, currentFormat))}
-              />
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
