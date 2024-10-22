@@ -2,6 +2,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import CommentsSection from './CommentsSection'; // You'll need to create this component
 import { useSelector } from 'react-redux';
 
+// Add this helper function at the top of the file
+const findTodoLists = (components) => {
+  let todoLists = [];
+  components.forEach(component => {
+    if (component.type === 'TODO') {
+      todoLists.push(component);
+    }
+    if (component.children && component.children.length > 0) {
+      todoLists = todoLists.concat(findTodoLists(component.children));
+    }
+  });
+  return todoLists;
+};
+
 const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMode }) => {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDescription, setTaskDescription] = useState('');
@@ -12,7 +26,8 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
   const descriptionInputRef = useRef(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [linkedTodoList, setLinkedTodoList] = useState(task?.linkedTodoList || null);
-  const todoLists = useSelector(state => state.editor.components.filter(c => c.type === 'TODO'));
+  const allComponents = useSelector(state => state.editor.components);
+  const todoLists = findTodoLists(allComponents);
 
   useEffect(() => {
     if (task) {
