@@ -284,14 +284,17 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       style,
       props,
       content,
-      onStyleChange: (updates) => onStyleChange({ style: updates }),
+      onStyleChange: (updates) => {
+        // Modify this line to pass all style updates directly
+        onStyleChange({ style: { ...style, ...updates } });
+      },
       onPropsChange: (updates) => onStyleChange({ props: updates }),
       onContentChange: (content) => onStyleChange({ content }),
     };
 
     switch (activeControl) {
       case 'Size':
-        return <SizeControls {...sharedProps} />;
+        return <SizeControls {...sharedProps} componentType={componentType} />;
       case 'Spacing':
         return <SpacingControls {...sharedProps} />;
       case 'Border':

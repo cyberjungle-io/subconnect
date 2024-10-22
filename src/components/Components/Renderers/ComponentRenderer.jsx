@@ -328,17 +328,19 @@ const ComponentRenderer = React.memo(({
       opacity: style.opacity || 1,
       transform: style.transform || 'none',
       transition: style.transition || 'none',
-      maxWidth: '100%',
-      maxHeight: '100%',
+      maxWidth: style.maxWidth || '100%',
+      maxHeight: style.maxHeight || '100%',
+      minWidth: style.minWidth || 'auto',
+      minHeight: style.minHeight || 'auto',
     };
 
     // Handle height for different component types
     if (type === 'TEXT') {
       componentStyle.height = 'auto';
-      componentStyle.minHeight = style.height || 'auto';
+      componentStyle.minHeight = style.minHeight || style.height || 'auto';
     } else if (type === 'CHART') {
       componentStyle.width = style.width || '100%';
-      componentStyle.height = style.height || '300px'; // Provide a default height for charts
+      componentStyle.height = style.height || '300px';
       componentStyle.minWidth = style.minWidth || "200px";
       componentStyle.minHeight = style.minHeight || "150px";
     } else if (isTopLevel) {
@@ -487,7 +489,22 @@ const ComponentRenderer = React.memo(({
           props={component.props}
           content={component.content}
           onStyleChange={(updates) => {
-            if (updates.style) onUpdate(component.id, { style: updates.style });
+            if (updates.style) {
+              const updatedStyle = {
+                ...component.style,
+                ...updates.style,
+              };
+              // Ensure min/max values are applied correctly
+              if (updatedStyle.width) {
+                updatedStyle.minWidth = updatedStyle.minWidth || 'auto';
+                updatedStyle.maxWidth = updatedStyle.maxWidth || '100%';
+              }
+              if (updatedStyle.height) {
+                updatedStyle.minHeight = updatedStyle.minHeight || 'auto';
+                updatedStyle.maxHeight = updatedStyle.maxHeight || '100%';
+              }
+              onUpdate(component.id, { style: updatedStyle });
+            }
             if (updates.props) onUpdate(component.id, { props: updates.props });
             if (updates.content !== undefined) onUpdate(component.id, { content: updates.content });
           }}

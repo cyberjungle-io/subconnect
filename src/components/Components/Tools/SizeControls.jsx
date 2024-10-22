@@ -12,11 +12,19 @@ const SizeControls = ({ style = {}, onStyleChange, componentType }) => {
   const [height, setHeight] = useState('');
   const [activePreset, setActivePreset] = useState(null);
   const [activeFitOption, setActiveFitOption] = useState(null);
+  const [minWidth, setMinWidth] = useState(style.minWidth || '');
+  const [maxWidth, setMaxWidth] = useState(style.maxWidth || '');
+  const [minHeight, setMinHeight] = useState(style.minHeight || '');
+  const [maxHeight, setMaxHeight] = useState(style.maxHeight || '');
 
   useEffect(() => {
     if (style) {
       setWidth(style.width || '');
       setHeight(style.height || '');
+      setMinWidth(style.minWidth || '');
+      setMaxWidth(style.maxWidth || '');
+      setMinHeight(style.minHeight || '');
+      setMaxHeight(style.maxHeight || '');
     }
   }, [style]);
 
@@ -104,6 +112,10 @@ const SizeControls = ({ style = {}, onStyleChange, componentType }) => {
     }
     setActivePreset(null);
   }, [onStyleChange, activeFitOption, width]);
+
+  const handleMinMaxChange = useCallback((property, value) => {
+    onStyleChange({ [property]: value });
+  }, [onStyleChange]);
 
   const renderFitButtons = () => (
     <div className="flex justify-center items-center mb-4">
@@ -221,13 +233,33 @@ const SizeControls = ({ style = {}, onStyleChange, componentType }) => {
     );
   };
 
+  const renderMinMaxInputs = (dimension) => (
+    <div className="flex space-x-2 mb-2">
+      <div className="flex-1">
+        <span className="text-xs font-medium text-gray-700 mb-1 block">Min {dimension}</span>
+        {renderInput(`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`, 
+          dimension === 'width' ? minWidth : minHeight, 
+          (v) => handleMinMaxChange(`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`, v)
+        )}
+      </div>
+      <div className="flex-1">
+        <span className="text-xs font-medium text-gray-700 mb-1 block">Max {dimension}</span>
+        {renderInput(`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`, 
+          dimension === 'width' ? maxWidth : maxHeight, 
+          (v) => handleMinMaxChange(`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`, v)
+        )}
+      </div>
+    </div>
+  );
+
   const renderSection = (title, name, value, onChange) => (
     <div className="mb-4">
       <span className="text-sm font-medium text-gray-700 mb-2 block">{title}</span>
       {renderSizeButtons(name)}
-      <div className="flex items-center">
+      <div className="flex items-center mb-2">
         {renderInput(name, value, onChange)}
       </div>
+      {renderMinMaxInputs(name)}
     </div>
   );
 
