@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateColorTheme } from '../../../features/editorSlice';
 import ColorPicker from '../../common/ColorPicker';
+import { FaTrash } from 'react-icons/fa';
+import PortalModal from '../../common/PortalModal';
 
 const DEFAULT_THEME = [
   { value: '#FF0000', name: 'Color 1' },
@@ -17,6 +19,10 @@ const ColorThemeControls = () => {
   const colorTheme = useSelector(state => state.editor.colorTheme);
   const [localTheme, setLocalTheme] = useState(colorTheme || DEFAULT_THEME);
   const [editingIndex, setEditingIndex] = useState(null);
+  const [deleteModalConfig, setDeleteModalConfig] = useState({
+    isOpen: false,
+    colorIndex: null
+  });
 
   useEffect(() => {
     if (colorTheme && colorTheme.length > 0) {
@@ -57,54 +63,87 @@ const ColorThemeControls = () => {
     dispatch(updateColorTheme(updatedTheme));
   };
 
+  const handleDeleteClick = (index) => {
+    setDeleteModalConfig({
+      isOpen: true,
+      colorIndex: index
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteModalConfig.colorIndex !== null) {
+      const updatedTheme = localTheme.filter((_, i) => i !== deleteModalConfig.colorIndex);
+      setLocalTheme(updatedTheme);
+      dispatch(updateColorTheme(updatedTheme));
+    }
+    setDeleteModalConfig({ isOpen: false, colorIndex: null });
+  };
+
   return (
-    <div className="color-theme-controls">
-      <h3 className="text-lg font-semibold text-gray-700 mb-4">Color Theme</h3>
-      <div className="space-y-6">
-        {localTheme.map((color, index) => (
-          <div key={index} className="flex flex-col items-start">
-            <div className="w-full mb-1">
-              {editingIndex === index ? (
-                <input
-                  type="text"
-                  value={color.name || ''}
-                  onChange={(e) => handleNameChange(index, e.target.value)}
-                  onBlur={() => setEditingIndex(null)}
-                  onKeyPress={(e) => e.key === 'Enter' && setEditingIndex(null)}
-                  className="text-sm text-gray-600 w-full p-1 border border-gray-300 rounded"
-                  autoFocus
-                />
-              ) : (
-                <span 
-                  className="text-sm text-gray-600 cursor-pointer inline-block w-full p-1"
-                  onDoubleClick={() => setEditingIndex(index)}
+    <>
+      <div className="color-theme-controls">
+        <h3 className="text-lg font-semibold text-gray-700 mb-4">Color Theme</h3>
+        <div className="space-y-6">
+          {localTheme.map((color, index) => (
+            <div key={index} className="flex flex-col items-start">
+              <div className="w-full mb-1 flex justify-between items-center">
+                {editingIndex === index ? (
+                  <input
+                    type="text"
+                    value={color.name || ''}
+                    onChange={(e) => handleNameChange(index, e.target.value)}
+                    onBlur={() => setEditingIndex(null)}
+                    onKeyPress={(e) => e.key === 'Enter' && setEditingIndex(null)}
+                    className="text-sm text-gray-600 w-full p-1 border border-gray-300 rounded"
+                    autoFocus
+                  />
+                ) : (
+                  <span 
+                    className="text-sm text-gray-600 cursor-pointer inline-block w-full p-1"
+                    onDoubleClick={() => setEditingIndex(index)}
+                  >
+                    {getColorName(color, index)}
+                  </span>
+                )}
+                <button
+                  onClick={() => handleDeleteClick(index)}
+                  className="ml-2 text-red-500 hover:text-red-700"
+                  title="Delete color"
                 >
-                  {getColorName(color, index)}
-                </span>
-              )}
+                  <FaTrash />
+                </button>
+              </div>
+              <div className="scale-90 origin-top-left">
+                <ColorPicker
+                  color={color.value}
+                  onChange={(newColor) => handleColorChange(index, newColor)}
+                />
+              </div>
             </div>
-            <div className="scale-90 origin-top-left">
-              <ColorPicker
-                color={color.value}
-                onChange={(newColor) => handleColorChange(index, newColor)}
-              />
-            </div>
-          </div>
-        ))}
-        <button
-          onClick={addNewColor}
-          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-        >
-          Add New Color
-        </button>
+          ))}
+          <button
+            onClick={addNewColor}
+            className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+          >
+            Add New Color
+          </button>
+        </div>
+        <style jsx>{`
+          .color-picker input[type="text"] {
+            width: 100% !important;
+            min-width: 120px !important;
+          }
+        `}</style>
       </div>
-      <style jsx>{`
-        .color-picker input[type="text"] {
-          width: 100% !important;
-          min-width: 120px !important;
-        }
-      `}</style>
-    </div>
+
+      <PortalModal
+        isOpen={deleteModalConfig.isOpen}
+        onClose={() => setDeleteModalConfig({ isOpen: false, colorIndex: null })}
+        onDelete={handleConfirmDelete}
+        title="Delete Color"
+        message={`Are you sure you want to delete this color? This action cannot be undone.`}
+      />
+    </>
   );
 };
 
