@@ -1,9 +1,9 @@
 // src/features/userSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { w3sService } from '../w3s/w3sService';
-import { fetchProjects, setCurrentProject } from '../w3s/w3sSlice'; // Add this import
-import { setEditorMode, resetEditorState } from './editorSlice'; // Added this import
-import { clearW3sState } from '../w3s/w3sSlice'; // Add this import
+import { fetchProjects, setCurrentProject, clearW3sState } from '../w3s/w3sSlice';
+import { setEditorMode, resetEditorState } from './editorSlice';
+import { showToast } from './toastSlice'; // Import the showToast action
 
 export const registerUser = createAsyncThunk(
   'user/register',
@@ -108,12 +108,14 @@ export const getAccessesByLinkId = createAsyncThunk(
 
 export const addUserAccessByEmail = createAsyncThunk(
   'user/addAccessByEmail',
-  async (accessData, { rejectWithValue }) => {
+  async (accessData, { rejectWithValue, dispatch }) => {
     try {
       const response = await w3sService.addUserAccessByEmail(accessData);
-      return response.data; // Make sure we're returning response.data here
+      dispatch(showToast({ message: 'User access added successfully', type: 'success' }));
+      return response.data;
     } catch (error) {
       console.error('Error adding user access by email:', error);
+      dispatch(showToast({ message: 'Failed to add user access', type: 'error' }));
       return rejectWithValue(error.response?.data || error.message || 'An error occurred while adding user access');
     }
   }

@@ -3,17 +3,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import ProjectList from './ProjectList';
 import ProjectForm from './ProjectForm';
 import { FaTimes } from 'react-icons/fa';
-import { fetchProjects } from '../../../w3s/w3sSlice';
+import { fetchProjects, fetchSharedProjects } from '../../../w3s/w3sSlice';
 
 const ProjectModal = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
   const { status } = useSelector((state) => state.w3s.projects);
 
   useEffect(() => {
-    if (status === 'idle') {
+    if (isOpen) {
       dispatch(fetchProjects());
+      dispatch(fetchSharedProjects());
     }
-  }, [status, dispatch]);
+  }, [isOpen, dispatch]);
 
   if (!isOpen) return null;
 
