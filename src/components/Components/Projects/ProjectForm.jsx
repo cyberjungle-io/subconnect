@@ -43,13 +43,13 @@ const ProjectForm = ({ onSubmit }) => {
         />
         <button
           onClick={handleSubmit}
-          className="px-4 py-2 hover:bg-gray-100 focus:outline-none transition-all border-t border-b border-gray-300"
+          className="px-4 py-2 hover:bg-gray-300 focus:outline-none transition-all border-t border-b border-gray-300"
         >
           <FaCheck size={16} className="text-gray-600 hover:text-gray-900" />
         </button>
         <button
           onClick={handleCancel}
-          className="px-4 py-2 rounded-r hover:bg-gray-100 focus:outline-none transition-all border border-l-0 border-gray-300"
+          className="px-4 py-2 rounded-r hover:bg-gray-300 focus:outline-none transition-all border border-l-0 border-gray-300"
         >
           <FaTimes size={16} className="text-gray-600 hover:text-gray-900" />
         </button>
