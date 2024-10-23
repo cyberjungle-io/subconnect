@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateColorTheme } from '../../../features/editorSlice';
+import ColorPicker from '../../common/ColorPicker';
 
 const DEFAULT_THEME = [
   { value: '#FF0000', name: 'Color 1' },
@@ -52,36 +53,44 @@ const ColorThemeControls = () => {
   return (
     <div className="color-theme-controls">
       <h3 className="text-lg font-semibold text-gray-700 mb-4">Color Theme</h3>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="space-y-6">
         {localTheme.map((color, index) => (
-          <div key={index} className="flex flex-col items-center">
-            <input
-              type="color"
-              value={color.value}
-              onChange={(e) => handleColorChange(index, e.target.value)}
-              className="w-12 h-12 rounded-full cursor-pointer border-2 border-gray-300"
-            />
-            {editingIndex === index ? (
-              <input
-                type="text"
-                value={color.name || ''}
-                onChange={(e) => handleNameChange(index, e.target.value)}
-                onBlur={() => setEditingIndex(null)}
-                onKeyPress={(e) => e.key === 'Enter' && setEditingIndex(null)}
-                className="mt-1 text-sm text-gray-600 w-full text-center"
-                autoFocus
+          <div key={index} className="flex flex-col items-start">
+            <div className="w-full mb-1">
+              {editingIndex === index ? (
+                <input
+                  type="text"
+                  value={color.name || ''}
+                  onChange={(e) => handleNameChange(index, e.target.value)}
+                  onBlur={() => setEditingIndex(null)}
+                  onKeyPress={(e) => e.key === 'Enter' && setEditingIndex(null)}
+                  className="text-sm text-gray-600 w-full p-1 border border-gray-300 rounded"
+                  autoFocus
+                />
+              ) : (
+                <span 
+                  className="text-sm text-gray-600 cursor-pointer inline-block w-full p-1"
+                  onDoubleClick={() => setEditingIndex(index)}
+                >
+                  {getColorName(color, index)}
+                </span>
+              )}
+            </div>
+            <div className="scale-90 origin-top-left">
+              <ColorPicker
+                color={color.value}
+                onChange={(newColor) => handleColorChange(index, newColor)}
               />
-            ) : (
-              <span 
-                className="mt-1 text-sm text-gray-600 cursor-pointer"
-                onDoubleClick={() => setEditingIndex(index)}
-              >
-                {getColorName(color, index)}
-              </span>
-            )}
+            </div>
           </div>
         ))}
       </div>
+      <style jsx>{`
+        .color-picker input[type="text"] {
+          width: 100% !important;
+          min-width: 120px !important;
+        }
+      `}</style>
     </div>
   );
 };
