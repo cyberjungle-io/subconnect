@@ -70,12 +70,63 @@ export const checkAuthStatus = createAsyncThunk(
   }
 );
 
+export const addUserAccess = createAsyncThunk(
+  'user/addAccess',
+  async (accessData, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.addUserAccess(accessData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const getUserAccesses = createAsyncThunk(
+  'user/getAccesses',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.getUserAccesses();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const getAccessesByLinkId = createAsyncThunk(
+  'user/getAccessesByLinkId',
+  async (linkId, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.getAccessesByLinkId(linkId);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const addUserAccessByEmail = createAsyncThunk(
+  'user/addAccessByEmail',
+  async (accessData, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.addUserAccessByEmail(accessData);
+      return response.data; // Make sure we're returning response.data here
+    } catch (error) {
+      console.error('Error adding user access by email:', error);
+      return rejectWithValue(error.response?.data || error.message || 'An error occurred while adding user access');
+    }
+  }
+);
+
 const userSlice = createSlice({
     name: 'user',
     initialState: {
       currentUser: null,
       status: 'idle',
       error: null,
+      userAccesses: [], // Initialize this as an empty array
+      linkAccesses: [],
     },
     reducers: {
       clearError: (state) => {
@@ -115,6 +166,57 @@ const userSlice = createSlice({
         state.currentUser = null;
         state.status = 'idle';
         state.error = null;
+      })
+      .addCase(addUserAccess.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(addUserAccess.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.userAccesses.push(action.payload);
+      })
+      .addCase(addUserAccess.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+      .addCase(getUserAccesses.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(getUserAccesses.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.userAccesses = action.payload;
+      })
+      .addCase(getUserAccesses.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+      .addCase(getAccessesByLinkId.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(getAccessesByLinkId.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.linkAccesses = action.payload;
+      })
+      .addCase(getAccessesByLinkId.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+      .addCase(addUserAccessByEmail.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(addUserAccessByEmail.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        if (!state.userAccesses) {
+          state.userAccesses = [];
+        }
+        if (Array.isArray(action.payload)) {
+          state.userAccesses = [...state.userAccesses, ...action.payload];
+        } else if (action.payload) {
+          state.userAccesses = [...state.userAccesses, action.payload];
+        }
+      })
+      .addCase(addUserAccessByEmail.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
       });
   },
 });
