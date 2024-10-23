@@ -3,12 +3,12 @@ import { SketchPicker } from 'react-color';
 import { useSelector } from 'react-redux';
 import ReactDOM from 'react-dom';
 
-const COLOR_FORMATS = ['hex', 'rgb', 'hsl'];
+const COLOR_FORMATS = ['rgb', 'hex', 'hsl'];
 const COLOR_PRESETS = ['#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'];
 
 const ColorPicker = ({ color, onChange }) => {
   const [displayColorPicker, setDisplayColorPicker] = useState(false);
-  const [currentFormat, setCurrentFormat] = useState('hex');
+  const [currentFormat, setCurrentFormat] = useState('rgb');
   const [colorHistory, setColorHistory] = useState([]);
   const [internalColor, setInternalColor] = useState(color);
   const colorSwatchRef = useRef(null);
