@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateColorTheme } from '../../../features/editorSlice';
 import ColorPicker from '../../common/ColorPicker';
+import { FaTrash } from 'react-icons/fa';
 
 const DEFAULT_THEME = [
   { value: '#FF0000', name: 'Color 1' },
@@ -57,13 +58,19 @@ const ColorThemeControls = () => {
     dispatch(updateColorTheme(updatedTheme));
   };
 
+  const deleteColor = (index) => {
+    const updatedTheme = localTheme.filter((_, i) => i !== index);
+    setLocalTheme(updatedTheme);
+    dispatch(updateColorTheme(updatedTheme));
+  };
+
   return (
     <div className="color-theme-controls">
       <h3 className="text-lg font-semibold text-gray-700 mb-4">Color Theme</h3>
       <div className="space-y-6">
         {localTheme.map((color, index) => (
           <div key={index} className="flex flex-col items-start">
-            <div className="w-full mb-1">
+            <div className="w-full mb-1 flex justify-between items-center">
               {editingIndex === index ? (
                 <input
                   type="text"
@@ -82,6 +89,13 @@ const ColorThemeControls = () => {
                   {getColorName(color, index)}
                 </span>
               )}
+              <button
+                onClick={() => deleteColor(index)}
+                className="ml-2 text-red-500 hover:text-red-700"
+                title="Delete color"
+              >
+                <FaTrash />
+              </button>
             </div>
             <div className="scale-90 origin-top-left">
               <ColorPicker
