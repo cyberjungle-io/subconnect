@@ -175,40 +175,14 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
               </button>
               {expandedSections.currentProject && (
                 <div 
-                  className="absolute top-full left-0 mt-1 w-64 rounded shadow-lg z-[990] border"
+                  className="absolute top-full left-0 mt-1 w-64 rounded shadow-lg z-[990]"
                   style={{
                     backgroundColor: toolbarSettings.backgroundColor || '#e8e8e8',
-                    borderColor: toolbarSettings.textColor || '#c0c0c0',
+                    // Removed the borderColor style
                   }}
                 >
                   <div className="current-project-container">
-                    <div 
-                      className="current-project-header p-3 border-b"
-                      style={{
-                        borderColor: toolbarSettings.textColor || '#c0c0c0',
-                      }}
-                    >
-                      <div className="current-project-info">
-                        <div 
-                          className="current-project-name text-sm font-semibold"
-                          style={{
-                            color: toolbarSettings.textColor || '#333333',
-                          }}
-                        >
-                          {currentProject.name}
-                        </div>
-                        {currentPage && (
-                          <div 
-                            className="current-page-name text-xs"
-                            style={{
-                              color: toolbarSettings.textColor || '#666666',
-                            }}
-                          >
-                            {currentPage.name}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    
                     <div className="page-list-container max-h-48 overflow-y-auto">
                       <PageList
                         projectId={currentProject._id}
