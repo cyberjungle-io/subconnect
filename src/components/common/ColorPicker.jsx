@@ -21,7 +21,7 @@ const ColorPicker = ({ color, onChange }) => {
   useEffect(() => {
     if (internalColor && !colorHistory.includes(internalColor)) {
       setColorHistory(prevHistory => {
-        const newColor = convertColor(internalColor, 'rgb'); // Convert to RGB for consistency
+        const newColor = convertColor(internalColor, 'rgb'); 
         if (!prevHistory.some(c => colorEquals(c, newColor))) {
           return [newColor, ...prevHistory.slice(0, 9)];
         }
@@ -40,7 +40,11 @@ const ColorPicker = ({ color, onChange }) => {
   };
 
   const handleColorChange = (newColor) => {
-    let formattedColor = convertColor(newColor, currentFormat);
+    // Switch to RGB format if transparency is being adjusted and we're not already in RGB format
+    if (newColor.rgb.a !== 1 && currentFormat !== 'rgb') {
+      setCurrentFormat('rgb');
+    }
+    let formattedColor = convertColor(newColor, newColor.rgb.a !== 1 ? 'rgb' : currentFormat);
     setInternalColor(formattedColor);
     onChange(formattedColor);
   };
