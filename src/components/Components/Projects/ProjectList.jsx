@@ -68,7 +68,8 @@ const ProjectList = ({ onClose }) => {
             onSubmit={() => {
               onClose();
               setShowNewProject(false);
-            }} 
+            }}
+            onCancel={() => setShowNewProject(false)}
           />
         </div>
       )}

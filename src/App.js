@@ -17,6 +17,7 @@ import { persistor } from './store/store';
 import PricingPage from './pages/PricingPage';
 import BugReportPage from './pages/BugReportPage';
 import NodeServicesPage from './pages/NodeServicesPage';
+import TutorialsPage from './pages/Tutorials';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -55,6 +56,7 @@ function AppContent() {
         <Route path="/pricing" element={<PricingPage />} />
         <Route path="/bug-report" element={<BugReportPage />} />
         <Route path="/node-services" element={<NodeServicesPage />} />
+        <Route path="/tutorials" element={<TutorialsPage />} />
       </Routes>
     </Router>
   );

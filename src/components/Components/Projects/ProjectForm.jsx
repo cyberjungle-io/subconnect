@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { createProject, setCurrentProject, fetchProjects } from '../../../w3s/w3sSlice';
 import { FaCheck, FaTimes } from 'react-icons/fa';
 
-const ProjectForm = ({ onSubmit }) => {
+const ProjectForm = ({ onSubmit, onCancel }) => {
   const [name, setName] = useState('');
   const dispatch = useDispatch();
 
@@ -26,7 +26,7 @@ const ProjectForm = ({ onSubmit }) => {
 
   const handleCancel = () => {
     setName('');
-    onSubmit();
+    onCancel();  // Call onCancel prop
   };
 
   return (
