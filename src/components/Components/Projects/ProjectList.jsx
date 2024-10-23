@@ -1,13 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setCurrentProject, deleteProject, fetchProjects } from '../../../w3s/w3sSlice';
 import { addUserAccessByEmail } from '../../../features/userSlice';
 import { showToast } from '../../../features/toastSlice';
+import DeleteConfirmModal from '../../common/DeleteConfirmModal';
 
 const ProjectList = ({ onClose }) => {
   const dispatch = useDispatch();
   const { list: projects, status } = useSelector((state) => state.w3s.projects);
   const currentProject = useSelector((state) => state.w3s.currentProject.data);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState(null);
 
   useEffect(() => {
     if (status === 'idle') {
@@ -33,13 +36,12 @@ const ProjectList = ({ onClose }) => {
   };
 
   const handleDeleteProject = async (projectId) => {
-    if (window.confirm("Are you sure you want to delete this project?")) {
-      try {
-        await dispatch(deleteProject(projectId)).unwrap();
-        dispatch(showToast({ message: "Project deleted successfully", type: "success" }));
-      } catch (error) {
-        dispatch(showToast({ message: "Failed to delete project", type: "error" }));
-      }
+    try {
+      await dispatch(deleteProject(projectId)).unwrap();
+      dispatch(showToast({ message: "Project deleted successfully", type: "success" }));
+      setDeleteModalOpen(false);
+    } catch (error) {
+      dispatch(showToast({ message: "Failed to delete project", type: "error" }));
     }
   };
 
@@ -67,7 +69,10 @@ const ProjectList = ({ onClose }) => {
                   {currentProject?._id === project._id ? 'Selected' : 'Select'}
                 </button>
                 <button
-                  onClick={() => handleDeleteProject(project._id)}
+                  onClick={() => {
+                    setProjectToDelete(project._id);
+                    setDeleteModalOpen(true);
+                  }}
                   className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
                 >
                   Delete
@@ -77,6 +82,14 @@ const ProjectList = ({ onClose }) => {
           ))}
         </ul>
       )}
+
+      <DeleteConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onDelete={() => handleDeleteProject(projectToDelete)}
+        title="Delete Project"
+        message="Are you sure you want to delete this project? This action cannot be undone."
+      />
     </div>
   );
 };
