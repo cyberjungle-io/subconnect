@@ -50,6 +50,13 @@ const ColorThemeControls = () => {
     return `Color ${index + 1}`;
   };
 
+  const addNewColor = () => {
+    const newColor = { value: '#000000', name: `Color ${localTheme.length + 1}` };
+    const updatedTheme = [...localTheme, newColor];
+    setLocalTheme(updatedTheme);
+    dispatch(updateColorTheme(updatedTheme));
+  };
+
   return (
     <div className="color-theme-controls">
       <h3 className="text-lg font-semibold text-gray-700 mb-4">Color Theme</h3>
@@ -84,6 +91,12 @@ const ColorThemeControls = () => {
             </div>
           </div>
         ))}
+        <button
+          onClick={addNewColor}
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        >
+          Add New Color
+        </button>
       </div>
       <style jsx>{`
         .color-picker input[type="text"] {
