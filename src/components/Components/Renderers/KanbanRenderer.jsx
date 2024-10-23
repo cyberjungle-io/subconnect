@@ -346,7 +346,9 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                               padding: '8px',
                               marginBottom: '8px',
                               borderRadius: taskCardBorderRadius,
-                              boxShadow: snapshot.isDragging ? '0 5px 10px rgba(0,0,0,0.2)' : 'none',
+                              boxShadow: snapshot.isDragging 
+                                ? '0 5px 10px rgba(0,0,0,0.3)' 
+                                : '0 3px 5px rgba(0,0,0,0.2)', // Added default shadow
                               color: getContrastColor(task.color || '#ffffff'),
                               position: 'relative',
                               minHeight: '80px',
