@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateProject } from "../../../w3s/w3sSlice";
 import { FaPlus, FaCheck, FaTimes, FaTrash } from "react-icons/fa";
+import DeleteConfirmModal from "../../common/DeleteConfirmModal";
 
 const PageList = ({
   projectId,
@@ -14,6 +15,7 @@ const PageList = ({
   const currentProject = useSelector((state) => state.w3s.currentProject.data);
   const [newPageName, setNewPageName] = useState("");
   const [showNewPageInput, setShowNewPageInput] = useState(false);
+  const [deletePageIndex, setDeletePageIndex] = useState(null);
 
   // Create a style tag for dynamic hover effect and selected page
   useEffect(() => {
@@ -51,15 +53,21 @@ const PageList = ({
   };
 
   const handleDeletePage = (pageIndex) => {
-    if (window.confirm('Are you sure you want to delete this page?') && currentProject) {
+    if (currentProject) {
       const updatedPages = currentProject.pages.filter((_, index) => index !== pageIndex);
       dispatch(updateProject({ ...currentProject, pages: updatedPages }));
+      setDeletePageIndex(null); // Close modal after deletion
     }
   };
 
   const handleCancelNewPage = () => {
     setNewPageName("");
     setShowNewPageInput(false);
+  };
+
+  const handleDeleteClick = (e, index) => {
+    e.stopPropagation();
+    setDeletePageIndex(index);
   };
 
   if (!currentProject) return <div>No project selected</div>;
@@ -129,10 +137,7 @@ const PageList = ({
             >
               <span className="text-sm">{page.name}</span>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeletePage(index);
-                }}
+                onClick={(e) => handleDeleteClick(e, index)}
                 className="hover:opacity-70 transition-opacity"
               >
                 <FaTrash size={12} />
@@ -141,6 +146,14 @@ const PageList = ({
           ))}
         </ul>
       )}
+
+      <DeleteConfirmModal
+        isOpen={deletePageIndex !== null}
+        onClose={() => setDeletePageIndex(null)}
+        onDelete={() => handleDeletePage(deletePageIndex)}
+        title="Delete Page"
+        message="Are you sure you want to delete this page? This action cannot be undone."
+      />
     </div>
   );
 };
