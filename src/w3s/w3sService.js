@@ -358,6 +358,16 @@ const w3sService = {
       handleApiError(error);
     }
   },
+
+  // Add this new method
+  getSharedProjects: async () => {
+    try {
+      const response = await api.get('/projects/shared');
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
 };
 
 export { w3sService };

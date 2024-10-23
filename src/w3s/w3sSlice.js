@@ -72,9 +72,11 @@ export const updateProject = createAsyncThunk(
 
 export const deleteProject = createAsyncThunk(
   'w3s/deleteProject',
-  async (id, { rejectWithValue }) => {
+  async (id, { rejectWithValue, dispatch }) => {
     try {
       await w3sService.deleteProject(id);
+      // Fetch updated project list after successful deletion
+      dispatch(fetchProjects());
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data || 'Failed to delete project');
@@ -259,36 +261,56 @@ export const setCurrentProject = createAction('w3s/setCurrentProject');
 // Add the updateCurrentProject action
 //export const updateCurrentProject = createAction('w3s/updateCurrentProject');
 
+// Add this new async thunk
+export const fetchSharedProjects = createAsyncThunk(
+  'w3s/fetchSharedProjects',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.getSharedProjects();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to fetch shared projects');
+    }
+  }
+);
+
 // Slice
+const initialState = {
+  projects: {
+    list: [],
+    status: 'idle',
+    error: null,
+  },
+  currentProject: {
+    data: null,
+    status: 'idle',
+    error: null,
+  },
+  queries: {
+    list: [],
+    status: 'idle',
+    error: null,
+  },
+  currentQuery: {
+    data: null,
+    status: 'idle',
+    error: null,
+  },
+  componentData: {
+    list: [],
+    status: 'idle',
+    error: null,
+  },
+  sharedProjects: {
+    list: [],
+    status: 'idle',
+    error: null,
+  },
+};
+
 const w3sSlice = createSlice({
     name: 'w3s',
-    initialState: {
-      projects: {
-        list: [],
-        status: 'idle',
-        error: null,
-      },
-      currentProject: {
-        data: null,
-        status: 'idle',
-        error: null,
-      },
-      queries: {
-        list: [],
-        status: 'idle',
-        error: null,
-      },
-      currentQuery: {
-        data: null,
-        status: 'idle',
-        error: null,
-      },
-      componentData: {
-        list: [],
-        status: 'idle',
-        error: null,
-      },
-    },
+    initialState,
   reducers: {
     clearCurrentProject: (state) => {
       state.currentProject = {
@@ -489,6 +511,29 @@ const w3sSlice = createSlice({
       .addCase(fetchComponentDataById.rejected, (state, action) => {
         state.componentData.status = 'failed';
         state.componentData.error = action.payload;
+      })
+
+      // Add these new cases for fetchSharedProjects
+      .addCase(fetchSharedProjects.pending, (state) => {
+        state.sharedProjects = {
+          ...state.sharedProjects,
+          status: 'loading',
+          error: null
+        };
+      })
+      .addCase(fetchSharedProjects.fulfilled, (state, action) => {
+        state.sharedProjects = {
+          list: action.payload,
+          status: 'succeeded',
+          error: null
+        };
+      })
+      .addCase(fetchSharedProjects.rejected, (state, action) => {
+        state.sharedProjects = {
+          ...state.sharedProjects,
+          status: 'failed',
+          error: action.payload
+        };
       });
   },
 });
