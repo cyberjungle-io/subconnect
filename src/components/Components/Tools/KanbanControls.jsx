@@ -41,17 +41,17 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
     }
   };
 
-  const updateAllColumnColors = (color, isInner = false) => {
+  const updateAllColumnColors = (color) => {
     if (isLinkingStyles) {
       const updatedColumns = props.columns.map(column => ({
         ...column,
-        [isInner ? 'innerBackgroundColor' : 'backgroundColor']: color,
+        backgroundColor: color,
       }));
       onPropsChange({ columns: updatedColumns });
     } else if (selectedColumn) {
       const updatedColumns = props.columns.map(column => 
         column.id === selectedColumn.id 
-          ? { ...column, [isInner ? 'innerBackgroundColor' : 'backgroundColor']: color }
+          ? { ...column, backgroundColor: color }
           : column
       );
       onPropsChange({ columns: updatedColumns });
@@ -217,7 +217,7 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
                 className="text-gray-500 hover:text-gray-700"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
               </button>
             )}
@@ -226,14 +226,7 @@ const KanbanControls = ({ style, props, onStyleChange, onPropsChange }) => {
             <label className="block mb-1">Column Color:</label>
             <ColorPicker
               color={isLinkingStyles ? (props.columns[0]?.backgroundColor || '#ffffff') : (selectedColumn.backgroundColor || '#ffffff')}
-              onChange={(color) => updateAllColumnColors(color, false)}
-            />
-          </div>
-          <div>
-            <label className="block mb-1">Inner Column Color:</label>
-            <ColorPicker
-              color={isLinkingStyles ? (props.columns[0]?.innerBackgroundColor || '#ffffff') : (selectedColumn.innerBackgroundColor || '#ffffff')}
-              onChange={(color) => updateAllColumnColors(color, true)}
+              onChange={(color) => updateAllColumnColors(color)}
             />
           </div>
         </div>

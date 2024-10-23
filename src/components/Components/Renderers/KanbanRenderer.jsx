@@ -7,53 +7,6 @@ import { createComponentData, updateComponentData } from '../../../w3s/w3sSlice'
 import { w3sService } from '../../../w3s/w3sService'; // Import w3sService
 
 // Add this helper function at the top of the file, outside the component
-function calculateInnerBorderRadius(outerRadius, padding) {
-  const [paddingTop, paddingRight, paddingBottom, paddingLeft] = padding.split(' ').map(p => parseInt(p));
-  const horizontalPadding = Math.min(paddingLeft, paddingRight);
-  const verticalPadding = Math.min(paddingTop, paddingBottom);
-  const minPadding = Math.min(horizontalPadding, verticalPadding);
-  
-  const innerRadius = Math.max(outerRadius - minPadding, 0);
-  return `${innerRadius}px`;
-}
-
-// Update this helper function
-function calculateTaskCardRadius(innerColumnRadius, columnPadding) {
-  const [paddingTop, paddingRight, paddingBottom, paddingLeft] = columnPadding.split(' ').map(p => parseInt(p));
-  const minPadding = Math.min(paddingTop, paddingRight, paddingBottom, paddingLeft);
-  const innerRadius = parseInt(innerColumnRadius);
-  
-  // Use a factor to create a more proportional radius
-  const factor = 0.7; // Adjust this value to fine-tune the result
-  return Math.max(Math.round(innerRadius * factor), 0) + 'px';
-}
-
-// Add this new helper function at the top of the file, outside the component
-function getContrastAdjustedColor(baseColor, amount = 20) {
-  // If no color is set, return a default light gray
-  if (!baseColor) return '#f4f5f7';
-
-  // Convert hex to RGB
-  const r = parseInt(baseColor.slice(1, 3), 16);
-  const g = parseInt(baseColor.slice(3, 5), 16);
-  const b = parseInt(baseColor.slice(5, 7), 16);
-
-  // Calculate luminance
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-  // Determine whether to lighten or darken
-  const adjust = luminance > 0.5 ? -amount : amount;
-
-  // Adjust the color
-  const newR = Math.max(0, Math.min(255, r + adjust));
-  const newG = Math.max(0, Math.min(255, g + adjust));
-  const newB = Math.max(0, Math.min(255, b + adjust));
-
-  // Convert back to hex
-  return `#${(1 << 24 | newR << 16 | newG << 8 | newB).toString(16).slice(1)}`;
-}
-
-// Add this helper function at the top of the file
 const findTodoListById = (components, id) => {
   for (let component of components) {
     if (component.id === id && component.type === 'TODO') {
@@ -72,21 +25,14 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [columnBorderStyle, setColumnBorderStyle] = useState(component.props.columnBorderStyle || {});
+  const [columnPadding, setColumnPadding] = useState('16px 8px 12px 8px');
+  const [taskCardBorderRadius, setTaskCardBorderRadius] = useState('4px');
 
   const boardRef = useRef(null);
 
   const dispatch = useDispatch();
   const dataFetchedRef = useRef(false);
-
-  // Add this new state for column border styles
-  const [columnBorderStyle, setColumnBorderStyle] = useState(component.props.columnBorderStyle || {});
-
-  // Add this new state for column inner border radius
-  const [columnInnerBorderRadius, setColumnInnerBorderRadius] = useState('0px');
-  const [columnPadding, setColumnPadding] = useState('16px 8px 12px 8px');
-
-  // Add this new state for task card border radius
-  const [taskCardBorderRadius, setTaskCardBorderRadius] = useState('4px');
 
   const allComponents = useSelector(state => state.editor.components);
   const todoLists = findTodoLists(allComponents);
@@ -155,14 +101,11 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     const newColumnPadding = component.props.columnPadding || '16px 8px 12px 8px';
     setColumnPadding(newColumnPadding);
 
-    // Calculate inner border radius using all padding values
-    const outerRadius = parseInt(newColumnBorderStyle.borderRadius || '0px');
-    const newInnerRadius = calculateInnerBorderRadius(outerRadius, newColumnPadding);
-    setColumnInnerBorderRadius(newInnerRadius);
-
-    // Calculate task card border radius
-    const newTaskCardRadius = calculateTaskCardRadius(newInnerRadius, newColumnPadding);
-    setTaskCardBorderRadius(newTaskCardRadius);
+    // Calculate task card border radius based on column border radius
+    const columnRadius = parseInt(newColumnBorderStyle.borderRadius || '0px');
+    // Make task cards slightly less rounded than the column
+    const taskRadius = Math.max(0, columnRadius - 2);
+    setTaskCardBorderRadius(`${taskRadius}px`);
   }, [component.props.columnBorderStyle, component.props.columnPadding]);
 
   // Add this new useEffect hook
@@ -385,10 +328,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                     style={{ 
                       flex: 1, 
                       padding: '8px', 
-                      borderRadius: columnInnerBorderRadius,
                       minHeight: '100px',
-                      backgroundColor: column.innerBackgroundColor || getContrastAdjustedColor(column.backgroundColor),
-                      ...(snapshot.isDraggingOver ? { backgroundColor: getContrastAdjustedColor(column.innerBackgroundColor || column.backgroundColor, 30) } : {}),
                       overflowY: 'auto',
                       maxHeight: 'calc(100% - 40px)',
                     }}
@@ -405,7 +345,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                               backgroundColor: task.color || 'white',
                               padding: '8px',
                               marginBottom: '8px',
-                              borderRadius: taskCardBorderRadius, // Apply the calculated border radius here
+                              borderRadius: taskCardBorderRadius,
                               boxShadow: snapshot.isDragging ? '0 5px 10px rgba(0,0,0,0.2)' : 'none',
                               color: getContrastColor(task.color || '#ffffff'),
                               position: 'relative',
