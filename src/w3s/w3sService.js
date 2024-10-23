@@ -318,6 +318,46 @@ const w3sService = {
       handleApiError(error);
     }
   },
+
+  // Add a new user access association
+  addUserAccess: async (accessData) => {
+    try {
+      const response = await api.post('/users/access', accessData);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  // Get user access associations by user_id
+  getUserAccesses: async () => {
+    try {
+      const response = await api.get('/users/access/user');
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  // Get access associations by link_id
+  getAccessesByLinkId: async (linkId) => {
+    try {
+      const response = await api.get(`/users/access/link/${linkId}`);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  // Add a new user access association by email
+  addUserAccessByEmail: async (accessData) => {
+    try {
+      const response = await api.post('/users/access/email', accessData);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
 };
 
 export { w3sService };
