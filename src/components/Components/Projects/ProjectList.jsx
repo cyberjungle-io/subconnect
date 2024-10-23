@@ -49,22 +49,21 @@ const ProjectList = ({ onClose }) => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="text-lg font-semibold">Select a Project</h3>
+      <div className="flex justify-end items-center mb-2">
         {!showNewProject && (
           <button
             onClick={() => setShowNewProject(true)}
-            className="text-gray-600 hover:text-gray-800"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-bold px-4 py-2 rounded-full hover:bg-gray-300 transition-colors duration-200"
             title="Create New Project"
           >
-            <FaPlus />
+            <FaPlus size={20} />
+            <span>New Project</span>
           </button>
         )}
       </div>
 
       {showNewProject && (
         <div className="mb-4">
-          <h3 className="text-lg font-semibold mb-2 text-gray-800">Create New Project</h3>
           <ProjectForm 
             onSubmit={() => {
               onClose();
@@ -73,7 +72,7 @@ const ProjectList = ({ onClose }) => {
           />
         </div>
       )}
-
+<h3 className="text-lg font-semibold pb-3">Select a Project</h3>
       {status === 'loading' && <p>Loading projects...</p>}
       {status === 'failed' && <p>Error loading projects. Please try again.</p>}
       {status === 'succeeded' && (
@@ -91,16 +90,16 @@ const ProjectList = ({ onClose }) => {
               `}
             >
               <span>{project.name}</span>
-              <div className="flex gap-4">
+              <div className="flex gap-6">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleAddEmail(project._id);
                   }}
-                  className="text-green-500 hover:text-green-700"
+                  className="text-gray-600 hover:text-gray-900"
                   title="Add User"
                 >
-                  <FaUserPlus />
+                  <FaUserPlus size={20} />
                 </button>
                 <button
                   onClick={(e) => {
@@ -108,10 +107,10 @@ const ProjectList = ({ onClose }) => {
                     setProjectToDelete(project._id);
                     setDeleteModalOpen(true);
                   }}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-gray-600 hover:text-gray-900"
                   title="Delete Project"
                 >
-                  <FaTrash />
+                  <FaTrash size={20} />
                 </button>
               </div>
             </li>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { createProject, setCurrentProject, fetchProjects } from '../../../w3s/w3sSlice';
+import { FaCheck, FaTimes } from 'react-icons/fa';
 
 const ProjectForm = ({ onSubmit }) => {
   const [name, setName] = useState('');
@@ -23,28 +24,37 @@ const ProjectForm = ({ onSubmit }) => {
     dispatch(setCurrentProject(project));
   };
 
+  const handleCancel = () => {
+    setName('');
+    onSubmit();
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-          Project Name
-        </label>
+    <div className="space-y-4">
+      <div className="flex w-full">
         <input
           type="text"
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          placeholder="New Project Name"
           required
-          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+          className="w-full px-4 py-2 text-base border border-r-0 rounded-l border-gray-300"
         />
+        <button
+          onClick={handleSubmit}
+          className="px-4 py-2 hover:bg-gray-100 focus:outline-none transition-all border-t border-b border-gray-300"
+        >
+          <FaCheck size={16} className="text-gray-600 hover:text-gray-900" />
+        </button>
+        <button
+          onClick={handleCancel}
+          className="px-4 py-2 rounded-r hover:bg-gray-100 focus:outline-none transition-all border border-l-0 border-gray-300"
+        >
+          <FaTimes size={16} className="text-gray-600 hover:text-gray-900" />
+        </button>
       </div>
-      <button
-        type="submit"
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-      >
-        Create Project
-      </button>
-    </form>
+    </div>
   );
 };
 
