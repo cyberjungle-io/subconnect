@@ -29,10 +29,6 @@ const ProjectModal = ({ isOpen, onClose }) => {
         </div>
         <div className="flex-grow overflow-auto p-4">
           <ProjectList onClose={onClose} />
-          <div className="mt-4">
-            <h3 className="text-lg font-semibold mb-2 text-gray-800">Create New Project</h3>
-            <ProjectForm onSubmit={onClose} />
-          </div>
         </div>
       </div>
     </div>

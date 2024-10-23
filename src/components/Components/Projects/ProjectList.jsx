@@ -4,6 +4,8 @@ import { setCurrentProject, deleteProject, fetchProjects } from '../../../w3s/w3
 import { addUserAccessByEmail } from '../../../features/userSlice';
 import { showToast } from '../../../features/toastSlice';
 import DeleteConfirmModal from '../../common/DeleteConfirmModal';
+import { FaTrash, FaUserPlus, FaPlus } from 'react-icons/fa';
+import ProjectForm from './ProjectForm';
 
 const ProjectList = ({ onClose }) => {
   const dispatch = useDispatch();
@@ -11,12 +13,12 @@ const ProjectList = ({ onClose }) => {
   const currentProject = useSelector((state) => state.w3s.currentProject.data);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
+  const [showNewProject, setShowNewProject] = useState(false);
 
   useEffect(() => {
-    if (status === 'idle') {
-      dispatch(fetchProjects());
-    }
-  }, [status, dispatch]);
+    // Remove the status === 'idle' check to ensure it always fetches
+    dispatch(fetchProjects());
+  }, [dispatch]);
 
   const handleSelectProject = (project) => {
     dispatch(setCurrentProject(project));
@@ -47,35 +49,69 @@ const ProjectList = ({ onClose }) => {
 
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2">Select a Project</h3>
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="text-lg font-semibold">Select a Project</h3>
+        {!showNewProject && (
+          <button
+            onClick={() => setShowNewProject(true)}
+            className="text-gray-600 hover:text-gray-800"
+            title="Create New Project"
+          >
+            <FaPlus />
+          </button>
+        )}
+      </div>
+
+      {showNewProject && (
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold mb-2 text-gray-800">Create New Project</h3>
+          <ProjectForm 
+            onSubmit={() => {
+              onClose();
+              setShowNewProject(false);
+            }} 
+          />
+        </div>
+      )}
+
       {status === 'loading' && <p>Loading projects...</p>}
       {status === 'failed' && <p>Error loading projects. Please try again.</p>}
       {status === 'succeeded' && (
         <ul className="space-y-2">
           {projects.map((project) => (
-            <li key={project._id} className="text-gray-800 flex justify-between items-center bg-gray-100 p-2 rounded">
+            <li 
+              key={project._id} 
+              onClick={() => handleSelectProject(project)}
+              className={`
+                text-gray-800 flex justify-between items-center p-2 rounded cursor-pointer
+                ${currentProject?._id === project._id 
+                  ? 'bg-blue-200 hover:bg-blue-300' 
+                  : 'bg-gray-100 hover:bg-gray-200'
+                }
+              `}
+            >
               <span>{project.name}</span>
-              <div>
+              <div className="flex gap-4">
                 <button
-                  onClick={() => handleAddEmail(project._id)}
-                  className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded mr-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddEmail(project._id);
+                  }}
+                  className="text-green-500 hover:text-green-700"
+                  title="Add User"
                 >
-                  Add User
+                  <FaUserPlus />
                 </button>
                 <button
-                  onClick={() => handleSelectProject(project)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded mr-2"
-                >
-                  {currentProject?._id === project._id ? 'Selected' : 'Select'}
-                </button>
-                <button
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setProjectToDelete(project._id);
                     setDeleteModalOpen(true);
                   }}
-                  className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                  className="text-red-500 hover:text-red-700"
+                  title="Delete Project"
                 >
-                  Delete
+                  <FaTrash />
                 </button>
               </div>
             </li>
