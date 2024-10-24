@@ -456,8 +456,8 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', borderRadius: component.props.borderRadius || '4px', overflow: 'hidden', position: 'relative' }}>
-      <div className="whiteboard-toolbar">
-        <div className="draw-size-tool" ref={drawSizeDropdownRef}>
+      <div className="whiteboard-toolbar" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', position: 'absolute', top: '10px', left: '10px', zIndex: 1000, backgroundColor: 'transparent', padding: '5px', borderRadius: '4px' }}>
+        <div className="draw-size-tool" ref={drawSizeDropdownRef} style={{ marginRight: '15px' }}>
           <button
             onClick={() => handleToolChange('pen')}
             className={`toolbar-button ${activeTool === 'pen' ? 'active' : ''}`}
@@ -481,7 +481,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
             </div>
           )}
         </div>
-        <div className="dropdown shapes-dropdown" ref={shapesDropdownRef}>
+        <div className="dropdown shapes-dropdown" ref={shapesDropdownRef} style={{ marginRight: '15px' }}>
           <button onClick={toggleShapesDropdown} className="toolbar-button">
             {React.createElement(getShapeIcon(activeShape))}
             <FaChevronDown />
@@ -504,7 +504,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
             </div>
           )}
         </div>
-        <div className="eraser-tool" ref={eraserDropdownRef}>
+        <div className="eraser-tool" ref={eraserDropdownRef} style={{ marginRight: '15px' }}>
           <button 
             className={`toolbar-button ${tool === 'eraser' ? 'active' : ''}`} 
             onClick={() => handleToolChange('eraser')}
@@ -531,16 +531,17 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
         <button 
           className={`toolbar-button ${tool === 'text' ? 'active' : ''}`}
           onClick={() => handleToolChange('text')}
+          style={{ marginRight: '15px' }}
         >
           <FaFont />
         </button>
-        <button className="toolbar-button" onClick={undo} disabled={whiteboardState.historyIndex <= 0}>
+        <button className="toolbar-button" onClick={undo} disabled={whiteboardState.historyIndex <= 0} style={{ marginRight: '15px' }}>
           <FaUndo />
         </button>
-        <button className="toolbar-button" onClick={redo} disabled={whiteboardState.historyIndex >= whiteboardState.history.length - 1}>
+        <button className="toolbar-button" onClick={redo} disabled={whiteboardState.historyIndex >= whiteboardState.history.length - 1} style={{ marginRight: '15px' }}>
           <FaRedo />
         </button>
-        <label className="toolbar-button">
+        <label className="toolbar-button" style={{ marginRight: '15px' }}>
           <FaUpload />
           <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
         </label>
