@@ -37,6 +37,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     color: component.props.textColor || globalSettings.generalComponentStyle.color || '#000000',
   });
   const shapesDropdownRef = useRef(null);
+  const [previewPosition, setPreviewPosition] = useState('right');
 
   const getEventCoordinates = useCallback((e) => {
     const canvas = canvasRef.current;
@@ -371,19 +372,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     setEraserDropdownOpen(!eraserDropdownOpen);
   };
 
-  const EraserSizePreview = ({ size }) => (
-    <div
-      style={{
-        width: `${size}px`,
-        height: `${size}px`,
-        borderRadius: '50%',
-        backgroundColor: 'rgba(0, 0, 0, 0.1)',
-        border: '1px solid rgba(0, 0, 0, 0.3)',
-        marginRight: '10px',
-      }}
-    />
-  );
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (eraserDropdownRef.current && !eraserDropdownRef.current.contains(event.target)) {
@@ -399,6 +387,12 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
 
   const handleDrawSizeChange = (e) => {
     setDrawSize(parseInt(e.target.value, 10));
+    handleToolChange('pen'); // Switch to pen tool when the pen size slider is moved
+  };
+
+  const handleEraserSizeChange = (e) => {
+    setEraserSize(parseInt(e.target.value, 10));
+    handleToolChange('eraser'); // Switch to eraser tool when the eraser size slider is moved
   };
 
   useEffect(() => {
@@ -454,13 +448,26 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     };
   }, []);
 
+  const handleMouseEnterSlider = (e) => {
+    const sliderRect = e.target.getBoundingClientRect();
+    const mouseX = e.clientX;
+    const sliderCenterX = sliderRect.left + sliderRect.width / 2;
+
+    if (mouseX < sliderCenterX) {
+      setPreviewPosition('right');
+    } else {
+      setPreviewPosition('left');
+    }
+  };
+
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', borderRadius: component.props.borderRadius || '4px', overflow: 'hidden', position: 'relative' }}>
       <div className="whiteboard-toolbar" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', position: 'absolute', top: '10px', left: '10px', zIndex: 1000, backgroundColor: 'transparent', padding: '5px', borderRadius: '4px' }}>
-        <div className="draw-size-tool" ref={drawSizeDropdownRef} style={{ marginRight: '15px' }}>
+        <div className="draw-size-tool" ref={drawSizeDropdownRef} style={{ marginRight: '15px', position: 'relative' }}>
           <button
             onClick={() => handleToolChange('pen')}
             className={`toolbar-button ${activeTool === 'pen' ? 'active' : ''}`}
+            style={{ marginRight: '5px' }} // Added marginRight
           >
             <FaPen />
           </button>
@@ -468,8 +475,19 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
             <FaChevronDown />
           </button>
           {drawSizeDropdownOpen && (
-            <div className="draw-size-dropdown">
-              <div className="draw-size-preview" style={{ width: `${drawSize}px`, height: `${drawSize}px` }} />
+            <div className="draw-size-dropdown" style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000 }}>
+              <div
+                className="draw-size-preview"
+                style={{
+                  position: 'absolute',
+                  top: '0',
+                  [previewPosition]: '100%',
+                  marginLeft: previewPosition === 'right' ? '10px' : '0',
+                  marginRight: previewPosition === 'left' ? '10px' : '0',
+                  width: `${drawSize}px`,
+                  height: `${drawSize}px`
+                }}
+              />
               <input
                 type="range"
                 min="1"
@@ -477,17 +495,25 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
                 value={drawSize}
                 onChange={handleDrawSizeChange}
                 orient="vertical"
+                style={{ position: 'relative', zIndex: 1, marginTop: '10px' }} // Added marginTop
+                onMouseEnter={handleMouseEnterSlider}
               />
             </div>
           )}
         </div>
-        <div className="dropdown shapes-dropdown" ref={shapesDropdownRef} style={{ marginRight: '15px' }}>
-          <button onClick={toggleShapesDropdown} className="toolbar-button">
+        <div className="dropdown shapes-dropdown" ref={shapesDropdownRef} style={{ marginRight: '15px', position: 'relative' }}>
+          <button
+            onClick={toggleShapesDropdown}
+            className="toolbar-button"
+            style={{ marginRight: '5px' }}
+          >
             {React.createElement(getShapeIcon(activeShape))}
+          </button>
+          <button className="shapes-dropdown-toggle" onClick={toggleShapesDropdown}>
             <FaChevronDown />
           </button>
           {shapesDropdownOpen && (
-            <div className="dropdown-menu">
+            <div className="dropdown-menu" style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000, display: 'flex', backgroundColor: 'rgba(255, 255, 255, 0.9)', padding: '5px', borderRadius: '4px' }}>
               {shapes.map(shape => (
                 <button
                   key={shape.value}
@@ -497,6 +523,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
                     toggleShapesDropdown();
                   }}
                   className={`toolbar-button ${activeShape === shape.value ? 'active' : ''}`}
+                  style={{ marginRight: '5px' }} // Add margin between buttons
                 >
                   <shape.icon /> {shape.name}
                 </button>
@@ -504,10 +531,11 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
             </div>
           )}
         </div>
-        <div className="eraser-tool" ref={eraserDropdownRef} style={{ marginRight: '15px' }}>
-          <button 
-            className={`toolbar-button ${tool === 'eraser' ? 'active' : ''}`} 
+        <div className="eraser-tool" ref={eraserDropdownRef} style={{ marginRight: '15px', position: 'relative' }}>
+          <button
+            className={`toolbar-button ${tool === 'eraser' ? 'active' : ''}`}
             onClick={() => handleToolChange('eraser')}
+            style={{ marginRight: '5px' }}
           >
             <FaEraser />
           </button>
@@ -515,14 +543,13 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
             <FaChevronDown />
           </button>
           {eraserDropdownOpen && (
-            <div className="eraser-dropdown">
-              <EraserSizePreview size={eraserSize} />
+            <div className="eraser-dropdown" style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000 }}>
               <input
                 type="range"
                 min="1"
                 max="50"
                 value={eraserSize}
-                onChange={(e) => setEraserSize(parseInt(e.target.value))}
+                onChange={handleEraserSizeChange} // Use the new handler
                 orient="vertical"
               />
             </div>
