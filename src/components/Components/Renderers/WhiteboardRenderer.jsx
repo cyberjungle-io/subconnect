@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { updateComponent, undoWhiteboard, redoWhiteboard } from '../../../features/editorSlice';
 import TextareaAutosize from 'react-textarea-autosize';
 import debounce from 'lodash/debounce';
+import ColorPicker from '../../common/ColorPicker'; // Import the ColorPicker component
 
 const WhiteboardRenderer = ({ component, globalSettings }) => {
   const canvasRef = useRef(null);
@@ -38,6 +39,9 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   });
   const shapesDropdownRef = useRef(null);
   const [previewPosition, setPreviewPosition] = useState('right');
+  const [color, setColor] = useState('#000000'); // Add state for color
+  const [showColorPicker, setShowColorPicker] = useState(false); // Add state for showing color picker
+  const colorPickerRef = useRef(null); // Ref for the color picker
 
   const getEventCoordinates = useCallback((e) => {
     const canvas = canvasRef.current;
@@ -120,6 +124,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   }, [activeShape, whiteboardState.strokeColor]);
 
   const startDrawing = useCallback((e) => {
+    setDrawSizeDropdownOpen(false); // Close the draw size dropdown when starting to draw
     setIsDrawing(true);
     const { x, y } = getEventCoordinates(e);
 
@@ -368,8 +373,14 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     return shape ? shape.icon : FaLongArrowAltRight;
   };
 
+  const toggleDrawSizeDropdown = () => {
+    setDrawSizeDropdownOpen((prevState) => !prevState);
+    setEraserDropdownOpen(false); // Close eraser dropdown when opening pen dropdown
+  };
+
   const toggleEraserDropdown = () => {
-    setEraserDropdownOpen(!eraserDropdownOpen);
+    setEraserDropdownOpen((prevState) => !prevState);
+    setDrawSizeDropdownOpen(false); // Close pen dropdown when opening eraser dropdown
   };
 
   useEffect(() => {
@@ -461,33 +472,23 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   };
 
   return (
-    <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', borderRadius: component.props.borderRadius || '4px', overflow: 'hidden', position: 'relative' }}>
-      <div className="whiteboard-toolbar" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', position: 'absolute', top: '10px', left: '10px', zIndex: 1000, backgroundColor: 'transparent', padding: '5px', borderRadius: '4px' }}>
-        <div className="draw-size-tool" ref={drawSizeDropdownRef} style={{ marginRight: '15px', position: 'relative' }}>
+    <div className="w-full h-full flex flex-col rounded overflow-hidden relative">
+      <div className="whiteboard-toolbar flex flex-row items-center absolute top-2.5 left-2.5 z-10 bg-transparent p-1 rounded">
+        <div className="relative inline-flex items-center bg-white bg-opacity-70 rounded overflow-visible mr-3">
           <button
             onClick={() => handleToolChange('pen')}
-            className={`toolbar-button ${activeTool === 'pen' ? 'active' : ''}`}
-            style={{ marginRight: '5px' }} // Added marginRight
+            className={`toolbar-button ${activeTool === 'pen' ? 'active' : ''} bg-white bg-opacity-70 border-none p-2 m-0 cursor-pointer rounded-l transition-colors flex items-center justify-center hover:bg-white hover:bg-opacity-90`}
           >
             <FaPen />
           </button>
-          <button className="draw-size-dropdown-toggle" onClick={() => setDrawSizeDropdownOpen(!drawSizeDropdownOpen)}>
+          <button
+            onClick={toggleDrawSizeDropdown} // Use the toggleDrawSizeDropdown function here
+            className="draw-size-dropdown-toggle p-2 bg-white bg-opacity-70 border-none cursor-pointer flex items-center rounded-r hover:bg-white hover:bg-opacity-90"
+          >
             <FaChevronDown />
           </button>
           {drawSizeDropdownOpen && (
             <div className="draw-size-dropdown" style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000 }}>
-              <div
-                className="draw-size-preview"
-                style={{
-                  position: 'absolute',
-                  top: '0',
-                  [previewPosition]: '100%',
-                  marginLeft: previewPosition === 'right' ? '10px' : '0',
-                  marginRight: previewPosition === 'left' ? '10px' : '0',
-                  width: `${drawSize}px`,
-                  height: `${drawSize}px`
-                }}
-              />
               <input
                 type="range"
                 min="1"
@@ -495,8 +496,6 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
                 value={drawSize}
                 onChange={handleDrawSizeChange}
                 orient="vertical"
-                style={{ position: 'relative', zIndex: 1, marginTop: '10px' }} // Added marginTop
-                onMouseEnter={handleMouseEnterSlider}
               />
             </div>
           )}
@@ -531,11 +530,40 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
             </div>
           )}
         </div>
+        
+        <button 
+          className={`toolbar-button ${tool === 'text' ? 'active' : ''}`}
+          onClick={() => handleToolChange('text')}
+          style={{ marginRight: '15px' }}
+        >
+          <FaFont />
+        </button>
+        <div className="color-tool" ref={colorPickerRef} style={{ marginRight: '15px', position: 'relative' }}>
+          <button
+            className="toolbar-button"
+            onClick={() => setShowColorPicker(!showColorPicker)}
+            style={{ marginRight: '5px' }}
+          >
+            <div style={{ width: '20px', height: '20px', backgroundColor: color, borderRadius: '50%' }} />
+          </button>
+          {showColorPicker && (
+            <div style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000 }}>
+              <ColorPicker
+                color={color}
+                onChange={(newColor) => {
+                  setColor(newColor);
+                  // Update the stroke color in the whiteboard state or context
+                  context.strokeStyle = newColor;
+                }}
+              />
+            </div>
+          )}
+        </div>
         <div className="eraser-tool" ref={eraserDropdownRef} style={{ marginRight: '15px', position: 'relative' }}>
           <button
             className={`toolbar-button ${tool === 'eraser' ? 'active' : ''}`}
             onClick={() => handleToolChange('eraser')}
-            style={{ marginRight: '5px' }}
+            style={{ marginRight: '5px', paddingTop: '10px' }} // Add padding to the top
           >
             <FaEraser />
           </button>
@@ -549,19 +577,12 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
                 min="1"
                 max="50"
                 value={eraserSize}
-                onChange={handleEraserSizeChange} // Use the new handler
+                onChange={handleEraserSizeChange}
                 orient="vertical"
               />
             </div>
           )}
         </div>
-        <button 
-          className={`toolbar-button ${tool === 'text' ? 'active' : ''}`}
-          onClick={() => handleToolChange('text')}
-          style={{ marginRight: '15px' }}
-        >
-          <FaFont />
-        </button>
         <button className="toolbar-button" onClick={undo} disabled={whiteboardState.historyIndex <= 0} style={{ marginRight: '15px' }}>
           <FaUndo />
         </button>
