@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { FaTools } from 'react-icons/fa';
 import FloatingRightMenu from './FloatingRightMenu';
 import ComponentTree from './ComponentTree';
 import ComponentPalette from '../Components/ComponentPalette';
@@ -12,6 +13,7 @@ import {
   updateGlobalSettings,
   updateToolbarSettings
 } from '../../features/editorSlice';
+import { toggleFloatingMenu } from '../../features/editorSlice';
 
 const FloatingMenusManager = () => {
   const dispatch = useDispatch();
@@ -33,6 +35,8 @@ const FloatingMenusManager = () => {
   const [canvasToolbarPosition, setCanvasToolbarPosition] = useState({ x: 100, y: 100 });
 
   const floatingRightMenuRef = useRef(null);
+
+  const [isRightMenuVisible, setIsRightMenuVisible] = useState(false);
 
   const handleToggleComponentTree = useCallback(() => {
     if (mode === 'edit') {
@@ -103,27 +107,33 @@ const FloatingMenusManager = () => {
     };
   }, [mode, handleToggleComponentPalette, handleToggleComponentTree]);
 
-  if (!isFloatingMenuVisible || mode !== 'edit') {
+  const handleToggleFloatingMenu = () => {
+    setIsRightMenuVisible(prev => !prev);
+  };
+
+  if (mode !== 'edit') {
     return null;
   }
 
   return (
     <>
-      <FloatingRightMenu
-        ref={floatingRightMenuRef}
-        onShowComponentTree={handleToggleComponentTree}
-        isComponentTreeVisible={isComponentTreeVisible}
-        onShowComponentPalette={handleToggleComponentPalette}
-        isComponentPaletteVisible={isComponentPaletteVisible}
-        onShowGlobalSettings={handleToggleGlobalSettings}
-        isGlobalSettingsVisible={isGlobalSettingsVisible}
-        onToggleDragMode={handleToggleDragMode}
-        isDragModeEnabled={isDragModeEnabled}
-        
-        isEditMode={mode === 'edit'}
-        onShowCanvasSettings={handleShowCanvasSettings}
-        isCanvasSettingsVisible={isCanvasSettingsVisible}
-      />
+      {isRightMenuVisible && (
+        <FloatingRightMenu
+          ref={floatingRightMenuRef}
+          onShowComponentTree={handleToggleComponentTree}
+          isComponentTreeVisible={isComponentTreeVisible}
+          onShowComponentPalette={handleToggleComponentPalette}
+          isComponentPaletteVisible={isComponentPaletteVisible}
+          onShowGlobalSettings={handleToggleGlobalSettings}
+          isGlobalSettingsVisible={isGlobalSettingsVisible}
+          onToggleDragMode={handleToggleDragMode}
+          isDragModeEnabled={isDragModeEnabled}
+          isEditMode={mode === 'edit'}
+          onShowCanvasSettings={handleShowCanvasSettings}
+          isCanvasSettingsVisible={isCanvasSettingsVisible}
+          onClose={handleToggleFloatingMenu}
+        />
+      )}
       {isComponentTreeVisible && (
         <ComponentTree
           components={components}
@@ -165,6 +175,16 @@ const FloatingMenusManager = () => {
           onStyleChange={handleUpdateCanvasSettings}
           onToolbarInteraction={() => {}}
         />
+      )}
+      {/* Conditionally render the floating button */}
+      {!isRightMenuVisible && (
+        <button
+          onClick={handleToggleFloatingMenu}
+          className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white p-2 rounded-l-lg shadow-lg z-[970]"
+          title="Toggle Floating Menu"
+        >
+          <FaTools />
+        </button>
       )}
     </>
   );

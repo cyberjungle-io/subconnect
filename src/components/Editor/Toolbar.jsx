@@ -221,16 +221,6 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
             >
               {mode === 'edit' ? <FaEye className="text-base" /> : <FaEdit className="text-base" />}
             </button>
-            {mode === 'edit' && (
-              <button
-                onClick={handleToggleFloatingMenu}
-                className="toolbar-button flex items-center justify-center w-9 h-9 rounded text-sm transition-colors"
-                style={buttonStyle}
-                title="Toggle Floating Menu"
-              >
-                <FaTools className="text-base" />
-              </button>
-            )}
           </>
         )}
         {currentUser && (

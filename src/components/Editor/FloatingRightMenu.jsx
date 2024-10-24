@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTree, FaGlobe, FaEye, FaHandPointer, FaPaintBrush, FaPalette } from 'react-icons/fa';
+import { FaTree, FaGlobe, FaEye, FaHandPointer, FaPaintBrush, FaPalette, FaTimes } from 'react-icons/fa';
 import FourSquaresIcon from '../common/CustomIcons/FourSquareIcon';
 
 const FloatingRightMenu = ({
@@ -14,6 +14,7 @@ const FloatingRightMenu = ({
   isEditMode,
   onShowCanvasSettings,
   isCanvasSettingsVisible,
+  onClose,
 }) => {
   const buttonClass = (isActive) => `
     p-2 mb-2 rounded-full
@@ -65,6 +66,14 @@ const FloatingRightMenu = ({
         disabled={!isEditMode}
       >
         <FaPaintBrush />
+      </button>
+      {/* Add a close button at the bottom */}
+      <button
+        onClick={onClose}
+        className="mt-2 p-2 rounded-full hover:bg-[#d9ecff] border border-transparent"
+        title="Close Menu"
+      >
+        <FaTimes />
       </button>
     </div>
   );
