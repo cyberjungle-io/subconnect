@@ -20,9 +20,6 @@ const FloatingMenusManager = () => {
   const { components, selectedIds, mode, isDragModeEnabled, globalSettings, isFloatingMenuVisible } = useSelector(state => state.editor);
   const toolbarSettings = useSelector(state => state.editor.toolbarSettings) || {};
 
-  // Add this console.log to check the globalSettings
-  console.log('Global Settings:', globalSettings);
-
   const canvasSettings = useSelector(state => state.editor.canvasSettings);
 
   const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
@@ -180,7 +177,7 @@ const FloatingMenusManager = () => {
       {!isRightMenuVisible && (
         <button
           onClick={handleToggleFloatingMenu}
-          className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-blue-500 text-white p-2 rounded-l-lg shadow-lg z-[970]"
+          className="fixed right-0 top-1/2 transform -translate-y-1/2 bg-[#e6f3ff] border border-[#b3d9ff] text-blue-600 p-2 rounded-l-lg shadow-lg z-[970]"
           title="Toggle Floating Menu"
         >
           <FaTools />

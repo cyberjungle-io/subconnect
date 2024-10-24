@@ -67,7 +67,6 @@ const FloatingRightMenu = ({
       >
         <FaPaintBrush />
       </button>
-      {/* Add a close button at the bottom */}
       <button
         onClick={onClose}
         className="mt-2 p-2 rounded-full hover:bg-[#d9ecff] border border-transparent"
