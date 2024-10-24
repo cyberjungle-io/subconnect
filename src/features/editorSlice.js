@@ -137,6 +137,7 @@ export const saveComponentThunk = createAsyncThunk(
       ...component,
       id: `saved_${component.id}`,
       name: component.props.name || component.type,
+      props: { ...component.props }, // Ensure props are included
     };
     dispatch(saveComponent(savedComponent));
     return savedComponent;
@@ -181,6 +182,7 @@ export const editorSlice = createSlice({
             left: position ? position.x : (savedComponent.style.left || 0),
             top: position ? position.y : (savedComponent.style.top || 0),
           },
+          props: { ...savedComponent.props }, // Ensure props are applied
         };
       } else {
         // Handle regular component

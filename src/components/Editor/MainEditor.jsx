@@ -95,8 +95,14 @@ const MainEditor = () => {
     if (savedComponent) {
       newComponentData = {
         ...savedComponent,
-        id: uuidv4(),
+        id: uuidv4(), // Generate new ID
         parentId,
+        style: {
+          ...savedComponent.style,
+          left: position ? position.x : 0,
+          top: position ? position.y : 0,
+        },
+        props: { ...savedComponent.props }, // Ensure props are applied
       };
     } else {
       newComponentData = {

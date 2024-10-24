@@ -5,7 +5,16 @@ const savedComponentsSlice = createSlice({
   initialState: [],
   reducers: {
     saveComponent: (state, action) => {
-      state.push(action.payload);
+      const existingIndex = state.findIndex(comp => comp.id === action.payload.id);
+      if (existingIndex !== -1) {
+        state[existingIndex] = action.payload;
+      } else {
+        state.push({
+          ...action.payload,
+          name: `Saved ${action.payload.type}`,
+          props: { ...action.payload.props }, // Ensure props are included
+        });
+      }
     },
     renameSavedComponent: (state, action) => {
       const { id, newName } = action.payload;

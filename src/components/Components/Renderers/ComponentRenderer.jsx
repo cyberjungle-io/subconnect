@@ -253,10 +253,10 @@ const ComponentRenderer = React.memo(({
         style: {
           ...component.style,
           margin: '0px',
-          // Remove width and height overrides
         },
+        props: { ...component.props }, // Ensure props are used
       },
-      onUpdate: handleUpdate, // Use the new handleUpdate function
+      onUpdate: handleUpdate,
       onSelect,
       onAddChild,
       onMoveComponent,
@@ -272,12 +272,12 @@ const ComponentRenderer = React.memo(({
           ...globalSettings.generalComponentStyle,
         },
       },
-      onStyleChange, // Add this prop
+      onStyleChange,
       isSelected: isThisComponentSelected,
       onDoubleClick: handleDoubleClick,
       isEditing: isEditing,
       setIsEditing: setIsEditing,
-      isDragModeEnabled, // Add this prop
+      isDragModeEnabled,
     };
   
     switch (component.type) {
@@ -297,7 +297,7 @@ const ComponentRenderer = React.memo(({
         return <WhiteboardRenderer {...sharedProps} />;
       case "VIDEO":
         return <VideoRenderer {...sharedProps} />;
-      case "QUERY_VALUE": // Add this case
+      case "QUERY_VALUE":
         return <QueryValueRenderer {...sharedProps} />;
       case 'KANBAN':
         return <KanbanRenderer {...sharedProps} isInteractive={isViewMode} />;

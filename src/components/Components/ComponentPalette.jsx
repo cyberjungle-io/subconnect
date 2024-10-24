@@ -9,7 +9,13 @@ import { renameSavedComponent } from '../../features/savedComponentsSlice';
 const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
   const [{ isDragging }, drag] = useDrag({
     type: 'COMPONENT',
-    item: { type, savedComponent },
+    item: { 
+      type: savedComponent ? 'SAVED_COMPONENT' : type,
+      savedComponent: savedComponent ? {
+        ...savedComponent,
+        id: undefined, // Remove the original ID so a new one will be generated
+      } : null,
+    },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),

@@ -22,6 +22,8 @@ import TableControls from './TableControls';
 import TableDataControls from './TableDataControls';
 import ToolbarControls from './ToolbarControls';
 import TodoControls from './TodoControls';
+import { showToast } from '../../../features/toastSlice';
+import { saveComponent } from '../../../features/savedComponentsSlice'; // Correct import
 
 const iconMap = {
   FLEX_CONTAINER: [
@@ -397,14 +399,20 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
 
   const handleSaveComponent = (e) => {
     e.stopPropagation();
-    const componentToSave = { id: componentId, type: componentType, style, props, content };
-    dispatch(saveComponentThunk(componentToSave))
-      .then(() => {
-        console.log('Component saved successfully');
-      })
-      .catch((error) => {
-        console.error('Error saving component:', error);
-      });
+    const componentToSave = {
+      id: componentId,
+      type: componentType,
+      style: style || {},
+      props: props || {},
+      content: content || {},
+      name: props?.name || `Saved ${componentType}`,
+    };
+    
+    dispatch(saveComponent(componentToSave));
+    dispatch(showToast({ 
+      message: 'Component saved to palette successfully!', 
+      type: 'success' 
+    }));
   };
 
   return (
