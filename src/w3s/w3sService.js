@@ -399,7 +399,7 @@ const w3sService = {
 
   createOrUpdateSavedComponent: async (componentData) => {
     try {
-      
+      console.log('createOrUpdateSavedComponent: Creating or updating saved component', componentData);
       const response = await api.post('/savedComponents', componentData);
       console.log('Create or update saved component response:', response.data);
       return response.data;
@@ -410,6 +410,7 @@ const w3sService = {
 
   deleteSavedComponent: async (id) => {
     try {
+      console.log('deleteSavedComponent: Deleting saved component', id);
       await api.delete(`/savedComponents/${id}`);
       return true;
     } catch (error) {

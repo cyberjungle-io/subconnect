@@ -26,6 +26,7 @@ export const saveSingleComponent = createAsyncThunk(
 export const deleteSavedComponent = createAsyncThunk(
   'savedComponents/delete',
   async (id) => {
+    console.log('deleteSavedComponent: Deleting saved component', id);
     await w3sService.deleteSavedComponent(id);
     return id;
   }

@@ -4,7 +4,7 @@ import { FaTimes, FaPencilAlt, FaFolderOpen, FaListUl } from 'react-icons/fa';
 import FourSquaresIcon from '../common/CustomIcons/FourSquareIcon';
 import { componentTypes, componentConfig } from './componentConfig';
 import { useSelector, useDispatch } from 'react-redux';
-import { renameSavedComponent } from '../../features/savedComponentsSlice';
+import { renameSavedComponent, deleteSavedComponent, saveSingleComponent } from '../../features/savedComponentsSlice';
 
 const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
   const [{ isDragging }, drag] = useDrag({
@@ -28,9 +28,19 @@ const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
 
   const handleRename = () => {
     if (newName.trim() !== '') {
+      const updatedComponent = {
+        ...savedComponent,
+        name: newName.trim()
+      };
       dispatch(renameSavedComponent({ id: savedComponent.id, newName: newName.trim() }));
+      dispatch(saveSingleComponent(updatedComponent));
       setIsEditing(false);
     }
+  };
+
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    dispatch(deleteSavedComponent(savedComponent.id));
   };
 
   // Remove 'Saved ' prefix if present
@@ -64,12 +74,20 @@ const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
         )}
       </div>
       {isHovered && savedComponent && !isEditing && (
-        <button
-          className="absolute top-1 right-1 text-gray-500 hover:text-gray-700"
-          onClick={() => setIsEditing(true)}
-        >
-          <FaPencilAlt size={12} />
-        </button>
+        <>
+          <button
+            className="absolute top-1 right-1 text-gray-500 hover:text-gray-700"
+            onClick={() => setIsEditing(true)}
+          >
+            <FaPencilAlt size={12} />
+          </button>
+          <button
+            className="absolute top-1 left-1 text-gray-500 hover:text-red-600"
+            onClick={handleDelete}
+          >
+            <FaTimes size={12} />
+          </button>
+        </>
       )}
     </div>
   );
