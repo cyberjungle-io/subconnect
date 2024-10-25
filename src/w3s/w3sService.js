@@ -368,6 +368,47 @@ const w3sService = {
       handleApiError(error);
     }
   },
+
+  // Saved Components
+  getSavedComponents: async () => {
+    try {
+      console.log('w3sService: Fetching saved components');
+      const response = await api.get('/savedComponents');
+      console.log('Raw data from getSavedComponents:', response.data);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  getSavedComponent: async (id) => {
+    try {
+      const response = await api.get(`/savedComponents/${id}`);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  createOrUpdateSavedComponent: async (componentData) => {
+    try {
+      
+      const response = await api.post('/savedComponents', componentData);
+      console.log('Create or update saved component response:', response.data);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  deleteSavedComponent: async (id) => {
+    try {
+      await api.delete(`/savedComponents/${id}`);
+      return true;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
 };
 
 export { w3sService };

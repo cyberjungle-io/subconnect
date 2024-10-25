@@ -45,8 +45,8 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   }, []);
 
   useEffect(() => {
-    console.log('KanbanRenderer component rendered');
-    console.log('Component props:', component.props);
+    // console.log('KanbanRenderer component rendered');
+    // console.log('Component props:', component.props);
 
     const fetchComponentData = async () => {
       if (dataFetchedRef.current) return;
@@ -54,12 +54,12 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
 
       try {
         const response = await w3sService.getComponentDataById(component.props.id);
-        console.log('Fetched component data:', response);
+        // console.log('Fetched component data:', response);
         
         if (response && response.data && response.data.tasks) {
-          console.log('Fetched tasks:', response.data.tasks);
+          // console.log('Fetched tasks:', response.data.tasks);
           const fetchedTasks = response.data.tasks;
-          console.log('Fetched tasks:', fetchedTasks);
+          // console.log('Fetched tasks:', fetchedTasks);
           initializeColumns(fetchedTasks);
         } else {
           initializeColumns(component.props.tasks || []);
@@ -159,27 +159,25 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     const allTasks = Object.values(newColumns).flatMap(column => column.tasks);
     onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
     const kanbanData = {
-      componentId: component.props.id, // Changed from id to componentId
+      componentId: component.props.id,
       name: component.props.name,
       type: component.type,
       tasks: allTasks
     };
-    console.log('Kanban Data:', kanbanData);
-    console.log('allTasks', allTasks);
-    console.log('component props ', component.props);
+    // console.log('Kanban Data:', kanbanData);
+    // console.log('allTasks', allTasks);
+    // console.log('component props ', component.props);
 
     // Store the kanbanData in w3s
     dispatch(createComponentData(kanbanData))
       .unwrap()
       .then(() => {
-        console.log('Kanban data stored successfully');
+        // console.log('Kanban data stored successfully');
       })
       .catch((error) => {
         console.error('Failed to store kanban data:', error);
         if (error.name === 'TypeError' && error.message.includes('Cannot read properties of undefined (reading \'list\')')) {
           console.error('Error: The componentData state might not be initialized properly.');
-          // You might want to dispatch an action to initialize the componentData state here
-          // For example: dispatch(initializeComponentDataState());
         } else {
           console.error('Error details:', error.stack);
         }
@@ -214,37 +212,33 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
 
     // Flatten tasks for updating the component
     const allTasks = Object.values(updatedColumns).flatMap(column => column.tasks);
-    console.log('allTasks', allTasks);
+    // console.log('allTasks', allTasks);
     onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
 
     const kanbanData = {
-      componentId: component.props.id, // Changed from id to componentId
+      componentId: component.props.id,
       name: component.props.name,
       type: component.type,
       tasks: allTasks
     };
-    console.log('Kanban Data:', kanbanData);
-    console.log('allTasks', allTasks);
-    console.log('component props ', component.props);
+    // console.log('Kanban Data:', kanbanData);
+    // console.log('allTasks', allTasks);
+    // console.log('component props ', component.props);
 
     // Store the kanbanData in w3s
     dispatch(createComponentData(kanbanData))
       .unwrap()
       .then(() => {
-        console.log('Kanban data stored successfully');
+        // console.log('Kanban data stored successfully');
       })
       .catch((error) => {
         console.error('Failed to store kanban data:', error);
         if (error.name === 'TypeError' && error.message.includes('Cannot read properties of undefined (reading \'list\')')) {
           console.error('Error: The componentData state might not be initialized properly.');
-          // You might want to dispatch an action to initialize the componentData state here
-          // For example: dispatch(initializeComponentDataState());
         } else {
           console.error('Error details:', error.stack);
         }
       });
-
-
 
     setIsModalOpen(false);
     setSelectedTask(null);

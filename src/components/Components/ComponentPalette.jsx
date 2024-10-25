@@ -78,7 +78,7 @@ const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
 const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChange, onAddComponent }) => {
   const [position, setPosition] = useState(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
-  const savedComponents = useSelector(state => state.savedComponents);
+  const savedComponents = useSelector(state => state.savedComponents.items);
   const [currentView, setCurrentView] = useState('Primitives');
 
   useEffect(() => {
@@ -166,7 +166,7 @@ const ComponentPalette = ({ isVisible, onClose, initialPosition, onPositionChang
           </button>
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-2 mt-2"> {/* Changed from 2 columns to 3 */}
+      <div className="grid grid-cols-3 gap-2 mt-2">
         {currentView === 'Primitives' ? (
           Object.entries(componentTypes).map(([key, type]) => {
             const config = componentConfig[type];

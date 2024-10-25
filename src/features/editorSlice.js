@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { useDispatch,useSelector } from 'react-redux';
 import { v4 as uuidv4 } from "uuid";
 import {
   alignComponentsUtil,
@@ -136,6 +137,7 @@ export const saveComponentThunk = createAsyncThunk(
     const savedComponent = {
       ...component,
       id: `saved_${component.id}`,
+      createdBy: useSelector((state) => state.user.currentUser._id),
       name: component.props.name || component.type,
       props: { ...component.props }, // Ensure props are included
     };

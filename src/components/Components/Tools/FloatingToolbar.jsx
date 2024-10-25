@@ -15,7 +15,7 @@ import QueryValueControls from './QueryValueControls';
 import BasicTextControls from './BasicTextControls';
 import ChartDataControls from './ChartDataControls';
 import KanbanControls from './KanbanControls';
-import { useDispatch } from 'react-redux';
+import { useDispatch,useSelector } from 'react-redux';
 import { renameComponent, saveComponentThunk } from '../../../features/editorSlice';
 import ColorThemeControls from './ColorThemeControls';
 import TableControls from './TableControls';
@@ -23,7 +23,7 @@ import TableDataControls from './TableDataControls';
 import ToolbarControls from './ToolbarControls';
 import TodoControls from './TodoControls';
 import { showToast } from '../../../features/toastSlice';
-import { saveComponent } from '../../../features/savedComponentsSlice'; // Correct import
+import { saveSingleComponent } from '../../../features/savedComponentsSlice';
 
 const iconMap = {
   FLEX_CONTAINER: [
@@ -121,6 +121,7 @@ const iconMap = {
 
 const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose, style, props, content, onStyleChange, onToolbarInteraction }) => {
   const dispatch = useDispatch();
+  const userId = useSelector((state) => state.user.currentUser._id); // Move useSelector here
   const [position, setPosition] = useState(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -401,6 +402,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
     e.stopPropagation();
     const componentToSave = {
       id: componentId,
+      createdBy: userId,
       type: componentType,
       style: style || {},
       props: props || {},
@@ -408,11 +410,20 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       name: props?.name || `Saved ${componentType}`,
     };
     
-    dispatch(saveComponent(componentToSave));
-    dispatch(showToast({ 
-      message: 'Component saved to palette successfully!', 
-      type: 'success' 
-    }));
+    dispatch(saveSingleComponent(componentToSave))
+      .unwrap()
+      .then(() => {
+        dispatch(showToast({ 
+          message: 'Component saved to palette successfully!', 
+          type: 'success' 
+        }));
+      })
+      .catch((error) => {
+        dispatch(showToast({ 
+          message: 'Failed to save component: ' + error.message, 
+          type: 'error' 
+        }));
+      });
   };
 
   return (

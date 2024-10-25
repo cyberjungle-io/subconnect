@@ -23,6 +23,7 @@ import { useParams } from 'react-router-dom';
 import { fetchProject, fetchQueries } from '../../w3s/w3sSlice';
 import { v4 as uuidv4 } from 'uuid';
 import FloatingMenusManager from './FloatingMenusManager';
+import { fetchSavedComponents } from '../../features/savedComponentsSlice';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
@@ -67,8 +68,10 @@ const MainEditor = () => {
 
   useEffect(() => {
     let intervalId;
+    dispatch(fetchSavedComponents()); // Add this line to fetch saved components
     if (isLoggedIn) {
       dispatch(fetchQueries());
+      
       intervalId = setInterval(() => {
         dispatch(fetchQueries());
       }, 60000); // 60000 ms = 1 minute
