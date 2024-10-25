@@ -400,8 +400,9 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
 
   const handleSaveComponent = (e) => {
     e.stopPropagation();
+    const uniqueId = `${componentType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     const componentToSave = {
-      id: componentId,
+      id: uniqueId, // Use the generated unique ID instead of componentId
       createdBy: userId,
       type: componentType,
       style: style || {},

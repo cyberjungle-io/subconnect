@@ -259,8 +259,15 @@ const w3sService = {
 
   createComponentData: async (componentData) => {
     try {
-      console.log('Creating component data:', componentData);
-      const response = await api.post('/componentData', componentData);
+      // Generate a unique ID for the component
+      const uniqueId = `${componentData.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const dataWithUniqueId = {
+        ...componentData,
+        id: uniqueId
+      };
+      
+      console.log('Creating component data:', dataWithUniqueId);
+      const response = await api.post('/componentData', dataWithUniqueId);
       console.log('Create component data response:', response.data);
       return response.data;
     } catch (error) {
