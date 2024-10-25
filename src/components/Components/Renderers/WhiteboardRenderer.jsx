@@ -625,10 +625,13 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
         style={{
           width: '100%',
           height: '100%',
-          border: '1px solid #000',
           backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff',
           cursor: tool === 'text' ? 'text' : 'none',
-          borderRadius: 'inherit',
+          // Update border styles to use proper defaults
+          borderWidth: component.style?.borderWidth || '0px',
+          borderStyle: component.style?.borderStyle || 'solid',
+          borderColor: component.style?.borderColor || '#000000',
+          borderRadius: component.style?.borderRadius || '0px',
           touchAction: 'none',
         }}
         onMouseDown={startDrawing}
