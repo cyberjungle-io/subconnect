@@ -6,6 +6,8 @@ const UNITS = ['px', '%', 'em', 'rem', 'vw', 'vh'];
 
 const BorderControls = ({ style, onStyleChange }) => {
   const [showBorder, setShowBorder] = useState(true);
+  const [showInnerShadow, setShowInnerShadow] = useState(false);
+  const [showOuterShadow, setShowOuterShadow] = useState(false);
   const [borderWidth, setBorderWidth] = useState({ top: '1px', right: '1px', bottom: '1px', left: '1px' });
   const [borderStyle, setBorderStyle] = useState('solid');
   const [borderColor, setBorderColor] = useState('#000000');
@@ -17,6 +19,21 @@ const BorderControls = ({ style, onStyleChange }) => {
   const [previousBorderState, setPreviousBorderState] = useState(null);
 
   const updateTimeoutRef = useRef(null);
+
+  // Add shadow state variables
+  const [innerShadowOffset, setInnerShadowOffset] = useState({ x: '0px', y: '0px' });
+  const [innerShadowBlur, setInnerShadowBlur] = useState('0px');
+  const [innerShadowColor, setInnerShadowColor] = useState('#000000');
+  const [innerShadowOpacity, setInnerShadowOpacity] = useState(0.2);
+
+  const [outerShadowOffset, setOuterShadowOffset] = useState({ x: '0px', y: '0px' });
+  const [outerShadowBlur, setOuterShadowBlur] = useState('0px');
+  const [outerShadowColor, setOuterShadowColor] = useState('#000000');
+  const [outerShadowOpacity, setOuterShadowOpacity] = useState(0.2);
+
+  // Button classes
+  const activeButtonClass = "px-4 py-2 bg-blue-500 text-white rounded-md mr-2";
+  const inactiveButtonClass = "px-4 py-2 bg-gray-200 text-gray-700 rounded-md mr-2";
 
   useEffect(() => {
     if (style.borderWidth) {
@@ -177,9 +194,32 @@ const BorderControls = ({ style, onStyleChange }) => {
     }
   }, [showBorder, borderWidth, borderStyle, borderColor, borderRadius, onStyleChange]);
 
-  const buttonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border flex-grow text-center";
-  const activeButtonClass = `${buttonClass} bg-[#cce7ff] text-blue-700 border-blue-300`;
-  const inactiveButtonClass = `${buttonClass} bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]`;
+  // Add shadow handlers
+  const handleInnerShadowChange = useCallback(() => {
+    const innerShadow = showInnerShadow ? 
+      `inset ${innerShadowOffset.x} ${innerShadowOffset.y} ${innerShadowBlur} ${adjustColorOpacity(innerShadowColor, innerShadowOpacity)}` : 
+      '';
+    
+    const outerShadow = showOuterShadow ? 
+      `${outerShadowOffset.x} ${outerShadowOffset.y} ${outerShadowBlur} ${adjustColorOpacity(outerShadowColor, outerShadowOpacity)}` : 
+      '';
+
+    const boxShadow = [innerShadow, outerShadow].filter(Boolean).join(', ');
+    
+    onStyleChange({
+      ...style,
+      boxShadow
+    });
+  }, [showInnerShadow, showOuterShadow, innerShadowOffset, outerShadowOffset, innerShadowBlur, outerShadowBlur, innerShadowColor, outerShadowColor, innerShadowOpacity, outerShadowOpacity]);
+
+  // Helper function to adjust color opacity
+  const adjustColorOpacity = (color, opacity) => {
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  };
 
   const renderInput = (side, value, setter, property) => (
     <div className="flex flex-col items-center">
@@ -415,7 +455,28 @@ const BorderControls = ({ style, onStyleChange }) => {
 
   return (
     <div className="border-controls space-y-4">
-      {toggleContent}
+      <div className="flex mb-4">
+        <button
+          onClick={() => setShowBorder(prev => !prev)}
+          className={showBorder ? activeButtonClass : inactiveButtonClass}
+        >
+          Border
+        </button>
+        <button
+          onClick={() => setShowInnerShadow(prev => !prev)}
+          className={showInnerShadow ? activeButtonClass : inactiveButtonClass}
+        >
+          Inner Shadow
+        </button>
+        <button
+          onClick={() => setShowOuterShadow(prev => !prev)}
+          className={showOuterShadow ? activeButtonClass : inactiveButtonClass}
+        >
+          Outer Shadow
+        </button>
+      </div>
+
+      {/* Existing border controls */}
       {showBorder && (
         <>
           {styleContent}
@@ -423,6 +484,82 @@ const BorderControls = ({ style, onStyleChange }) => {
           {radiusContent}
           {colorContent}
         </>
+      )}
+
+      {/* Inner Shadow Controls */}
+      {showInnerShadow && (
+        <div className="shadow-controls space-y-4">
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Offset X</label>
+              <input
+                type="text"
+                value={innerShadowOffset.x}
+                onChange={(e) => {
+                  setInnerShadowOffset(prev => ({ ...prev, x: e.target.value }));
+                  handleInnerShadowChange();
+                }}
+                className="w-full p-2 border rounded"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Offset Y</label>
+              <input
+                type="text"
+                value={innerShadowOffset.y}
+                onChange={(e) => {
+                  setInnerShadowOffset(prev => ({ ...prev, y: e.target.value }));
+                  handleInnerShadowChange();
+                }}
+                className="w-full p-2 border rounded"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Blur</label>
+            <input
+              type="text"
+              value={innerShadowBlur}
+              onChange={(e) => {
+                setInnerShadowBlur(e.target.value);
+                handleInnerShadowChange();
+              }}
+              className="w-full p-2 border rounded"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
+            <ColorPicker
+              color={innerShadowColor}
+              onChange={(color) => {
+                setInnerShadowColor(color);
+                handleInnerShadowChange();
+              }}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Opacity</label>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={innerShadowOpacity}
+              onChange={(e) => {
+                setInnerShadowOpacity(parseFloat(e.target.value));
+                handleInnerShadowChange();
+              }}
+              className="w-full"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Outer Shadow Controls */}
+      {showOuterShadow && (
+        <div className="shadow-controls space-y-4">
+          {/* Similar controls as inner shadow, but using outer shadow state variables */}
+        </div>
       )}
     </div>
   );

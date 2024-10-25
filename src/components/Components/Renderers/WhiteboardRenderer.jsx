@@ -627,11 +627,13 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           height: '100%',
           backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff',
           cursor: tool === 'text' ? 'text' : 'none',
-          // Update border styles to use proper defaults
+          // Border styles
           borderWidth: component.style?.borderWidth || '0px',
           borderStyle: component.style?.borderStyle || 'solid',
           borderColor: component.style?.borderColor || '#000000',
           borderRadius: component.style?.borderRadius || '0px',
+          // Add shadow styles
+          boxShadow: component.style?.boxShadow || 'none',
           touchAction: 'none',
         }}
         onMouseDown={startDrawing}
@@ -652,6 +654,8 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           width: '100%',
           height: '100%',
           pointerEvents: 'none',
+          // Add shadow styles to match main canvas
+          boxShadow: component.style?.boxShadow || 'none',
         }}
       />
       <div
