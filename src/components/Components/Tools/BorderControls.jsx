@@ -202,6 +202,14 @@ const BorderControls = ({ style, onStyleChange }) => {
     const { offset, blur, color, opacity } = state;
     const isInner = type === 'inner';
 
+    const updateShadowState = (updates) => {
+      setState(prev => ({
+        ...prev,
+        ...updates
+      }));
+      handleChange(); // Call handleChange immediately after state update
+    };
+
     return (
       <div className="shadow-controls space-y-4">
         <div className="grid grid-cols-4 gap-x-0 gap-y-1 w-42 mx-auto mb-4">
@@ -212,11 +220,9 @@ const BorderControls = ({ style, onStyleChange }) => {
                 type="text"
                 value={offset.top || '0px'}
                 onChange={(e) => {
-                  setState(prev => ({
-                    ...prev,
-                    offset: { ...prev.offset, top: e.target.value }
-                  }));
-                  handleChange();
+                  updateShadowState({
+                    offset: { ...offset, top: e.target.value }
+                  });
                 }}
                 className="w-16 p-1 text-xs border border-gray-300 rounded-md"
               />
@@ -229,11 +235,9 @@ const BorderControls = ({ style, onStyleChange }) => {
                 type="text"
                 value={offset.left || '0px'}
                 onChange={(e) => {
-                  setState(prev => ({
-                    ...prev,
-                    offset: { ...prev.offset, left: e.target.value }
-                  }));
-                  handleChange();
+                  updateShadowState({
+                    offset: { ...offset, left: e.target.value }
+                  });
                 }}
                 className="w-16 p-1 text-xs border border-gray-300 rounded-md"
               />
@@ -246,11 +250,9 @@ const BorderControls = ({ style, onStyleChange }) => {
                 type="text"
                 value={offset.right || '0px'}
                 onChange={(e) => {
-                  setState(prev => ({
-                    ...prev,
-                    offset: { ...prev.offset, right: e.target.value }
-                  }));
-                  handleChange();
+                  updateShadowState({
+                    offset: { ...offset, right: e.target.value }
+                  });
                 }}
                 className="w-16 p-1 text-xs border border-gray-300 rounded-md"
               />
@@ -263,11 +265,9 @@ const BorderControls = ({ style, onStyleChange }) => {
                 type="text"
                 value={offset.bottom || '0px'}
                 onChange={(e) => {
-                  setState(prev => ({
-                    ...prev,
-                    offset: { ...prev.offset, bottom: e.target.value }
-                  }));
-                  handleChange();
+                  updateShadowState({
+                    offset: { ...offset, bottom: e.target.value }
+                  });
                 }}
                 className="w-16 p-1 text-xs border border-gray-300 rounded-md"
               />
@@ -281,8 +281,7 @@ const BorderControls = ({ style, onStyleChange }) => {
             type="text"
             value={blur}
             onChange={(e) => {
-              setState(prev => ({ ...prev, blur: e.target.value }));
-              handleChange();
+              updateShadowState({ blur: e.target.value });
             }}
             className="w-full p-2 border rounded"
           />
@@ -293,8 +292,7 @@ const BorderControls = ({ style, onStyleChange }) => {
           <ColorPicker
             color={color}
             onChange={(newColor) => {
-              setState(prev => ({ ...prev, color: newColor }));
-              handleChange();
+              updateShadowState({ color: newColor });
             }}
           />
         </div>
@@ -308,8 +306,7 @@ const BorderControls = ({ style, onStyleChange }) => {
             step="0.1"
             value={opacity}
             onChange={(e) => {
-              setState(prev => ({ ...prev, opacity: parseFloat(e.target.value) }));
-              handleChange();
+              updateShadowState({ opacity: parseFloat(e.target.value) });
             }}
             className="w-full"
           />
@@ -562,44 +559,43 @@ const BorderControls = ({ style, onStyleChange }) => {
   const handleShadowChange = useCallback(() => {
     const createShadowValue = (state, isInner) => {
       const { offset, blur, color, opacity } = state;
-      const shadows = [];
       const colorWithOpacity = adjustColorOpacity(color, opacity);
       
-      // For inner shadows, we need to invert the offset values and always use 'inset'
       if (isInner) {
-        // Top shadow
-        if (offset.top !== '0px') {
-          shadows.push(`inset 0 ${offset.top} ${blur} ${colorWithOpacity}`);
-        }
-        // Right shadow
-        if (offset.right !== '0px') {
-          shadows.push(`inset -${offset.right} 0 ${blur} ${colorWithOpacity}`);
-        }
-        // Bottom shadow
-        if (offset.bottom !== '0px') {
-          shadows.push(`inset 0 -${offset.bottom} ${blur} ${colorWithOpacity}`);
-        }
-        // Left shadow
-        if (offset.left !== '0px') {
-          shadows.push(`inset ${offset.left} 0 ${blur} ${colorWithOpacity}`);
-        }
+        // Create separate shadows for each side that has a non-zero offset
+        const shadows = [];
+        
+        if (offset.top !== '0px') shadows.push(`inset 0 ${offset.top} ${blur} ${colorWithOpacity}`);
+        if (offset.right !== '0px') shadows.push(`inset -${offset.right} 0 ${blur} ${colorWithOpacity}`);
+        if (offset.bottom !== '0px') shadows.push(`inset 0 -${offset.bottom} ${blur} ${colorWithOpacity}`);
+        if (offset.left !== '0px') shadows.push(`inset ${offset.left} 0 ${blur} ${colorWithOpacity}`);
+        
+        return shadows.length > 0 ? shadows.join(', ') : '';
       } else {
-        // Outer shadows
-        if (offset.top !== '0px') {
-          shadows.push(`0 ${offset.top} ${blur} ${colorWithOpacity}`);
+        // Outer shadow logic remains the same
+        const shadows = [];
+        
+        if (offset.top !== '0px') shadows.push(`0 ${offset.top} ${blur} ${colorWithOpacity}`);
+        if (offset.right !== '0px') shadows.push(`${offset.right} 0 ${blur} ${colorWithOpacity}`);
+        if (offset.bottom !== '0px') shadows.push(`0 ${offset.bottom} ${blur} ${colorWithOpacity}`);
+        if (offset.left !== '0px') shadows.push(`-${offset.left} 0 ${blur} ${colorWithOpacity}`);
+        
+        // Add corner shadows to fill gaps
+        if (offset.top !== '0px' && offset.right !== '0px') {
+          shadows.push(`${offset.right} ${offset.top} ${blur} ${colorWithOpacity}`);
         }
-        if (offset.right !== '0px') {
-          shadows.push(`${offset.right} 0 ${blur} ${colorWithOpacity}`);
+        if (offset.top !== '0px' && offset.left !== '0px') {
+          shadows.push(`-${offset.left} ${offset.top} ${blur} ${colorWithOpacity}`);
         }
-        if (offset.bottom !== '0px') {
-          shadows.push(`0 ${offset.bottom} ${blur} ${colorWithOpacity}`);
+        if (offset.bottom !== '0px' && offset.right !== '0px') {
+          shadows.push(`${offset.right} ${offset.bottom} ${blur} ${colorWithOpacity}`);
         }
-        if (offset.left !== '0px') {
-          shadows.push(`-${offset.left} 0 ${blur} ${colorWithOpacity}`);
+        if (offset.bottom !== '0px' && offset.left !== '0px') {
+          shadows.push(`-${offset.left} ${offset.bottom} ${blur} ${colorWithOpacity}`);
         }
+        
+        return shadows.join(', ');
       }
-      
-      return shadows.join(', ');
     };
 
     const innerShadows = showInnerShadow ? createShadowValue(innerShadowState, true) : '';
