@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ColorPicker from '../../common/ColorPicker';
 import { FaLink, FaUnlink } from 'react-icons/fa'; // Import chain link icons
+import { ShadowControls, ShadowControlsPanel } from './ShadowControls';
 
 const UNITS = ['px', '%', 'em', 'rem', 'vw', 'vh'];
 
 const BorderControls = ({ style, onStyleChange }) => {
   const [showBorder, setShowBorder] = useState(true);
-  const [showInnerShadow, setShowInnerShadow] = useState(false);
-  const [showOuterShadow, setShowOuterShadow] = useState(false);
   const [borderWidth, setBorderWidth] = useState({ top: '1px', right: '1px', bottom: '1px', left: '1px' });
   const [borderStyle, setBorderStyle] = useState('solid');
   const [borderColor, setBorderColor] = useState('#000000');
@@ -17,27 +16,14 @@ const BorderControls = ({ style, onStyleChange }) => {
   const [showAllBorderWidth, setShowAllBorderWidth] = useState(true);
   const [showAllBorderRadius, setShowAllBorderRadius] = useState(true);
   const [previousBorderState, setPreviousBorderState] = useState(null);
+  const [showInnerShadow, setShowInnerShadow] = useState(false);
+  const [showOuterShadow, setShowOuterShadow] = useState(false);
 
   const updateTimeoutRef = useRef(null);
 
-  // Add shadow state variables
-  const [innerShadowState, setInnerShadowState] = useState({
-    offset: { top: '0px', right: '0px', bottom: '0px', left: '0px' },
-    blur: '0px',
-    color: '#000000',
-    opacity: 0.2
-  });
-
-  const [outerShadowState, setOuterShadowState] = useState({
-    offset: { top: '0px', right: '0px', bottom: '0px', left: '0px' },
-    blur: '0px',
-    color: '#000000',
-    opacity: 0.2
-  });
-
-  // Button classes
-  const activeButtonClass = "px-4 py-2 bg-blue-500 text-white rounded-md mr-2";
-  const inactiveButtonClass = "px-4 py-2 bg-gray-200 text-gray-700 rounded-md mr-2";
+  // Update the button classes
+  const activeButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300";
+  const inactiveButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]";
 
   useEffect(() => {
     if (style.borderWidth) {
@@ -198,132 +184,6 @@ const BorderControls = ({ style, onStyleChange }) => {
     }
   }, [showBorder, borderWidth, borderStyle, borderColor, borderRadius, onStyleChange]);
 
-  const renderShadowControls = (type, state, setState, handleChange) => {
-    const { offset, blur, color, opacity } = state;
-    const isInner = type === 'inner';
-
-    const updateShadowState = (updates) => {
-      setState(prev => ({
-        ...prev,
-        ...updates
-      }));
-      handleChange(); // Call handleChange immediately after state update
-    };
-
-    return (
-      <div className="shadow-controls space-y-4">
-        <div className="grid grid-cols-4 gap-x-0 gap-y-1 w-42 mx-auto mb-4">
-          <div className="col-start-2 col-span-2">
-            <div className="flex flex-col items-center">
-              <span className="text-xs text-gray-500 mb-1">Top</span>
-              <input
-                type="text"
-                value={offset.top || '0px'}
-                onChange={(e) => {
-                  updateShadowState({
-                    offset: { ...offset, top: e.target.value }
-                  });
-                }}
-                className="w-16 p-1 text-xs border border-gray-300 rounded-md"
-              />
-            </div>
-          </div>
-          <div className="col-start-1 col-span-2 row-start-2 justify-self-end pr-2">
-            <div className="flex flex-col items-center">
-              <span className="text-xs text-gray-500 mb-1">Left</span>
-              <input
-                type="text"
-                value={offset.left || '0px'}
-                onChange={(e) => {
-                  updateShadowState({
-                    offset: { ...offset, left: e.target.value }
-                  });
-                }}
-                className="w-16 p-1 text-xs border border-gray-300 rounded-md"
-              />
-            </div>
-          </div>
-          <div className="col-start-3 col-span-2 row-start-2 justify-self-start pl-2">
-            <div className="flex flex-col items-center">
-              <span className="text-xs text-gray-500 mb-1">Right</span>
-              <input
-                type="text"
-                value={offset.right || '0px'}
-                onChange={(e) => {
-                  updateShadowState({
-                    offset: { ...offset, right: e.target.value }
-                  });
-                }}
-                className="w-16 p-1 text-xs border border-gray-300 rounded-md"
-              />
-            </div>
-          </div>
-          <div className="col-start-2 col-span-2 row-start-3">
-            <div className="flex flex-col items-center">
-              <span className="text-xs text-gray-500 mb-1">Bottom</span>
-              <input
-                type="text"
-                value={offset.bottom || '0px'}
-                onChange={(e) => {
-                  updateShadowState({
-                    offset: { ...offset, bottom: e.target.value }
-                  });
-                }}
-                className="w-16 p-1 text-xs border border-gray-300 rounded-md"
-              />
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Blur</label>
-          <input
-            type="text"
-            value={blur}
-            onChange={(e) => {
-              updateShadowState({ blur: e.target.value });
-            }}
-            className="w-full p-2 border rounded"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Color</label>
-          <ColorPicker
-            color={color}
-            onChange={(newColor) => {
-              updateShadowState({ color: newColor });
-            }}
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Opacity</label>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.1"
-            value={opacity}
-            onChange={(e) => {
-              updateShadowState({ opacity: parseFloat(e.target.value) });
-            }}
-            className="w-full"
-          />
-        </div>
-      </div>
-    );
-  };
-
-  // Helper function to adjust color opacity
-  const adjustColorOpacity = (color, opacity) => {
-    const hex = color.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  };
-
   const renderInput = (side, value, setter, property) => (
     <div className="flex flex-col items-center">
       <span className="text-xs text-gray-500 mb-1 text-center">{side}</span>
@@ -477,17 +337,6 @@ const BorderControls = ({ style, onStyleChange }) => {
     </div>
   );
 
-  const toggleContent = (
-    <div className="mb-4">
-      <button
-        onClick={toggleBorder}
-        className={showBorder ? activeButtonClass : inactiveButtonClass}
-      >
-        {showBorder ? 'Border' : 'Border'}
-      </button>
-    </div>
-  );
-
   const styleContent = (
     <div className="mb-4">
       <label className="block text-sm font-medium text-gray-700 mb-2">Style</label>
@@ -556,63 +405,12 @@ const BorderControls = ({ style, onStyleChange }) => {
     </div>
   );
 
-  const handleShadowChange = useCallback(() => {
-    const createShadowValue = (state, isInner) => {
-      const { offset, blur, color, opacity } = state;
-      const colorWithOpacity = adjustColorOpacity(color, opacity);
-      
-      if (isInner) {
-        // Create separate shadows for each side that has a non-zero offset
-        const shadows = [];
-        
-        if (offset.top !== '0px') shadows.push(`inset 0 ${offset.top} ${blur} ${colorWithOpacity}`);
-        if (offset.right !== '0px') shadows.push(`inset -${offset.right} 0 ${blur} ${colorWithOpacity}`);
-        if (offset.bottom !== '0px') shadows.push(`inset 0 -${offset.bottom} ${blur} ${colorWithOpacity}`);
-        if (offset.left !== '0px') shadows.push(`inset ${offset.left} 0 ${blur} ${colorWithOpacity}`);
-        
-        return shadows.length > 0 ? shadows.join(', ') : '';
-      } else {
-        // Outer shadow logic remains the same
-        const shadows = [];
-        
-        if (offset.top !== '0px') shadows.push(`0 ${offset.top} ${blur} ${colorWithOpacity}`);
-        if (offset.right !== '0px') shadows.push(`${offset.right} 0 ${blur} ${colorWithOpacity}`);
-        if (offset.bottom !== '0px') shadows.push(`0 ${offset.bottom} ${blur} ${colorWithOpacity}`);
-        if (offset.left !== '0px') shadows.push(`-${offset.left} 0 ${blur} ${colorWithOpacity}`);
-        
-        // Add corner shadows to fill gaps
-        if (offset.top !== '0px' && offset.right !== '0px') {
-          shadows.push(`${offset.right} ${offset.top} ${blur} ${colorWithOpacity}`);
-        }
-        if (offset.top !== '0px' && offset.left !== '0px') {
-          shadows.push(`-${offset.left} ${offset.top} ${blur} ${colorWithOpacity}`);
-        }
-        if (offset.bottom !== '0px' && offset.right !== '0px') {
-          shadows.push(`${offset.right} ${offset.bottom} ${blur} ${colorWithOpacity}`);
-        }
-        if (offset.bottom !== '0px' && offset.left !== '0px') {
-          shadows.push(`-${offset.left} ${offset.bottom} ${blur} ${colorWithOpacity}`);
-        }
-        
-        return shadows.join(', ');
-      }
-    };
-
-    const innerShadows = showInnerShadow ? createShadowValue(innerShadowState, true) : '';
-    const outerShadows = showOuterShadow ? createShadowValue(outerShadowState, false) : '';
-    
-    const boxShadow = [innerShadows, outerShadows].filter(Boolean).join(', ');
-    
-    onStyleChange({
-      boxShadow
-    });
-  }, [showInnerShadow, showOuterShadow, innerShadowState, outerShadowState]);
-
   return (
     <div className="border-controls space-y-4">
-      <div className="flex mb-4">
+      {/* Update the button container to match SizeControls */}
+      <div className="flex w-full space-x-2 mb-4">
         <button
-          onClick={() => setShowBorder(prev => !prev)}
+          onClick={toggleBorder}
           className={showBorder ? activeButtonClass : inactiveButtonClass}
         >
           Border
@@ -631,30 +429,25 @@ const BorderControls = ({ style, onStyleChange }) => {
         </button>
       </div>
 
-      {/* Existing border controls */}
       {showBorder && (
-        <>
+        <div className="border-t border-gray-200 pt-4">
+          {/* Add Border title */}
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Border</h3>
           {styleContent}
           {widthContent}
           {radiusContent}
           {colorContent}
-        </>
+        </div>
       )}
 
-      {/* Inner Shadow Controls */}
-      {showInnerShadow && renderShadowControls(
-        'inner',
-        innerShadowState,
-        setInnerShadowState,
-        handleShadowChange
-      )}
-
-      {/* Outer Shadow Controls */}
-      {showOuterShadow && renderShadowControls(
-        'outer',
-        outerShadowState,
-        setOuterShadowState,
-        handleShadowChange
+      {(showInnerShadow || showOuterShadow) && (
+        <div className="shadow-controls border-t border-gray-200 pt-4">
+          <ShadowControlsPanel 
+            showInnerShadow={showInnerShadow}
+            showOuterShadow={showOuterShadow}
+            onStyleChange={onStyleChange}
+          />
+        </div>
       )}
     </div>
   );
