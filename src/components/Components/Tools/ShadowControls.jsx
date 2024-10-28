@@ -43,7 +43,19 @@ export const ShadowControlsPanel = ({ onStyleChange }) => {
     // Add inner shadow if enabled
     if (showInnerShadow) {
       const { blur, spread, color, opacity } = innerShadow;
-      const rgba = `rgba(${parseInt(color.slice(1,3),16)}, ${parseInt(color.slice(3,5),16)}, ${parseInt(color.slice(5,7),16)}, ${opacity})`;
+      let rgba;
+      
+      // Handle both hex and rgba color formats
+      if (color.startsWith('rgba')) {
+        rgba = color; // Already in rgba format
+      } else {
+        // Convert hex to rgba
+        const r = parseInt(color.slice(1,3), 16);
+        const g = parseInt(color.slice(3,5), 16);
+        const b = parseInt(color.slice(5,7), 16);
+        rgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+      }
+      
       shadows.push(`inset 0 0 ${blur} ${spread} ${rgba}`);
     }
     
@@ -52,14 +64,30 @@ export const ShadowControlsPanel = ({ onStyleChange }) => {
       // Bottom shadow
       if (outerShadow.bottom.enabled) {
         const { offset, blur, spread, color, opacity } = outerShadow.bottom;
-        const rgba = `rgba(${parseInt(color.slice(1,3),16)}, ${parseInt(color.slice(3,5),16)}, ${parseInt(color.slice(5,7),16)}, ${opacity})`;
+        let rgba;
+        if (color.startsWith('rgba')) {
+          rgba = color;
+        } else {
+          const r = parseInt(color.slice(1,3), 16);
+          const g = parseInt(color.slice(3,5), 16);
+          const b = parseInt(color.slice(5,7), 16);
+          rgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        }
         shadows.push(`0 ${offset} ${blur} ${spread} ${rgba}`);
       }
       
       // Right shadow
       if (outerShadow.right.enabled) {
         const { offset, blur, spread, color, opacity } = outerShadow.right;
-        const rgba = `rgba(${parseInt(color.slice(1,3),16)}, ${parseInt(color.slice(3,5),16)}, ${parseInt(color.slice(5,7),16)}, ${opacity})`;
+        let rgba;
+        if (color.startsWith('rgba')) {
+          rgba = color;
+        } else {
+          const r = parseInt(color.slice(1,3), 16);
+          const g = parseInt(color.slice(3,5), 16);
+          const b = parseInt(color.slice(5,7), 16);
+          rgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+        }
         shadows.push(`${offset} 0 ${blur} ${spread} ${rgba}`);
       }
     }
@@ -105,8 +133,14 @@ export const ShadowControlsPanel = ({ onStyleChange }) => {
         <ColorPicker
           color={innerShadow.color}
           onChange={(color) => {
-            setInnerShadow(prev => ({ ...prev, color }));
-            handleShadowChange();
+            setInnerShadow(prev => {
+              const newState = { ...prev, color };
+              // Call handleShadowChange with the updated state
+              setTimeout(() => {
+                handleShadowChange();
+              }, 0);
+              return newState;
+            });
           }}
         />
       </div>
