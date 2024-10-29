@@ -55,27 +55,25 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       ...style,
       width: '100%',
       height: '100%',
-      border: '1px solid #ccc',
-      borderRadius: '8px',
-      padding: '20px',
-      backgroundColor: '#f9f9f9',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      padding: style.padding || '20px',
+      backgroundColor: style.backgroundColor || '#f9f9f9',
+      boxShadow: style.boxShadow || '0 2px 4px rgba(0,0,0,0.1)',
       position: 'relative',
       boxSizing: 'border-box',
     }} className="todo-list">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h3 style={{
           margin: 0,
-          color: '#333',
-          borderBottom: '2px solid #4a90e2',
+          color: style.color || '#333',
+          borderBottom: `2px solid ${style.accentColor || '#4a90e2'}`,
           paddingBottom: '10px',
         }}>{props.title || 'Todo List'}</h3>
         {isViewMode && (
           <button
             onClick={() => openModal()}
             style={{
-              backgroundColor: '#4a90e2',
-              color: 'white',
+              backgroundColor: style.accentColor || '#4a90e2',
+              color: style.buttonTextColor || 'white',
               border: 'none',
               borderRadius: '50%',
               width: '30px',
