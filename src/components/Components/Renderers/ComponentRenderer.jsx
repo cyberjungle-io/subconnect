@@ -294,7 +294,7 @@ const ComponentRenderer = React.memo(({
       case "CHART":
         return <ChartRenderer {...sharedProps} globalChartStyle={globalSettings.chartStyle} />;
       case "WHITEBOARD":
-        return <WhiteboardRenderer {...sharedProps} />;
+        return <WhiteboardRenderer {...sharedProps} isViewMode={isViewMode}  />;
       case "VIDEO":
         return <VideoRenderer {...sharedProps} />;
       case "QUERY_VALUE":
