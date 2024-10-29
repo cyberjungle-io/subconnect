@@ -20,24 +20,20 @@ const TextRenderer = ({
   const getTextStyle = () => {
     const generalComponentStyle = globalSettings?.generalComponentStyle || {};
     return {
-      width: '100%', // Ensure the text takes full width of its container
-      height: 'auto',
-      minHeight: component.style.height || 'auto',
+      width: '100%',
+      height: '100%',
       fontFamily: component.style.fontFamily || generalComponentStyle.fontFamily,
       fontSize: component.style.fontSize || generalComponentStyle.fontSize,
       color: component.style.color || generalComponentStyle.color || '#000000',
-      backgroundColor: 'transparent',
-      borderRadius: 'none',
-      boxShadow: 'none',
+      backgroundColor: 'transparent', // Let parent handle background
       textAlign: component.style.textAlign || 'left',
       fontWeight: component.style.fontWeight || 'normal',
       fontStyle: component.style.fontStyle || 'normal',
       textDecoration: component.style.textDecoration || 'none',
-      padding: component.style.padding || '5px',
+      padding: '5px',
       cursor: isEditing ? 'text' : 'default',
       overflow: 'hidden',
-      wordWrap: 'break-word', // Add this to ensure text wraps within the container
-      ...component.style,
+      wordWrap: 'break-word'
     };
   };
 
@@ -110,10 +106,10 @@ const TextRenderer = ({
   };
 
   return (
-    <>
+    <div className="w-full h-full relative">
       <ElementType
         ref={textRef}
-        className="w-full h-full overflow-hidden"
+        className="w-full h-full"
         style={textStyle}
         contentEditable={isEditing}
         onDoubleClick={onDoubleClick}
@@ -125,18 +121,20 @@ const TextRenderer = ({
         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(localContent) }}
       />
       {isToolbarOpen && !isViewMode && (
-        <TextControls
-          style={component.style}
-          onStyleChange={(newStyle) => onUpdate(component.id, { style: newStyle })}
-          isToolbarOpen={isToolbarOpen}
-          content={localContent}
-          onContentChange={(newContent) => {
-            setLocalContent(newContent);
-            onUpdate(component.id, { style: { ...component.style, content: newContent } });
-          }}
-        />
+        <div className="absolute top-full left-0 z-10 w-full">
+          <TextControls
+            style={component.style}
+            onStyleChange={(newStyle) => onUpdate(component.id, { style: newStyle })}
+            isToolbarOpen={isToolbarOpen}
+            content={localContent}
+            onContentChange={(newContent) => {
+              setLocalContent(newContent);
+              onUpdate(component.id, { style: { ...component.style, content: newContent } });
+            }}
+          />
+        </div>
       )}
-    </>
+    </div>
   );
 };
 
