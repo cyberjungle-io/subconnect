@@ -108,7 +108,11 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
           +
         </button>
       </div>
-      <ul style={{ listStyleType: 'none', padding: 0 }}>
+      <ul style={{ 
+        listStyleType: 'none', 
+        padding: 0,
+        minHeight: tasks.length === 0 ? '100px' : 'auto'
+      }}>
         {getDisplayTasks().map(task => (
           <li key={task.id} style={{
             display: 'flex',
