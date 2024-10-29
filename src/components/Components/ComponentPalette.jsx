@@ -24,7 +24,7 @@ const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
   const dispatch = useDispatch();
   const [isHovered, setIsHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [newName, setNewName] = useState(label);
+  const [newName, setNewName] = useState(savedComponent?.name || label || '');
 
   const handleRename = () => {
     if (newName.trim() !== '') {
@@ -43,8 +43,9 @@ const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
     dispatch(deleteSavedComponent(savedComponent.id));
   };
 
-  // Remove 'Saved ' prefix if present
-  const displayLabel = label.startsWith('Saved ') ? label.slice(6) : label;
+  // Get display label with proper fallbacks
+  const displayLabel = savedComponent?.name || label || type || 'Component';
+  const finalLabel = displayLabel.startsWith('Saved ') ? displayLabel.slice(6) : displayLabel;
 
   return (
     <div
@@ -69,7 +70,7 @@ const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
           />
         ) : (
           <p className="text-xs font-medium text-center leading-3 overflow-hidden">
-            {displayLabel}
+            {finalLabel}
           </p>
         )}
       </div>

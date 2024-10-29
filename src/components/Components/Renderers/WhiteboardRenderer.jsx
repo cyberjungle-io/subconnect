@@ -6,7 +6,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import debounce from 'lodash/debounce';
 import ColorPicker from '../../common/ColorPicker'; // Import the ColorPicker component
 
-const WhiteboardRenderer = ({ component, globalSettings }) => {
+const WhiteboardRenderer = ({ component, globalSettings, isViewMode }) => {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState(null);
@@ -124,7 +124,9 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   }, [activeShape, whiteboardState.strokeColor]);
 
   const startDrawing = useCallback((e) => {
-    setDrawSizeDropdownOpen(false); // Close the draw size dropdown when starting to draw
+    if (!isViewMode) return;
+
+    setDrawSizeDropdownOpen(false);
     setIsDrawing(true);
     const { x, y } = getEventCoordinates(e);
 
@@ -143,9 +145,11 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
       setLastPoint({ x, y });
     }
     updateCursorPosition(e);
-  }, [context, tool, eraserSize, drawSize, updateCursorPosition, getEventCoordinates]);
+  }, [context, tool, eraserSize, drawSize, updateCursorPosition, getEventCoordinates, isViewMode]);
 
   const draw = useCallback((e) => {
+    if (!isViewMode) return;
+
     updateCursorPosition(e);
     if (!isDrawing) return;
 
@@ -184,7 +188,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     } else if (startPoint) {
       drawShape(startPoint, { x, y }, tempContext);
     }
-  }, [isDrawing, context, tool, eraserSize, startPoint, drawShape, tempContext, updateCursorPosition, lastPoint, lastMidPoint, getEventCoordinates]);
+  }, [isDrawing, context, tool, eraserSize, startPoint, drawShape, tempContext, updateCursorPosition, lastPoint, lastMidPoint, getEventCoordinates, isViewMode]);
 
   const stopDrawing = useCallback(() => {
     if (isDrawing) {
@@ -474,122 +478,157 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   return (
     <div className="w-full h-full flex flex-col rounded overflow-hidden relative">
       <div className="whiteboard-toolbar flex flex-row items-center absolute top-2.5 left-2.5 z-10 bg-transparent p-1 rounded">
-        <div className="relative inline-flex items-center bg-white bg-opacity-70 rounded overflow-visible mr-3">
+        {/* Pen tool */}
+        <div className="relative inline-flex items-center rounded overflow-visible mr-3" ref={drawSizeDropdownRef}>
           <button
             onClick={() => handleToolChange('pen')}
-            className={`toolbar-button ${activeTool === 'pen' ? 'active' : ''} bg-white bg-opacity-70 border-none p-2 m-0 cursor-pointer rounded-l transition-colors flex items-center justify-center hover:bg-white hover:bg-opacity-90`}
+            className={`toolbar-button ${activeTool === 'pen' ? 'active' : ''} border-none p-2 m-0 cursor-pointer rounded-l transition-colors flex items-center justify-center`}
           >
             <FaPen />
           </button>
           <button
-            onClick={toggleDrawSizeDropdown} // Use the toggleDrawSizeDropdown function here
-            className="draw-size-dropdown-toggle p-2 bg-white bg-opacity-70 border-none cursor-pointer flex items-center rounded-r hover:bg-white hover:bg-opacity-90"
+            onClick={toggleDrawSizeDropdown}
+            className="draw-size-dropdown-toggle p-2 border-none cursor-pointer flex items-center rounded-r"
           >
             <FaChevronDown />
           </button>
           {drawSizeDropdownOpen && (
-            <div className="draw-size-dropdown" style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000 }}>
+            <div className="absolute top-full left-0 mt-1 bg-white rounded shadow-lg p-2">
               <input
                 type="range"
                 min="1"
-                max="50"
+                max="20"
                 value={drawSize}
                 onChange={handleDrawSizeChange}
-                orient="vertical"
+                onMouseEnter={handleMouseEnterSlider}
+                className="w-32"
               />
+              <div className="pen-size-preview" style={{
+                position: 'absolute',
+                [previewPosition]: '100%',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: `${drawSize}px`,
+                height: `${drawSize}px`,
+                backgroundColor: 'black',
+                borderRadius: '50%',
+                marginLeft: previewPosition === 'left' ? '10px' : '',
+                marginRight: previewPosition === 'right' ? '10px' : '',
+              }} />
             </div>
           )}
         </div>
-        <div className="dropdown shapes-dropdown" ref={shapesDropdownRef} style={{ marginRight: '15px', position: 'relative' }}>
+
+        {/* Shapes button */}
+        <div className="relative inline-flex items-center rounded overflow-visible mr-3" ref={shapesDropdownRef}>
           <button
-            onClick={toggleShapesDropdown}
-            className="toolbar-button"
-            style={{ marginRight: '5px' }}
+            onClick={() => handleToolChange(activeShape)}
+            className={`toolbar-button ${activeTool === activeShape ? 'active' : ''} border-none p-2 m-0 cursor-pointer rounded-l transition-colors flex items-center justify-center`}
           >
             {React.createElement(getShapeIcon(activeShape))}
           </button>
-          <button className="shapes-dropdown-toggle" onClick={toggleShapesDropdown}>
+          <button
+            onClick={toggleShapesDropdown}
+            className="shapes-dropdown-toggle p-2 border-none cursor-pointer flex items-center rounded-r"
+          >
             <FaChevronDown />
           </button>
           {shapesDropdownOpen && (
-            <div className="dropdown-menu" style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000, display: 'flex', backgroundColor: 'rgba(255, 255, 255, 0.9)', padding: '5px', borderRadius: '4px' }}>
-              {shapes.map(shape => (
+            <div className="absolute top-full left-0 mt-1 bg-white rounded shadow-lg">
+              {shapes.map((shape) => (
                 <button
                   key={shape.value}
                   onClick={() => {
                     setActiveShape(shape.value);
                     handleToolChange(shape.value);
-                    toggleShapesDropdown();
+                    setShapesDropdownOpen(false);
                   }}
-                  className={`toolbar-button ${activeShape === shape.value ? 'active' : ''}`}
-                  style={{ marginRight: '5px' }} // Add margin between buttons
+                  className="w-full flex items-center p-2 hover:bg-gray-100"
                 >
-                  <shape.icon /> {shape.name}
+                  {React.createElement(shape.icon)}
+                  <span className="ml-2">{shape.name}</span>
                 </button>
               ))}
             </div>
           )}
         </div>
-        
-        <button 
-          className={`toolbar-button ${tool === 'text' ? 'active' : ''}`}
-          onClick={() => handleToolChange('text')}
-          style={{ marginRight: '15px' }}
-        >
-          <FaFont />
-        </button>
-        <div className="color-tool" ref={colorPickerRef} style={{ marginRight: '15px', position: 'relative' }}>
+
+        {/* Eraser tool */}
+        <div className="relative inline-flex items-center rounded overflow-visible mr-3" ref={eraserDropdownRef}>
           <button
-            className="toolbar-button"
-            onClick={() => setShowColorPicker(!showColorPicker)}
-            style={{ marginRight: '5px' }}
-          >
-            <div style={{ width: '20px', height: '20px', backgroundColor: color, borderRadius: '50%' }} />
-          </button>
-          {showColorPicker && (
-            <div style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000 }}>
-              <ColorPicker
-                color={color}
-                onChange={(newColor) => {
-                  setColor(newColor);
-                  // Update the stroke color in the whiteboard state or context
-                  context.strokeStyle = newColor;
-                }}
-              />
-            </div>
-          )}
-        </div>
-        <div className="eraser-tool" ref={eraserDropdownRef} style={{ marginRight: '15px', position: 'relative' }}>
-          <button
-            className={`toolbar-button ${tool === 'eraser' ? 'active' : ''}`}
             onClick={() => handleToolChange('eraser')}
-            style={{ marginRight: '5px', paddingTop: '10px' }} // Add padding to the top
+            className={`toolbar-button ${tool === 'eraser' ? 'active' : ''} border-none p-2 m-0 cursor-pointer rounded-l transition-colors flex items-center justify-center`}
           >
             <FaEraser />
           </button>
-          <button className="eraser-dropdown-toggle" onClick={toggleEraserDropdown}>
+          <button
+            onClick={toggleEraserDropdown}
+            className="eraser-dropdown-toggle p-2 border-none cursor-pointer flex items-center rounded-r"
+          >
             <FaChevronDown />
           </button>
           {eraserDropdownOpen && (
-            <div className="eraser-dropdown" style={{ position: 'absolute', top: '100%', left: '0', zIndex: 1000 }}>
+            <div className="absolute top-full left-0 mt-1 bg-white rounded shadow-lg p-2">
               <input
                 type="range"
-                min="1"
+                min="5"
                 max="50"
                 value={eraserSize}
                 onChange={handleEraserSizeChange}
-                orient="vertical"
+                onMouseEnter={handleMouseEnterSlider}
+                className="w-32"
               />
+              <div className="eraser-size-preview" style={{
+                position: 'absolute',
+                [previewPosition]: '100%',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: `${eraserSize}px`,
+                height: `${eraserSize}px`,
+                backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                border: '1px solid black',
+                borderRadius: '50%',
+                marginLeft: previewPosition === 'left' ? '10px' : '',
+                marginRight: previewPosition === 'right' ? '10px' : '',
+              }} />
             </div>
           )}
         </div>
-        <button className="toolbar-button" onClick={undo} disabled={whiteboardState.historyIndex <= 0} style={{ marginRight: '15px' }}>
+
+        {/* Text button (no chevron) */}
+        <button 
+          className={`toolbar-button ${tool === 'text' ? 'active' : ''} border-none p-2 m-0 cursor-pointer rounded transition-colors flex items-center justify-center mr-3`}
+          onClick={() => handleToolChange('text')}
+        >
+          <FaFont />
+        </button>
+
+        {/* Color tool (no chevron) */}
+        <button
+          className="toolbar-button border-none p-2 m-0 cursor-pointer rounded transition-colors flex items-center justify-center mr-3"
+          onClick={() => setShowColorPicker(!showColorPicker)}
+        >
+          <div style={{ width: '20px', height: '20px', backgroundColor: color, borderRadius: '50%' }} />
+        </button>
+
+        {/* Remaining buttons without chevrons */}
+        <button 
+          className="toolbar-button border-none p-2 m-0 cursor-pointer rounded transition-colors flex items-center justify-center mr-3" 
+          onClick={undo} 
+          disabled={whiteboardState.historyIndex <= 0} 
+        >
           <FaUndo />
         </button>
-        <button className="toolbar-button" onClick={redo} disabled={whiteboardState.historyIndex >= whiteboardState.history.length - 1} style={{ marginRight: '15px' }}>
+
+        <button 
+          className="toolbar-button border-none p-2 m-0 cursor-pointer rounded transition-colors flex items-center justify-center mr-3" 
+          onClick={redo} 
+          disabled={whiteboardState.historyIndex >= whiteboardState.history.length - 1} 
+        >
           <FaRedo />
         </button>
-        <label className="toolbar-button" style={{ marginRight: '15px' }}>
+
+        <label className="toolbar-button border-none p-2 m-0 cursor-pointer rounded transition-colors flex items-center justify-center mr-3">
           <FaUpload />
           <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: 'none' }} />
         </label>
@@ -626,12 +665,14 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           width: '100%',
           height: '100%',
           backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff',
-          cursor: tool === 'text' ? 'text' : 'none',
-          // Update border styles to use proper defaults
+          cursor: isViewMode ? (tool === 'text' ? 'text' : 'none') : 'default',
+          // Border styles
           borderWidth: component.style?.borderWidth || '0px',
           borderStyle: component.style?.borderStyle || 'solid',
           borderColor: component.style?.borderColor || '#000000',
           borderRadius: component.style?.borderRadius || '0px',
+          // Add shadow styles
+          boxShadow: component.style?.boxShadow || 'none',
           touchAction: 'none',
         }}
         onMouseDown={startDrawing}
@@ -652,6 +693,8 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           width: '100%',
           height: '100%',
           pointerEvents: 'none',
+          // Add shadow styles to match main canvas
+          boxShadow: component.style?.boxShadow || 'none',
         }}
       />
       <div

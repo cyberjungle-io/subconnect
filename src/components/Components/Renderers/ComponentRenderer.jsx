@@ -294,7 +294,7 @@ const ComponentRenderer = React.memo(({
       case "CHART":
         return <ChartRenderer {...sharedProps} globalChartStyle={globalSettings.chartStyle} />;
       case "WHITEBOARD":
-        return <WhiteboardRenderer {...sharedProps} />;
+        return <WhiteboardRenderer {...sharedProps} isViewMode={isViewMode}  />;
       case "VIDEO":
         return <VideoRenderer {...sharedProps} />;
       case "QUERY_VALUE":
@@ -483,11 +483,12 @@ const ComponentRenderer = React.memo(({
           initialPosition={toolbarState.position}
           onClose={() => {
             handleToolbarClose();
-            onDeselect(); // Deselect when closing toolbar
+            onDeselect();
           }}
           style={component.style}
           props={component.props}
           content={component.content}
+          component={component}
           onStyleChange={(updates) => {
             if (updates.style) {
               const updatedStyle = {

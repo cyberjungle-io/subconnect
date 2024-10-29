@@ -2,20 +2,22 @@ import React from 'react';
 import { FaTree, FaGlobe, FaEye, FaHandPointer, FaPaintBrush, FaPalette, FaTimes } from 'react-icons/fa';
 import FourSquaresIcon from '../common/CustomIcons/FourSquareIcon';
 
-const FloatingRightMenu = ({
-  onShowComponentTree,
-  onShowComponentPalette,
-  onShowGlobalSettings,
-  onToggleDragMode,
-  isComponentTreeVisible,
-  isComponentPaletteVisible,
-  isGlobalSettingsVisible,
-  isDragModeEnabled,
-  isEditMode,
-  onShowCanvasSettings,
-  isCanvasSettingsVisible,
-  onClose,
-}) => {
+const FloatingRightMenu = React.forwardRef((props, ref) => {
+  const {
+    onShowComponentTree,
+    onShowComponentPalette,
+    onShowGlobalSettings,
+    onToggleDragMode,
+    isComponentTreeVisible,
+    isComponentPaletteVisible,
+    isGlobalSettingsVisible,
+    isDragModeEnabled,
+    isEditMode,
+    onShowCanvasSettings,
+    isCanvasSettingsVisible,
+    onClose,
+  } = props;
+
   const buttonClass = (isActive) => `
     p-2 mb-2 rounded-full
     ${isActive 
@@ -26,7 +28,10 @@ const FloatingRightMenu = ({
   `;
 
   return (
-    <div className="fixed right-2 top-1/2 transform -translate-y-1/2 w-10 bg-[#e6f3ff] border border-[#b3d9ff] rounded-lg shadow-xl z-[960] flex flex-col items-center py-2 scale-90">
+    <div 
+      ref={ref}
+      className="fixed right-2 top-1/2 transform -translate-y-1/2 w-10 bg-[#e6f3ff] border border-[#b3d9ff] rounded-lg shadow-xl z-[960] flex flex-col items-center py-2 scale-90"
+    >
       <button
         onClick={isEditMode ? onShowComponentPalette : undefined}
         className={buttonClass(isComponentPaletteVisible)}
@@ -76,6 +81,9 @@ const FloatingRightMenu = ({
       </button>
     </div>
   );
-};
+});
+
+// Add a display name for better debugging
+FloatingRightMenu.displayName = 'FloatingRightMenu';
 
 export default FloatingRightMenu;

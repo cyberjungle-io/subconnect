@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ColorPicker from '../../common/ColorPicker';
 import { FaLink, FaUnlink } from 'react-icons/fa'; // Import chain link icons
+import { ShadowControls, ShadowControlsPanel } from './ShadowControls';
 
 const UNITS = ['px', '%', 'em', 'rem', 'vw', 'vh'];
 
@@ -15,8 +16,14 @@ const BorderControls = ({ style, onStyleChange }) => {
   const [showAllBorderWidth, setShowAllBorderWidth] = useState(true);
   const [showAllBorderRadius, setShowAllBorderRadius] = useState(true);
   const [previousBorderState, setPreviousBorderState] = useState(null);
+  const [showInnerShadow, setShowInnerShadow] = useState(false);
+  const [showOuterShadow, setShowOuterShadow] = useState(false);
 
   const updateTimeoutRef = useRef(null);
+
+  // Update the button classes
+  const activeButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300";
+  const inactiveButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]";
 
   useEffect(() => {
     if (style.borderWidth) {
@@ -177,10 +184,6 @@ const BorderControls = ({ style, onStyleChange }) => {
     }
   }, [showBorder, borderWidth, borderStyle, borderColor, borderRadius, onStyleChange]);
 
-  const buttonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border flex-grow text-center";
-  const activeButtonClass = `${buttonClass} bg-[#cce7ff] text-blue-700 border-blue-300`;
-  const inactiveButtonClass = `${buttonClass} bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]`;
-
   const renderInput = (side, value, setter, property) => (
     <div className="flex flex-col items-center">
       <span className="text-xs text-gray-500 mb-1 text-center">{side}</span>
@@ -334,17 +337,6 @@ const BorderControls = ({ style, onStyleChange }) => {
     </div>
   );
 
-  const toggleContent = (
-    <div className="mb-4">
-      <button
-        onClick={toggleBorder}
-        className={showBorder ? activeButtonClass : inactiveButtonClass}
-      >
-        {showBorder ? 'Border' : 'Border'}
-      </button>
-    </div>
-  );
-
   const styleContent = (
     <div className="mb-4">
       <label className="block text-sm font-medium text-gray-700 mb-2">Style</label>
@@ -415,14 +407,45 @@ const BorderControls = ({ style, onStyleChange }) => {
 
   return (
     <div className="border-controls space-y-4">
-      {toggleContent}
+      <div className="flex w-full space-x-2">
+        <button
+          onClick={toggleBorder}
+          className={showBorder ? activeButtonClass : inactiveButtonClass}
+        >
+          Border
+        </button>
+        <button
+          onClick={() => setShowInnerShadow(prev => !prev)}
+          className={showInnerShadow ? activeButtonClass : inactiveButtonClass}
+        >
+          Inner Shadow
+        </button>
+        <button
+          onClick={() => setShowOuterShadow(prev => !prev)}
+          className={showOuterShadow ? activeButtonClass : inactiveButtonClass}
+        >
+          Outer Shadow
+        </button>
+      </div>
+
       {showBorder && (
-        <>
+        <div className="pt-4">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Border</h3>
           {styleContent}
           {widthContent}
           {radiusContent}
           {colorContent}
-        </>
+        </div>
+      )}
+
+      {(showInnerShadow || showOuterShadow) && (
+        <div className="pt-4">
+          <ShadowControlsPanel 
+            showInnerShadow={showInnerShadow}
+            showOuterShadow={showOuterShadow}
+            onStyleChange={onStyleChange}
+          />
+        </div>
       )}
     </div>
   );

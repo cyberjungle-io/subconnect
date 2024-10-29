@@ -119,7 +119,7 @@ const iconMap = {
   ],
 };
 
-const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose, style, props, content, onStyleChange, onToolbarInteraction }) => {
+const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose, style, props, content, onStyleChange, onToolbarInteraction, component }) => {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.user.currentUser._id); // Move useSelector here
   const [position, setPosition] = useState(initialPosition);
@@ -401,15 +401,34 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   const handleSaveComponent = (e) => {
     e.stopPropagation();
     const uniqueId = `${componentType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    const componentToSave = {
-      id: uniqueId, // Use the generated unique ID instead of componentId
-      createdBy: userId,
+    
+    // Function to process component and its children
+    const processComponent = (comp) => {
+      const baseComponent = {
+        id: `${comp.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        type: comp.type,
+        style: comp.style || {},
+        props: comp.props || {},
+        content: comp.content || {},
+        name: comp.props?.name || `Saved ${comp.type}`,
+      };
+
+      if (comp.children && Array.isArray(comp.children)) {
+        baseComponent.children = comp.children.map(child => processComponent(child));
+      }
+
+      return baseComponent;
+    };
+
+    const componentToSave = processComponent({
       type: componentType,
       style: style || {},
       props: props || {},
       content: content || {},
-      name: props?.name || `Saved ${componentType}`,
-    };
+      children: component?.children || [],
+    });
+
+    componentToSave.createdBy = userId;
     
     dispatch(saveSingleComponent(componentToSave))
       .unwrap()

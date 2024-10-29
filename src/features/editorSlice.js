@@ -173,19 +173,35 @@ export const editorSlice = createSlice({
       const uniqueId = `${timestamp}_${randomString}`;
 
       if (savedComponent) {
-        // Handle saved component
-        newComponent = {
-          ...savedComponent,
-          id: uniqueId,
-          name: `Copy of ${savedComponent.name}`,
-          depth,
-          style: {
-            ...savedComponent.style,
-            left: position ? position.x : (savedComponent.style.left || 0),
-            top: position ? position.y : (savedComponent.style.top || 0),
-          },
-          props: { ...savedComponent.props }, // Ensure props are applied
+        const createComponentFromSaved = (saved, depth) => {
+          const timestamp = Date.now();
+          const randomString = Math.random().toString(36).substring(2, 15);
+          const uniqueId = `${timestamp}_${randomString}`;
+
+          const newComp = {
+            ...saved,
+            id: uniqueId,
+            name: `Copy of ${saved.name}`,
+            depth,
+            style: {
+              ...saved.style,
+              left: position ? position.x : (saved.style.left || 0),
+              top: position ? position.y : (saved.style.top || 0),
+            },
+            props: { ...saved.props },
+          };
+
+          // Recursively create children if they exist
+          if (saved.children && Array.isArray(saved.children)) {
+            newComp.children = saved.children.map(child => 
+              createComponentFromSaved(child, depth + 1)
+            );
+          }
+
+          return newComp;
         };
+
+        newComponent = createComponentFromSaved(savedComponent, depth);
       } else {
         // Handle regular component
         let defaultStyle = {};

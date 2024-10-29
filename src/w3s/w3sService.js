@@ -404,6 +404,7 @@ const w3sService = {
       console.log('Create or update saved component response:', response.data);
       return response.data;
     } catch (error) {
+      console.error('Error in createOrUpdateSavedComponent:', error);
       handleApiError(error);
     }
   },

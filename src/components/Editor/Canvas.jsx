@@ -196,7 +196,22 @@ const Canvas = ({
       const canvasElement = canvasRef.current;
 
       if (!offset || !canvasElement) {
-        onAddComponent(item.type, null, null, item.savedComponent);
+        if (item.type === 'SAVED_COMPONENT' && item.savedComponent) {
+          // Process the entire component tree recursively
+          const processComponent = (comp) => {
+            const newId = uuidv4();
+            return {
+              ...comp,
+              id: newId,
+              children: comp.children?.map(child => processComponent(child)) || []
+            };
+          };
+
+          const processedComponent = processComponent(item.savedComponent);
+          onAddComponent(processedComponent.type, null, null, processedComponent);
+        } else {
+          onAddComponent(item.type, null, null);
+        }
         return;
       }
 
@@ -218,8 +233,21 @@ const Canvas = ({
       if (flexContainerAtPosition) {
         if (item.id && isDragModeEnabled) {
           onMoveComponent(item.id, flexContainerAtPosition.id);
+        } else if (item.type === 'SAVED_COMPONENT' && item.savedComponent) {
+          // Process the entire component tree recursively
+          const processComponent = (comp) => {
+            const newId = uuidv4();
+            return {
+              ...comp,
+              id: newId,
+              children: comp.children?.map(child => processComponent(child)) || []
+            };
+          };
+
+          const processedComponent = processComponent(item.savedComponent);
+          onAddComponent(processedComponent.type, flexContainerAtPosition.id, null, processedComponent);
         } else {
-          onAddComponent(item.type, flexContainerAtPosition.id, null, item.savedComponent);
+          onAddComponent(item.type, flexContainerAtPosition.id, null);
         }
       } else {
         const insertIndex = components.findIndex(comp => {
@@ -230,12 +258,24 @@ const Canvas = ({
 
         if (item.id && isDragModeEnabled) {
           onMoveComponent(item.id, null, insertIndex);
+        } else if (item.type === 'SAVED_COMPONENT' && item.savedComponent) {
+          // Process the entire component tree recursively
+          const processComponent = (comp) => {
+            const newId = uuidv4();
+            return {
+              ...comp,
+              id: newId,
+              children: comp.children?.map(child => processComponent(child)) || []
+            };
+          };
+
+          const processedComponent = processComponent(item.savedComponent);
+          onAddComponent(processedComponent.type, null, insertIndex, processedComponent);
         } else {
-          onAddComponent(item.type, null, insertIndex, item.savedComponent);
+          onAddComponent(item.type, null, insertIndex);
         }
       }
 
-      // Reset canvas height, clear ghost indicator, and stop auto-scroll after drop
       canvasRef.current.style.height = 'auto';
       stopAutoScroll();
     },
