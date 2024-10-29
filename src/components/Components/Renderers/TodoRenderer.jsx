@@ -61,33 +61,39 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       position: 'relative',
       boxSizing: 'border-box',
     }} className="todo-list">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', marginTop: '10px' }}>
         <h3 style={{
           margin: 0,
-          color: style.color || '#333',
+          padding: '0 10px',
+          color: style.titleColor || style.color || '#333',
           borderBottom: `2px solid ${style.accentColor || '#4a90e2'}`,
           paddingBottom: '10px',
+          fontSize: style.titleFontSize,
+          fontFamily: style.titleFontFamily,
+          fontWeight: style.titleFontWeight,
+          fontStyle: style.titleFontStyle,
+          textDecoration: style.titleTextDecoration,
+          textAlign: style.titleTextAlign,
         }}>{props.title || 'Todo List'}</h3>
-        {isViewMode && (
-          <button
-            onClick={() => openModal()}
-            style={{
-              backgroundColor: style.accentColor || '#4a90e2',
-              color: style.buttonTextColor || 'white',
-              border: 'none',
-              borderRadius: '50%',
-              width: '30px',
-              height: '30px',
-              fontSize: '20px',
-              cursor: 'pointer',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            +
-          </button>
-        )}
+        <button
+          onClick={() => isViewMode && openModal()}
+          style={{
+            backgroundColor: style.accentColor || '#4a90e2',
+            color: style.buttonTextColor || 'white',
+            border: 'none',
+            borderRadius: '50%',
+            width: '30px',
+            height: '30px',
+            fontSize: '20px',
+            cursor: 'pointer',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginRight: '10px',
+          }}
+        >
+          +
+        </button>
       </div>
       <ul style={{ listStyleType: 'none', padding: 0 }}>
         {tasks.map(task => (

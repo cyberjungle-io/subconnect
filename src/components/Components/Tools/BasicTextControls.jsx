@@ -20,7 +20,7 @@ const FONT_OPTIONS = [
   { value: '"Century Gothic", sans-serif', label: 'Century Gothic' },
 ];
 
-const BasicTextControls = ({ style, onStyleChange, label = "Text Styling" }) => {
+const BasicTextControls = ({ style, onStyleChange, label = "Text Styling", hideAlignment = false }) => {
   const [horizontalAlign, setHorizontalAlign] = useState(style.justifyContent || 'flex-start');
   const [verticalAlign, setVerticalAlign] = useState(style.alignItems || 'flex-start');
 
@@ -112,14 +112,18 @@ const BasicTextControls = ({ style, onStyleChange, label = "Text Styling" }) => 
           </div>
         </div>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Horizontal Alignment</label>
-          {renderAlignmentButtons('horizontal', horizontalAlign, horizontalAlignOptions)}
-        </div>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Vertical Alignment</label>
-          {renderAlignmentButtons('vertical', verticalAlign, verticalAlignOptions)}
-        </div>
+        {!hideAlignment && (
+          <>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Horizontal Alignment</label>
+              {renderAlignmentButtons('horizontal', horizontalAlign, horizontalAlignOptions)}
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Vertical Alignment</label>
+              {renderAlignmentButtons('vertical', verticalAlign, verticalAlignOptions)}
+            </div>
+          </>
+        )}
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
