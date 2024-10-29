@@ -407,8 +407,7 @@ const BorderControls = ({ style, onStyleChange }) => {
 
   return (
     <div className="border-controls space-y-4">
-      {/* Update the button container to match SizeControls */}
-      <div className="flex w-full space-x-2 mb-4">
+      <div className="flex w-full space-x-2">
         <button
           onClick={toggleBorder}
           className={showBorder ? activeButtonClass : inactiveButtonClass}
@@ -430,8 +429,7 @@ const BorderControls = ({ style, onStyleChange }) => {
       </div>
 
       {showBorder && (
-        <div className="border-t border-gray-200 pt-4">
-          {/* Add Border title */}
+        <div className="pt-4">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Border</h3>
           {styleContent}
           {widthContent}
@@ -441,7 +439,7 @@ const BorderControls = ({ style, onStyleChange }) => {
       )}
 
       {(showInnerShadow || showOuterShadow) && (
-        <div className="shadow-controls border-t border-gray-200 pt-4">
+        <div className="pt-4">
           <ShadowControlsPanel 
             showInnerShadow={showInnerShadow}
             showOuterShadow={showOuterShadow}
