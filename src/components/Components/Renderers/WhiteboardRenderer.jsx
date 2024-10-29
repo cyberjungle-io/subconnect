@@ -6,7 +6,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import debounce from 'lodash/debounce';
 import ColorPicker from '../../common/ColorPicker'; // Import the ColorPicker component
 
-const WhiteboardRenderer = ({ component, globalSettings }) => {
+const WhiteboardRenderer = ({ component, globalSettings, isViewMode }) => {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [context, setContext] = useState(null);
@@ -124,7 +124,9 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
   }, [activeShape, whiteboardState.strokeColor]);
 
   const startDrawing = useCallback((e) => {
-    setDrawSizeDropdownOpen(false); // Close the draw size dropdown when starting to draw
+    if (!isViewMode) return;
+
+    setDrawSizeDropdownOpen(false);
     setIsDrawing(true);
     const { x, y } = getEventCoordinates(e);
 
@@ -143,9 +145,11 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
       setLastPoint({ x, y });
     }
     updateCursorPosition(e);
-  }, [context, tool, eraserSize, drawSize, updateCursorPosition, getEventCoordinates]);
+  }, [context, tool, eraserSize, drawSize, updateCursorPosition, getEventCoordinates, isViewMode]);
 
   const draw = useCallback((e) => {
+    if (!isViewMode) return;
+
     updateCursorPosition(e);
     if (!isDrawing) return;
 
@@ -184,7 +188,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
     } else if (startPoint) {
       drawShape(startPoint, { x, y }, tempContext);
     }
-  }, [isDrawing, context, tool, eraserSize, startPoint, drawShape, tempContext, updateCursorPosition, lastPoint, lastMidPoint, getEventCoordinates]);
+  }, [isDrawing, context, tool, eraserSize, startPoint, drawShape, tempContext, updateCursorPosition, lastPoint, lastMidPoint, getEventCoordinates, isViewMode]);
 
   const stopDrawing = useCallback(() => {
     if (isDrawing) {
@@ -661,7 +665,7 @@ const WhiteboardRenderer = ({ component, globalSettings }) => {
           width: '100%',
           height: '100%',
           backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle.backgroundColor || '#ffffff',
-          cursor: tool === 'text' ? 'text' : 'none',
+          cursor: isViewMode ? (tool === 'text' ? 'text' : 'none') : 'default',
           // Border styles
           borderWidth: component.style?.borderWidth || '0px',
           borderStyle: component.style?.borderStyle || 'solid',
