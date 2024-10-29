@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { w3sService } from '../w3s/w3sService';
+import { componentTypes } from '../components/Components/componentConfig';
 
 // Async thunks
 export const fetchSavedComponents = createAsyncThunk(
@@ -14,11 +15,20 @@ export const fetchSavedComponents = createAsyncThunk(
 export const saveSingleComponent = createAsyncThunk(
   'savedComponents/save',
   async (component) => {
-    const response = await w3sService.createOrUpdateSavedComponent({
-      id: component.id,
-      createdBy: component.createdBy,
-      ...component
-    });
+    // Ensure the component and its children have valid types
+    const validateComponent = (comp) => {
+      if (!componentTypes[comp.type]) {
+        throw new Error(`Invalid component type: ${comp.type}`);
+      }
+      
+      if (comp.children) {
+        comp.children.forEach(validateComponent);
+      }
+      return comp;
+    };
+
+    const validatedComponent = validateComponent(component);
+    const response = await w3sService.createOrUpdateSavedComponent(validatedComponent);
     return response;
   }
 );

@@ -483,11 +483,12 @@ const ComponentRenderer = React.memo(({
           initialPosition={toolbarState.position}
           onClose={() => {
             handleToolbarClose();
-            onDeselect(); // Deselect when closing toolbar
+            onDeselect();
           }}
           style={component.style}
           props={component.props}
           content={component.content}
+          component={component}
           onStyleChange={(updates) => {
             if (updates.style) {
               const updatedStyle = {
