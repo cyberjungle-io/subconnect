@@ -189,6 +189,7 @@ const Canvas = ({
       handleAutoScroll(clientOffset.y);
     },
     drop: (item, monitor) => {
+      console.log('Drop event started with item:', item);
       stopAutoScroll();
       if (monitor.didDrop()) return;
 
@@ -197,17 +198,20 @@ const Canvas = ({
 
       if (!offset || !canvasElement) {
         if (item.type === 'SAVED_COMPONENT' && item.savedComponent) {
-          // Process the entire component tree recursively
+          console.log('Processing saved component without offset:', item.savedComponent);
           const processComponent = (comp) => {
             const newId = uuidv4();
-            return {
+            const processed = {
               ...comp,
               id: newId,
               children: comp.children?.map(child => processComponent(child)) || []
             };
+            console.log('Processed component:', processed);
+            return processed;
           };
 
           const processedComponent = processComponent(item.savedComponent);
+          console.log('Final processed component before addComponent:', processedComponent);
           onAddComponent(processedComponent.type, null, null, processedComponent);
         } else {
           onAddComponent(item.type, null, null);
@@ -234,17 +238,20 @@ const Canvas = ({
         if (item.id && isDragModeEnabled) {
           onMoveComponent(item.id, flexContainerAtPosition.id);
         } else if (item.type === 'SAVED_COMPONENT' && item.savedComponent) {
-          // Process the entire component tree recursively
+          console.log('Processing saved component for flex container:', item.savedComponent);
           const processComponent = (comp) => {
             const newId = uuidv4();
-            return {
+            const processed = {
               ...comp,
               id: newId,
               children: comp.children?.map(child => processComponent(child)) || []
             };
+            console.log('Processed flex child component:', processed);
+            return processed;
           };
 
           const processedComponent = processComponent(item.savedComponent);
+          console.log('Final processed component before adding to flex:', processedComponent);
           onAddComponent(processedComponent.type, flexContainerAtPosition.id, null, processedComponent);
         } else {
           onAddComponent(item.type, flexContainerAtPosition.id, null);
@@ -259,18 +266,27 @@ const Canvas = ({
         if (item.id && isDragModeEnabled) {
           onMoveComponent(item.id, null, insertIndex);
         } else if (item.type === 'SAVED_COMPONENT' && item.savedComponent) {
-          // Process the entire component tree recursively
+          console.log('Processing saved component without offset:', item.savedComponent);
           const processComponent = (comp) => {
             const newId = uuidv4();
-            return {
+            const processed = {
               ...comp,
               id: newId,
+              type: comp.type,
+              isSavedComponent: true,
+              originalSavedComponent: comp,
               children: comp.children?.map(child => processComponent(child)) || []
             };
+            console.log('Processed component:', processed);
+            return processed;
           };
 
           const processedComponent = processComponent(item.savedComponent);
-          onAddComponent(processedComponent.type, null, insertIndex, processedComponent);
+          console.log('Final processed component before addComponent:', processedComponent);
+          onAddComponent(processedComponent.type, null, insertIndex, {
+            ...processedComponent,
+            savedComponent: item.savedComponent
+          });
         } else {
           onAddComponent(item.type, null, insertIndex);
         }
