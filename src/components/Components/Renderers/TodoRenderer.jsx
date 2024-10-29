@@ -8,6 +8,17 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
   const [editingTask, setEditingTask] = useState(null);
   const [lastTap, setLastTap] = useState({ id: null, time: 0 });
 
+  const getDisplayTasks = () => {
+    if (!isViewMode && tasks.length === 0) {
+      return [{
+        id: 'dummy',
+        name: 'Example task',
+        completed: false
+      }];
+    }
+    return tasks;
+  };
+
   const handleAddTask = (newTask) => {
     const updatedTasks = [...tasks, { id: Date.now(), ...newTask, completed: false }];
     onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
@@ -60,8 +71,10 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       boxShadow: style.boxShadow || '0 2px 4px rgba(0,0,0,0.1)',
       position: 'relative',
       boxSizing: 'border-box',
+      display: 'flex',
+      flexDirection: 'column',
     }} className="todo-list">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', marginTop: '10px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', paddingTop: '10px' }}>
         <h3 style={{
           margin: 0,
           padding: '0 10px',
@@ -96,13 +109,13 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
         </button>
       </div>
       <ul style={{ listStyleType: 'none', padding: 0 }}>
-        {tasks.map(task => (
+        {getDisplayTasks().map(task => (
           <li key={task.id} style={{
             display: 'flex',
             alignItems: 'center',
             marginBottom: '10px',
             padding: '10px',
-            backgroundColor: 'white',
+            backgroundColor: style.taskBackgroundColor || 'white',
             borderRadius: '4px',
             transition: 'background-color 0.2s',
             cursor: 'pointer',
@@ -112,14 +125,20 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
               checked={task.completed}
               onChange={(e) => {
                 e.stopPropagation();
-                handleToggleTask(task.id);
+                if (task.id !== 'dummy') {
+                  handleToggleTask(task.id);
+                }
               }}
-              disabled={!isViewMode}
+              disabled={!isViewMode || task.id === 'dummy'}
               style={{ marginRight: '10px' }}
             />
             <span style={{
-              textDecoration: task.completed ? 'line-through' : 'none',
-              color: task.completed ? '#888' : '#333',
+              textDecoration: task.completed ? 'line-through' : style.taskTextDecoration || 'none',
+              color: task.completed ? '#888' : style.taskTextColor || '#333',
+              fontSize: style.taskFontSize,
+              fontFamily: style.taskFontFamily,
+              fontWeight: style.taskFontWeight,
+              fontStyle: style.taskFontStyle,
               flexGrow: 1,
             }}>
               {task.name}
@@ -131,10 +150,11 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       {/* Add completion percentage indicator */}
       <div style={{
         position: 'absolute',
-        bottom: '5px',
+        bottom: '10px',
         right: '10px',
         fontSize: '12px',
         color: '#888',
+        paddingBottom: '5px',
       }}>
         {completedTasks}/{totalTasks} ({completionPercentage}%)
       </div>

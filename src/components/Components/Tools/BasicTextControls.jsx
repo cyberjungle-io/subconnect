@@ -20,6 +20,8 @@ const FONT_OPTIONS = [
   { value: '"Century Gothic", sans-serif', label: 'Century Gothic' },
 ];
 
+const UNITS = ['px', '%', 'em', 'rem', 'pt'];
+
 const BasicTextControls = ({ style, onStyleChange, label = "Text Styling", hideAlignment = false }) => {
   const [horizontalAlign, setHorizontalAlign] = useState(style.justifyContent || 'flex-start');
   const [verticalAlign, setVerticalAlign] = useState(style.alignItems || 'flex-start');
@@ -85,6 +87,45 @@ const BasicTextControls = ({ style, onStyleChange, label = "Text Styling", hideA
     { value: 'flex-end', icon: MdVerticalAlignBottom },
   ];
 
+  const renderInput = (value, onChange) => {
+    const stringValue = String(value || '16px');
+    const numericValue = parseFloat(stringValue) || 16;
+    const unit = stringValue.replace(/[0-9.-]/g, '') || 'px';
+
+    return (
+      <div className="flex items-center justify-center w-full">
+        <div className="flex-grow flex">
+          <input
+            type="text"
+            value={numericValue}
+            onChange={(e) => onChange(`${e.target.value}${unit}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                const step = e.shiftKey ? 10 : 1;
+                const newValue = e.key === 'ArrowUp' ? numericValue + step : numericValue - step;
+                onChange(`${newValue}${unit}`);
+              }
+            }}
+            className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Font Size"
+          />
+          <select
+            value={unit}
+            onChange={(e) => onChange(`${numericValue}${e.target.value}`)}
+            className="p-2 text-sm border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            {UNITS.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="basic-text-controls">
       <h3 className="text-lg font-semibold text-gray-700 mb-4">{label}</h3>
@@ -127,12 +168,7 @@ const BasicTextControls = ({ style, onStyleChange, label = "Text Styling", hideA
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
-          <input
-            type="text"
-            value={style.fontSize}
-            onChange={(e) => updateStyle({ fontSize: e.target.value })}
-            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
+          {renderInput(style.fontSize, (value) => updateStyle({ fontSize: value }))}
         </div>
 
         <div className="mb-4">
