@@ -18,6 +18,7 @@ import FloatingToolbar from '../Tools/FloatingToolbar';
 import ResizeHandle from '../../common/ResizeHandle';
 import TableRenderer from "./TableRenderer";
 import TodoRenderer from './TodoRenderer';
+import { usePageNavigation } from '../../../contexts/PageNavigationContext';
 
 const defaultGlobalSettings = {
   generalComponentStyle: {
@@ -87,17 +88,26 @@ const ComponentRenderer = React.memo(({
   const [toolbarState, setToolbarState] = useState({ show: false, position: { x: 0, y: 0 } });
   const [isEditing, setIsEditing] = useState(false);
   const editingRef = useRef(false);
+  const { navigateToPage } = usePageNavigation();
 
   useEffect(() => {
     editingRef.current = isEditing;
   }, [isEditing]);
 
   const handleClick = useCallback((event) => {
-    if (isViewMode) return; // Add this line
+    if (isViewMode) {
+      if (component.style?.enablePageNavigation && component.style?.targetPageId) {
+        event.stopPropagation();
+        navigateToPage(component.style.targetPageId);
+        return;
+      }
+      return;
+    }
+    
     event.stopPropagation();
     const isMultiSelect = event.ctrlKey || event.metaKey;
     onSelect(component.id, isMultiSelect);
-  }, [component.id, onSelect, isViewMode]); // Add isViewMode to dependencies
+  }, [component.id, component.style, isViewMode, navigateToPage, onSelect]);
 
   // Add this effect to handle the delete key press
   useEffect(() => {
@@ -445,19 +455,18 @@ const ComponentRenderer = React.memo(({
         style={{
           ...getComponentStyle(),
           ...(isThisComponentSelected && !isViewMode ? { outline: `2px solid ${highlightColor}` } : {}),
-          position: 'relative', // Add this line
+          position: 'relative',
+          cursor: isViewMode && component.style?.enablePageNavigation ? 'pointer' : undefined,
         }}
         onClick={(e) => {
           e.stopPropagation();
-          if (!isViewMode && !isToolbarOpen) {
-            handleClick(e);
-          }
+          handleClick(e);
         }}
         onDoubleClick={handleDoubleClick}
         className={`
           ${isViewMode ? "" : isThisComponentSelected ? "shadow-lg" : ""}
           ${isViewMode ? "" : isOver ? "bg-blue-100" : ""}
-          ${isViewMode ? "" : component.isDraggingDisabled ? "cursor-default" : "cursor-move"}
+          ${isViewMode ? (component.style?.enablePageNavigation ? "cursor-pointer" : "") : component.isDraggingDisabled ? "cursor-default" : "cursor-move"}
         `}
         data-id={component.id}
         tabIndex={0}

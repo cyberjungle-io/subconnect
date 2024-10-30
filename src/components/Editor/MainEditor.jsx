@@ -24,6 +24,7 @@ import { fetchProject, fetchQueries } from '../../w3s/w3sSlice';
 import { v4 as uuidv4 } from 'uuid';
 import FloatingMenusManager from './FloatingMenusManager';
 import { fetchSavedComponents } from '../../features/savedComponentsSlice';
+import { PageNavigationProvider } from '../../contexts/PageNavigationContext';
 
 const MainEditor = () => {
   const dispatch = useDispatch();
@@ -203,12 +204,21 @@ const MainEditor = () => {
         ...currentProject,
         pages: currentProject.pages.map(page => {
           if (page._id === currentPage._id) {
+            const updatedComponents = components.map(component => ({
+              ...component,
+              style: {
+                ...component.style,
+                enablePageNavigation: component.style?.enablePageNavigation,
+                targetPageId: component.style?.targetPageId
+              }
+            }));
+
             return {
               ...page,
               content: {
-                components: components,
+                components: updatedComponents,
                 globalSettings: globalSettings,
-                canvasSettings: canvasSettings  // Include canvasSettings here
+                canvasSettings: canvasSettings
               },
             };
           }
@@ -246,6 +256,7 @@ const MainEditor = () => {
 
   return (
     <DndProvider backend={HTML5Backend}>
+       <PageNavigationProvider>
       <div className="flex flex-col h-screen relative">
         <Toolbar 
           onSelectPage={handleSelectPage} 
@@ -303,6 +314,7 @@ const MainEditor = () => {
         />
       )}
       <Toast />
+      </PageNavigationProvider>
     </DndProvider>
   );
 };

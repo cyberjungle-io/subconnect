@@ -1,5 +1,6 @@
 import React from 'react';
 import ColorPicker from '../../common/ColorPicker';
+import { useSelector } from 'react-redux';
 
 const CURSOR_OPTIONS = [
   { value: 'pointer', label: 'Pointer' },
@@ -10,10 +11,19 @@ const CURSOR_OPTIONS = [
 ];
 
 const ButtonControls = ({ style, onStyleChange }) => {
+  // Get current project from Redux state
+  const currentProject = useSelector(state => state.w3s.currentProject.data);
+
   const handleChange = (updates) => {
     onStyleChange({
       ...style,
-      ...updates
+      ...updates,
+      enablePageNavigation: updates.enablePageNavigation !== undefined 
+        ? updates.enablePageNavigation 
+        : style.enablePageNavigation,
+      targetPageId: updates.targetPageId !== undefined 
+        ? updates.targetPageId 
+        : style.targetPageId
     });
   };
 
@@ -102,6 +112,41 @@ const ButtonControls = ({ style, onStyleChange }) => {
           50
         )}
       </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Enable Page Navigation
+        </label>
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            checked={style.enablePageNavigation || false}
+            onChange={(e) => handleChange({ enablePageNavigation: e.target.checked })}
+            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+          />
+          <span className="ml-2 text-sm text-gray-600">Enable routing on click</span>
+        </div>
+      </div>
+
+      {style.enablePageNavigation && currentProject?.pages && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Target Page
+          </label>
+          <select
+            value={style.targetPageId || ''}
+            onChange={(e) => handleChange({ targetPageId: e.target.value })}
+            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            <option value="">Select a page</option>
+            {currentProject.pages.map((page, index) => (
+              <option key={page._id || index} value={page._id}>
+                {page.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
     </div>
   );
 };

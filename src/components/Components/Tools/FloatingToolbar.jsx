@@ -25,6 +25,7 @@ import TodoControls from './TodoControls';
 import { showToast } from '../../../features/toastSlice';
 import { saveSingleComponent } from '../../../features/savedComponentsSlice';
 import SaveComponentModal from '../../common/SaveComponentModal';
+import { usePageNavigation } from '../../../contexts/PageNavigationContext';
 
 const iconMap = {
   FLEX_CONTAINER: [
@@ -135,6 +136,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   const [editedName, setEditedName] = useState(props?.name || componentType);
   const inputRef = useRef(null);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const { pages } = usePageNavigation();
 
   useEffect(() => {
     const updateToolbarSize = () => {
@@ -284,14 +286,23 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   };
 
   const renderActiveControl = () => {
-    console.log('Active Control:', activeControl);
     const sharedProps = {
       style,
       props,
       content,
       onStyleChange: (updates) => {
-        // Modify this line to pass all style updates directly
-        onStyleChange({ style: { ...style, ...updates } });
+        onStyleChange({ 
+          style: { 
+            ...style, 
+            ...updates,
+            enablePageNavigation: updates.enablePageNavigation !== undefined 
+              ? updates.enablePageNavigation 
+              : style.enablePageNavigation,
+            targetPageId: updates.targetPageId !== undefined 
+              ? updates.targetPageId 
+              : style.targetPageId
+          } 
+        });
       },
       onPropsChange: (updates) => onStyleChange({ props: updates }),
       onContentChange: (content) => onStyleChange({ content }),
@@ -332,7 +343,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       case 'Whiteboard Controls':
         return <WhiteboardControls {...sharedProps} />;
       case 'Button Controls':
-        return <ButtonControls {...sharedProps} />;
+        return <ButtonControls {...sharedProps} pages={pages} />;
       case 'Query Controls':
         return  <QueryValueControls {...sharedProps} />;
       case 'Kanban Controls':
