@@ -24,6 +24,7 @@ import ToolbarControls from './ToolbarControls';
 import TodoControls from './TodoControls';
 import { showToast } from '../../../features/toastSlice';
 import { saveSingleComponent } from '../../../features/savedComponentsSlice';
+import SaveComponentModal from '../../common/SaveComponentModal';
 
 const iconMap = {
   FLEX_CONTAINER: [
@@ -132,6 +133,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(props?.name || componentType);
   const inputRef = useRef(null);
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
   useEffect(() => {
     const updateToolbarSize = () => {
@@ -400,17 +402,21 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
 
   const handleSaveComponent = (e) => {
     e.stopPropagation();
+    setIsSaveModalOpen(true);
+  };
+
+  const handleSaveConfirm = ({ name, description }) => {
     const uniqueId = `${componentType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    // Function to process component and its children
     const processComponent = (comp) => {
       const baseComponent = {
         id: `${comp.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         type: comp.type,
         style: comp.style || {},
         props: comp.props || {},
-        content: comp.content || {},
-        name: comp.props?.name || `Saved ${comp.type}`,
+        content: content || {},
+        name: name,
+        description: description,
       };
 
       if (comp.children && Array.isArray(comp.children)) {
@@ -447,97 +453,105 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   };
 
   return (
-    <div
-      ref={toolbarRef}
-      className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-[280px] flex flex-col group select-none"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        maxHeight: '95vh',
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        MozUserSelect: 'none',
-        msUserSelect: 'none',
-        transform: 'scale(0.8)',
-        transformOrigin: 'top left', // Add this line
-      }}
-      onClick={handleToolbarInteraction}
-      onDoubleClick={handleDoubleClick}
-    >
+    <>
       <div
-        className={`h-6 ${isEditing ? '' : 'cursor-move'} bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
-        onMouseDown={handleMouseDown}
-      />
-      <div className="px-4 pt-1 pb-3">
+        ref={toolbarRef}
+        className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-[280px] flex flex-col group select-none"
+        style={{
+          left: `${position.x}px`,
+          top: `${position.y}px`,
+          maxHeight: '95vh',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          MozUserSelect: 'none',
+          msUserSelect: 'none',
+          transform: 'scale(0.8)',
+          transformOrigin: 'top left', // Add this line
+        }}
+        onClick={handleToolbarInteraction}
+        onDoubleClick={handleDoubleClick}
+      >
         <div
-          className={`flex items-center mb-3 ${isEditing ? '' : 'cursor-move'}`}
+          className={`h-6 ${isEditing ? '' : 'cursor-move'} bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
           onMouseDown={handleMouseDown}
-        >
-          <div className="flex-grow mr-2 min-w-0">
-            {componentType === 'TOOLBAR' ? (
-              <h3 className="text-lg font-semibold text-gray-500 truncate">
-                Toolbar Settings
-              </h3>
-            ) : (
-              isEditing ? (
-                <input
-                  ref={inputRef}
-                  value={editedName}
-                  onChange={(e) => setEditedName(e.target.value)}
-                  onBlur={handleRename}
-                  onKeyDown={handleKeyDown}
-                  className="text-lg font-semibold text-gray-500 bg-white border border-gray-300 rounded px-1 py-0 w-full select-text"
-                  style={{
-                    userSelect: 'text',
-                    WebkitUserSelect: 'text',
-                    MozUserSelect: 'text',
-                    msUserSelect: 'text',
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              ) : (
-                <h3 
-                  className="text-lg font-semibold text-gray-500 cursor-text truncate"
-                  onDoubleClick={(e) => {
-                    e.stopPropagation();
-                    setIsEditing(true);
-                  }}
-                  title={props?.name || componentType}
-                >
-                  {props?.name || componentType}
+        />
+        <div className="px-4 pt-1 pb-3">
+          <div
+            className={`flex items-center mb-3 ${isEditing ? '' : 'cursor-move'}`}
+            onMouseDown={handleMouseDown}
+          >
+            <div className="flex-grow mr-2 min-w-0">
+              {componentType === 'TOOLBAR' ? (
+                <h3 className="text-lg font-semibold text-gray-500 truncate">
+                  Toolbar Settings
                 </h3>
-              )
-            )}
-          </div>
-          <div className="flex-shrink-0 flex items-center">
-            {componentType !== 'TOOLBAR' && (
-              <button
-                onClick={handleSaveComponent}
-                className="mr-2 text-gray-500 hover:text-blue-600"
-                title="Save Component"
+              ) : (
+                isEditing ? (
+                  <input
+                    ref={inputRef}
+                    value={editedName}
+                    onChange={(e) => setEditedName(e.target.value)}
+                    onBlur={handleRename}
+                    onKeyDown={handleKeyDown}
+                    className="text-lg font-semibold text-gray-500 bg-white border border-gray-300 rounded px-1 py-0 w-full select-text"
+                    style={{
+                      userSelect: 'text',
+                      WebkitUserSelect: 'text',
+                      MozUserSelect: 'text',
+                      msUserSelect: 'text',
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <h3 
+                    className="text-lg font-semibold text-gray-500 cursor-text truncate"
+                    onDoubleClick={(e) => {
+                      e.stopPropagation();
+                      setIsEditing(true);
+                    }}
+                    title={props?.name || componentType}
+                  >
+                    {props?.name || componentType}
+                  </h3>
+                )
+              )}
+            </div>
+            <div className="flex-shrink-0 flex items-center">
+              {componentType !== 'TOOLBAR' && (
+                <button
+                  onClick={handleSaveComponent}
+                  className="mr-2 text-gray-500 hover:text-blue-600"
+                  title="Save Component"
+                >
+                  <FaSave />
+                </button>
+              )}
+              <button 
+                onClick={onClose} 
+                className="text-gray-500 hover:text-blue-600"
+                title="Close"
               >
-                <FaSave />
+                <FaTimes />
               </button>
-            )}
-            <button 
-              onClick={onClose} 
-              className="text-gray-500 hover:text-blue-600"
-              title="Close"
-            >
-              <FaTimes />
-            </button>
+            </div>
           </div>
+          {renderIcons()}
         </div>
-        {renderIcons()}
-      </div>
-      <div className="border-t border-[#cce0ff] flex-grow overflow-hidden flex flex-col">
-        <div className="p-4 overflow-y-auto flex-grow">
-          <div className="transform scale-[0.9] origin-top-left">
-            {renderActiveControl()}
+        <div className="border-t border-[#cce0ff] flex-grow overflow-hidden flex flex-col">
+          <div className="p-4 overflow-y-auto flex-grow">
+            <div className="transform scale-[0.9] origin-top-left">
+              {renderActiveControl()}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      <SaveComponentModal
+        isOpen={isSaveModalOpen}
+        onClose={() => setIsSaveModalOpen(false)}
+        onSave={handleSaveConfirm}
+        defaultName={props?.name || componentType}
+      />
+    </>
   );
 };
 

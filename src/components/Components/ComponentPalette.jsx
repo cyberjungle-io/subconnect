@@ -52,9 +52,10 @@ const DraggableComponent = ({ type, icon: Icon, label, savedComponent }) => {
       ref={drag}
       className={`relative flex flex-col items-center justify-center p-2 bg-[#fafcff] border border-[#d1e3ff] rounded-lg shadow hover:shadow-md hover:bg-[#f5f9ff] hover:border-[#b3d1ff] cursor-move ${
         isDragging ? 'opacity-50' : ''
-      } w-20 h-20 transition-all duration-200`}
+      } w-20 h-20 transition-all duration-200 group`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      title={savedComponent?.description || ''}
     >
       <Icon className="text-xl mb-1 text-gray-600" />
       <div className="w-full h-6 overflow-hidden">
