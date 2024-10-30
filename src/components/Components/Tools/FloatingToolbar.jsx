@@ -33,6 +33,7 @@ const iconMap = {
     { icon: FaBorderStyle, tooltip: 'Border' },
     { icon: FaPalette, tooltip: 'Background' },
     { icon: FaLayerGroup, tooltip: 'Layout' },
+    { icon: FaMousePointer, tooltip: 'Button Controls' },
   ],
   TEXT: [
     { icon: FaExpand, tooltip: 'Size' },

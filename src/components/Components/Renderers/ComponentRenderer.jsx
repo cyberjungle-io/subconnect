@@ -396,6 +396,18 @@ const ComponentRenderer = React.memo(({
       componentStyle.width = '100%';
     }
 
+    if (type === "FLEX_CONTAINER" && style.cursor) {
+      componentStyle.cursor = style.cursor;
+      componentStyle.transition = style.transition || 'all 200ms ease-in-out';
+      
+      // Add hover styles using CSS-in-JS
+      componentStyle['&:hover'] = {
+        backgroundColor: style.hoverBackgroundColor || undefined,
+        color: style.hoverColor || undefined,
+        transform: style.hoverScale ? `scale(${style.hoverScale})` : undefined,
+      };
+    }
+
     return componentStyle;
   };
 
