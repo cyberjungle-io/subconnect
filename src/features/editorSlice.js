@@ -181,7 +181,7 @@ export const editorSlice = createSlice({
           const newComp = {
             ...saved,
             id: uniqueId,
-            name: `Copy of ${saved.name}`,
+            name: saved.name,
             depth,
             style: {
               ...saved.style,
