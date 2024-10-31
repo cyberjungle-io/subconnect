@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ColorPicker from '../../common/ColorPicker';
 import { useSelector } from 'react-redux';
 
@@ -22,17 +22,61 @@ const ButtonControls = ({ style, onStyleChange }) => {
   // Get current project from Redux state
   const currentProject = useSelector(state => state.w3s.currentProject.data);
 
+  // Add state for hover controls visibility
+  const [showHoverEffects, setShowHoverEffects] = useState(false);
+
+  // Store previous hover states when toggling
+  const [previousHoverState, setPreviousHoverState] = useState(null);
+
   const handleChange = (updates) => {
+    let finalUpdates = { ...updates };
+
+    // Handle page navigation toggle
+    if ('enablePageNavigation' in updates) {
+      if (!updates.enablePageNavigation) {
+        finalUpdates.targetPageId = ''; // Clear target page when disabling navigation
+      }
+    }
+
     onStyleChange({
       ...style,
-      ...updates,
-      enablePageNavigation: updates.enablePageNavigation !== undefined 
-        ? updates.enablePageNavigation 
-        : style.enablePageNavigation,
-      targetPageId: updates.targetPageId !== undefined 
-        ? updates.targetPageId 
-        : style.targetPageId
+      ...finalUpdates
     });
+  };
+
+  // Handle hover effects toggle
+  const toggleHoverEffects = () => {
+    const newShowHoverEffects = !showHoverEffects;
+    setShowHoverEffects(newShowHoverEffects);
+
+    if (!newShowHoverEffects) {
+      // Store current hover states before disabling
+      setPreviousHoverState({
+        hoverBackgroundColor: style.hoverBackgroundColor,
+        hoverColor: style.hoverColor,
+        hoverScale: style.hoverScale,
+        cursor: style.cursor,
+        transitionDuration: style.transitionDuration,
+        transition: style.transition
+      });
+
+      // Clear all hover effects
+      onStyleChange({
+        ...style,
+        hoverBackgroundColor: undefined,
+        hoverColor: undefined,
+        hoverScale: undefined,
+        cursor: 'default',
+        transitionDuration: undefined,
+        transition: undefined
+      });
+    } else if (previousHoverState) {
+      // Restore previous hover states
+      onStyleChange({
+        ...style,
+        ...previousHoverState
+      });
+    }
   };
 
   const renderInput = (value, onChange, min, max, step) => {
@@ -53,89 +97,29 @@ const ButtonControls = ({ style, onStyleChange }) => {
     );
   };
 
+  // Add these button classes
+  const activeButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300";
+  const inactiveButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]";
+
   return (
     <div className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Hover Color
-        </label>
-        <ColorPicker
-          color={style.hoverBackgroundColor || '#e6e6e6'}
-          onChange={(color) => handleChange({ hoverBackgroundColor: color })}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Hover Text Color
-        </label>
-        <ColorPicker
-          color={style.hoverColor || '#000000'}
-          onChange={(color) => handleChange({ hoverColor: color })}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Hover Scale
-        </label>
-        {renderInput(
-          style.hoverScale || 1,
-          (value) => handleChange({ hoverScale: value }),
-          0.8,
-          1.2,
-          0.01
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Cursor Style
-        </label>
-        <select
-          value={style.cursor || 'pointer'}
-          onChange={(e) => handleChange({ cursor: e.target.value })}
-          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+      {/* Control buttons at the top */}
+      <div className="flex w-full space-x-2">
+        <button
+          onClick={() => handleChange({ enablePageNavigation: !style.enablePageNavigation })}
+          className={style.enablePageNavigation ? activeButtonClass : inactiveButtonClass}
         >
-          {CURSOR_OPTIONS.map(option => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+          Page Navigation
+        </button>
+        <button
+          onClick={toggleHoverEffects}
+          className={showHoverEffects ? activeButtonClass : inactiveButtonClass}
+        >
+          Hover Effects
+        </button>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Transition Duration (ms)
-        </label>
-        {renderInput(
-          parseInt(style.transitionDuration) || 200,
-          (value) => handleChange({ 
-            transitionDuration: value,
-            transition: `all ${value}ms ease-in-out`
-          }),
-          0,
-          1000,
-          50
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Enable Page Navigation
-        </label>
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={style.enablePageNavigation || false}
-            onChange={(e) => handleChange({ enablePageNavigation: e.target.checked })}
-            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-          />
-          <span className="ml-2 text-sm text-gray-600">Enable routing on click</span>
-        </div>
-      </div>
-
+      {/* Page Navigation Section */}
       {style.enablePageNavigation && currentProject?.pages && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -153,6 +137,77 @@ const ButtonControls = ({ style, onStyleChange }) => {
               </option>
             ))}
           </select>
+        </div>
+      )}
+
+      {/* Hover Effects Section */}
+      {showHoverEffects && (
+        <div className="pt-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Hover Color
+            </label>
+            <ColorPicker
+              color={style.hoverBackgroundColor || '#e6e6e6'}
+              onChange={(color) => handleChange({ hoverBackgroundColor: color })}
+            />
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Hover Text Color
+            </label>
+            <ColorPicker
+              color={style.hoverColor || '#000000'}
+              onChange={(color) => handleChange({ hoverColor: color })}
+            />
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Hover Scale
+            </label>
+            {renderInput(
+              style.hoverScale || 1,
+              (value) => handleChange({ hoverScale: value }),
+              0.8,
+              1.2,
+              0.01
+            )}
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Cursor Style
+            </label>
+            <select
+              value={style.cursor || 'pointer'}
+              onChange={(e) => handleChange({ cursor: e.target.value })}
+              className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              {CURSOR_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Transition Duration (ms)
+            </label>
+            {renderInput(
+              parseInt(style.transitionDuration) || 200,
+              (value) => handleChange({ 
+                transitionDuration: value,
+                transition: `all ${value}ms ease-in-out`
+              }),
+              0,
+              1000,
+              50
+            )}
+          </div>
         </div>
       )}
     </div>
