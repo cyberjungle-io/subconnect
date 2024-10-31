@@ -4,7 +4,6 @@ const ImageRenderer = ({ component, onUpdate, globalSettings }) => {
   const {
     content,
     props: {
-      objectFit = "contain",
       alt = "Image",
       shape = "rectangle",
       keepAspectRatio = true,
@@ -18,29 +17,34 @@ const ImageRenderer = ({ component, onUpdate, globalSettings }) => {
     style
   } = component;
 
+  // Main container takes full size of parent
   const containerStyle = {
-    width: style.width || '200px',
-    height: style.height || 'auto',
-    minWidth: style.minWidth || 'auto',
-    minHeight: style.minHeight || 'auto',
-    maxWidth: style.maxWidth || '100%',
-    maxHeight: style.maxHeight || '100%',
-    display: 'inline-block',
+    width: '100%',
+    height: '100%',
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     overflow: 'hidden',
+    backgroundColor: style.backgroundColor || 'transparent',
     borderRadius: shape === "circle" ? "50%" : `${borderRadius}${borderRadiusUnit}`,
     boxShadow: `${boxShadowX}px ${boxShadowY}px ${boxShadowBlur}px ${boxShadowColor}`,
   };
 
+  // Image style handles the actual image sizing within the container
   const imageStyle = {
-    width: '100%',
-    height: '100%',
-    objectFit,
+    maxWidth: '100%',
+    maxHeight: '100%',
+    width: keepAspectRatio ? 'auto' : '100%',
+    height: keepAspectRatio ? 'auto' : '100%',
+    objectFit: style.objectFit || (keepAspectRatio ? 'contain' : 'cover'),
+    borderRadius: shape === "circle" ? "50%" : `${borderRadius}${borderRadiusUnit}`,
   };
 
   return (
     <div style={containerStyle}>
       <img
-        src={content || "https://via.placeholder.com/200"}
+        src={style.src || content || "https://via.placeholder.com/200"}
         alt={alt}
         style={imageStyle}
       />
