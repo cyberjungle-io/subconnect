@@ -5,9 +5,17 @@ import { useSelector } from 'react-redux';
 const CURSOR_OPTIONS = [
   { value: 'pointer', label: 'Pointer' },
   { value: 'default', label: 'Default' },
+  { value: 'move', label: 'Move' },
+  { value: 'grab', label: 'Grab' },
+  { value: 'grabbing', label: 'Grabbing' },
   { value: 'not-allowed', label: 'Not Allowed' },
   { value: 'wait', label: 'Wait' },
+  { value: 'progress', label: 'Progress' },
   { value: 'help', label: 'Help' },
+  { value: 'crosshair', label: 'Crosshair' },
+  { value: 'text', label: 'Text' },
+  { value: 'copy', label: 'Copy' },
+  { value: 'cell', label: 'Cell' },
 ];
 
 const ButtonControls = ({ style, onStyleChange }) => {

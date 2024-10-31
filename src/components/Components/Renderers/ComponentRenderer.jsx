@@ -329,6 +329,7 @@ const ComponentRenderer = React.memo(({
       ...style,
       position: 'relative',
       overflow: "hidden",
+      cursor: style.cursor || (type === "FLEX_CONTAINER" ? "pointer" : "default"),
       boxSizing: 'border-box',
       borderRadius: style.borderRadius || props.borderRadius || generalComponentStyle.borderRadius || '4px',
       padding: style.padding || "0px",
@@ -378,6 +379,7 @@ const ComponentRenderer = React.memo(({
         justifyContent: style.justifyContent || props.justifyContent || "flex-start",
         alignContent: style.alignContent || props.alignContent || "stretch",
         gap: style.gap || "0px",
+        transition: style.transition || `all ${style.transitionDuration || 200}ms ease-in-out`,
       });
 
       if (!isFlexChild) {
@@ -406,16 +408,8 @@ const ComponentRenderer = React.memo(({
       componentStyle.width = '100%';
     }
 
-    if (type === "FLEX_CONTAINER" && style.cursor) {
+    if (style.cursor) {
       componentStyle.cursor = style.cursor;
-      componentStyle.transition = style.transition || 'all 200ms ease-in-out';
-      
-      // Add hover styles using CSS-in-JS
-      componentStyle['&:hover'] = {
-        backgroundColor: style.hoverBackgroundColor || undefined,
-        color: style.hoverColor || undefined,
-        transform: style.hoverScale ? `scale(${style.hoverScale})` : undefined,
-      };
     }
 
     return componentStyle;
@@ -456,18 +450,43 @@ const ComponentRenderer = React.memo(({
           ...getComponentStyle(),
           ...(isThisComponentSelected && !isViewMode ? { outline: `2px solid ${highlightColor}` } : {}),
           position: 'relative',
-          cursor: isViewMode && component.style?.enablePageNavigation ? 'pointer' : undefined,
+        }}
+        className={`
+          ${isViewMode ? "" : isThisComponentSelected ? "shadow-lg" : ""}
+          ${isViewMode ? "" : isOver ? "bg-blue-100" : ""}
+          ${component.type === "FLEX_CONTAINER" ? "hover-effects" : ""}
+        `}
+        onMouseEnter={(e) => {
+          if (component.type === "FLEX_CONTAINER" && component.style) {
+            const target = e.currentTarget;
+            if (component.style.hoverBackgroundColor) {
+              target.style.backgroundColor = component.style.hoverBackgroundColor;
+            }
+            if (component.style.hoverColor) {
+              target.style.color = component.style.hoverColor;
+            }
+            if (component.style.hoverScale) {
+              target.style.transform = `scale(${component.style.hoverScale})`;
+            }
+            if (!component.style.cursor) {
+              target.style.cursor = "pointer";
+            }
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (component.type === "FLEX_CONTAINER" && component.style) {
+            const target = e.currentTarget;
+            target.style.backgroundColor = component.style.backgroundColor || 'transparent';
+            target.style.color = component.style.color || 'inherit';
+            target.style.transform = 'none';
+            target.style.cursor = component.style.cursor || (component.type === "FLEX_CONTAINER" ? "pointer" : "default");
+          }
         }}
         onClick={(e) => {
           e.stopPropagation();
           handleClick(e);
         }}
         onDoubleClick={handleDoubleClick}
-        className={`
-          ${isViewMode ? "" : isThisComponentSelected ? "shadow-lg" : ""}
-          ${isViewMode ? "" : isOver ? "bg-blue-100" : ""}
-          ${isViewMode ? (component.style?.enablePageNavigation ? "cursor-pointer" : "") : component.isDraggingDisabled ? "cursor-default" : "cursor-move"}
-        `}
         data-id={component.id}
         tabIndex={0}
       >
