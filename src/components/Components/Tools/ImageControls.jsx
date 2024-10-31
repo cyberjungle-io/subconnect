@@ -1,110 +1,164 @@
-import React, { useState, useEffect, useRef } from 'react';
-import ColorPicker from '../../common/ColorPicker';
+import React, { useState, useCallback } from 'react';
+import { FaSearchPlus, FaSearchMinus, FaUpload } from 'react-icons/fa';
+import { useDispatch } from 'react-redux';
+import { updateComponent } from '../../../features/editorSlice';
 
-const ImageControls = ({ style, onStyleChange }) => {
-  const [src, setSrc] = useState('');
-  const [alt, setAlt] = useState('');
-  const [objectFit, setObjectFit] = useState('cover');
-  const [borderRadius, setBorderRadius] = useState('0');
-  const [keepAspectRatio, setKeepAspectRatio] = useState(false);
-  const fileInputRef = useRef(null);
+const ImageControls = ({ style = {}, onStyleChange, component }) => {
+  const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [scale, setScale] = useState(style.scale || 1);
+  const [position, setPosition] = useState({
+    x: style.objectPosition?.split(' ')[0] || '50%',
+    y: style.objectPosition?.split(' ')[1] || '50%'
+  });
+  const [objectFit, setObjectFit] = useState(style.objectFit || 'cover');
 
-  useEffect(() => {
-    if (style) {
-      setSrc(style.src || '');
-      setAlt(style.alt || '');
-      setObjectFit(style.objectFit || 'cover');
-      setBorderRadius(style.borderRadius || '0');
+  const handleScaleChange = useCallback((newScale) => {
+    const scale = Math.max(0.1, Math.min(3, newScale));
+    setScale(scale);
+    onStyleChange({
+      imageTransform: `scale(${scale})`,
+      scale: scale
+    });
+  }, [onStyleChange]);
+
+  const handlePositionChange = useCallback((x, y) => {
+    setPosition({ x, y });
+    onStyleChange({
+      objectPosition: `${x} ${y}`
+    });
+  }, [onStyleChange]);
+
+  const handleObjectFitChange = useCallback((fit) => {
+    setObjectFit(fit);
+    onStyleChange({
+      objectFit: fit
+    });
+  }, [onStyleChange]);
+
+  const handleImageUpload = useCallback((event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
     }
-  }, [style]);
 
-  const handleChange = (property, value) => {
-    onStyleChange({ [property]: value });
-  };
+    setIsLoading(true);
+    const reader = new FileReader();
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        handleChange('src', e.target.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
+    reader.onload = (e) => {
+      dispatch(updateComponent({
+        id: component.id,
+        updates: { content: e.target.result }
+      }));
+      setIsLoading(false);
+    };
 
-  const handleUploadClick = () => {
-    fileInputRef.current.click();
-  };
+    reader.onerror = () => {
+      setError('Failed to read image file');
+      setIsLoading(false);
+    };
 
-  const handleAspectRatioChange = (e) => {
-    setKeepAspectRatio(e.target.checked);
-    onStyleChange({ keepAspectRatio: e.target.checked });
-  };
+    reader.readAsDataURL(file);
+  }, [component?.id, dispatch]);
 
   return (
     <div className="control-section">
-      <div className="control-section-content">
-        <div className="mb-2">
-          <label className="block text-xs font-medium text-gray-700 mb-1">Image URL</label>
-          <input
-            type="text"
-            value={src}
-            onChange={(e) => handleChange('src', e.target.value)}
-            className="w-full text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block text-xs font-medium text-gray-700 mb-1">Alt Text</label>
-          <input
-            type="text"
-            value={alt}
-            onChange={(e) => handleChange('alt', e.target.value)}
-            className="w-full text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-        <div className="mb-2">
-          <label className="block text-xs font-medium text-gray-700 mb-1">Object Fit</label>
-          <select
-            value={objectFit}
-            onChange={(e) => handleChange('objectFit', e.target.value)}
-            className="w-full text-xs bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="cover">Cover</option>
-            <option value="contain">Contain</option>
-            <option value="fill">Fill</option>
-            <option value="none">None</option>
-          </select>
-        </div>
-        <div className="mb-2">
-          <label className="block text-xs font-medium text-gray-700 mb-1">Border Radius</label>
-          <input
-            type="text"
-            value={borderRadius}
-            onChange={(e) => handleChange('borderRadius', e.target.value)}
-            className="w-full text-xs border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
-        </div>
-        <div className="mb-2">
-          <button onClick={handleUploadClick} className="upload-button">Upload Image</button>
+      <h3 className="text-lg font-semibold text-gray-700 mb-4">Image Controls</h3>
+      
+      {/* Upload Button */}
+      <div className="mb-4">
+        <label className="flex items-center justify-center w-full px-4 py-2 bg-blue-50 text-blue-600 rounded-lg border border-blue-200 hover:bg-blue-100 cursor-pointer transition-colors duration-200">
+          <FaUpload className="mr-2" />
+          <span>Upload Image</span>
           <input
             type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
             accept="image/*"
-            style={{ display: 'none' }}
+            onChange={handleImageUpload}
+            className="hidden"
           />
+        </label>
+        {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+        {isLoading && <p className="text-blue-500 text-sm mt-1">Loading...</p>}
+      </div>
+
+      {/* Zoom Controls */}
+      <div className="mb-4">
+        <span className="text-sm font-medium text-gray-700 mb-2 block">Zoom</span>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => handleScaleChange(scale - 0.1)}
+            className="p-2 rounded hover:bg-gray-100"
+          >
+            <FaSearchMinus />
+          </button>
+          <input
+            type="range"
+            min="0.1"
+            max="3"
+            step="0.1"
+            value={scale}
+            onChange={(e) => handleScaleChange(parseFloat(e.target.value))}
+            className="flex-grow"
+          />
+          <button
+            onClick={() => handleScaleChange(scale + 0.1)}
+            className="p-2 rounded hover:bg-gray-100"
+          >
+            <FaSearchPlus />
+          </button>
         </div>
-        <div className="aspect-ratio-control">
-          <label>
+      </div>
+
+      {/* Position Controls */}
+      <div className="mb-4">
+        <span className="text-sm font-medium text-gray-700 mb-2 block">Position</span>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-xs text-gray-600">X Position</label>
             <input
-              type="checkbox"
-              name="keepAspectRatio"
-              checked={keepAspectRatio}
-              onChange={handleAspectRatioChange}
+              type="range"
+              min="0"
+              max="100"
+              value={parseInt(position.x)}
+              onChange={(e) => handlePositionChange(`${e.target.value}%`, position.y)}
+              className="w-full"
             />
-            Maintain Aspect Ratio
-          </label>
+          </div>
+          <div>
+            <label className="text-xs text-gray-600">Y Position</label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={parseInt(position.y)}
+              onChange={(e) => handlePositionChange(position.x, `${e.target.value}%`)}
+              className="w-full"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Object Fit Controls */}
+      <div className="mb-4">
+        <span className="text-sm font-medium text-gray-700 mb-2 block">Fit Mode</span>
+        <div className="grid grid-cols-2 gap-2">
+          {['cover', 'contain', 'fill', 'none'].map((fit) => (
+            <button
+              key={fit}
+              onClick={() => handleObjectFitChange(fit)}
+              className={`px-3 py-1 text-sm rounded-full transition-colors duration-200 border ${
+                objectFit === fit
+                  ? 'bg-[#cce7ff] text-blue-700 border-blue-300'
+                  : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
+              }`}
+            >
+              {fit.charAt(0).toUpperCase() + fit.slice(1)}
+            </button>
+          ))}
         </div>
       </div>
     </div>
