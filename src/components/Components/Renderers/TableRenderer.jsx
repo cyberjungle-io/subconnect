@@ -58,12 +58,15 @@ const TableRenderer = ({ component }) => {
   return (
     <div className="w-full overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+        <thead style={{ 
+          backgroundColor: component.props.headerBackgroundColor || '#f3f4f6'
+        }}>
           <tr>
             {columns.map((column, index) => (
               <th
                 key={index}
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                style={{ color: component.props.headerTextColor || '#6b7280' }}
               >
                 {column.header || column.key}
               </th>
