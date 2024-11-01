@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { format, parseISO } from 'date-fns';
 import numeral from 'numeral';
 
-const TableRenderer = ({ component }) => {
+const TableRenderer = ({ component, isViewMode, globalSettings = {} }) => {
   const [tableData, setTableData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -90,7 +90,22 @@ const TableRenderer = ({ component }) => {
   };
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div 
+      className="w-full h-full flex flex-col rounded overflow-hidden relative"
+      style={{
+        backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle?.backgroundColor || '#ffffff',
+        borderWidth: component.style?.borderWidth || '0px',
+        borderStyle: component.style?.borderStyle || 'solid',
+        borderColor: component.style?.borderColor || '#000000',
+        borderRadius: component.style?.borderRadius || '0px',
+        boxShadow: component.style?.boxShadow || 'none',
+        padding: component.style?.padding || '0px',
+        margin: component.style?.margin || '0px',
+        width: component.style?.width || '100%',
+        height: component.style?.height || '100%',
+        overflow: 'auto'
+      }}
+    >
       <table className="min-w-full divide-y" style={{ 
         borderColor: component.props.borderColor || '#e5e7eb',
         borderWidth: component.props.showBorder !== false ? '1px' : '0'

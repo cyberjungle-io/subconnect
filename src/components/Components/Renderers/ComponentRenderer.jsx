@@ -278,7 +278,7 @@ const ComponentRenderer = React.memo(({
           ...component.style,
           margin: '0px',
         },
-        props: { ...component.props }, // Ensure props are used
+        props: { ...component.props },
       },
       onUpdate: handleUpdate,
       onSelect,
