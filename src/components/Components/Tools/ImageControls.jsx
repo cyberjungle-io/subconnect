@@ -9,8 +9,8 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
   const [error, setError] = useState(null);
   const [scale, setScale] = useState(style.scale || 1);
   const [position, setPosition] = useState({
-    x: style.objectPosition?.split(' ')[0] || '50%',
-    y: style.objectPosition?.split(' ')[1] || '50%'
+    x: parseInt(style.objectPosition?.split(' ')[0] || '50%') || 50,
+    y: parseInt(style.objectPosition?.split(' ')[1] || '50%') || 50
   });
   const [objectFit, setObjectFit] = useState(style.objectFit || 'cover');
 
@@ -23,11 +23,15 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
   }, [onStyleChange]);
 
   const handlePositionChange = useCallback((x, y) => {
-    setPosition({ x, y });
+    const newPosition = {
+      x: typeof x === 'number' ? x : position.x,
+      y: typeof y === 'number' ? y : position.y
+    };
+    setPosition(newPosition);
     onStyleChange({
-      objectPosition: `${x} ${y}`
+      objectPosition: `${newPosition.x}% ${newPosition.y}%`
     });
-  }, [onStyleChange]);
+  }, [onStyleChange, position]);
 
   const handleObjectFitChange = useCallback((fit) => {
     setObjectFit(fit);
@@ -144,8 +148,8 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
               type="range"
               min="0"
               max="100"
-              value={parseInt(position.x)}
-              onChange={(e) => handlePositionChange(`${e.target.value}%`, position.y)}
+              value={position.x}
+              onChange={(e) => handlePositionChange(parseInt(e.target.value), null)}
               className="w-full"
             />
           </div>
@@ -155,8 +159,8 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
               type="range"
               min="0"
               max="100"
-              value={parseInt(position.y)}
-              onChange={(e) => handlePositionChange(position.x, `${e.target.value}%`)}
+              value={position.y}
+              onChange={(e) => handlePositionChange(null, parseInt(e.target.value))}
               className="w-full"
             />
           </div>
