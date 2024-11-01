@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useDrop, useDrag } from "react-dnd";
 import { useSelector, useDispatch } from 'react-redux';
 import { deleteComponents, renameComponent } from '../../../features/editorSlice'; // Update this import
+import { v4 as uuidv4 } from 'uuid';
 
 import HeadingRenderer from "./HeadingRenderer";
 import TextRenderer from "./TextRenderer";
@@ -40,11 +41,24 @@ const useDragDrop = (component, onMoveComponent, onAddChild, isDragModeEnabled) 
   });
 
   const [{ isOver }, drop] = useDrop({
-    accept: "COMPONENT",
+    accept: ["COMPONENT", "SAVED_COMPONENT"],
     drop: (item, monitor) => {
       if (monitor.didDrop()) return;
       
-      if (item.id && isDragModeEnabled) {
+      if (item.type === 'SAVED_COMPONENT' && item.savedComponent) {
+        // Process saved component
+        const processComponent = (comp) => {
+          const newId = uuidv4();
+          return {
+            ...comp,
+            id: newId,
+            children: comp.children?.map(child => processComponent(child)) || []
+          };
+        };
+
+        const processedComponent = processComponent(item.savedComponent);
+        onAddChild(component.id, processedComponent.type, processedComponent);
+      } else if (item.id && isDragModeEnabled) {
         onMoveComponent(item.id, component.id);
       } else {
         onAddChild(component.id, item.type);
