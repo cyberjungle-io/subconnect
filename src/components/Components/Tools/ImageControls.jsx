@@ -9,8 +9,8 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
   const [error, setError] = useState(null);
   const [scale, setScale] = useState(style.scale || 1);
   const [position, setPosition] = useState({
-    x: parseInt(style.objectPosition?.split(' ')[0] || '50%') || 50,
-    y: parseInt(style.objectPosition?.split(' ')[1] || '50%') || 50
+    x: parseInt((style.objectPosition?.split(' ')[0] || '50%').replace('%', '')) || 50,
+    y: parseInt((style.objectPosition?.split(' ')[1] || '50%').replace('%', '')) || 50
   });
   const [objectFit, setObjectFit] = useState(style.objectFit || 'cover');
 
@@ -28,10 +28,14 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
       y: typeof y === 'number' ? y : position.y
     };
     setPosition(newPosition);
-    onStyleChange({
-      objectPosition: `${newPosition.x}% ${newPosition.y}%`
-    });
-  }, [onStyleChange, position]);
+    
+    const currentScale = style.scale || 1;
+    if (currentScale > 1 || style.objectFit === 'cover') {
+      onStyleChange({
+        objectPosition: `${newPosition.x}% ${newPosition.y}%`
+      });
+    }
+  }, [onStyleChange, position, style.scale]);
 
   const handleObjectFitChange = useCallback((fit) => {
     setObjectFit(fit);
@@ -141,6 +145,11 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
       {/* Position Controls */}
       <div className="mb-4">
         <span className="text-sm font-medium text-gray-700 mb-2 block">Position</span>
+        {objectFit !== 'cover' && scale <= 1 && (
+          <p className="text-sm text-gray-500 mb-2">
+            Position controls are available when zoomed in or using 'Cover' fit mode
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="text-xs text-gray-600">X Position</label>
@@ -151,6 +160,7 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
               value={position.x}
               onChange={(e) => handlePositionChange(parseInt(e.target.value), null)}
               className="w-full"
+              disabled={objectFit !== 'cover' && scale <= 1}
             />
           </div>
           <div>
@@ -162,6 +172,7 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
               value={position.y}
               onChange={(e) => handlePositionChange(null, parseInt(e.target.value))}
               className="w-full"
+              disabled={objectFit !== 'cover' && scale <= 1}
             />
           </div>
         </div>

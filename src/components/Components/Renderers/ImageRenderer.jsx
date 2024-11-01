@@ -25,20 +25,16 @@ const ImageRenderer = ({ component, isViewMode, onUpdate }) => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: style.width || '200px',
-    height: style.height || 'auto',
+    width: '100%',
+    height: '100%',
     backgroundColor: style.backgroundColor || 'transparent',
     borderRadius: style.borderRadius || props.borderRadius || '4px',
     boxShadow: style.boxShadow,
     border: style.border,
-    minWidth: style.minWidth || 'auto',
-    minHeight: style.minHeight || 'auto',
-    maxWidth: style.maxWidth || '100%',
-    maxHeight: style.maxHeight || '100%',
-    flexGrow: style.flexGrow || '0',
-    flexShrink: style.flexShrink || '0',
+    flexGrow: style.flexGrow || '1',
+    flexShrink: style.flexShrink || '1',
     flexBasis: style.flexBasis || 'auto',
-    margin: style.margin || '0px',
+    margin: '0px',
     padding: style.padding || '0px',
   };
 
@@ -52,8 +48,9 @@ const ImageRenderer = ({ component, isViewMode, onUpdate }) => {
     objectPosition: style.objectPosition || '50% 50%',
     borderRadius: props.shape === 'circle' ? '50%' : (style.borderRadius || props.borderRadius || '4px'),
     opacity: style.opacity || 1,
-    transition: 'transform 0.2s ease-in-out',
+    transition: 'transform 0.2s ease-in-out, object-position 0.2s ease-in-out',
     transform: `scale(${style.scale || 1})`,
+    pointerEvents: 'none',
   };
 
   const handleError = useCallback(() => {
@@ -95,6 +92,11 @@ const ImageRenderer = ({ component, isViewMode, onUpdate }) => {
       </div>
     );
   }
+
+  console.log('Image style:', {
+    objectFit: style.objectFit,
+    objectPosition: style.objectPosition
+  });
 
   return (
     <div ref={containerRef} style={containerStyle}>
