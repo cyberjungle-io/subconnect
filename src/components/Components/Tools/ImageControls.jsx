@@ -18,7 +18,6 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
     const scale = Math.max(0.1, Math.min(3, newScale));
     setScale(scale);
     onStyleChange({
-      imageTransform: `scale(${scale})`,
       scale: scale
     });
   }, [onStyleChange]);

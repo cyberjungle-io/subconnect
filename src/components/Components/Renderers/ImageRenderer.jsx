@@ -52,8 +52,8 @@ const ImageRenderer = ({ component, isViewMode, onUpdate }) => {
     objectPosition: style.objectPosition || 'center',
     borderRadius: props.shape === 'circle' ? '50%' : (style.borderRadius || props.borderRadius || '4px'),
     opacity: style.opacity || 1,
-    transform: style.transform || 'none',
-    transition: style.transition || 'none',
+    transition: 'transform 0.2s ease-in-out',
+    transform: `scale(${style.scale || 1})`,
   };
 
   const handleError = useCallback(() => {
