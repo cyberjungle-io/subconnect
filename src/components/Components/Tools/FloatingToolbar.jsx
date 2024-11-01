@@ -331,7 +331,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
           <BasicTextControls {...sharedProps} />
         );
       case 'Image Controls':
-        return <ImageControls {...sharedProps} />;
+        return <ImageControls {...sharedProps} component={component} />;
       case 'Layout':
         return <LayoutControls {...sharedProps} />;
       case 'Chart Controls':

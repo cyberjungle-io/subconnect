@@ -46,14 +46,36 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
       return;
     }
 
+    if (!component?.id) {
+      setError('Component ID is missing');
+      return;
+    }
+
     setIsLoading(true);
     const reader = new FileReader();
 
     reader.onload = (e) => {
+      const imageData = e.target.result;
+      
       dispatch(updateComponent({
         id: component.id,
-        updates: { content: e.target.result }
+        updates: { 
+          content: imageData,
+          props: {
+            ...component.props,
+            originalFileName: file.name
+          }
+        }
       }));
+
+      onStyleChange({
+        content: imageData,
+        props: {
+          ...component.props,
+          originalFileName: file.name
+        }
+      });
+
       setIsLoading(false);
     };
 
@@ -63,7 +85,7 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
     };
 
     reader.readAsDataURL(file);
-  }, [component?.id, dispatch]);
+  }, [component, dispatch]);
 
   return (
     <div className="control-section">
