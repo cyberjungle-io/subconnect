@@ -93,6 +93,8 @@ const TableRenderer = ({ component, isViewMode, globalSettings = {} }) => {
     <div 
       className="w-full h-full flex flex-col rounded overflow-hidden relative"
       style={{
+        width: '100%',
+        height: '100%',
         backgroundColor: component.props.backgroundColor || globalSettings.generalComponentStyle?.backgroundColor || '#ffffff',
         borderWidth: component.style?.borderWidth || '0px',
         borderStyle: component.style?.borderStyle || 'solid',
@@ -101,56 +103,64 @@ const TableRenderer = ({ component, isViewMode, globalSettings = {} }) => {
         boxShadow: component.style?.boxShadow || 'none',
         padding: component.style?.padding || '0px',
         margin: component.style?.margin || '0px',
-        width: component.style?.width || '100%',
-        height: component.style?.height || '100%',
-        overflow: 'auto'
       }}
     >
-      <table className="min-w-full divide-y" style={{ 
-        borderColor: component.props.borderColor || '#e5e7eb',
-        borderWidth: component.props.showBorder !== false ? '1px' : '0'
-      }}>
-        <thead style={{ 
-          backgroundColor: component.props.headerBackgroundColor || '#f3f4f6'
+      <div className="flex-grow overflow-auto">
+        <table className="min-w-full divide-y" style={{ 
+          borderColor: component.props.borderColor || '#e5e7eb',
+          borderWidth: component.props.showBorder !== false ? '1px' : '0'
         }}>
-          <tr>
-            {columns.map((column, index) => (
-              <th
-                key={index}
-                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                style={{ color: component.props.headerTextColor || '#6b7280' }}
-              >
-                {column.header || column.key}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y" style={{ 
-          borderColor: component.props.borderColor || '#e5e7eb'
-        }}>
-          {paginatedData.map((row, rowIndex) => (
-            <tr 
-              key={rowIndex}
-              style={{
-                backgroundColor: rowIndex % 2 === 0 
-                  ? (component.props.rowBackgroundColor || '#ffffff')
-                  : (component.props.alternateRowBackgroundColor || '#f9fafb'),
-                color: component.props.rowTextColor || '#6b7280'
-              }}
-            >
-              {columns.map((column, colIndex) => (
-                <td
-                  key={colIndex}
-                  className="px-6 py-4 whitespace-nowrap text-sm"
+          <thead style={{ 
+            backgroundColor: component.props.headerBackgroundColor || '#f3f4f6',
+            position: 'sticky',
+            top: 0,
+            zIndex: 1
+          }}>
+            <tr>
+              {columns.map((column, index) => (
+                <th
+                  key={index}
+                  className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
+                  style={{ color: component.props.headerTextColor || '#6b7280' }}
                 >
-                  {row[column.key] ?? 'N/A'}
-                </td>
+                  {column.header || column.key}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-      {renderPagination()}
+          </thead>
+          <tbody className="divide-y" style={{ 
+            borderColor: component.props.borderColor || '#e5e7eb'
+          }}>
+            {paginatedData.map((row, rowIndex) => (
+              <tr 
+                key={rowIndex}
+                style={{
+                  backgroundColor: rowIndex % 2 === 0 
+                    ? (component.props.rowBackgroundColor || '#ffffff')
+                    : (component.props.alternateRowBackgroundColor || '#f9fafb'),
+                  color: component.props.rowTextColor || '#6b7280'
+                }}
+              >
+                {columns.map((column, colIndex) => (
+                  <td
+                    key={colIndex}
+                    className="px-6 py-4 whitespace-nowrap text-sm"
+                  >
+                    {row[column.key] ?? 'N/A'}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="flex-shrink-0 border-t" style={{
+        borderColor: component.props.borderColor || '#e5e7eb',
+        backgroundColor: component.props.headerBackgroundColor || '#f3f4f6'
+      }}>
+        {renderPagination()}
+      </div>
     </div>
   );
 };
