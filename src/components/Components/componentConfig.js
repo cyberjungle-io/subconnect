@@ -145,12 +145,23 @@ export const componentConfig = {
   [componentTypes.TABLE]: {
     name: 'Table',
     icon: FaTable,
-    defaultProps: {
-      title: 'Table Title',
-      columns: [],
-      selectedQueryId: '',
-    },
+    acceptsChildren: false,
     defaultSize: { width: '100%', height: 'auto' },
+    defaultProps: {
+      columns: [
+        { key: 'id', header: 'ID' },
+        { key: 'name', header: 'Name' },
+        { key: 'value', header: 'Value' }
+      ],
+      data: [
+        { id: 1, name: 'Sample Row 1', value: 100 },
+        { id: 2, name: 'Sample Row 2', value: 200 },
+        { id: 3, name: 'Sample Row 3', value: 300 }
+      ],
+      title: 'Table Title',
+      selectedQueryId: '',
+      borderRadius: '4px'
+    }
   },
   [componentTypes.VIDEO]: {
     name: 'Video',

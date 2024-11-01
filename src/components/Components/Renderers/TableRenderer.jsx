@@ -28,41 +28,60 @@ const TableRenderer = ({ component }) => {
   };
 
   useEffect(() => {
-    if (component.props.data && component.props.columns) {
-      const formattedData = formatData(component.props.data, component.props.columns);
+    if (!component.props.data) {
+      const defaultData = [
+        { id: 1, name: 'Sample Row 1', value: 100 },
+        { id: 2, name: 'Sample Row 2', value: 200 },
+        { id: 3, name: 'Sample Row 3', value: 300 },
+      ];
+      setTableData(defaultData);
+    } else {
+      const formattedData = formatData(component.props.data, component.props.columns || []);
       setTableData(formattedData);
     }
   }, [component.props.data, component.props.columns]);
 
-  const tableProps = useMemo(() => ({
-    data: tableData,
-    columns: component.props.columns || [],
-    // ... other props ...
-  }), [tableData, component.props]);
+  const columns = useMemo(() => {
+    if (!component.props.columns || component.props.columns.length === 0) {
+      return [
+        { key: 'id', header: 'ID' },
+        { key: 'name', header: 'Name' },
+        { key: 'value', header: 'Value' }
+      ];
+    }
+    return component.props.columns;
+  }, [component.props.columns]);
 
   return (
     <div className="w-full overflow-x-auto">
-      {/* ... table header ... */}
-      <tbody className="bg-white divide-y divide-gray-200">
-        {tableProps.data.slice(0, tableProps.pageSize || 10).map((row, rowIndex) => (
-          <tr
-            key={rowIndex}
-            style={{
-              backgroundColor: rowIndex % 2 === 0 ? tableProps.rowBackgroundColor : tableProps.alternateRowBackgroundColor
-            }}
-          >
-            {tableProps.columns.map((column, colIndex) => (
-              <td
-                key={colIndex}
-                className="px-6 py-4 whitespace-nowrap"
-                style={{ color: tableProps.rowTextColor }}
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-50">
+          <tr>
+            {columns.map((column, index) => (
+              <th
+                key={index}
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                {row[column.key] ?? 'N/A'}
-              </td>
+                {column.header || column.key}
+              </th>
             ))}
           </tr>
-        ))}
-      </tbody>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {tableData.map((row, rowIndex) => (
+            <tr key={rowIndex}>
+              {columns.map((column, colIndex) => (
+                <td
+                  key={colIndex}
+                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                >
+                  {row[column.key] ?? 'N/A'}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
