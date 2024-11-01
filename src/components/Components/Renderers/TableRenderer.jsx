@@ -49,8 +49,11 @@ const TableRenderer = ({ component }) => {
         { key: 'value', header: 'Value' }
       ];
     }
-    return component.props.columns;
-  }, [component.props.columns]);
+    return component.props.columns.map(column => ({
+      ...column,
+      header: component.props.seriesNames?.[column.key] || column.key
+    }));
+  }, [component.props.columns, component.props.seriesNames]);
 
   return (
     <div className="w-full overflow-x-auto">
