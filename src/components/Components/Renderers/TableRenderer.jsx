@@ -4,6 +4,7 @@ import numeral from 'numeral';
 
 const TableRenderer = ({ component }) => {
   const [tableData, setTableData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const formatData = (data, columns) => {
     if (!data || !Array.isArray(data)) return [];
@@ -55,9 +56,45 @@ const TableRenderer = ({ component }) => {
     }));
   }, [component.props.columns, component.props.seriesNames]);
 
+  const paginatedData = useMemo(() => {
+    const pageSize = component.props.pageSize || 10;
+    const startIndex = (currentPage - 1) * pageSize;
+    return tableData.slice(startIndex, startIndex + pageSize);
+  }, [tableData, currentPage, component.props.pageSize]);
+
+  const renderPagination = () => {
+    const pageSize = component.props.pageSize || 10;
+    const totalPages = Math.ceil(tableData.length / pageSize);
+
+    return totalPages > 1 ? (
+      <div className="flex justify-end items-center mt-4 space-x-2">
+        <button
+          onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+          disabled={currentPage === 1}
+          className="px-3 py-1 border rounded disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span className="text-sm">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+          disabled={currentPage === totalPages}
+          className="px-3 py-1 border rounded disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+    ) : null;
+  };
+
   return (
     <div className="w-full overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
+      <table className="min-w-full divide-y" style={{ 
+        borderColor: component.props.borderColor || '#e5e7eb',
+        borderWidth: component.props.showBorder !== false ? '1px' : '0'
+      }}>
         <thead style={{ 
           backgroundColor: component.props.headerBackgroundColor || '#f3f4f6'
         }}>
@@ -73,13 +110,23 @@ const TableRenderer = ({ component }) => {
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {tableData.map((row, rowIndex) => (
-            <tr key={rowIndex}>
+        <tbody className="divide-y" style={{ 
+          borderColor: component.props.borderColor || '#e5e7eb'
+        }}>
+          {paginatedData.map((row, rowIndex) => (
+            <tr 
+              key={rowIndex}
+              style={{
+                backgroundColor: rowIndex % 2 === 0 
+                  ? (component.props.rowBackgroundColor || '#ffffff')
+                  : (component.props.alternateRowBackgroundColor || '#f9fafb'),
+                color: component.props.rowTextColor || '#6b7280'
+              }}
+            >
               {columns.map((column, colIndex) => (
                 <td
                   key={colIndex}
-                  className="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                  className="px-6 py-4 whitespace-nowrap text-sm"
                 >
                   {row[column.key] ?? 'N/A'}
                 </td>
@@ -88,6 +135,7 @@ const TableRenderer = ({ component }) => {
           ))}
         </tbody>
       </table>
+      {renderPagination()}
     </div>
   );
 };
