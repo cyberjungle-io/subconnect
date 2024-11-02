@@ -18,7 +18,7 @@ const rootReducer = combineReducers({
 });
 
 const persistConfig = {
-  key: 'subconnect', // Changed from 'root' to 'subconnect'
+  key: `subconnect-${window.location.hostname}`, // Make the key unique per hostname
   storage,
   whitelist: ['editor', 'w3s', 'user', 'graphQL'],
 };
