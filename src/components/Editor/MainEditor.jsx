@@ -14,6 +14,7 @@ import {
   moveComponent,
   loadPageContent,
   setCurrentPage,
+  updateToolbarSettings,
 } from '../../features/editorSlice';
 import { updateProject as updateW3SProject } from '../../w3s/w3sSlice';
 import Toast from '../common/Toast';
@@ -57,6 +58,10 @@ const MainEditor = () => {
         dispatch(setCurrentPage(pageToLoad));
         dispatch(loadPageContent(pageToLoad.content));
         dispatch(setEditorMode('view'));
+        
+        if (currentProject.toolbarSettings) {
+          dispatch(updateToolbarSettings(currentProject.toolbarSettings));
+        }
       }
     }
   }, [currentProject, dispatch]);
@@ -202,6 +207,7 @@ const MainEditor = () => {
       
       const updatedProject = {
         ...currentProject,
+        toolbarSettings: toolbarSettings,
         pages: currentProject.pages.map(page => {
           if (page._id === currentPage._id) {
             const updatedComponents = components.map(component => ({

@@ -137,7 +137,7 @@ const w3sService = {
 
   updateProject: async (id, projectData) => {
     try {
-      console.log("w3s Request Updating project:", projectData);
+      console.log("Project data being sent to server:", JSON.stringify(projectData, null, 2));
       const response = await api.put(`/projects/${id}`, projectData);
       return response.data;
     } catch (error) {
