@@ -1,15 +1,38 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import TodoModal from '../../common/TodoModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { createComponentData } from '../../../w3s/w3sSlice';
+import { w3sService } from '../../../w3s/w3sService';
 
 const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
   const { props, style } = component;
-  const { tasks = [] } = props;
+  const [tasks, setTasks] = useState(props.tasks || []);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [lastTap, setLastTap] = useState({ id: null, time: 0 });
   const dispatch = useDispatch();
+  const dataFetchedRef = useRef(false);
+
+  useEffect(() => {
+    const fetchComponentData = async () => {
+      if (dataFetchedRef.current) return;
+      dataFetchedRef.current = true;
+
+      try {
+        const response = await w3sService.getComponentDataById(component.props.id);
+        
+        if (response && response.data && response.data.tasks) {
+          setTasks(response.data.tasks);
+        }
+      } catch (error) {
+        console.error('Error fetching component data:', error);
+      }
+    };
+
+    if (isViewMode) {
+      fetchComponentData();
+    }
+  }, [component.props.id, isViewMode]);
 
   const getDisplayTasks = () => {
     if (!isViewMode && tasks.length === 0) {
