@@ -1,5 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import TodoModal from '../../common/TodoModal';
+import { useDispatch, useSelector } from 'react-redux';
+import { createComponentData } from '../../../w3s/w3sSlice';
 
 const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
   const { props, style } = component;
@@ -7,6 +9,7 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [lastTap, setLastTap] = useState({ id: null, time: 0 });
+  const dispatch = useDispatch();
 
   const getDisplayTasks = () => {
     if (!isViewMode && tasks.length === 0) {
@@ -22,6 +25,30 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
   const handleAddTask = (newTask) => {
     const updatedTasks = [...tasks, { id: Date.now(), ...newTask, completed: false }];
     onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
+    const todoData = {
+      componentId: component.props.id,
+      name: component.props.name,
+      type: component.type,
+      tasks: updatedTasks
+    };
+    
+    // Store the TodoData in w3s
+    dispatch(createComponentData(todoData))
+      .unwrap()
+      .then(() => {
+        // console.log('Todo data stored successfully');
+      })
+      .catch((error) => {
+        console.error('Failed to store todo data:', error);
+        if (error.name === 'TypeError' && error.message.includes('Cannot read properties of undefined (reading \'list\')')) {
+          console.error('Error: The componentData state might not be initialized properly.');
+        } else {
+          console.error('Error details:', error.stack);
+        }
+      });
+
+
+
   };
 
   const handleEditTask = (editedTask) => {
@@ -29,6 +56,30 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       task.id === editedTask.id ? { ...task, ...editedTask } : task
     );
     onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
+
+
+    const todoData = {
+      componentId: component.props.id,
+      name: component.props.name,
+      type: component.type,
+      tasks: updatedTasks
+    };
+    
+    // Store the TodoData in w3s
+    dispatch(createComponentData(todoData))
+      .unwrap()
+      .then(() => {
+        // console.log('Todo data stored successfully');
+      })
+      .catch((error) => {
+        console.error('Failed to store todo data:', error);
+        if (error.name === 'TypeError' && error.message.includes('Cannot read properties of undefined (reading \'list\')')) {
+          console.error('Error: The componentData state might not be initialized properly.');
+        } else {
+          console.error('Error details:', error.stack);
+        }
+      });
+
   };
 
   const handleToggleTask = (taskId) => {

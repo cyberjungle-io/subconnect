@@ -3,7 +3,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import KanBanTaskModal from '../../common/KanBanTaskModal';
 import { v4 as uuidv4 } from 'uuid';
 import { useDispatch, useSelector } from 'react-redux';
-import { createComponentData, updateComponentData } from '../../../w3s/w3sSlice';
+import { createComponentData } from '../../../w3s/w3sSlice';
 import { w3sService } from '../../../w3s/w3sService'; // Import w3sService
 
 // Add this helper function at the top of the file, outside the component
@@ -164,10 +164,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
       type: component.type,
       tasks: allTasks
     };
-    // console.log('Kanban Data:', kanbanData);
-    // console.log('allTasks', allTasks);
-    // console.log('component props ', component.props);
-
+    
     // Store the kanbanData in w3s
     dispatch(createComponentData(kanbanData))
       .unwrap()
