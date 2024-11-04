@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { updateComponent } from '../../../features/editorSlice';
+import SvgRenderer from './SvgRenderer';
 
 const ImageRenderer = ({ component, isViewMode, onUpdate }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -72,6 +73,25 @@ const ImageRenderer = ({ component, isViewMode, onUpdate }) => {
       });
     }
   }, [component.id, onUpdate, props]);
+
+  // Update the SVG detection and add debugging
+  const isSvg = component.props?.isSvg || 
+    (component.content && 
+     typeof component.content === 'string' && 
+     component.content.includes('<svg'));
+
+  // Add debug logging
+  console.log('ImageRenderer SVG Detection:', {
+    isSvg,
+    componentProps: component.props,
+    content: component.content,
+    hasSvgTag: component.content?.includes('<svg')
+  });
+
+  if (isSvg) {
+    console.log('ImageRenderer switching to SVG Renderer');
+    return <SvgRenderer component={component} isViewMode={isViewMode} onUpdate={onUpdate} />;
+  }
 
   if (isLoading) {
     return (
