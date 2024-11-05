@@ -8,13 +8,13 @@ const SvgRenderer = ({ component, isViewMode }) => {
     content = null
   } = component;
 
-  // Container styles - use explicit pixel values for width/height
+  // Container styles - updated to ensure proper centering context
   const containerStyle = {
     position: 'relative',
     overflow: 'visible',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center', // Center vertically
+    justifyContent: 'center', // Center horizontally
     width: style.width || '24px',
     height: style.height || '24px',
     backgroundColor: style.backgroundColor || 'transparent',
@@ -22,7 +22,7 @@ const SvgRenderer = ({ component, isViewMode }) => {
     padding: style.padding || '0px',
   };
 
-  // Process the SVG content to inject styling
+  // Process the SVG content to inject styling and centering attributes
   const processSvgContent = (content) => {
     if (!content || typeof content !== 'string') return '';
     
@@ -36,9 +36,10 @@ const SvgRenderer = ({ component, isViewMode }) => {
     svg.removeAttribute('width');
     svg.removeAttribute('height');
     
-    // Set new attributes
+    // Set new attributes for proper centering
     svg.setAttribute('width', '100%');
     svg.setAttribute('height', '100%');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet'); // This ensures the SVG content is centered
     
     // Apply fill color if specified in style
     if (style.fill) {
@@ -64,15 +65,18 @@ const SvgRenderer = ({ component, isViewMode }) => {
       });
     }
     
-    // Ensure viewBox exists
+    // Ensure viewBox exists and is properly set
     if (!svg.hasAttribute('viewBox')) {
-      svg.setAttribute('viewBox', '0 0 16 16');
+      // Try to get original dimensions from the SVG
+      const width = svg.getAttribute('originalWidth') || '16';
+      const height = svg.getAttribute('originalHeight') || '16';
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
     }
     
     return svg.outerHTML;
   };
 
-  // SVG wrapper styles - handle scale separately
+  // SVG wrapper styles - updated for better centering
   const svgWrapperStyle = {
     width: '100%',
     height: '100%',
@@ -82,6 +86,7 @@ const SvgRenderer = ({ component, isViewMode }) => {
     transform: `scale(${style.scale || 1}) rotate(${style.rotation || 0}deg)`,
     transformOrigin: 'center',
     transition: 'transform 0.2s ease-in-out',
+    position: 'relative', // Added for proper centering
   };
 
   return (

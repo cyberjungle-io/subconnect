@@ -79,6 +79,16 @@ const SvgControls = ({ style = {}, onStyleChange, component }) => {
     });
   }, [onStyleChange, style]);
 
+  const handleCenter = useCallback(() => {
+    onStyleChange({
+      style: {
+        ...style,
+        margin: '0px',
+        padding: '0px',
+      }
+    });
+  }, [onStyleChange, style]);
+
   return (
     <div className="control-section">
       <h3 className="text-lg font-semibold text-gray-700 mb-4">SVG Controls</h3>
@@ -197,6 +207,15 @@ const SvgControls = ({ style = {}, onStyleChange, component }) => {
           onChange={(e) => handleRotationChange(Number(e.target.value))}
           className="w-full"
         />
+      </div>
+
+      <div className="mb-4">
+        <button
+          onClick={handleCenter}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        >
+          Center SVG
+        </button>
       </div>
     </div>
   );
