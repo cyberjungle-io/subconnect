@@ -2,8 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { componentConfig } from '../Components/componentConfig';
 import { useDispatch } from 'react-redux';
 import { FaTimes } from 'react-icons/fa';
-import FloatingToolbar from '../Components/Tools/FloatingToolbar';
-import { saveComponentThunk } from '../../features/editorSlice'; // Import the thunk instead
 
 // Custom monotone SVG icons
 const ChevronRight = () => (
@@ -28,6 +26,14 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) 
 
   const Icon = componentConfig[component.type]?.icon || (() => null);
 
+  const handleDoubleClick = (e) => {
+    e.stopPropagation();
+    // First select the component
+    onSelectComponent(component);
+    // Then trigger the toolbar open by sending the full component
+    onSelectComponent(component, true); // Added second parameter to indicate toolbar should open
+  };
+
   return (
     <div className={`mb-1 ${depth > 0 ? 'ml-3' : ''}`}>
       <div 
@@ -37,6 +43,7 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) 
                       : 'hover:bg-[#d9ecff] border border-transparent'
                     }`}
         onClick={() => onSelectComponent(component)}
+        onDoubleClick={handleDoubleClick}
       >
         <div className="flex items-center flex-grow text-gray-600">
           {hasChildren && (
@@ -78,13 +85,9 @@ const ComponentTree = ({ components, onSelectComponent, selectedComponentId, isV
   const [position, setPosition] = useState({ x: 20, y: window.innerHeight / 2 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [selectedComponent, setSelectedComponent] = useState(null);
-  const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
 
-  const handleComponentSelect = (component) => {
-    onSelectComponent(component.id);
-    setSelectedComponent({...component}); // Create a new object to ensure updates
-    setToolbarPosition({ x: position.x + 300, y: position.y });
+  const handleComponentSelect = (component, openToolbar = false) => {
+    onSelectComponent(component.id, component, openToolbar); // Pass the full component and openToolbar flag
   };
 
   useEffect(() => {
@@ -171,25 +174,6 @@ const ComponentTree = ({ components, onSelectComponent, selectedComponentId, isV
           />
         ))}
       </div>
-      {selectedComponent && (
-        <FloatingToolbar
-          componentId={selectedComponent.id}
-          componentType={selectedComponent.type}
-          initialPosition={toolbarPosition}
-          onClose={() => setSelectedComponent(null)}
-          style={selectedComponent.style}
-          props={selectedComponent.props}
-          content={selectedComponent.content}
-          onStyleChange={(updates) => {
-            // Handle style updates
-            const updatedComponent = {...selectedComponent, ...updates};
-            setSelectedComponent(updatedComponent);
-            // You might need to call a function here to update the main component state
-            // For example: onComponentUpdate(updatedComponent);
-          }}
-          onToolbarInteraction={(e) => e.stopPropagation()}
-        />
-      )}
       <div
         className="absolute top-0 left-0 right-0 h-6 cursor-move bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"
         onMouseDown={handleMouseDown}

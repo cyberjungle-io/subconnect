@@ -11,7 +11,8 @@ import {
   updateCanvasSettings, 
   setDragModeEnabled, 
   updateGlobalSettings,
-  updateToolbarSettings
+  updateToolbarSettings,
+  updateComponent
 } from '../../features/editorSlice';
 import { toggleFloatingMenu } from '../../features/editorSlice';
 
@@ -34,6 +35,9 @@ const FloatingMenusManager = () => {
   const floatingRightMenuRef = useRef(null);
 
   const [isRightMenuVisible, setIsRightMenuVisible] = useState(false);
+
+  const [selectedComponent, setSelectedComponent] = useState(null);
+  const [toolbarPosition, setToolbarPosition] = useState({ x: 100, y: 100 });
 
   const handleToggleComponentTree = useCallback(() => {
     if (mode === 'edit') {
@@ -108,6 +112,18 @@ const FloatingMenusManager = () => {
     setIsRightMenuVisible(prev => !prev);
   };
 
+  const handleComponentSelect = (componentId, component, openToolbar = false) => {
+    dispatch(setSelectedIds([componentId]));
+    if (openToolbar) {
+      // Position the toolbar in the center of the screen
+      setToolbarPosition({
+        x: window.innerWidth / 2 - 140, // Half of toolbar width
+        y: window.innerHeight / 2 - 200, // Arbitrary offset from top
+      });
+      setSelectedComponent(component);
+    }
+  };
+
   if (mode !== 'edit') {
     return null;
   }
@@ -134,7 +150,7 @@ const FloatingMenusManager = () => {
       {isComponentTreeVisible && (
         <ComponentTree
           components={components}
-          onSelectComponent={(componentId) => dispatch(setSelectedIds([componentId]))}
+          onSelectComponent={handleComponentSelect}
           selectedComponentId={selectedIds?.[0]}
           isVisible={isComponentTreeVisible}
           onClose={handleToggleComponentTree}
@@ -171,6 +187,22 @@ const FloatingMenusManager = () => {
           }}
           onStyleChange={handleUpdateCanvasSettings}
           onToolbarInteraction={() => {}}
+        />
+      )}
+      {selectedComponent && (
+        <FloatingToolbar
+          componentId={selectedComponent.id}
+          componentType={selectedComponent.type}
+          initialPosition={toolbarPosition}
+          onClose={() => setSelectedComponent(null)}
+          style={selectedComponent.style}
+          props={selectedComponent.props}
+          content={selectedComponent.content}
+          onStyleChange={(updates) => {
+            dispatch(updateComponent({ id: selectedComponent.id, updates }));
+          }}
+          onToolbarInteraction={(e) => e.stopPropagation()}
+          component={selectedComponent}
         />
       )}
       {/* Conditionally render the floating button */}
