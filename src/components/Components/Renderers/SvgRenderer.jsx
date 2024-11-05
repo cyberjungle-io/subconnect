@@ -79,7 +79,7 @@ const SvgRenderer = ({ component, isViewMode }) => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    transform: `scale(${style.scale || 1})`,
+    transform: `scale(${style.scale || 1}) rotate(${style.rotation || 0}deg)`,
     transformOrigin: 'center',
     transition: 'transform 0.2s ease-in-out',
   };
