@@ -40,6 +40,30 @@ const SvgRenderer = ({ component, isViewMode }) => {
     svg.setAttribute('width', '100%');
     svg.setAttribute('height', '100%');
     
+    // Apply fill color if specified in style
+    if (style.fill) {
+      svg.setAttribute('fill', style.fill);
+      // Also apply fill to all child paths and shapes
+      const elements = svg.querySelectorAll('path, rect, circle, ellipse, polygon, polyline');
+      elements.forEach(element => {
+        if (!element.getAttribute('fill') || element.getAttribute('fill') === 'none') {
+          element.setAttribute('fill', style.fill);
+        }
+      });
+    }
+
+    // Apply stroke color if specified in style
+    if (style.stroke) {
+      svg.setAttribute('stroke', style.stroke);
+      // Also apply stroke to all child paths and shapes
+      const elements = svg.querySelectorAll('path, rect, circle, ellipse, polygon, polyline');
+      elements.forEach(element => {
+        if (!element.getAttribute('stroke') || element.getAttribute('stroke') === 'none') {
+          element.setAttribute('stroke', style.stroke);
+        }
+      });
+    }
+    
     // Ensure viewBox exists
     if (!svg.hasAttribute('viewBox')) {
       svg.setAttribute('viewBox', '0 0 16 16');
