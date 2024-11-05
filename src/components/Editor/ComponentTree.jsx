@@ -23,26 +23,31 @@ const TreeNode = ({ component, depth, onSelectComponent, selectedComponentId }) 
   const [isOpen, setIsOpen] = useState(false);
   const hasChildren = component.children && component.children.length > 0;
   const isSelected = component.id === selectedComponentId;
+  const nodeRef = useRef(null);
 
   const Icon = componentConfig[component.type]?.icon || (() => null);
 
   const handleDoubleClick = (e) => {
+    e.preventDefault();
     e.stopPropagation();
-    // First select the component
-    onSelectComponent(component);
-    // Then trigger the toolbar open by sending the full component
-    onSelectComponent(component, true); // Added second parameter to indicate toolbar should open
+    onSelectComponent(component.id, component, true);
   };
 
   return (
-    <div className={`mb-1 ${depth > 0 ? 'ml-3' : ''}`}>
+    <div 
+      ref={nodeRef}
+      className={`mb-1 ${depth > 0 ? 'ml-3' : ''}`}
+    >
       <div 
         className={`flex items-center cursor-pointer p-1 rounded text-sm
                     ${isSelected 
                       ? 'bg-[#cce7ff] text-blue-600 border border-blue-300' 
                       : 'hover:bg-[#d9ecff] border border-transparent'
                     }`}
-        onClick={() => onSelectComponent(component)}
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelectComponent(component.id, component, false);
+        }}
         onDoubleClick={handleDoubleClick}
       >
         <div className="flex items-center flex-grow text-gray-600">

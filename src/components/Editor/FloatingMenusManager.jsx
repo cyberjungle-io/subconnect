@@ -39,6 +39,8 @@ const FloatingMenusManager = () => {
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [toolbarPosition, setToolbarPosition] = useState({ x: 100, y: 100 });
 
+  const floatingMenuRef = useRef(null);
+
   const handleToggleComponentTree = useCallback(() => {
     if (mode === 'edit') {
       setIsComponentTreeVisible(prev => !prev);
@@ -112,17 +114,34 @@ const FloatingMenusManager = () => {
     setIsRightMenuVisible(prev => !prev);
   };
 
-  const handleComponentSelect = (componentId, component, openToolbar = false) => {
+  const handleComponentSelect = useCallback((componentId, component, openToolbar = false) => {
     dispatch(setSelectedIds([componentId]));
-    if (openToolbar) {
-      // Position the toolbar in the center of the screen
+    if (openToolbar && component) {
       setToolbarPosition({
-        x: window.innerWidth / 2 - 140, // Half of toolbar width
-        y: window.innerHeight / 2 - 200, // Arbitrary offset from top
+        x: window.innerWidth / 2 - 140,
+        y: window.innerHeight / 2 - 200,
       });
       setSelectedComponent(component);
     }
-  };
+  }, [dispatch]);
+
+  // Add this useEffect to handle clicks outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (floatingMenuRef.current && !floatingMenuRef.current.contains(event.target)) {
+        // Only close if clicking outside both the menu and the toolbar
+        const toolbarElement = document.querySelector('.floating-toolbar');
+        if (!toolbarElement || !toolbarElement.contains(event.target)) {
+          setSelectedComponent(null);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   if (mode !== 'edit') {
     return null;
@@ -130,34 +149,38 @@ const FloatingMenusManager = () => {
 
   return (
     <>
-      {isRightMenuVisible && (
-        <FloatingRightMenu
-          ref={floatingRightMenuRef}
-          onShowComponentTree={handleToggleComponentTree}
-          isComponentTreeVisible={isComponentTreeVisible}
-          onShowComponentPalette={handleToggleComponentPalette}
-          isComponentPaletteVisible={isComponentPaletteVisible}
-          onShowGlobalSettings={handleToggleGlobalSettings}
-          isGlobalSettingsVisible={isGlobalSettingsVisible}
-          onToggleDragMode={handleToggleDragMode}
-          isDragModeEnabled={isDragModeEnabled}
-          isEditMode={mode === 'edit'}
-          onShowCanvasSettings={handleShowCanvasSettings}
-          isCanvasSettingsVisible={isCanvasSettingsVisible}
-          onClose={handleToggleFloatingMenu}
+      <div ref={floatingMenuRef}>
+        {isComponentTreeVisible && (
+          <ComponentTree
+            components={components}
+            onSelectComponent={handleComponentSelect}
+            selectedComponentId={selectedIds?.[0]}
+            isVisible={isComponentTreeVisible}
+            onClose={handleToggleComponentTree}
+            initialPosition={componentTreePosition}
+            onPositionChange={setComponentTreePosition}
+          />
+        )}
+      </div>
+
+      {selectedComponent && (
+        <FloatingToolbar
+          className="floating-toolbar"
+          componentId={selectedComponent.id}
+          componentType={selectedComponent.type}
+          initialPosition={toolbarPosition}
+          onClose={() => setSelectedComponent(null)}
+          style={selectedComponent.style}
+          props={selectedComponent.props}
+          content={selectedComponent.content}
+          onStyleChange={(updates) => {
+            dispatch(updateComponent({ id: selectedComponent.id, updates }));
+          }}
+          onToolbarInteraction={(e) => e.stopPropagation()}
+          component={selectedComponent}
         />
       )}
-      {isComponentTreeVisible && (
-        <ComponentTree
-          components={components}
-          onSelectComponent={handleComponentSelect}
-          selectedComponentId={selectedIds?.[0]}
-          isVisible={isComponentTreeVisible}
-          onClose={handleToggleComponentTree}
-          initialPosition={componentTreePosition}
-          onPositionChange={setComponentTreePosition}
-        />
-      )}
+
       {isComponentPaletteVisible && (
         <ComponentPalette
           isVisible={isComponentPaletteVisible}
@@ -187,22 +210,6 @@ const FloatingMenusManager = () => {
           }}
           onStyleChange={handleUpdateCanvasSettings}
           onToolbarInteraction={() => {}}
-        />
-      )}
-      {selectedComponent && (
-        <FloatingToolbar
-          componentId={selectedComponent.id}
-          componentType={selectedComponent.type}
-          initialPosition={toolbarPosition}
-          onClose={() => setSelectedComponent(null)}
-          style={selectedComponent.style}
-          props={selectedComponent.props}
-          content={selectedComponent.content}
-          onStyleChange={(updates) => {
-            dispatch(updateComponent({ id: selectedComponent.id, updates }));
-          }}
-          onToolbarInteraction={(e) => e.stopPropagation()}
-          component={selectedComponent}
         />
       )}
       {/* Conditionally render the floating button */}
