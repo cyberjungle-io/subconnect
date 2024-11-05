@@ -12,7 +12,8 @@ const TextRenderer = ({
   isEditing, 
   setIsEditing, 
   globalSettings,
-  isToolbarOpen
+  isToolbarOpen,
+  parent
 }) => {
   const textRef = useRef(null);
   const [localContent, setLocalContent] = useState(component.style.content || '');
@@ -24,8 +25,7 @@ const TextRenderer = ({
       height: '100%',
       fontFamily: component.style.fontFamily || generalComponentStyle.fontFamily,
       fontSize: component.style.fontSize || generalComponentStyle.fontSize,
-      color: component.style.color || generalComponentStyle.color || '#000000',
-      backgroundColor: 'transparent', // Let parent handle background
+      backgroundColor: 'transparent',
       textAlign: component.style.textAlign || 'left',
       fontWeight: component.style.fontWeight || 'normal',
       fontStyle: component.style.fontStyle || 'normal',
@@ -33,7 +33,8 @@ const TextRenderer = ({
       padding: '5px',
       cursor: isEditing ? 'text' : 'default',
       overflow: 'hidden',
-      wordWrap: 'break-word'
+      wordWrap: 'break-word',
+      transition: 'color 0.2s ease-in-out'
     };
   };
 

@@ -350,7 +350,8 @@ const ComponentRenderer = React.memo(({
     const parentHasHover = parent && parent.type === "FLEX_CONTAINER" && (
       parent.style?.hoverBackgroundColor ||
       parent.style?.hoverColor ||
-      parent.style?.hoverScale
+      parent.style?.hoverScale ||
+      parent.style?.hoverTextColor
     );
 
     const componentStyle = {
@@ -359,6 +360,7 @@ const ComponentRenderer = React.memo(({
       position: 'relative',
       overflow: "hidden",
       cursor: style.cursor || (parentHasHover ? "pointer" : (type === "FLEX_CONTAINER" ? "pointer" : "default")),
+      color: style.color || parent?.style?.color || 'inherit',
       boxSizing: 'border-box',
       borderRadius: style.borderRadius || props.borderRadius || generalComponentStyle.borderRadius || '4px',
       padding: style.padding || "0px",
@@ -486,46 +488,59 @@ const ComponentRenderer = React.memo(({
           ${component.type === "FLEX_CONTAINER" ? "hover-effects" : ""}
         `}
         onMouseEnter={(e) => {
+          const floatingToolbar = document.querySelector('.floating-toolbar');
+          
           const hasParentHover = parent && 
             parent.type === "FLEX_CONTAINER" && 
-            (parent.style?.hoverBackgroundColor || 
-             parent.style?.hoverColor || 
-             parent.style?.hoverScale);
+            (parent.style?.hoverTextColor ||
+             parent.style?.hoverColor);
 
           if ((component.type === "FLEX_CONTAINER" && component.style) || hasParentHover) {
             const target = e.currentTarget;
-            const styleToApply = hasParentHover ? parent.style : component.style;
+            if (!floatingToolbar || !floatingToolbar.contains(e.target)) {
+              const styleToApply = hasParentHover ? parent.style : component.style;
 
-            if (styleToApply.hoverBackgroundColor) {
-              target.style.backgroundColor = styleToApply.hoverBackgroundColor;
-            }
-            if (styleToApply.hoverColor) {
-              target.style.color = styleToApply.hoverColor;
-            }
-            if (styleToApply.hoverScale) {
-              target.style.transform = `scale(${styleToApply.hoverScale})`;
-            }
-            if (!styleToApply.cursor) {
-              target.style.cursor = "pointer";
+              if (component.type === "FLEX_CONTAINER" && styleToApply.hoverBackgroundColor) {
+                target.style.backgroundColor = styleToApply.hoverBackgroundColor;
+              }
+              
+              if (styleToApply.hoverTextColor) {
+                target.style.color = styleToApply.hoverTextColor;
+              }
+              if (styleToApply.hoverColor) {
+                target.style.color = styleToApply.hoverColor;
+              }
+              if (styleToApply.hoverScale) {
+                target.style.transform = `scale(${styleToApply.hoverScale})`;
+              }
+              if (!styleToApply.cursor) {
+                target.style.cursor = "pointer";
+              }
             }
           }
         }}
         onMouseLeave={(e) => {
+          const floatingToolbar = document.querySelector('.floating-toolbar');
+          
           const hasParentHover = parent && 
             parent.type === "FLEX_CONTAINER" && 
-            (parent.style?.hoverBackgroundColor || 
-             parent.style?.hoverColor || 
-             parent.style?.hoverScale);
+            (parent.style?.hoverTextColor ||
+             parent.style?.hoverColor);
 
           if ((component.type === "FLEX_CONTAINER" && component.style) || hasParentHover) {
             const target = e.currentTarget;
-            const styleToApply = hasParentHover ? parent.style : component.style;
+            if (!floatingToolbar || !floatingToolbar.contains(e.relatedTarget)) {
+              const styleToApply = hasParentHover ? parent.style : component.style;
 
-            target.style.backgroundColor = styleToApply.backgroundColor || 'transparent';
-            target.style.color = styleToApply.color || 'inherit';
-            target.style.transform = 'none';
-            target.style.cursor = styleToApply.cursor || 
-              (component.type === "FLEX_CONTAINER" ? "pointer" : "default");
+              if (component.type === "FLEX_CONTAINER") {
+                target.style.backgroundColor = styleToApply.backgroundColor || 'transparent';
+              }
+              
+              target.style.color = styleToApply.color || 'inherit';
+              target.style.transform = 'none';
+              target.style.cursor = styleToApply.cursor || 
+                (component.type === "FLEX_CONTAINER" ? "pointer" : "default");
+            }
           }
         }}
         onClick={(e) => {
@@ -564,6 +579,7 @@ const ComponentRenderer = React.memo(({
       </div>
       {toolbarState.show && (
         <FloatingToolbar
+          className="floating-toolbar"
           componentId={component.id}
           componentType={component.type}
           initialPosition={toolbarState.position}

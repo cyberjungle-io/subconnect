@@ -122,7 +122,7 @@ const iconMap = {
   ],
 };
 
-const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose, style, props, content, onStyleChange, onToolbarInteraction, component }) => {
+const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose, style, props, content, onStyleChange, onToolbarInteraction, component, className }) => {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.user.currentUser._id); // Move useSelector here
   const [position, setPosition] = useState(initialPosition);
@@ -486,7 +486,7 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
     <>
       <div
         ref={toolbarRef}
-        className="fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-[280px] flex flex-col group select-none"
+        className={`fixed z-[940] bg-[#f0f7ff] border border-[#cce0ff] rounded-lg shadow-xl w-[280px] flex flex-col group select-none ${className}`}
         style={{
           left: `${position.x}px`,
           top: `${position.y}px`,
