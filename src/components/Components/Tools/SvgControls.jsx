@@ -70,6 +70,15 @@ const SvgControls = ({ style = {}, onStyleChange, component }) => {
     if (type === 'stroke') setStroke(color);
   }, [onStyleChange, style]);
 
+  const handleRotationChange = useCallback((value) => {
+    onStyleChange({
+      style: {
+        ...style,
+        rotation: value
+      }
+    });
+  }, [onStyleChange, style]);
+
   return (
     <div className="control-section">
       <h3 className="text-lg font-semibold text-gray-700 mb-4">SVG Controls</h3>
@@ -183,15 +192,9 @@ const SvgControls = ({ style = {}, onStyleChange, component }) => {
       <div className="mb-4">
         <span className="text-sm font-medium text-gray-700 mb-2 block">Rotation</span>
         <input
-          type="range"
-          min="0"
-          max="360"
-          value={rotation}
-          onChange={(e) => {
-            const value = parseInt(e.target.value);
-            setRotation(value);
-            onStyleChange({ style: { rotation: value } });
-          }}
+          type="number"
+          value={style.rotation || 0}
+          onChange={(e) => handleRotationChange(Number(e.target.value))}
           className="w-full"
         />
       </div>
