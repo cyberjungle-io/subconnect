@@ -157,8 +157,21 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
   });
 
   if (isSvg) {
-    console.log('Switching to SVG Controls');
-    return <SvgControls style={style} onStyleChange={onStyleChange} component={component} />;
+    return (
+      <SvgControls 
+        style={style} 
+        onStyleChange={(updates) => {
+          onStyleChange({
+            ...updates,
+            style: {
+              ...style,
+              ...updates.style
+            }
+          });
+        }} 
+        component={component} 
+      />
+    );
   }
 
   return (

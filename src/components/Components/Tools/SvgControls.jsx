@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { FaUpload, FaSearchMinus, FaSearchPlus } from 'react-icons/fa';
-import { HuePicker } from 'react-color';
+import ColorPicker from '../../common/ColorPicker';
 
 const SvgControls = ({ style = {}, onStyleChange, component }) => {
   const [fill, setFill] = useState(style.fill || '#000000');
@@ -35,23 +35,40 @@ const SvgControls = ({ style = {}, onStyleChange, component }) => {
   }, [component, onStyleChange]);
 
   const handleSizeChange = useCallback((dimension, value) => {
-    const updates = {
+    const formattedValue = value.endsWith('px') ? value : `${value}px`;
+    
+    onStyleChange({
       style: {
-        [dimension]: value
+        ...style,
+        [dimension]: formattedValue
       }
-    };
-    onStyleChange(updates);
-    if (dimension === 'width') setWidth(value);
-    if (dimension === 'height') setHeight(value);
-  }, [onStyleChange]);
+    });
+    
+    if (dimension === 'width') setWidth(formattedValue);
+    if (dimension === 'height') setHeight(formattedValue);
+  }, [onStyleChange, style]);
 
   const handleScaleChange = useCallback((newScale) => {
     const scale = Math.max(0.1, Math.min(3, newScale));
     setScale(scale);
     onStyleChange({
-      style: { scale }
+      style: {
+        ...style,
+        scale
+      }
     });
-  }, [onStyleChange]);
+  }, [onStyleChange, style]);
+
+  const handleColorChange = useCallback((type, color) => {
+    onStyleChange({
+      style: {
+        ...style,
+        [type]: color
+      }
+    });
+    if (type === 'fill') setFill(color);
+    if (type === 'stroke') setStroke(color);
+  }, [onStyleChange, style]);
 
   return (
     <div className="control-section">
@@ -129,24 +146,18 @@ const SvgControls = ({ style = {}, onStyleChange, component }) => {
       {/* Fill Color */}
       <div className="mb-4">
         <span className="text-sm font-medium text-gray-700 mb-2 block">Fill Color</span>
-        <HuePicker
+        <ColorPicker
           color={fill}
-          onChange={(color) => {
-            setFill(color.hex);
-            onStyleChange({ style: { fill: color.hex } });
-          }}
+          onChange={(color) => handleColorChange('fill', color)}
         />
       </div>
 
       {/* Stroke Color */}
       <div className="mb-4">
         <span className="text-sm font-medium text-gray-700 mb-2 block">Stroke Color</span>
-        <HuePicker
+        <ColorPicker
           color={stroke}
-          onChange={(color) => {
-            setStroke(color.hex);
-            onStyleChange({ style: { stroke: color.hex } });
-          }}
+          onChange={(color) => handleColorChange('stroke', color)}
         />
       </div>
 

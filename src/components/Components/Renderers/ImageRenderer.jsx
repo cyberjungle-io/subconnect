@@ -74,11 +74,12 @@ const ImageRenderer = ({ component, isViewMode, onUpdate }) => {
     }
   }, [component.id, onUpdate, props]);
 
-  // Update the SVG detection and add debugging
-  const isSvg = component.props?.isSvg || 
-    (component.content && 
-     typeof component.content === 'string' && 
-     component.content.includes('<svg'));
+  // Update the SVG detection logic
+  const isSvg = component.props?.isSvg || (
+    component.content && 
+    typeof component.content === 'string' && 
+    (component.content.includes('<svg') || component.content.includes('<?xml'))
+  );
 
   // Add debug logging
   console.log('ImageRenderer SVG Detection:', {
