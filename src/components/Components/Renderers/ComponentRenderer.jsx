@@ -110,9 +110,18 @@ const ComponentRenderer = React.memo(({
 
   const handleClick = useCallback((event) => {
     if (isViewMode) {
+      const hasParentNavigation = parent && 
+        parent.type === "FLEX_CONTAINER" && 
+        parent.style?.enablePageNavigation && 
+        parent.style?.targetPageId;
+
       if (component.style?.enablePageNavigation && component.style?.targetPageId) {
         event.stopPropagation();
         navigateToPage(component.style.targetPageId);
+        return;
+      } else if (hasParentNavigation) {
+        event.stopPropagation();
+        navigateToPage(parent.style.targetPageId);
         return;
       }
       return;
@@ -121,7 +130,7 @@ const ComponentRenderer = React.memo(({
     event.stopPropagation();
     const isMultiSelect = event.ctrlKey || event.metaKey;
     onSelect(component.id, isMultiSelect);
-  }, [component.id, component.style, isViewMode, navigateToPage, onSelect]);
+  }, [component.id, component.style, parent, isViewMode, navigateToPage, onSelect]);
 
   // Add this effect to handle the delete key press
   useEffect(() => {
@@ -338,12 +347,18 @@ const ComponentRenderer = React.memo(({
     const { style, type, props } = component;
     const generalComponentStyle = globalSettings?.generalComponentStyle || defaultGlobalSettings.generalComponentStyle;
     
+    const parentHasHover = parent && parent.type === "FLEX_CONTAINER" && (
+      parent.style?.hoverBackgroundColor ||
+      parent.style?.hoverColor ||
+      parent.style?.hoverScale
+    );
+
     const componentStyle = {
       ...generalComponentStyle,
       ...style,
       position: 'relative',
       overflow: "hidden",
-      cursor: style.cursor || (type === "FLEX_CONTAINER" ? "pointer" : "default"),
+      cursor: style.cursor || (parentHasHover ? "pointer" : (type === "FLEX_CONTAINER" ? "pointer" : "default")),
       boxSizing: 'border-box',
       borderRadius: style.borderRadius || props.borderRadius || generalComponentStyle.borderRadius || '4px',
       padding: style.padding || "0px",
@@ -471,29 +486,46 @@ const ComponentRenderer = React.memo(({
           ${component.type === "FLEX_CONTAINER" ? "hover-effects" : ""}
         `}
         onMouseEnter={(e) => {
-          if (component.type === "FLEX_CONTAINER" && component.style) {
+          const hasParentHover = parent && 
+            parent.type === "FLEX_CONTAINER" && 
+            (parent.style?.hoverBackgroundColor || 
+             parent.style?.hoverColor || 
+             parent.style?.hoverScale);
+
+          if ((component.type === "FLEX_CONTAINER" && component.style) || hasParentHover) {
             const target = e.currentTarget;
-            if (component.style.hoverBackgroundColor) {
-              target.style.backgroundColor = component.style.hoverBackgroundColor;
+            const styleToApply = hasParentHover ? parent.style : component.style;
+
+            if (styleToApply.hoverBackgroundColor) {
+              target.style.backgroundColor = styleToApply.hoverBackgroundColor;
             }
-            if (component.style.hoverColor) {
-              target.style.color = component.style.hoverColor;
+            if (styleToApply.hoverColor) {
+              target.style.color = styleToApply.hoverColor;
             }
-            if (component.style.hoverScale) {
-              target.style.transform = `scale(${component.style.hoverScale})`;
+            if (styleToApply.hoverScale) {
+              target.style.transform = `scale(${styleToApply.hoverScale})`;
             }
-            if (!component.style.cursor) {
+            if (!styleToApply.cursor) {
               target.style.cursor = "pointer";
             }
           }
         }}
         onMouseLeave={(e) => {
-          if (component.type === "FLEX_CONTAINER" && component.style) {
+          const hasParentHover = parent && 
+            parent.type === "FLEX_CONTAINER" && 
+            (parent.style?.hoverBackgroundColor || 
+             parent.style?.hoverColor || 
+             parent.style?.hoverScale);
+
+          if ((component.type === "FLEX_CONTAINER" && component.style) || hasParentHover) {
             const target = e.currentTarget;
-            target.style.backgroundColor = component.style.backgroundColor || 'transparent';
-            target.style.color = component.style.color || 'inherit';
+            const styleToApply = hasParentHover ? parent.style : component.style;
+
+            target.style.backgroundColor = styleToApply.backgroundColor || 'transparent';
+            target.style.color = styleToApply.color || 'inherit';
             target.style.transform = 'none';
-            target.style.cursor = component.style.cursor || (component.type === "FLEX_CONTAINER" ? "pointer" : "default");
+            target.style.cursor = styleToApply.cursor || 
+              (component.type === "FLEX_CONTAINER" ? "pointer" : "default");
           }
         }}
         onClick={(e) => {
