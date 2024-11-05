@@ -18,6 +18,8 @@ import PricingPage from './pages/PricingPage';
 import BugReportPage from './pages/BugReportPage';
 import NodeServicesPage from './pages/NodeServicesPage';
 import TutorialsPage from './pages/Tutorials';
+import DocumentationPage from './pages/Documentation';
+import ImageDocs from './pages/Docs/ImageDocs';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -57,6 +59,12 @@ function AppContent() {
         <Route path="/bug-report" element={<BugReportPage />} />
         <Route path="/node-services" element={<NodeServicesPage />} />
         <Route path="/tutorials" element={<TutorialsPage />} />
+        <Route path="/docs/*" element={<DocumentationPage />}>
+          <Route index element={
+            <div className="p-8">Select a topic from the sidebar to get started.</div>
+          } />
+          <Route path="components/image" element={<ImageDocs />} />
+        </Route>
       </Routes>
     </Router>
   );

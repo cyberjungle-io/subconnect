@@ -163,6 +163,24 @@ const FloatingMenusManager = () => {
         )}
       </div>
 
+      {isRightMenuVisible && (
+        <FloatingRightMenu
+          ref={floatingRightMenuRef}
+          onShowComponentTree={handleToggleComponentTree}
+          onShowComponentPalette={handleToggleComponentPalette}
+          onShowGlobalSettings={handleToggleGlobalSettings}
+          onToggleDragMode={handleToggleDragMode}
+          onShowCanvasSettings={handleShowCanvasSettings}
+          isComponentTreeVisible={isComponentTreeVisible}
+          isComponentPaletteVisible={isComponentPaletteVisible}
+          isGlobalSettingsVisible={isGlobalSettingsVisible}
+          isDragModeEnabled={isDragModeEnabled}
+          isCanvasSettingsVisible={isCanvasSettingsVisible}
+          isEditMode={mode === 'edit'}
+          onClose={handleToggleFloatingMenu}
+        />
+      )}
+
       {selectedComponent && (
         <FloatingToolbar
           className="floating-toolbar"

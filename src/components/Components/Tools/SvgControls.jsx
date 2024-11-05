@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
-import { FaUpload, FaSearchMinus, FaSearchPlus } from 'react-icons/fa';
+import { FaUpload, FaSearchMinus, FaSearchPlus, FaInfoCircle } from 'react-icons/fa';
 import ColorPicker from '../../common/ColorPicker';
+import { Link } from 'react-router-dom';
 
 const SvgControls = ({ style = {}, onStyleChange, component }) => {
   const [fill, setFill] = useState(style.fill || '#000000');
@@ -91,7 +92,16 @@ const SvgControls = ({ style = {}, onStyleChange, component }) => {
 
   return (
     <div className="control-section">
-      <h3 className="text-lg font-semibold text-gray-700 mb-4">SVG Controls</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-700">SVG Controls</h3>
+        <Link 
+          to="/docs/image"
+          className="text-gray-500 hover:text-gray-700 transition-colors"
+          title="View SVG Documentation"
+        >
+          <FaInfoCircle />
+        </Link>
+      </div>
 
       {/* Size Controls */}
       <div className="mb-4">

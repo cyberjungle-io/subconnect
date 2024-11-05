@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaBars, FaTimes, FaFolderOpen, FaDatabase, FaHome, FaDollarSign, FaCog, FaQuestionCircle, FaBug, FaServer, FaBook } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import { FaBars, FaTimes, FaFolderOpen, FaDatabase, FaHome, FaDollarSign, FaCog, FaQuestionCircle, FaBug, FaServer, FaBook, FaFileAlt } from 'react-icons/fa';
 import DataModal from '../Editor/DataModal'; // Import the DataModal component
 
 const HamburgerMenu = ({ onOpenProjectModal }) => {
@@ -90,6 +91,14 @@ const HamburgerMenu = ({ onOpenProjectModal }) => {
                 <FaBook className="mr-2" />
                 Tutorials
               </a>
+              <Link
+                to="/docs"
+                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-300 flex items-center"
+                onClick={toggleMenu}
+              >
+                <FaFileAlt className="mr-2" />
+                Documentation
+              </Link>
               <a
                 href="/pricing"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-300 flex items-center"

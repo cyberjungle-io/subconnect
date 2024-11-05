@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { FaSearchPlus, FaSearchMinus, FaUpload, FaCode } from 'react-icons/fa';
+import { FaSearchPlus, FaSearchMinus, FaUpload, FaCode, FaInfoCircle } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import { updateComponent } from '../../../features/editorSlice';
 import SvgControls from './SvgControls';
+import { Link } from 'react-router-dom';
 
 const ImageControls = ({ style = {}, onStyleChange, component }) => {
   const dispatch = useDispatch();
@@ -176,7 +177,16 @@ const ImageControls = ({ style = {}, onStyleChange, component }) => {
 
   return (
     <div className="control-section">
-      <h3 className="text-lg font-semibold text-gray-700 mb-4">Image Controls</h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-700">Image Controls</h3>
+        <Link 
+          to="/docs/image"
+          className="text-gray-500 hover:text-gray-700 transition-colors"
+          title="View Image Documentation"
+        >
+          <FaInfoCircle />
+        </Link>
+      </div>
       
       {/* Upload Buttons Group */}
       <div className="mb-4 space-y-2">
