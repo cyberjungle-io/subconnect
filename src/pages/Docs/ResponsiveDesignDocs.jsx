@@ -59,45 +59,12 @@ const ResponsiveDesignDocs = () => {
         </div>
       </section>
 
-      <section id="breakpoint-behavior" className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">Breakpoint Behavior</h2>
-        
-        <div className="bg-purple-50 p-4 rounded-lg">
-          <h3 className="text-lg font-medium mb-2">Standard Breakpoints:</h3>
-          <ul className="list-disc pl-6 space-y-2 text-gray-700">
-            <li><strong>Mobile:</strong> &lt; 768px</li>
-            <li><strong>Tablet:</strong> 768px - 1024px</li>
-            <li><strong>Desktop:</strong> &gt; 1024px</li>
-          </ul>
-        </div>
-
-        <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-          <h4 className="font-medium mb-2">Example Configuration:</h4>
-          <pre className="text-sm overflow-x-auto">
-{`{
-  desktop: {
-    width: "33%",
-    direction: "row"
-  },
-  tablet: {
-    width: "50%",
-    direction: "row"
-  },
-  mobile: {
-    width: "100%",
-    direction: "column"
-  }
-}`}</pre>
-        </div>
-      </section>
-
       <section id="best-practices" className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Best Practices</h2>
         <ul className="list-disc pl-6 space-y-2 text-gray-700">
           <li>Start with mobile layout and enhance for larger screens</li>
           <li>Use relative units (%, vh, vw) instead of fixed pixels</li>
           <li>Test layouts with different content lengths</li>
-          <li>Consider touch targets on mobile (minimum 44px)</li>
           <li>Use flex-wrap for natural content flow</li>
         </ul>
       </section>
@@ -114,11 +81,7 @@ const ResponsiveDesignDocs = () => {
   direction: "row",
   wrap: true,
   gap: "16px",
-  childWidth: {
-    desktop: "calc(33.33% - 16px)",
-    tablet: "calc(50% - 16px)",
-    mobile: "100%"
-  }
+  childWidth: "100%"
 }`}</pre>
           </div>
 
@@ -127,14 +90,8 @@ const ResponsiveDesignDocs = () => {
             <pre className="text-sm overflow-x-auto">
 {`// Responsive sidebar layout
 {
-  direction: {
-    desktop: "row",
-    mobile: "column"
-  },
-  sidebarWidth: {
-    desktop: "250px",
-    mobile: "100%"
-  }
+  direction: "row",
+  sidebarWidth: "250px"
 }`}</pre>
           </div>
         </div>
