@@ -29,6 +29,8 @@ import VideoDocs from './pages/Docs/VideoDocs';
 import WhiteboardDocs from './pages/Docs/WhiteboardDocs';
 import TableDocs from './pages/Docs/TableDocs';
 import QueryValueDocs from './pages/Docs/QueryValueDocs';
+import ResponsiveDesignDocs from './pages/Docs/ResponsiveDesignDocs';
+import DocsLanding from './pages/Docs/DocsLandingPage';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -68,10 +70,8 @@ function AppContent() {
         <Route path="/bug-report" element={<BugReportPage />} />
         <Route path="/node-services" element={<NodeServicesPage />} />
         <Route path="/tutorials" element={<TutorialsPage />} />
-        <Route path="/docs/*" element={<DocumentationPage />}>
-          <Route index element={
-            <div className="p-8">Select a topic from the sidebar to get started.</div>
-          } />
+        <Route path="/docs" element={<DocumentationPage />}>
+          <Route index element={<DocsLanding />} />
           <Route path="components/flex-container" element={<FlexContainerDocs />} />
           <Route path="components/image" element={<ImageDocs />} />
           <Route path="components/charts" element={<ChartDocs />} />
@@ -82,6 +82,7 @@ function AppContent() {
           <Route path="components/whiteboard" element={<WhiteboardDocs />} />
           <Route path="components/table" element={<TableDocs />} />
           <Route path="components/query-value" element={<QueryValueDocs />} />
+          <Route path="guides/responsive-design" element={<ResponsiveDesignDocs />} />
         </Route>
       </Routes>
     </Router>

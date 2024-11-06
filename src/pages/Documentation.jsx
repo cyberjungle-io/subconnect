@@ -42,6 +42,7 @@ const PageNavigation = () => {
 };
 
 const DocumentationPage = () => {
+  const location = useLocation();
   const sections = [
     {
       title: 'Components',
@@ -56,10 +57,15 @@ const DocumentationPage = () => {
         { name: 'Whiteboard', path: '/docs/components/whiteboard' },
         { name: 'Table', path: '/docs/components/table' },
         { name: 'Query Value', path: '/docs/components/query-value' },
-        // Add more components here as they come
       ]
     },
-    // Add more sections as needed (e.g., Guides, API, etc.)
+    {
+      title: 'Guides',
+      items: [
+        { name: 'Responsive Design', path: '/docs/guides/responsive-design' },
+        // Add more guides here as they come
+      ]
+    }
   ];
 
   return (
@@ -75,16 +81,16 @@ const DocumentationPage = () => {
           </div>
           <nav className="px-4 py-2">
             {sections.map((section) => (
-              <div key={section.title} className="mb-6">
-                <h2 className="px-2 mb-2 text-sm font-semibold text-gray-600 uppercase">
+              <div key={section.title} className="mb-8">
+                <h2 className="px-2 mb-3 text-base font-bold text-gray-800 uppercase tracking-wide">
                   {section.title}
                 </h2>
-                <ul className="space-y-1">
+                <ul className="space-y-1 pl-3">
                   {section.items.map((item) => (
                     <li key={item.name}>
                       <Link
                         to={item.path}
-                        className="block px-2 py-1.5 text-gray-700 hover:bg-gray-100 rounded-md"
+                        className="block px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition-colors duration-150"
                       >
                         {item.name}
                       </Link>
@@ -98,9 +104,31 @@ const DocumentationPage = () => {
 
         {/* Main Content Area */}
         <main className="flex-1 overflow-auto">
-          <div className="h-16 bg-white border-b border-gray-200">
-            {/* Add breadcrumbs or other navigation aids here */}
+          <div className="h-16 bg-white border-b border-gray-200 px-8 flex items-center justify-between">
+            <div className="flex items-center space-x-2 text-sm">
+              <Link to="/docs" className="text-gray-600 hover:text-gray-900">
+                Docs
+              </Link>
+              <span className="text-gray-400">/</span>
+              <span className="text-gray-900 font-medium">
+                {location.pathname.split('/').pop().replace(/-/g, ' ')}
+              </span>
+            </div>
+            
+            <div className="flex items-center space-x-4">
+              <button className="text-gray-500 hover:text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+                </svg>
+              </button>
+              <button className="text-gray-500 hover:text-gray-700">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" />
+                </svg>
+              </button>
+            </div>
           </div>
+          
           <div className="p-8">
             <div className="max-w-6xl flex gap-8">
               <div className="flex-1">
