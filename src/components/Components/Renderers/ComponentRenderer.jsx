@@ -529,7 +529,12 @@ const ComponentRenderer = React.memo(({
 
           if ((component.type === "FLEX_CONTAINER" && component.style) || hasParentHover) {
             const target = e.currentTarget;
-            if (!floatingToolbar || !floatingToolbar.contains(e.relatedTarget)) {
+            // Check if we should reset styles
+            const shouldResetStyles = !floatingToolbar || 
+              !e.relatedTarget || 
+              (e.relatedTarget instanceof Node && !floatingToolbar.contains(e.relatedTarget));
+
+            if (shouldResetStyles) {
               const styleToApply = hasParentHover ? parent.style : component.style;
 
               if (component.type === "FLEX_CONTAINER") {
