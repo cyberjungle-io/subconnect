@@ -2,19 +2,7 @@ import React from 'react';
 
 const ImageDocs = () => {
   return (
-    <div className="max-w-4xl">
-      {/* Quick Links / Table of Contents */}
-      <div className="mb-8 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-lg font-semibold mb-2">On this page</h2>
-        <nav className="space-y-1">
-          <a href="#overview" className="block text-blue-600 hover:underline">Overview</a>
-          <a href="#features" className="block text-blue-600 hover:underline">Key Features</a>
-          <a href="#image-controls" className="block text-blue-600 hover:underline">Image Controls</a>
-          {/* Add more quick links */}
-        </nav>
-      </div>
-
-      {/* Existing content sections with added id attributes */}
+    <div className="flex-1">
       <section id="overview" className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Overview</h2>
         <p className="text-gray-700 mb-4">

@@ -20,6 +20,15 @@ import NodeServicesPage from './pages/NodeServicesPage';
 import TutorialsPage from './pages/Tutorials';
 import DocumentationPage from './pages/Documentation';
 import ImageDocs from './pages/Docs/ImageDocs';
+import FlexContainerDocs from './pages/Docs/FlexContainerDocs';
+import ChartDocs from './pages/Docs/ChartDocs';
+import TextDocs from './pages/Docs/TextDocs';
+import KanbanDocs from './pages/Docs/KanbanDocs';
+import TodoDocs from './pages/Docs/TodoDocs';
+import VideoDocs from './pages/Docs/VideoDocs';
+import WhiteboardDocs from './pages/Docs/WhiteboardDocs';
+import TableDocs from './pages/Docs/TableDocs';
+import QueryValueDocs from './pages/Docs/QueryValueDocs';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -63,7 +72,16 @@ function AppContent() {
           <Route index element={
             <div className="p-8">Select a topic from the sidebar to get started.</div>
           } />
+          <Route path="components/flex-container" element={<FlexContainerDocs />} />
           <Route path="components/image" element={<ImageDocs />} />
+          <Route path="components/charts" element={<ChartDocs />} />
+          <Route path="components/text" element={<TextDocs />} />
+          <Route path="components/kanban" element={<KanbanDocs />} />
+          <Route path="components/todo" element={<TodoDocs />} />
+          <Route path="components/video" element={<VideoDocs />} />
+          <Route path="components/whiteboard" element={<WhiteboardDocs />} />
+          <Route path="components/table" element={<TableDocs />} />
+          <Route path="components/query-value" element={<QueryValueDocs />} />
         </Route>
       </Routes>
     </Router>
