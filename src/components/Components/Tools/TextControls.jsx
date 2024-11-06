@@ -33,6 +33,12 @@ const ELEMENT_TYPES = [
   { value: 'h6', label: 'Heading 6', defaultSize: '10.72px' },
 ];
 
+const UNITS = ['px', '%', 'em', 'rem', 'pt'];
+
+const LETTER_SPACING_UNITS = ['px', 'em', 'rem'];
+
+const LINE_HEIGHT_UNITS = ['', 'px', 'em', 'rem', '%'];
+
 const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
   const [fontFamily, setFontFamily] = useState('Arial, sans-serif');
   const [fontSize, setFontSize] = useState('16px');
@@ -47,8 +53,6 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
   const [textTransform, setTextTransform] = useState('none');
   const [wordSpacing, setWordSpacing] = useState('normal');
   const [textShadow, setTextShadow] = useState({ x: 0, y: 0, blur: 0, color: '#000000' });
-  const [hoverEffect, setHoverEffect] = useState('none');
-  const [clickAction, setClickAction] = useState('none');
 
   useEffect(() => {
     if (style) {
@@ -65,8 +69,6 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
       setTextTransform(style.textTransform || 'none');
       setWordSpacing(style.wordSpacing || 'normal');
       setTextShadow(style.textShadow ? parseShadow(style.textShadow) : { x: 0, y: 0, blur: 0, color: '#000000' });
-      setHoverEffect(style.hoverEffect || 'none');
-      setClickAction(style.clickAction || 'none');
     }
   }, [style]);
 
@@ -127,6 +129,45 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
     setElementType(newElementType);
     setFontSize(selectedType.defaultSize);
     handleStyleChange({ elementType: newElementType, fontSize: selectedType.defaultSize });
+  };
+
+  const renderSizeInput = (value, onChange, units = UNITS, className = '') => {
+    const stringValue = String(value || '16px');
+    const numericValue = parseFloat(stringValue) || 16;
+    const unit = stringValue.replace(/[0-9.-]/g, '') || 'px';
+
+    return (
+      <div className={`flex items-center justify-center w-full ${className}`}>
+        <div className="flex-grow flex">
+          <input
+            type="text"
+            value={numericValue}
+            onChange={(e) => onChange(`${e.target.value}${unit}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                const step = e.shiftKey ? 10 : 1;
+                const newValue = e.key === 'ArrowUp' ? numericValue + step : numericValue - step;
+                onChange(`${newValue}${unit}`);
+              }
+            }}
+            className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+            placeholder="Font Size"
+          />
+          <select
+            value={unit}
+            onChange={(e) => onChange(`${numericValue}${e.target.value}`)}
+            className="p-2 text-sm border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          >
+            {units.map((u) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -199,15 +240,10 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
           </div>
           <div className="w-1/2">
             <label className="block text-sm font-medium text-gray-700 mb-2">Font Size</label>
-            <input
-              type="text"
-              value={fontSize}
-              onChange={(e) => {
-                setFontSize(e.target.value);
-                handleStyleChange({ fontSize: e.target.value });
-              }}
-              className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
+            {renderSizeInput(fontSize, (value) => {
+              setFontSize(value);
+              handleStyleChange({ fontSize: value });
+            })}
           </div>
         </div>
 
@@ -240,28 +276,18 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">Letter Spacing</label>
-          <input
-            type="text"
-            value={letterSpacing}
-            onChange={(e) => {
-              setLetterSpacing(e.target.value);
-              handleStyleChange({ letterSpacing: e.target.value });
-            }}
-            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
+          {renderSizeInput(letterSpacing, (value) => {
+            setLetterSpacing(value);
+            handleStyleChange({ letterSpacing: value });
+          }, LETTER_SPACING_UNITS)}
         </div>
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">Line Height</label>
-          <input
-            type="text"
-            value={lineHeight}
-            onChange={(e) => {
-              setLineHeight(e.target.value);
-              handleStyleChange({ lineHeight: e.target.value });
-            }}
-            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
+          {renderSizeInput(lineHeight, (value) => {
+            setLineHeight(value);
+            handleStyleChange({ lineHeight: value });
+          }, LINE_HEIGHT_UNITS)}
         </div>
 
         <div className="mb-4">
@@ -283,85 +309,70 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">Word Spacing</label>
-          <input
-            type="text"
-            value={wordSpacing}
-            onChange={(e) => {
-              setWordSpacing(e.target.value);
-              handleStyleChange({ wordSpacing: e.target.value });
-            }}
-            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          />
+          {renderSizeInput(wordSpacing, (value) => {
+            setWordSpacing(value);
+            handleStyleChange({ wordSpacing: value });
+          }, LETTER_SPACING_UNITS)}
         </div>
 
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">Text Shadow</label>
-          <div className="flex space-x-2">
-            <input
-              type="number"
-              placeholder="X"
-              value={textShadow.x}
-              onChange={(e) => setTextShadow(prev => ({ ...prev, x: e.target.value }))}
-              onBlur={() => handleStyleChange({ textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${textShadow.color}` })}
-              className="w-1/4 p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
-            <input
-              type="number"
-              placeholder="Y"
-              value={textShadow.y}
-              onChange={(e) => setTextShadow(prev => ({ ...prev, y: e.target.value }))}
-              onBlur={() => handleStyleChange({ textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${textShadow.color}` })}
-              className="w-1/4 p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
-            <input
-              type="number"
-              placeholder="Blur"
-              value={textShadow.blur}
-              onChange={(e) => setTextShadow(prev => ({ ...prev, blur: e.target.value }))}
-              onBlur={() => handleStyleChange({ textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${textShadow.color}` })}
-              className="w-1/4 p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            />
-            <ColorPicker
-              color={textShadow.color}
-              onChange={(color) => {
-                setTextShadow(prev => ({ ...prev, color }));
-                handleStyleChange({ textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${color}` });
-              }}
-            />
+          <div className="space-y-3">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="col-span-1">
+                <label className="block text-xs text-gray-500 mb-1">Offset X</label>
+                <input
+                  type="number"
+                  placeholder="X"
+                  value={textShadow.x}
+                  onChange={(e) => setTextShadow(prev => ({ ...prev, x: e.target.value }))}
+                  onBlur={() => handleStyleChange({ 
+                    textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${textShadow.color}` 
+                  })}
+                  className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+              <div className="col-span-1">
+                <label className="block text-xs text-gray-500 mb-1">Offset Y</label>
+                <input
+                  type="number"
+                  placeholder="Y"
+                  value={textShadow.y}
+                  onChange={(e) => setTextShadow(prev => ({ ...prev, y: e.target.value }))}
+                  onBlur={() => handleStyleChange({ 
+                    textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${textShadow.color}` 
+                  })}
+                  className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+              <div className="col-span-1">
+                <label className="block text-xs text-gray-500 mb-1">Blur</label>
+                <input
+                  type="number"
+                  placeholder="Blur"
+                  value={textShadow.blur}
+                  onChange={(e) => setTextShadow(prev => ({ ...prev, blur: e.target.value }))}
+                  onBlur={() => handleStyleChange({ 
+                    textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${textShadow.color}` 
+                  })}
+                  className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">Shadow Color</label>
+              <ColorPicker
+                color={textShadow.color}
+                onChange={(color) => {
+                  setTextShadow(prev => ({ ...prev, color }));
+                  handleStyleChange({ 
+                    textShadow: `${textShadow.x}px ${textShadow.y}px ${textShadow.blur}px ${color}` 
+                  });
+                }}
+              />
+            </div>
           </div>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Hover Effect</label>
-          <select
-            value={hoverEffect}
-            onChange={(e) => {
-              setHoverEffect(e.target.value);
-              handleStyleChange({ hoverEffect: e.target.value });
-            }}
-            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="none">None</option>
-            <option value="underline">Underline</option>
-            <option value="color">Color Change</option>
-            <option value="scale">Scale</option>
-          </select>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Click Action</label>
-          <select
-            value={clickAction}
-            onChange={(e) => {
-              setClickAction(e.target.value);
-              handleStyleChange({ clickAction: e.target.value });
-            }}
-            className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-          >
-            <option value="none">None</option>
-            <option value="smoothScroll">Smooth Scroll</option>
-            <option value="openModal">Open Modal</option>
-          </select>
         </div>
       </div>
     </div>
