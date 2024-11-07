@@ -83,14 +83,20 @@ const Canvas = ({
   useEffect(() => {
     const updateCanvasDimensions = () => {
       if (canvasRef.current) {
-        const { scrollWidth, scrollHeight } = canvasRef.current;
-        setCanvasSize({ width: scrollWidth, height: scrollHeight });
+        const { scrollWidth } = canvasRef.current;
+        setCanvasSize({ width: scrollWidth, height: window.innerHeight });
         
-        // Set a minimum height for the canvas
+        // Only update height if content exceeds viewport
+        const contentHeight = Array.from(canvasRef.current.children)
+          .reduce((total, child) => total + child.offsetHeight, 0);
         const minHeight = Math.max(window.innerHeight, originalCanvasHeight);
-        const newHeight = Math.max(scrollHeight, minHeight);
-        setCanvasHeight(`${newHeight}px`);
-        dispatch(updateCanvasSettings({ canvasHeight: `${newHeight}px` }));
+        const newHeight = Math.max(contentHeight, minHeight);
+        
+        // Only update if significantly different
+        if (Math.abs(parseInt(canvasHeight) - newHeight) > 50) {
+          setCanvasHeight(`${newHeight}px`);
+          dispatch(updateCanvasSettings({ canvasHeight: `${newHeight}px` }));
+        }
       }
     };
 
@@ -100,7 +106,7 @@ const Canvas = ({
     return () => {
       window.removeEventListener('resize', updateCanvasDimensions);
     };
-  }, [components, originalCanvasHeight, dispatch]);
+  }, [components, originalCanvasHeight, dispatch, canvasHeight]);
 
   const getDropPosition = useCallback((offset) => {
     if (!canvasBounds) return null;

@@ -376,7 +376,7 @@ const ComponentRenderer = React.memo(({
       minHeight: style.minHeight || 'auto',
     };
 
-    // Handle height for different component types
+    // Modify the height handling logic
     if (type === 'TEXT') {
       componentStyle.height = 'auto';
       componentStyle.minHeight = style.minHeight || style.height || 'auto';
@@ -385,6 +385,11 @@ const ComponentRenderer = React.memo(({
       componentStyle.height = style.height || '300px';
       componentStyle.minWidth = style.minWidth || "200px";
       componentStyle.minHeight = style.minHeight || "150px";
+    } else if (type === 'FLEX_CONTAINER') {
+      // Add specific handling for FLEX_CONTAINER
+      componentStyle.height = style.height || (isTopLevel ? '300px' : 'auto');
+      componentStyle.minHeight = style.minHeight || 'auto';
+      componentStyle.maxHeight = style.maxHeight || 'none';
     } else if (isTopLevel) {
       componentStyle.height = style.height || '300px';
     } else {
