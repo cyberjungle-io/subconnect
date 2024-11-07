@@ -16,7 +16,8 @@ const TextRenderer = ({
   parent
 }) => {
   const textRef = useRef(null);
-  const [localContent, setLocalContent] = useState(component.style.content || '');
+  const contentRef = useRef(component.style.content || '');
+  const updateTimeoutRef = useRef(null);
 
   const getTextStyle = () => {
     const generalComponentStyle = globalSettings?.generalComponentStyle || {};
@@ -61,35 +62,11 @@ const TextRenderer = ({
   const ElementType = component.style.headingLevel || 'p';
 
   useEffect(() => {
-    setLocalContent(component.style.content || '');
+    if (textRef.current && component.style.content !== contentRef.current) {
+      textRef.current.innerHTML = DOMPurify.sanitize(component.style.content || '');
+      contentRef.current = component.style.content;
+    }
   }, [component.style.content]);
-
-  useEffect(() => {
-    if (isEditing && textRef.current) {
-      placeCaretAtEnd(textRef.current);
-    }
-  }, [isEditing]);
-
-  // Replace the existing placeCaretAtEnd function with this improved version
-  const placeCaretAtEnd = (element) => {
-    if (element) {
-      element.focus();
-      if (typeof window.getSelection != "undefined"
-          && typeof document.createRange != "undefined") {
-        const range = document.createRange();
-        range.selectNodeContents(element);
-        range.collapse(false);
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-      } else if (typeof document.body.createTextRange != "undefined") {
-        const textRange = document.body.createTextRange();
-        textRange.moveToElementText(element);
-        textRange.collapse(false);
-        textRange.select();
-      }
-    }
-  };
 
   const handleFocus = () => {
     // Remove setShowPlaceholder(false);
@@ -102,20 +79,29 @@ const TextRenderer = ({
   const handleInput = (e) => {
     const element = e.target;
     const newContent = element.innerHTML;
-    const sanitizedContent = sanitizeHtml(newContent);
-
-    if (validateHtmlContent(sanitizedContent)) {
-      setLocalContent(sanitizedContent);
-      onUpdate(component.id, { 
-        style: { 
-          ...component.style, 
-          content: sanitizedContent,
-          height: 'auto', // Set height to 'auto' when content changes
-        } 
-      });
-    } else {
-      console.warn('Invalid HTML content:', newContent);
+    
+    // Clear any pending updates
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
     }
+
+    // Debounce the update to prevent rapid re-renders
+    updateTimeoutRef.current = setTimeout(() => {
+      const sanitizedContent = sanitizeHtml(newContent);
+      
+      if (validateHtmlContent(sanitizedContent)) {
+        contentRef.current = sanitizedContent;
+        onUpdate(component.id, { 
+          style: { 
+            ...component.style, 
+            content: sanitizedContent,
+            height: 'auto',
+          } 
+        });
+      } else {
+        console.warn('Invalid HTML content:', newContent);
+      }
+    }, 100); // Adjust this delay as needed
   };
 
   const handleKeyDown = (e) => {
@@ -137,7 +123,6 @@ const TextRenderer = ({
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         suppressContentEditableWarning={true}
-        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(localContent) }}
       />
       {isToolbarOpen && !isViewMode && (
         <div className="absolute top-full left-0 z-10 w-full">
@@ -145,9 +130,9 @@ const TextRenderer = ({
             style={component.style}
             onStyleChange={(newStyle) => onUpdate(component.id, { style: newStyle })}
             isToolbarOpen={isToolbarOpen}
-            content={localContent}
+            content={contentRef.current}
             onContentChange={(newContent) => {
-              setLocalContent(newContent);
+              contentRef.current = newContent;
               onUpdate(component.id, { style: { ...component.style, content: newContent } });
             }}
           />
