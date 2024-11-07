@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaAlignLeft, FaAlignCenter, FaAlignRight, FaBold, FaItalic, FaUnderline } from 'react-icons/fa';
 import { TbOverline, TbStrikethrough } from 'react-icons/tb';
 import ColorPicker from '../../common/ColorPicker';
@@ -53,6 +53,7 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
   const [textTransform, setTextTransform] = useState('none');
   const [wordSpacing, setWordSpacing] = useState('normal');
   const [textShadow, setTextShadow] = useState({ x: 0, y: 0, blur: 0, color: '#000000' });
+  const updateTimeoutRef = useRef(null);
 
   useEffect(() => {
     if (style) {
@@ -76,10 +77,156 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
     onStyleChange({ ...style, ...updates });
   };
 
+  const isStyleActiveInSelection = (styleType) => {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return false;
+
+    const range = selection.getRangeAt(0);
+    const container = range.commonAncestorContainer;
+    
+    // Check if the selection is within or contains the relevant style tag
+    const checkNode = (node) => {
+      switch (styleType) {
+        case 'bold':
+          return node.nodeName === 'STRONG';
+        case 'italic':
+          return node.nodeName === 'EM';
+        case 'underline':
+          return node.nodeName === 'U';
+        case 'overline':
+        case 'line-through':
+          return node.nodeName === 'SPAN' && 
+                 node.style.textDecoration === styleType;
+        default:
+          return false;
+      }
+    };
+
+    // Check if the style is applied to the current node or its parents
+    let currentNode = container.nodeType === 3 ? container.parentNode : container;
+    while (currentNode && currentNode.contentEditable !== 'true') {
+      if (checkNode(currentNode)) return true;
+      currentNode = currentNode.parentNode;
+    }
+    
+    return false;
+  };
+
+  const removeStyle = (node, styleType) => {
+    const parent = node.parentNode;
+    if (!parent) return;
+
+    switch (styleType) {
+      case 'bold':
+      case 'italic':
+      case 'underline':
+        // Replace the styled node with its contents
+        while (node.firstChild) {
+          parent.insertBefore(node.firstChild, node);
+        }
+        parent.removeChild(node);
+        break;
+      case 'overline':
+      case 'line-through':
+        // Remove the text-decoration style
+        node.style.textDecoration = '';
+        if (!node.getAttribute('style')) {
+          // If no styles left, unwrap the span
+          while (node.firstChild) {
+            parent.insertBefore(node.firstChild, node);
+          }
+          parent.removeChild(node);
+        }
+        break;
+    }
+  };
+
   const applyStyleToSelection = (styleType) => {
     const selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
+    if (!selection.rangeCount) return;
+
+    const range = selection.getRangeAt(0);
+    const isStyleActive = isStyleActiveInSelection(styleType);
+
+    if (isStyleActive) {
+      // Remove the style only from selected text
+      const selectedNodes = [];
+      const iterator = document.createNodeIterator(
+        range.commonAncestorContainer,
+        NodeFilter.SHOW_ELEMENT,
+        {
+          acceptNode: (node) => {
+            // Check if node is at least partially within selection
+            const nodeRange = document.createRange();
+            nodeRange.selectNode(node);
+            const isIntersecting = !(
+              range.compareBoundaryPoints(Range.END_TO_START, nodeRange) > 0 ||
+              range.compareBoundaryPoints(Range.START_TO_END, nodeRange) < 0
+            );
+            
+            if (!isIntersecting) return NodeFilter.FILTER_REJECT;
+
+            if ((styleType === 'bold' && node.nodeName === 'STRONG') ||
+                (styleType === 'italic' && node.nodeName === 'EM') ||
+                (styleType === 'underline' && node.nodeName === 'U') ||
+                ((styleType === 'overline' || styleType === 'line-through') && 
+                 node.nodeName === 'SPAN' && node.style.textDecoration === styleType)) {
+              return NodeFilter.FILTER_ACCEPT;
+            }
+            return NodeFilter.FILTER_SKIP;
+          }
+        }
+      );
+
+      let node;
+      while ((node = iterator.nextNode())) {
+        selectedNodes.push(node);
+      }
+
+      // Create a new range for each styled node and split if necessary
+      selectedNodes.forEach(node => {
+        const nodeRange = document.createRange();
+        nodeRange.selectNode(node);
+
+        // Node is completely within selection
+        if (range.compareBoundaryPoints(Range.START_TO_START, nodeRange) <= 0 &&
+            range.compareBoundaryPoints(Range.END_TO_END, nodeRange) >= 0) {
+          removeStyle(node, styleType);
+        }
+        // Node intersects with selection
+        else {
+          const parent = node.parentNode;
+          const beforeRange = range.cloneRange();
+          const afterRange = range.cloneRange();
+
+          beforeRange.setStart(node, 0);
+          beforeRange.setEnd(range.startContainer, range.startOffset);
+          afterRange.setStart(range.endContainer, range.endOffset);
+          afterRange.setEnd(node, node.childNodes.length);
+
+          // Keep styled content before selection
+          if (!beforeRange.collapsed) {
+            const beforeNode = node.cloneNode(false);
+            beforeNode.appendChild(beforeRange.cloneContents());
+            parent.insertBefore(beforeNode, node);
+          }
+
+          // Insert unstylized selected content
+          const middleFragment = range.cloneContents();
+          parent.insertBefore(middleFragment, node);
+
+          // Keep styled content after selection
+          if (!afterRange.collapsed) {
+            const afterNode = node.cloneNode(false);
+            afterNode.appendChild(afterRange.cloneContents());
+            parent.insertBefore(afterNode, node);
+          }
+
+          parent.removeChild(node);
+        }
+      });
+    } else {
+      // Apply the style
       let tag;
       switch (styleType) {
         case 'bold':
@@ -99,19 +246,26 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
           return;
       }
 
+      const fragment = document.createDocumentFragment();
       const newNode = document.createElement(tag);
       if (styleType === 'overline' || styleType === 'line-through') {
         newNode.style.textDecoration = styleType;
       }
-      range.surroundContents(newNode);
-      const newContent = sanitizeHtml(document.querySelector('[contenteditable="true"]').innerHTML);
-      
-      if (validateHtmlContent(newContent)) {
-        handleStyleChange({ content: newContent });
-      } else {
-        console.error('Invalid HTML content detected');
-        // Optionally, revert changes or notify the user
-      }
+
+      newNode.appendChild(range.cloneContents());
+      fragment.appendChild(newNode);
+
+      range.deleteContents();
+      range.insertNode(fragment);
+
+      // Collapse the selection to the end
+      selection.collapseToEnd();
+    }
+
+    // Update the content
+    const newContent = sanitizeHtml(document.querySelector('[contenteditable="true"]').innerHTML);
+    if (validateHtmlContent(newContent)) {
+      handleStyleChange({ content: newContent });
     }
   };
 
@@ -131,10 +285,48 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
     handleStyleChange({ elementType: newElementType, fontSize: selectedType.defaultSize });
   };
 
+  const handleKeyDown = useCallback((e, setValue, currentValue, onChange) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const step = e.shiftKey ? 10 : 1;
+      let numericPart = 0;
+      let unit = 'px';
+
+      if (currentValue) {
+        const match = currentValue.match(/^(\d*\.?\d+)(\D*)$/);
+        if (match) {
+          numericPart = parseFloat(match[1]);
+          unit = match[2] || 'px';
+        }
+      }
+
+      let newValue = numericPart;
+
+      if (e.key === 'ArrowUp') {
+        newValue += step;
+      } else {
+        newValue = Math.max(0, newValue - step);
+      }
+
+      const finalValue = `${newValue}${unit}`;
+      setValue(finalValue);
+      
+      // Clear any pending updates
+      if (updateTimeoutRef.current) {
+        clearTimeout(updateTimeoutRef.current);
+      }
+
+      // Debounce the update
+      updateTimeoutRef.current = setTimeout(() => {
+        onChange(finalValue);
+      }, 100);
+    }
+  }, []);
+
   const renderSizeInput = (value, onChange, units = UNITS, className = '') => {
-    const stringValue = String(value || '16px');
-    const numericValue = parseFloat(stringValue) || 16;
-    const unit = stringValue.replace(/[0-9.-]/g, '') || 'px';
+    const stringValue = String(value || '');
+    const numericValue = stringValue === 'normal' ? '' : stringValue.replace(/[^0-9.-]/g, '');
+    const unit = stringValue === 'normal' ? '' : (stringValue.replace(/[0-9.-]/g, '') || units[0]);
 
     return (
       <div className={`flex items-center justify-center w-full ${className}`}>
@@ -142,26 +334,52 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
           <input
             type="text"
             value={numericValue}
-            onChange={(e) => onChange(`${e.target.value}${unit}`)}
-            onKeyDown={(e) => {
-              if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                e.preventDefault();
-                const step = e.shiftKey ? 10 : 1;
-                const newValue = e.key === 'ArrowUp' ? numericValue + step : numericValue - step;
-                onChange(`${newValue}${unit}`);
+            onChange={(e) => {
+              const newValue = e.target.value;
+              if (newValue === '' || /^-?\d*\.?\d*$/.test(newValue)) {
+                if (!newValue && !unit) {
+                  onChange('normal');
+                } else {
+                  onChange(newValue ? `${newValue}${unit}` : '');
+                }
+              }
+            }}
+            onKeyDown={(e) => handleKeyDown(e, 
+              (v) => {
+                if (!v && !unit) {
+                  onChange('normal');
+                } else {
+                  onChange(v);
+                }
+              },
+              value,
+              onChange
+            )}
+            onBlur={(e) => {
+              if (!e.target.value && unit) {
+                onChange(`1.5${unit}`);
+              } else if (!e.target.value && !unit) {
+                onChange('normal');
               }
             }}
             className="w-full p-2 text-sm border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-            placeholder="Font Size"
+            placeholder={unit ? "Size" : "normal"}
           />
           <select
             value={unit}
-            onChange={(e) => onChange(`${numericValue}${e.target.value}`)}
+            onChange={(e) => {
+              const newUnit = e.target.value;
+              if (!newUnit) {
+                onChange('normal');
+              } else {
+                onChange(`${numericValue || '1.5'}${newUnit}`);
+              }
+            }}
             className="p-2 text-sm border border-l-0 border-gray-300 rounded-r-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           >
             {units.map((u) => (
               <option key={u} value={u}>
-                {u}
+                {u || 'normal'}
               </option>
             ))}
           </select>
@@ -182,11 +400,7 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
                 key={styleType}
                 onClick={() => handleFontStyleChange(styleType)}
                 className={`p-2 text-sm rounded-md transition-colors duration-200 border ${
-                  (styleType === 'bold' && fontWeight === 'bold') ||
-                  (styleType === 'italic' && fontStyle === 'italic') ||
-                  (styleType === 'underline' && textDecoration.includes('underline')) ||
-                  (styleType === 'overline' && textDecoration.includes('overline')) ||
-                  (styleType === 'line-through' && textDecoration.includes('line-through'))
+                  isStyleActiveInSelection(styleType)
                     ? 'bg-[#cce7ff] text-blue-700 border-blue-300'
                     : 'bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]'
                 }`}
