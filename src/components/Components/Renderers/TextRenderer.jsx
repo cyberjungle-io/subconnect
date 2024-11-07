@@ -32,11 +32,29 @@ const TextRenderer = ({
       textDecoration: component.style.textDecoration || 'none',
       padding: '5px',
       cursor: isEditing ? 'text' : 'default',
-      overflow: 'hidden',
+      overflow: 'auto',
       wordWrap: 'break-word',
-      transition: 'color 0.2s ease-in-out'
+      transition: 'color 0.2s ease-in-out',
+      minHeight: '100%',
+      display: 'block'
     };
   };
+
+  const containerStyle = {
+    width: '100%',
+    height: component.style.height || '200px',
+    position: 'relative',
+    backgroundColor: component.style.backgroundColor || 'transparent',
+    border: component.style.border || '1px solid #e2e8f0',
+    borderRadius: component.style.borderRadius || '4px',
+    transition: 'border-color 0.2s ease-in-out'
+  };
+
+  if (!isViewMode) {
+    containerStyle.hover = {
+      borderColor: '#cbd5e1'
+    };
+  }
 
   const textStyle = getTextStyle();
 
@@ -107,10 +125,10 @@ const TextRenderer = ({
   };
 
   return (
-    <div className="w-full h-full relative">
+    <div style={containerStyle}>
       <ElementType
         ref={textRef}
-        className="w-full h-full"
+        className="text-component"
         style={textStyle}
         contentEditable={isEditing}
         onDoubleClick={onDoubleClick}

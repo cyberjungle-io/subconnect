@@ -73,6 +73,8 @@ export const componentConfig = {
       textAlign: 'left',
       fontSize: '16px',
       verticalAlign: 'top',
+      height: '200px',
+      width: '100%',
       // ... (keep other style properties)
     }
   },
