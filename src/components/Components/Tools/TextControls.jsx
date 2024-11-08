@@ -74,7 +74,8 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
   }, [style]);
 
   const handleStyleChange = (updates) => {
-    onStyleChange({ ...style, ...updates });
+    const updatedStyle = { ...style, ...updates };
+    onStyleChange(updatedStyle);
   };
 
   const isStyleActiveInSelection = (styleType) => {

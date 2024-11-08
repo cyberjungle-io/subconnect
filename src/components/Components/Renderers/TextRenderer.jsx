@@ -31,6 +31,7 @@ const TextRenderer = ({
       fontWeight: component.style.fontWeight || 'normal',
       fontStyle: component.style.fontStyle || 'normal',
       textDecoration: component.style.textDecoration || 'none',
+      letterSpacing: component.style.letterSpacing || 'normal',
       padding: '5px',
       cursor: isEditing ? 'text' : 'default',
       overflow: 'auto',
