@@ -48,8 +48,8 @@ const LandingPage = () => {
                 <p className="text-gray-700">Real-time whiteboards, kanban boards, and team workspaces.</p>
               </div>
               <div className="bg-white/80 p-6 rounded-lg shadow-sm">
-                <h3 className="text-xl font-semibold text-indigo-900 mb-2">Responsive Design</h3>
-                <p className="text-gray-700">Automatically adapts to any screen size or device.</p>
+                <h3 className="text-xl font-semibold text-indigo-900 mb-2">Blockchain Integration</h3>
+                <p className="text-gray-700">Connect with Web3 protocols and display on-chain data in real-time.</p>
               </div>
             </div>
 
