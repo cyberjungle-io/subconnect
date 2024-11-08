@@ -83,190 +83,85 @@ const TextControls = ({ style, onStyleChange, isToolbarOpen }) => {
     if (!selection.rangeCount) return false;
 
     const range = selection.getRangeAt(0);
-    const container = range.commonAncestorContainer;
+    let container = range.commonAncestorContainer;
     
-    // Check if the selection is within or contains the relevant style tag
-    const checkNode = (node) => {
-      switch (styleType) {
-        case 'bold':
-          return node.nodeName === 'STRONG';
-        case 'italic':
-          return node.nodeName === 'EM';
-        case 'underline':
-          return node.nodeName === 'U';
-        case 'overline':
-        case 'line-through':
-          return node.nodeName === 'SPAN' && 
-                 node.style.textDecoration === styleType;
-        default:
-          return false;
+    // Move up to element node if we're in a text node
+    if (container.nodeType === 3) {
+      container = container.parentNode;
+    }
+
+    // Simple check for the exact style tag
+    const styleTag = {
+      'bold': ['B', 'STRONG'],
+      'italic': ['I', 'EM'],
+      'underline': ['U'],
+      'overline': ['SPAN'],
+      'line-through': ['SPAN']
+    }[styleType] || [];
+
+    // Check if we're directly inside the style tag
+    if (styleTag.includes(container.tagName)) {
+      return true;
+    }
+
+    // Check if any parent has the style
+    let parent = container;
+    while (parent && parent.contentEditable !== 'true') {
+      if (styleTag.includes(parent.tagName)) {
+        return true;
       }
-    };
-
-    // Check if the style is applied to the current node or its parents
-    let currentNode = container.nodeType === 3 ? container.parentNode : container;
-    while (currentNode && currentNode.contentEditable !== 'true') {
-      if (checkNode(currentNode)) return true;
-      currentNode = currentNode.parentNode;
+      parent = parent.parentNode;
     }
-    
+
     return false;
-  };
-
-  const removeStyle = (node, styleType) => {
-    const parent = node.parentNode;
-    if (!parent) return;
-
-    switch (styleType) {
-      case 'bold':
-      case 'italic':
-      case 'underline':
-        // Replace the styled node with its contents
-        while (node.firstChild) {
-          parent.insertBefore(node.firstChild, node);
-        }
-        parent.removeChild(node);
-        break;
-      case 'overline':
-      case 'line-through':
-        // Remove the text-decoration style
-        node.style.textDecoration = '';
-        if (!node.getAttribute('style')) {
-          // If no styles left, unwrap the span
-          while (node.firstChild) {
-            parent.insertBefore(node.firstChild, node);
-          }
-          parent.removeChild(node);
-        }
-        break;
-    }
   };
 
   const applyStyleToSelection = (styleType) => {
     const selection = window.getSelection();
-    if (!selection.rangeCount) return;
+    if (!selection.rangeCount) return false;
 
     const range = selection.getRangeAt(0);
-    const isStyleActive = isStyleActiveInSelection(styleType);
+    const editableElement = document.querySelector('[contenteditable="true"]');
+    const isActive = isStyleActiveInSelection(styleType);
 
-    if (isStyleActive) {
-      // Remove the style only from selected text
-      const selectedNodes = [];
-      const iterator = document.createNodeIterator(
-        range.commonAncestorContainer,
-        NodeFilter.SHOW_ELEMENT,
-        {
-          acceptNode: (node) => {
-            // Check if node is at least partially within selection
-            const nodeRange = document.createRange();
-            nodeRange.selectNode(node);
-            const isIntersecting = !(
-              range.compareBoundaryPoints(Range.END_TO_START, nodeRange) > 0 ||
-              range.compareBoundaryPoints(Range.START_TO_END, nodeRange) < 0
-            );
-            
-            if (!isIntersecting) return NodeFilter.FILTER_REJECT;
-
-            if ((styleType === 'bold' && node.nodeName === 'STRONG') ||
-                (styleType === 'italic' && node.nodeName === 'EM') ||
-                (styleType === 'underline' && node.nodeName === 'U') ||
-                ((styleType === 'overline' || styleType === 'line-through') && 
-                 node.nodeName === 'SPAN' && node.style.textDecoration === styleType)) {
-              return NodeFilter.FILTER_ACCEPT;
-            }
-            return NodeFilter.FILTER_SKIP;
-          }
-        }
-      );
-
-      let node;
-      while ((node = iterator.nextNode())) {
-        selectedNodes.push(node);
-      }
-
-      // Create a new range for each styled node and split if necessary
-      selectedNodes.forEach(node => {
-        const nodeRange = document.createRange();
-        nodeRange.selectNode(node);
-
-        // Node is completely within selection
-        if (range.compareBoundaryPoints(Range.START_TO_START, nodeRange) <= 0 &&
-            range.compareBoundaryPoints(Range.END_TO_END, nodeRange) >= 0) {
-          removeStyle(node, styleType);
-        }
-        // Node intersects with selection
-        else {
-          const parent = node.parentNode;
-          const beforeRange = range.cloneRange();
-          const afterRange = range.cloneRange();
-
-          beforeRange.setStart(node, 0);
-          beforeRange.setEnd(range.startContainer, range.startOffset);
-          afterRange.setStart(range.endContainer, range.endOffset);
-          afterRange.setEnd(node, node.childNodes.length);
-
-          // Keep styled content before selection
-          if (!beforeRange.collapsed) {
-            const beforeNode = node.cloneNode(false);
-            beforeNode.appendChild(beforeRange.cloneContents());
-            parent.insertBefore(beforeNode, node);
-          }
-
-          // Insert unstylized selected content
-          const middleFragment = range.cloneContents();
-          parent.insertBefore(middleFragment, node);
-
-          // Keep styled content after selection
-          if (!afterRange.collapsed) {
-            const afterNode = node.cloneNode(false);
-            afterNode.appendChild(afterRange.cloneContents());
-            parent.insertBefore(afterNode, node);
-          }
-
-          parent.removeChild(node);
-        }
-      });
-    } else {
-      // Apply the style
-      let tag;
+    if (isActive) {
+      // Remove style
+      document.execCommand('styleWithCSS', false, false);
       switch (styleType) {
         case 'bold':
-          tag = 'strong';
+          document.execCommand('bold', false);
           break;
         case 'italic':
-          tag = 'em';
+          document.execCommand('italic', false);
           break;
         case 'underline':
-          tag = 'u';
+          document.execCommand('underline', false);
           break;
-        case 'overline':
-        case 'line-through':
-          tag = 'span';
+        // Add other cases as needed
+      }
+    } else {
+      // Apply style
+      document.execCommand('styleWithCSS', false, false);
+      switch (styleType) {
+        case 'bold':
+          document.execCommand('bold', false);
           break;
-        default:
-          return;
+        case 'italic':
+          document.execCommand('italic', false);
+          break;
+        case 'underline':
+          document.execCommand('underline', false);
+          break;
+        // Add other cases as needed
       }
-
-      const fragment = document.createDocumentFragment();
-      const newNode = document.createElement(tag);
-      if (styleType === 'overline' || styleType === 'line-through') {
-        newNode.style.textDecoration = styleType;
-      }
-
-      newNode.appendChild(range.cloneContents());
-      fragment.appendChild(newNode);
-
-      range.deleteContents();
-      range.insertNode(fragment);
-
-      // Collapse the selection to the end
-      selection.collapseToEnd();
     }
 
-    // Update the content
-    const newContent = sanitizeHtml(document.querySelector('[contenteditable="true"]').innerHTML);
-    if (validateHtmlContent(newContent)) {
-      handleStyleChange({ content: newContent });
+    // Force content update
+    if (editableElement) {
+      const newContent = sanitizeHtml(editableElement.innerHTML);
+      if (validateHtmlContent(newContent)) {
+        handleStyleChange({ content: newContent });
+      }
     }
   };
 
