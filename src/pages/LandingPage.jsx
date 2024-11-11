@@ -108,7 +108,7 @@ const LandingPage = () => {
                   <span className="text-2xl font-bold text-indigo-600">2</span>
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Connect Your Data</h3>
-                <p className="text-gray-600">Choose from our pre-built integrations or connect directly to any blockchain node.</p>
+                <p className="text-gray-600">Choose from our pre-built integrations or connect directly to any data endpoint.</p>
               </div>
             </div>
 
