@@ -16,12 +16,6 @@ const LandingPage = () => {
       <header className="p-6 flex justify-between items-center bg-white/80 backdrop-blur-sm">
         <div className="flex items-center space-x-8">
           <div className="text-2xl font-bold text-indigo-900">Subconnect</div>
-          <nav className="hidden md:flex space-x-6">
-            <a href="#features" className="text-gray-600 hover:text-indigo-900">Features</a>
-            <a href="#solutions" className="text-gray-600 hover:text-indigo-900">Solutions</a>
-            <Link to="/docs" className="text-gray-600 hover:text-indigo-900">Documentation</Link>
-            <a href="#pricing" className="text-gray-600 hover:text-indigo-900">Pricing</a>
-          </nav>
         </div>
         <div className="space-x-4">
           <button onClick={openLoginModal} className="bg-white text-indigo-600 font-bold py-2 px-4 rounded border border-indigo-600 hover:bg-indigo-50 transition duration-300">
