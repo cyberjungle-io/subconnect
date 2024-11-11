@@ -46,18 +46,25 @@ const useDragDrop = (component, onMoveComponent, onAddChild, isDragModeEnabled) 
       if (monitor.didDrop()) return;
       
       if (item.type === 'SAVED_COMPONENT' && item.savedComponent) {
-        // Process saved component
+        // Process saved component with full structure preservation
         const processComponent = (comp) => {
           const newId = uuidv4();
-          return {
+          const processed = {
             ...comp,
             id: newId,
+            type: comp.type,
+            isSavedComponent: true,
+            originalSavedComponent: comp,
             children: comp.children?.map(child => processComponent(child)) || []
           };
+          return processed;
         };
 
         const processedComponent = processComponent(item.savedComponent);
-        onAddChild(component.id, processedComponent.type, processedComponent);
+        onAddChild(component.id, processedComponent.type, {
+          ...processedComponent,
+          savedComponent: item.savedComponent
+        });
       } else if (item.id && isDragModeEnabled) {
         onMoveComponent(item.id, component.id);
       } else {
