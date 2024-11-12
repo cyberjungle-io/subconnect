@@ -127,6 +127,7 @@ export const setGuestMode = createAsyncThunk(
     if (isGuest) {
       localStorage.removeItem('w3s_token');
       dispatch(setEditorMode('view'));
+      await dispatch(fetchProjects());
       return true;
     } else {
       dispatch(clearW3sState());
@@ -174,6 +175,7 @@ const userSlice = createSlice({
           .addCase(loginUser.fulfilled, (state, action) => {
             state.status = 'succeeded';
             state.currentUser = action.payload;
+            state.isGuestMode = false;
             state.error = null;
           })
           .addCase(loginUser.rejected, (state, action) => {

@@ -114,6 +114,14 @@ const w3sService = {
 
   createProject: async (projectData) => {
     try {
+      const state = store.getState();
+      const isGuestMode = state.user.isGuestMode;
+      
+      // Prevent project creation in guest mode
+      if (isGuestMode) {
+        throw new Error('Cannot create projects in guest mode');
+      }
+
       const token = localStorage.getItem('w3s_token');
       let userId = 'default-user-id';
       
@@ -121,25 +129,24 @@ const w3sService = {
         const decodedToken = JSON.parse(atob(token.split('.')[1]));
         userId = decodedToken._id || 'default-user-id';
       }
-      const defaultPages = [{
-              name: 'Main',
-              content: {
-                components: [],
-                layout: {}
-              }
-            }];
-      const dataWithCreator = { ...projectData, createdBy: userId, pages: defaultPages };
-      console.log('Attempting to create project with data:', dataWithCreator);
-      const response = await api.post('/projects', dataWithCreator);
-      console.log('Project creation response:', response.data);
 
-      // Create a default "Main" page for the new project
-      
-      
-      
-      // Update the project to include the new page
-      
-      return dataWithCreator;
+      const defaultPages = [{
+        name: 'Main',
+        content: {
+          components: [],
+          layout: {}
+        }
+      }];
+
+      const dataWithCreator = { 
+        ...projectData, 
+        createdBy: userId, 
+        pages: defaultPages,
+        isPublic: false // Add this to ensure new projects are private by default
+      };
+
+      const response = await api.post('/projects', dataWithCreator);
+      return response.data;
     } catch (error) {
       handleApiError(error);
     }

@@ -11,8 +11,7 @@ export const fetchProjects = createAsyncThunk(
     
     try {
       const projects = await w3sService.getProjects();
-      // If in guest mode, filter to only show public projects
-      return isGuestMode ? projects.filter(project => project.isPublic) : projects;
+      return projects;
     } catch (error) {
       throw error;
     }
@@ -33,30 +32,17 @@ export const fetchProject = createAsyncThunk(
 
 export const createProject = createAsyncThunk(
   'w3s/createProject',
-  async (projectData, { rejectWithValue, dispatch }) => {
+  async (projectData, { getState, rejectWithValue }) => {
+    const state = getState();
+    if (state.user.isGuestMode) {
+      return rejectWithValue('Cannot create projects in guest mode');
+    }
+    
     try {
       const response = await w3sService.createProject(projectData);
-      
-      // Create a default "Main" page for the new project
-      const defaultPage = {
-        name: 'Main',
-        content: {
-          components: [],
-          globalSettings: {},
-          canvasSettings: {}
-        }
-      };
-      
-      
-      
-      // Update the project in the database to include the new page
-      const updatedProject = await w3sService.updateProject(response._id, {
-        pages: [defaultPage]
-      });
-
-      return updatedProject;
+      return response;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Failed to create project');
+      return rejectWithValue(error.message);
     }
   }
 );
