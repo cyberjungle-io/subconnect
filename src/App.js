@@ -31,6 +31,8 @@ import TableDocs from './pages/Docs/TableDocs';
 import QueryValueDocs from './pages/Docs/QueryValueDocs';
 import ResponsiveDesignDocs from './pages/Docs/ResponsiveDesignDocs';
 import DocsLanding from './pages/Docs/DocsLandingPage';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -84,6 +86,8 @@ function AppContent() {
           <Route path="components/query-value" element={<QueryValueDocs />} />
           <Route path="guides/responsive-design" element={<ResponsiveDesignDocs />} />
         </Route>
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
       </Routes>
     </Router>
   );

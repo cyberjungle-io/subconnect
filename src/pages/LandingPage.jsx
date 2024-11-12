@@ -74,7 +74,54 @@ const LandingPage = () => {
         </div>
       </main>
 
-      {/* Solution Section - How It Works */}
+      
+
+      {/* Features Section - Core Benefits */}
+      <section id="features" className="py-20 bg-gradient-to-br from-indigo-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-indigo-900 mb-4">Everything You Need</h2>
+            <p className="text-xl text-gray-600">Powerful features for modern dashboard creation</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <FeatureCard
+              icon={<DocumentIcon />}
+              title="Visual Builder"
+              description="Drag-and-drop interface for creating beautiful pages. No coding required."
+            />
+            <FeatureCard
+              icon={<ChartIcon />}
+              title="Live Data"
+              description="Connect to your data sources with built-in GraphQL integration for real-time updates."
+            />
+            <FeatureCard
+              icon={<TeamIcon />}
+              title="Collaboration"
+              description="Real-time whiteboards, kanban boards, and team workspaces for seamless teamwork."
+            />
+            <FeatureCard
+              icon={<BlockchainIcon />}
+              title="Blockchain Integration"
+              description="Connect with Web3 protocols, access nodes directly for custom indexing, and display on-chain data in real-time."
+              badge="Coming Soon"
+            />
+            <FeatureCard
+              icon={<SocialIcon />}
+              title="Social Protocols"
+              description="Native integration with decentralized social protocols like Subsocial for community engagement and content sharing."
+              badge="Coming Soon"
+            />
+            <FeatureCard
+              icon={<AIIcon />}
+              title="AI-Powered"
+              description="Leverage AI to automatically generate queries, optimize layouts, and suggest design improvements."
+              badge="Coming Soon"
+            />
+          </div>
+        </div>
+      </section>
+{/* Solution Section - How It Works */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
@@ -125,53 +172,6 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
-
-      {/* Features Section - Core Benefits */}
-      <section id="features" className="py-20 bg-gradient-to-br from-indigo-50 to-blue-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-indigo-900 mb-4">Everything You Need</h2>
-            <p className="text-xl text-gray-600">Powerful features for modern dashboard creation</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <FeatureCard
-              icon={<DocumentIcon />}
-              title="Visual Builder"
-              description="Drag-and-drop interface for creating beautiful pages. No coding required."
-            />
-            <FeatureCard
-              icon={<ChartIcon />}
-              title="Live Data"
-              description="Connect to your data sources with built-in GraphQL integration for real-time updates."
-            />
-            <FeatureCard
-              icon={<TeamIcon />}
-              title="Collaboration"
-              description="Real-time whiteboards, kanban boards, and team workspaces for seamless teamwork."
-            />
-            <FeatureCard
-              icon={<BlockchainIcon />}
-              title="Blockchain Integration"
-              description="Connect with Web3 protocols, access nodes directly for custom indexing, and display on-chain data in real-time."
-              badge="Coming Soon"
-            />
-            <FeatureCard
-              icon={<SocialIcon />}
-              title="Social Protocols"
-              description="Native integration with decentralized social protocols like Subsocial for community engagement and content sharing."
-              badge="Coming Soon"
-            />
-            <FeatureCard
-              icon={<AIIcon />}
-              title="AI-Powered"
-              description="Leverage AI to automatically generate queries, optimize layouts, and suggest design improvements."
-              badge="Coming Soon"
-            />
-          </div>
-        </div>
-      </section>
-
       {/* Call to Action - The Future */}
       <section className="py-20 bg-indigo-900 text-white">
         <div className="container mx-auto px-4 text-center">
@@ -220,8 +220,16 @@ const LandingPage = () => {
             <div>
               <h3 className="font-bold text-gray-900 mb-4">Legal</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">Privacy</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">Terms</a></li>
+                <li>
+                  <Link to="/privacy" className="text-gray-600 hover:text-indigo-600">
+                    Privacy
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/terms" className="text-gray-600 hover:text-indigo-600">
+                    Terms
+                  </Link>
+                </li>
                 <li><a href="#" className="text-gray-600 hover:text-indigo-600">Security</a></li>
               </ul>
             </div>
@@ -229,6 +237,9 @@ const LandingPage = () => {
           <div className="border-t border-gray-200 mt-12 pt-8 flex justify-between items-center">
             <div className="text-gray-600">© 2024 Subconnect. All rights reserved.</div>
             <div className="flex space-x-6">
+              <Link to="/privacy" className="text-gray-600 hover:text-indigo-600">
+                Privacy Policy
+              </Link>
               <a href="#" className="text-gray-600 hover:text-indigo-600">
                 <span className="sr-only">Twitter</span>
                 {/* Add Twitter icon */}
