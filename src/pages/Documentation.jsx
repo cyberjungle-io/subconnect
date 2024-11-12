@@ -65,6 +65,13 @@ const DocumentationPage = () => {
         { name: 'Responsive Design', path: '/docs/guides/responsive-design' },
         // Add more guides here as they come
       ]
+    },
+    {
+      title: 'Legal',
+      items: [
+        { name: 'Terms of Service', path: '/docs/legal/terms' },
+        { name: 'Privacy Policy', path: '/docs/legal/privacy' },
+      ]
     }
   ];
 

@@ -84,9 +84,9 @@ function AppContent() {
           <Route path="components/table" element={<TableDocs />} />
           <Route path="components/query-value" element={<QueryValueDocs />} />
           <Route path="guides/responsive-design" element={<ResponsiveDesignDocs />} />
+          <Route path="legal/terms" element={<TermsOfService />} />
+          <Route path="legal/privacy" element={<PrivacyPolicy />} />
         </Route>
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<TermsOfService />} />
       </Routes>
     </Router>
   );
