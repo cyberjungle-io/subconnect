@@ -18,11 +18,17 @@ const LandingPage = () => {
           <div className="text-2xl font-bold text-indigo-900">Subconnect</div>
         </div>
         <div className="space-x-4">
-          <button onClick={openLoginModal} className="bg-white text-indigo-600 font-bold py-2 px-4 rounded border border-indigo-600 hover:bg-indigo-50 transition duration-300">
-            Log In
-          </button>
-          <Link to="/register" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+          <button 
+            onClick={openLoginModal} 
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+          >
             Connect
+          </button>
+          <Link 
+            to="/register" 
+            className="bg-white text-indigo-600 font-bold py-2 px-4 rounded border border-indigo-600 hover:bg-indigo-50 transition duration-300"
+          >
+            Register
           </Link>
         </div>
       </header>
@@ -49,7 +55,7 @@ const LandingPage = () => {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <button className="group bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg text-xl shadow-lg transition duration-300">
-                  Connect Now!
+                  Explore
                   <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
                 <button className="flex items-center justify-center space-x-2 bg-white hover:bg-gray-50 text-indigo-600 font-bold py-4 px-8 rounded-lg text-xl shadow-lg transition duration-300">
