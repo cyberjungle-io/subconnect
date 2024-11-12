@@ -39,7 +39,8 @@ const LandingPage = () => {
                   </span>
                 </div>
                 <h1 className="text-5xl md:text-6xl font-bold leading-tight text-indigo-900">
-                  Transform Blockchain Data Into <span className="text-indigo-600">Actionable Insights</span>
+                  Transform Data <br />
+                  Into <span className="text-indigo-600">Actionable Insights</span>
                 </h1>
                 <p className="text-xl md:text-2xl text-gray-600 leading-relaxed">
                   Stop wrestling with complex data. Build beautiful Web3 pages in minutes with our no-code platform.
