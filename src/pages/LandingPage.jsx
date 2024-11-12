@@ -2,13 +2,27 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Modal from '../components/common/Modal';
 import LoginForm from '../components/auth/LoginForm';
+import RegisterForm from '../components/auth/RegisterForm';
 import LandingPageGraphic_2 from '../pages/Images/LandingPageGraphic_2.svg';
 
 const LandingPage = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
 
-  const openLoginModal = () => setIsLoginModalOpen(true);
-  const closeLoginModal = () => setIsLoginModalOpen(false);
+  const openLoginModal = () => {
+    setIsLoginModalOpen(true);
+    setShowRegisterForm(false);
+  };
+
+  const openRegisterModal = () => {
+    setIsLoginModalOpen(true);
+    setShowRegisterForm(true);
+  };
+
+  const closeLoginModal = () => {
+    setIsLoginModalOpen(false);
+    setShowRegisterForm(false);
+  };
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-100 via-indigo-200 to-purple-100 font-['Roboto',sans-serif]">
@@ -24,12 +38,12 @@ const LandingPage = () => {
           >
             Connect
           </button>
-          <Link 
-            to="/register" 
+          <button 
+            onClick={openRegisterModal}
             className="bg-white text-indigo-600 font-bold py-2 px-4 rounded border border-indigo-600 hover:bg-indigo-50 transition duration-300"
           >
             Register
-          </Link>
+          </button>
         </div>
       </header>
 
@@ -257,8 +271,18 @@ const LandingPage = () => {
         </div>
       </footer>
 
-      <Modal isOpen={isLoginModalOpen} onClose={closeLoginModal} title="Log In">
-        <LoginForm />
+      <Modal isOpen={isLoginModalOpen} onClose={closeLoginModal} title={showRegisterForm ? "Create Account" : "Log In"}>
+        {showRegisterForm ? (
+          <RegisterForm 
+            onClose={closeLoginModal}
+            onShowLogin={() => setShowRegisterForm(false)}
+          />
+        ) : (
+          <LoginForm 
+            onClose={closeLoginModal}
+            onShowRegister={() => setShowRegisterForm(true)}
+          />
+        )}
       </Modal>
     </div>
   );

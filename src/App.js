@@ -53,7 +53,6 @@ function AppContent() {
       <Routes>
         <Route path="/" element={currentUser ? <Navigate to="/editor" /> : <LandingPage />} />
         <Route path="/login" element={currentUser ? <Navigate to="/editor" /> : <LoginForm />} />
-        <Route path="/register" element={currentUser ? <Navigate to="/editor" /> : <RegisterForm />} />
         <Route
           path="/editor"
           element={
