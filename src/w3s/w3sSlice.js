@@ -5,12 +5,16 @@ import { w3sService } from './w3sService';
 
 export const fetchProjects = createAsyncThunk(
   'w3s/fetchProjects',
-  async (_, { rejectWithValue }) => {
+  async (_, { getState }) => {
+    const state = getState();
+    const isGuestMode = state.user.isGuestMode;
+    
     try {
-      const response = await w3sService.getProjects();
-      return response;
+      const projects = await w3sService.getProjects();
+      // If in guest mode, filter to only show public projects
+      return isGuestMode ? projects.filter(project => project.isPublic) : projects;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Failed to fetch projects');
+      throw error;
     }
   }
 );
@@ -273,6 +277,9 @@ export const fetchSharedProjects = createAsyncThunk(
     }
   }
 );
+
+// Add a selector to check if editing is allowed
+export const selectCanEdit = state => !state.user.isGuestMode && state.user.currentUser;
 
 // Slice
 const initialState = {

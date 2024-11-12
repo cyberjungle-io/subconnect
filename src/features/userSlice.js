@@ -121,6 +121,21 @@ export const addUserAccessByEmail = createAsyncThunk(
   }
 );
 
+export const setGuestMode = createAsyncThunk(
+  'user/setGuestMode',
+  async (isGuest, { dispatch }) => {
+    if (isGuest) {
+      localStorage.removeItem('w3s_token');
+      dispatch(setEditorMode('view'));
+      return true;
+    } else {
+      dispatch(clearW3sState());
+      dispatch(resetEditorState());
+      return false;
+    }
+  }
+);
+
 const userSlice = createSlice({
     name: 'user',
     initialState: {
@@ -129,11 +144,12 @@ const userSlice = createSlice({
       error: null,
       userAccesses: [], // Initialize this as an empty array
       linkAccesses: [],
+      isGuestMode: false,
     },
     reducers: {
       clearError: (state) => {
         state.error = null;
-      },
+      }
     },
     extraReducers: (builder) => {
       builder
@@ -219,6 +235,12 @@ const userSlice = createSlice({
       .addCase(addUserAccessByEmail.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
+      })
+      .addCase(setGuestMode.fulfilled, (state, action) => {
+        state.isGuestMode = action.payload;
+        state.currentUser = null;
+        state.status = 'succeeded';
+        state.error = null;
       });
   },
 });

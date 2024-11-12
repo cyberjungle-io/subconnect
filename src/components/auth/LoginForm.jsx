@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FaLock, FaEnvelope, FaArrowRight } from 'react-icons/fa';
-import { loginUser } from '../../features/userSlice';
+import { loginUser, setGuestMode } from '../../features/userSlice';
 import { fetchProjects, setCurrentProject } from '../../w3s/w3sSlice';
 import RegisterForm from './RegisterForm';
 
@@ -44,11 +44,23 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
 
   const handleGuestLogin = async () => {
     try {
-      // Add your guest login logic here
-      onClose();
-      navigate('/editor');
+      // Dispatch guest mode action
+      dispatch(setGuestMode(true));
+      
+      // Fetch public projects after entering guest mode
+      const resultAction = await dispatch(fetchProjects());
+      if (fetchProjects.fulfilled.match(resultAction)) {
+        const projects = resultAction.payload;
+        if (projects.length > 0) {
+          // Set the first public project as the current project
+          dispatch(setCurrentProject(projects[0]));
+        }
+      }
+      
+      onClose(); // Close the modal
+      navigate('/editor'); // Redirect to editor
     } catch (err) {
-      console.error('Failed to log in as guest:', err);
+      console.error('Failed to enter guest mode:', err);
     }
   };
 

@@ -18,7 +18,12 @@ api.interceptors.request.use(
   (config) => {
     const state = store.getState();
     const token = state.user.currentUser?.token;
-    if (token) {
+    const isGuestMode = state.user.isGuestMode;
+
+    // If in guest mode, add a special header or parameter
+    if (isGuestMode) {
+      config.headers['X-Guest-Mode'] = 'true';
+    } else if (token) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     return config;
@@ -95,7 +100,12 @@ const w3sService = {
 
   getProjects: async () => {
     try {
-      const response = await api.get('/projects');
+      const state = store.getState();
+      const isGuestMode = state.user.isGuestMode;
+      
+      // If in guest mode, only fetch public projects
+      const endpoint = isGuestMode ? '/projects/public' : '/projects';
+      const response = await api.get(endpoint);
       return response.data;
     } catch (error) {
       handleApiError(error);
