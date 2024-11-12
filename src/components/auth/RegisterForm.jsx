@@ -2,12 +2,14 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '../../features/userSlice';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock, FaArrowRight } from 'react-icons/fa';
 
-const RegisterForm = ({ onClose }) => {
+const RegisterForm = ({ onClose, onShowLogin }) => {
   const [credentials, setCredentials] = useState({ username: '', email: '', password: '', confirmPassword: '' });
   const [passwordError, setPasswordError] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [subscribeNewsletter, setSubscribeNewsletter] = useState(false);
   const dispatch = useDispatch();
   const { status, error } = useSelector((state) => state.user);
   const navigate = useNavigate();
@@ -24,7 +26,7 @@ const RegisterForm = ({ onClose }) => {
     }
     setPasswordError('');
     try {
-      await dispatch(registerUser(credentials)).unwrap();
+      await dispatch(registerUser({ ...credentials, subscribeNewsletter })).unwrap();
       onClose();
       navigate('/editor');
     } catch (err) {
@@ -43,7 +45,8 @@ const RegisterForm = ({ onClose }) => {
       password.trim() !== '' &&
       confirmPassword.trim() !== '' &&
       password === confirmPassword &&
-      emailRegex.test(email)
+      emailRegex.test(email) &&
+      acceptedTerms
     );
   };
 
@@ -90,6 +93,44 @@ const RegisterForm = ({ onClose }) => {
             </div>
           )}
 
+          <div className="flex items-start mb-4">
+            <div className="flex items-center h-5">
+              <input
+                id="terms"
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+                className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-indigo-300"
+              />
+            </div>
+            <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
+              I agree to the{' '}
+              <Link
+                to="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 hover:text-indigo-700 font-medium"
+              >
+                Terms of Service
+              </Link>
+            </label>
+          </div>
+
+          <div className="flex items-start mb-6">
+            <div className="flex items-center h-5">
+              <input
+                id="newsletter"
+                type="checkbox"
+                checked={subscribeNewsletter}
+                onChange={(e) => setSubscribeNewsletter(e.target.checked)}
+                className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-indigo-300"
+              />
+            </div>
+            <label htmlFor="newsletter" className="ml-2 text-sm text-gray-600">
+              Subscribe to our newsletter for updates and tips
+            </label>
+          </div>
+
           <button
             type="submit"
             disabled={status === 'loading' || !isFormValid()}
@@ -108,7 +149,7 @@ const RegisterForm = ({ onClose }) => {
           <p className="text-gray-600">
             Already have an account?{' '}
             <button 
-              onClick={onClose} 
+              onClick={onShowLogin}
               className="text-indigo-600 hover:text-indigo-700 font-medium"
             >
               Log in

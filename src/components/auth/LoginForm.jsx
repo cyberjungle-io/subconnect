@@ -54,7 +54,10 @@ const LoginForm = ({ onClose }) => {
   };
 
   if (showRegister) {
-    return <RegisterForm onClose={onClose} />;
+    return <RegisterForm 
+      onClose={onClose} 
+      onShowLogin={() => setShowRegister(false)} 
+    />;
   }
 
   return (
