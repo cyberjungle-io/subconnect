@@ -5,7 +5,7 @@ import { registerUser } from '../../features/userSlice';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaUser, FaEnvelope, FaLock, FaArrowRight } from 'react-icons/fa';
 
-const RegisterForm = ({ onClose, onShowLogin }) => {
+const RegisterForm = ({ onClose, onShowLogin, className = '' }) => {
   const [credentials, setCredentials] = useState({ username: '', email: '', password: '', confirmPassword: '' });
   const [passwordError, setPasswordError] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
@@ -51,14 +51,14 @@ const RegisterForm = ({ onClose, onShowLogin }) => {
   };
 
   return (
-    <div className="w-full pl-8 flex flex-col justify-center">
+    <div className={`pl-8 flex flex-col justify-center ${className}`}>
       <div className="px-6">
-        <div className="text-center mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Create an Account</h3>
+        <div className="text-center mb-4">
+          <h3 className="text-2xl font-bold text-gray-900 mb-1">Create an Account</h3>
           <p className="text-gray-600">Join Subconnect and start creating</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {['username', 'email', 'password', 'confirmPassword'].map((field) => (
             <div key={field}>
               <div className="relative">
@@ -73,7 +73,7 @@ const RegisterForm = ({ onClose, onShowLogin }) => {
                   id={field}
                   required
                   placeholder={field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 bg-white/50 backdrop-blur-sm transition-all duration-200"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 bg-white/50 backdrop-blur-sm transition-all duration-200 text-sm"
                   value={credentials[field]}
                   onChange={handleChange}
                 />
@@ -82,28 +82,28 @@ const RegisterForm = ({ onClose, onShowLogin }) => {
           ))}
 
           {passwordError && (
-            <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg p-2 text-xs">
               {passwordError}
             </div>
           )}
 
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
+            <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg p-2 text-xs">
               {error}
             </div>
           )}
 
-          <div className="flex items-start mb-4">
-            <div className="flex items-center h-5">
+          <div className="flex items-start mb-2">
+            <div className="flex items-center h-4">
               <input
                 id="terms"
                 type="checkbox"
                 checked={acceptedTerms}
                 onChange={(e) => setAcceptedTerms(e.target.checked)}
-                className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-indigo-300"
+                className="w-3 h-3 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-indigo-300"
               />
             </div>
-            <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
+            <label htmlFor="terms" className="ml-2 text-xs text-gray-600">
               I agree to the{' '}
               <Link
                 to="/terms"
@@ -116,17 +116,17 @@ const RegisterForm = ({ onClose, onShowLogin }) => {
             </label>
           </div>
 
-          <div className="flex items-start mb-6">
-            <div className="flex items-center h-5">
+          <div className="flex items-start mb-3">
+            <div className="flex items-center h-4">
               <input
                 id="newsletter"
                 type="checkbox"
                 checked={subscribeNewsletter}
                 onChange={(e) => setSubscribeNewsletter(e.target.checked)}
-                className="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-indigo-300"
+                className="w-3 h-3 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-indigo-300"
               />
             </div>
-            <label htmlFor="newsletter" className="ml-2 text-sm text-gray-600">
+            <label htmlFor="newsletter" className="ml-2 text-xs text-gray-600">
               Subscribe to our newsletter for updates and tips
             </label>
           </div>
@@ -134,7 +134,7 @@ const RegisterForm = ({ onClose, onShowLogin }) => {
           <button
             type="submit"
             disabled={status === 'loading' || !isFormValid()}
-            className={`w-full font-bold py-3 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 flex items-center justify-center space-x-2 ${
+            className={`w-full font-bold py-2 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 flex items-center justify-center space-x-2 text-sm ${
               isFormValid() 
                 ? 'bg-indigo-600 text-white hover:bg-indigo-700'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
@@ -145,8 +145,8 @@ const RegisterForm = ({ onClose, onShowLogin }) => {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
+        <div className="mt-4 text-center">
+          <p className="text-xs text-gray-600">
             Already have an account?{' '}
             <button 
               onClick={onShowLogin}

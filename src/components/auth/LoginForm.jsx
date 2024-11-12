@@ -54,10 +54,47 @@ const LoginForm = ({ onClose }) => {
   };
 
   if (showRegister) {
-    return <RegisterForm 
-      onClose={onClose} 
-      onShowLogin={() => setShowRegister(false)} 
-    />;
+    return (
+      <div className="flex h-[500px]">
+        {/* Guest Login Section */}
+        <div className="w-1/2 pr-8 border-r border-gray-200 flex flex-col justify-center">
+          <div className="space-y-6 px-6">
+            <div className="text-center">
+              <span className="inline-block px-3 py-1 text-sm font-semibold text-indigo-700 bg-indigo-100 rounded-full mb-4">
+                Quick Start
+              </span>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Try Subconnect Now</h3>
+              <p className="text-gray-600 mb-8">Experience our platform instantly with no registration required</p>
+            </div>
+            
+            <button
+              onClick={handleGuestLogin}
+              className="w-full group bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-bold py-3 px-6 rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200 flex items-center justify-center space-x-2"
+            >
+              <span>Enter as Guest</span>
+              <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-200" />
+            </button>
+            
+            <div className="text-center">
+              <p className="text-sm text-gray-500">
+                • Explore projects and dashboards
+                <br />
+                • Create sample pages
+                <br />
+                • No payment required
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Register Form Section */}
+        <RegisterForm 
+          onClose={onClose} 
+          onShowLogin={() => setShowRegister(false)} 
+          className="w-1/2"
+        />
+      </div>
+    );
   }
 
   return (
