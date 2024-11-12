@@ -68,7 +68,10 @@ const LandingPage = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="group bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg text-xl shadow-lg transition duration-300">
+                <button 
+                  onClick={openRegisterModal}
+                  className="group bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-8 rounded-lg text-xl shadow-lg transition duration-300"
+                >
                   Explore
                   <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
                 </button>
@@ -192,7 +195,10 @@ const LandingPage = () => {
           <h2 className="text-4xl font-bold mb-8">Ready to Transform Your Web3 Experience?</h2>
           <p className="text-xl mb-12 text-indigo-200">Join the next generation of Web3 analytics and collaboration</p>
           <div className="flex justify-center space-x-4">
-            <button className="bg-white text-indigo-900 hover:bg-indigo-50 font-bold py-4 px-8 rounded-lg text-xl transition duration-300">
+            <button 
+              onClick={openRegisterModal}
+              className="bg-white text-indigo-900 hover:bg-indigo-50 font-bold py-4 px-8 rounded-lg text-xl transition duration-300"
+            >
               Explore for Free
             </button>
             
@@ -272,17 +278,11 @@ const LandingPage = () => {
       </footer>
 
       <Modal isOpen={isLoginModalOpen} onClose={closeLoginModal} title={showRegisterForm ? "Create Account" : "Log In"}>
-        {showRegisterForm ? (
-          <RegisterForm 
-            onClose={closeLoginModal}
-            onShowLogin={() => setShowRegisterForm(false)}
-          />
-        ) : (
-          <LoginForm 
-            onClose={closeLoginModal}
-            onShowRegister={() => setShowRegisterForm(true)}
-          />
-        )}
+        <LoginForm 
+          onClose={closeLoginModal}
+          initialView={showRegisterForm ? "register" : "login"}
+          onShowRegister={() => setShowRegisterForm(true)}
+        />
       </Modal>
     </div>
   );

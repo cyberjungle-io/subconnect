@@ -1,5 +1,5 @@
 // src/components/auth/LoginForm.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { FaLock, FaEnvelope, FaArrowRight } from 'react-icons/fa';
@@ -7,12 +7,16 @@ import { loginUser } from '../../features/userSlice';
 import { fetchProjects, setCurrentProject } from '../../w3s/w3sSlice';
 import RegisterForm from './RegisterForm';
 
-const LoginForm = ({ onClose }) => {
+const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const { status, error } = useSelector((state) => state.user);
-  const [showRegister, setShowRegister] = useState(false);
+  const [showRegister, setShowRegister] = useState(initialView === 'register');
+
+  useEffect(() => {
+    setShowRegister(initialView === 'register');
+  }, [initialView]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
