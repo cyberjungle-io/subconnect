@@ -189,6 +189,119 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+
+      {/* After the "Build in Minutes" section */}
+      <section className="py-20 bg-gradient-to-br from-indigo-50 to-blue-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-indigo-900 mb-4">Flexibility to Create Your Own Experience</h2>
+            <p className="text-xl text-gray-600 mb-8">Build custom pages that align with your unique Web3 interests and goals</p>
+            
+            {/* New elegant divider and subtitle */}
+            <div className="max-w-3xl mx-auto">
+              <div className="flex items-center justify-center gap-4 mb-6">
+                <div className="h-px bg-indigo-200 w-12"></div>
+                <span className="text-sm font-semibold text-indigo-600 uppercase tracking-wider">Featured Use Cases</span>
+                <div className="h-px bg-indigo-200 w-12"></div>
+              </div>
+              <p className="text-gray-600 italic">
+                Explore these popular implementations—just a glimpse of the infinite possibilities our platform enables. Your unique vision drives the next innovative use case.
+              </p>
+            </div>
+          </div>
+
+          {/* Existing cards code remains the same */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mb-6">
+                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">DAO Management</h3>
+              <p className="text-gray-600 mb-4">Create custom dashboards for treasury management, proposal tracking, and member engagement.</p>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-center">
+                  <span className="mr-2">•</span>
+                  Governance metrics
+                </li>
+                <li className="flex items-center">
+                  <span className="mr-2">•</span>
+                  Treasury analytics
+                </li>
+                <li className="flex items-center">
+                  <span className="mr-2">•</span>
+                  Voting patterns
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mb-6">
+                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">DeFi Analytics</h3>
+              <p className="text-gray-600 mb-4">Monitor your DeFi portfolio with customizable views for yields, liquidity pools, and market trends.</p>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-center">
+                  <span className="mr-2">•</span>
+                  Portfolio tracking
+                </li>
+                <li className="flex items-center">
+                  <span className="mr-2">•</span>
+                  Yield optimization
+                </li>
+                <li className="flex items-center">
+                  <span className="mr-2">•</span>
+                  Risk analysis
+                </li>
+              </ul>
+            </div>
+
+            <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+              <div className="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mb-6">
+                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">NFT Collections</h3>
+              <p className="text-gray-600 mb-4">Build dynamic galleries and tracking tools for NFT collections and marketplace activity.</p>
+              <ul className="space-y-2 text-sm text-gray-600">
+                <li className="flex items-center">
+                  <span className="mr-2">•</span>
+                  Collection analytics
+                </li>
+                <li className="flex items-center">
+                  <span className="mr-2">•</span>
+                  Price tracking
+                </li>
+                <li className="flex items-center">
+                  <span className="mr-2">•</span>
+                  Rarity insights
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Enhanced footer section */}
+          <div className="mt-16 text-center">
+            <div className="max-w-2xl mx-auto mb-8">
+              <p className="text-gray-600">
+                Whether you're building for DeFi, DAOs, NFTs, or pioneering an entirely new Web3 vertical, our platform adapts to your vision.
+              </p>
+            </div>
+            <button 
+              onClick={openRegisterModal}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300"
+            >
+              Start Building
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* Call to Action - The Future */}
       <section className="py-20 bg-indigo-900 text-white">
         <div className="container mx-auto px-4 text-center">
