@@ -32,6 +32,21 @@ const RegisterForm = ({ onClose }) => {
     }
   };
 
+  // Add new function to check if form is valid
+  const isFormValid = () => {
+    const { username, email, password, confirmPassword } = credentials;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    return (
+      username.trim() !== '' &&
+      email.trim() !== '' &&
+      password.trim() !== '' &&
+      confirmPassword.trim() !== '' &&
+      password === confirmPassword &&
+      emailRegex.test(email)
+    );
+  };
+
   return (
     <div className="w-full pl-8 flex flex-col justify-center">
       <div className="px-6">
@@ -77,8 +92,12 @@ const RegisterForm = ({ onClose }) => {
 
           <button
             type="submit"
-            disabled={status === 'loading'}
-            className="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 flex items-center justify-center space-x-2"
+            disabled={status === 'loading' || !isFormValid()}
+            className={`w-full font-bold py-3 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 flex items-center justify-center space-x-2 ${
+              isFormValid() 
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
           >
             <span>{status === 'loading' ? 'Registering...' : 'Register'}</span>
             {status !== 'loading' && <FaArrowRight />}
