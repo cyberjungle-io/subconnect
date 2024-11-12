@@ -322,7 +322,7 @@ const LandingPage = () => {
       {/* Footer */}
       <footer className="bg-white py-12">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
             <div>
               <h3 className="font-bold text-gray-900 mb-4">Product</h3>
               <ul className="space-y-2">
@@ -339,15 +339,6 @@ const LandingPage = () => {
                 <li><a href="#" className="text-gray-600 hover:text-indigo-600">Blog</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-indigo-600">Careers</a></li>
                 <li><a href="#" className="text-gray-600 hover:text-indigo-600">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-900 mb-4">Resources</h3>
-              <ul className="space-y-2">
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">Community</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">Help Center</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">Partners</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">Status</a></li>
               </ul>
             </div>
             <div>
@@ -370,12 +361,22 @@ const LandingPage = () => {
           <div className="border-t border-gray-200 mt-12 pt-8 flex justify-between items-center">
             <div className="text-gray-600">© 2024 Subconnect. All rights reserved.</div>
             <div className="flex space-x-6">
-              <Link to="/privacy" className="text-gray-600 hover:text-indigo-600">
-                Privacy Policy
-              </Link>
-              <a href="#" className="text-gray-600 hover:text-indigo-600">
-                <span className="sr-only">Twitter</span>
-                {/* Add Twitter icon */}
+              
+              <a 
+                href="https://x.com/Subconnect_io" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-gray-600 hover:text-indigo-600"
+              >
+                <span className="sr-only">X (Twitter)</span>
+                <svg 
+                  className="w-5 h-5" 
+                  fill="currentColor" 
+                  viewBox="0 0 24 24" 
+                  aria-hidden="true"
+                >
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
               </a>
               <a href="#" className="text-gray-600 hover:text-indigo-600">
                 <span className="sr-only">GitHub</span>
