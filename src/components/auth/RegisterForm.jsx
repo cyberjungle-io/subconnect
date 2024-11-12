@@ -3,92 +3,101 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '../../features/userSlice';
 import { useNavigate } from 'react-router-dom';
+import { FaUser, FaEnvelope, FaLock, FaArrowRight } from 'react-icons/fa';
 
 const RegisterForm = ({ onClose }) => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [credentials, setCredentials] = useState({ username: '', email: '', password: '', confirmPassword: '' });
   const [passwordError, setPasswordError] = useState('');
   const dispatch = useDispatch();
   const { status, error } = useSelector((state) => state.user);
   const navigate = useNavigate();
 
+  const handleChange = (e) => {
+    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
+    if (credentials.password !== credentials.confirmPassword) {
       setPasswordError("Passwords don't match");
       return;
     }
     setPasswordError('');
     try {
-      await dispatch(registerUser({ username, email, password })).unwrap();
-      onClose(); // Close the modal on successful registration
+      await dispatch(registerUser(credentials)).unwrap();
+      onClose();
       navigate('/editor');
     } catch (err) {
       // Error is handled by the Redux slice
     }
   };
 
-  const inputClasses = "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-700";
-  const labelClasses = "block text-sm font-medium text-gray-700 mb-1";
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="username" className={labelClasses}>Username</label>
-        <input
-          type="text"
-          id="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          required
-          className={inputClasses}
-        />
+    <div className="w-full pl-8 flex flex-col justify-center">
+      <div className="px-6">
+        <div className="text-center mb-8">
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Create an Account</h3>
+          <p className="text-gray-600">Join Subconnect and start creating</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {['username', 'email', 'password', 'confirmPassword'].map((field) => (
+            <div key={field}>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  {field === 'username' && <FaUser className="h-5 w-5 text-gray-400" />}
+                  {field === 'email' && <FaEnvelope className="h-5 w-5 text-gray-400" />}
+                  {(field === 'password' || field === 'confirmPassword') && <FaLock className="h-5 w-5 text-gray-400" />}
+                </div>
+                <input
+                  type={field.includes('password') ? 'password' : field === 'email' ? 'email' : 'text'}
+                  name={field}
+                  id={field}
+                  required
+                  placeholder={field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 bg-white/50 backdrop-blur-sm transition-all duration-200"
+                  value={credentials[field]}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+          ))}
+
+          {passwordError && (
+            <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
+              {passwordError}
+            </div>
+          )}
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={status === 'loading'}
+            className="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 flex items-center justify-center space-x-2"
+          >
+            <span>{status === 'loading' ? 'Registering...' : 'Register'}</span>
+            {status !== 'loading' && <FaArrowRight />}
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-gray-600">
+            Already have an account?{' '}
+            <button 
+              onClick={onClose} 
+              className="text-indigo-600 hover:text-indigo-700 font-medium"
+            >
+              Log in
+            </button>
+          </p>
+        </div>
       </div>
-      <div>
-        <label htmlFor="email" className={labelClasses}>Email</label>
-        <input
-          type="email"
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className={inputClasses}
-        />
-      </div>
-      <div>
-        <label htmlFor="password" className={labelClasses}>Password</label>
-        <input
-          type="password"
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          className={inputClasses}
-        />
-      </div>
-      <div>
-        <label htmlFor="confirmPassword" className={labelClasses}>Confirm Password</label>
-        <input
-          type="password"
-          id="confirmPassword"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-          className={inputClasses}
-        />
-      </div>
-      {passwordError && <p className="text-red-500 text-sm">{passwordError}</p>}
-      <button
-        type="submit"
-        disabled={status === 'loading'}
-        className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-      >
-        {status === 'loading' ? 'Registering...' : 'Register'}
-      </button>
-      {error && <p className="text-red-500 text-sm">{error}</p>}
-    </form>
+    </div>
   );
 };
 

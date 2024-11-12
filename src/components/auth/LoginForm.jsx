@@ -1,18 +1,18 @@
 // src/components/auth/LoginForm.js
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser } from '../../features/userSlice';
-import { fetchProjects, setCurrentProject } from '../../w3s/w3sSlice'; // Added setCurrentProject import
 import { useNavigate } from 'react-router-dom';
+import { FaLock, FaEnvelope, FaArrowRight } from 'react-icons/fa';
+import { loginUser } from '../../features/userSlice';
+import { fetchProjects, setCurrentProject } from '../../w3s/w3sSlice';
+import RegisterForm from './RegisterForm';
 
 const LoginForm = ({ onClose }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const { status, error } = useSelector((state) => state.user);
-
-  const inputClasses = "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-700";
-  const labelClasses = "block text-sm font-medium text-gray-700 mb-1";
+  const [showRegister, setShowRegister] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,41 +38,147 @@ const LoginForm = ({ onClose }) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
 
+  const handleGuestLogin = async () => {
+    try {
+      // Add your guest login logic here
+      onClose();
+      navigate('/editor');
+    } catch (err) {
+      console.error('Failed to log in as guest:', err);
+    }
+  };
+
+  const handleShowRegister = (e) => {
+    e.preventDefault();
+    setShowRegister(true);
+  };
+
+  if (showRegister) {
+    return <RegisterForm onClose={onClose} />;
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label htmlFor="email" className={labelClasses}>Email</label>
-        <input
-          type="email"
-          name="email"
-          id="email"
-          required
-          className={inputClasses}
-          value={credentials.email}
-          onChange={handleChange}
-        />
+    <div className="flex h-[500px]">
+      {/* Guest Login Section */}
+      <div className="w-1/2 pr-8 border-r border-gray-200 flex flex-col justify-center">
+        <div className="space-y-6 px-6">
+          <div className="text-center">
+            <span className="inline-block px-3 py-1 text-sm font-semibold text-indigo-700 bg-indigo-100 rounded-full mb-4">
+              Quick Start
+            </span>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Try Subconnect Now</h3>
+            <p className="text-gray-600 mb-8">Experience our platform instantly with no registration required</p>
+          </div>
+          
+          <button
+            onClick={handleGuestLogin}
+            className="w-full group bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-bold py-3 px-6 rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200 flex items-center justify-center space-x-2"
+          >
+            <span>Enter as Guest</span>
+            <FaArrowRight className="group-hover:translate-x-1 transition-transform duration-200" />
+          </button>
+          
+          <div className="text-center">
+            <p className="text-sm text-gray-500">
+              • Explore projects and dashboards
+              <br />
+              • Create sample pages
+              <br />
+              • No payment required
+            </p>
+          </div>
+        </div>
       </div>
-      <div>
-        <label htmlFor="password" className={labelClasses}>Password</label>
-        <input
-          type="password"
-          name="password"
-          id="password"
-          required
-          className={inputClasses}
-          value={credentials.password}
-          onChange={handleChange}
-        />
+
+      {/* Login Form Section */}
+      <div className="w-1/2 pl-8 flex flex-col justify-center">
+        <div className="px-6">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h3>
+            <p className="text-gray-600">Access your Subconnect account</p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaEnvelope className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="email"
+                  name="email"
+                  id="email"
+                  required
+                  placeholder="Email address"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 bg-white/50 backdrop-blur-sm transition-all duration-200"
+                  value={credentials.email}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaLock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="password"
+                  name="password"
+                  id="password"
+                  required
+                  placeholder="Password"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 bg-white/50 backdrop-blur-sm transition-all duration-200"
+                  value={credentials.password}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg p-3 text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-gray-600">
+                  Remember me
+                </label>
+              </div>
+              <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium">
+                Forgot password?
+              </a>
+            </div>
+
+            <button
+              type="submit"
+              disabled={status === 'loading'}
+              className="w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 flex items-center justify-center space-x-2"
+            >
+              <span>{status === 'loading' ? 'Logging in...' : 'Log in'}</span>
+              {status !== 'loading' && <FaArrowRight />}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <p className="text-gray-600">
+              Don't have an account?{' '}
+              <a href="#" onClick={handleShowRegister} className="text-indigo-600 hover:text-indigo-700 font-medium">
+                Sign up
+              </a>
+            </p>
+          </div>
+        </div>
       </div>
-      {error && <p className="text-red-500">{error}</p>}
-      <button
-        type="submit"
-        disabled={status === 'loading'}
-        className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-      >
-        {status === 'loading' ? 'Logging in...' : 'Log in'}
-      </button>
-    </form>
+    </div>
   );
 };
 
