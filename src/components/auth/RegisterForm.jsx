@@ -60,6 +60,7 @@ const RegisterForm = ({ onClose, onShowLogin, className = '' }) => {
         <div className="text-center mb-4">
           <h3 className="text-2xl font-bold text-gray-900 mb-1">Create an Account</h3>
           <p className="text-gray-600">Join Subconnect and start creating</p>
+          <p className="text-sm text-gray-500 mt-1">Get started for free, upgrade anytime</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
