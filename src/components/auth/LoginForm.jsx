@@ -71,9 +71,9 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
 
   if (showRegister) {
     return (
-      <div className="flex h-[500px]">
+      <div className="flex flex-col md:flex-row h-auto md:h-[500px]">
         {/* Guest Login Section */}
-        <div className="w-1/2 pr-8 border-r border-gray-200 flex flex-col justify-center">
+        <div className="w-full md:w-1/2 p-6 md:pr-8 border-b md:border-b-0 md:border-r border-gray-200 flex flex-col justify-center">
           <div className="space-y-6 px-6">
             <div className="text-center">
               <span className="inline-block px-3 py-1 text-sm font-semibold text-indigo-700 bg-indigo-100 rounded-full mb-4">
@@ -107,16 +107,16 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
         <RegisterForm 
           onClose={onClose} 
           onShowLogin={() => setShowRegister(false)} 
-          className="w-1/2"
+          className="w-full md:w-1/2"
         />
       </div>
     );
   }
 
   return (
-    <div className="flex h-[500px]">
+    <div className="flex flex-col md:flex-row h-auto md:h-[500px]">
       {/* Guest Login Section */}
-      <div className="w-1/2 pr-8 border-r border-gray-200 flex flex-col justify-center">
+      <div className="w-full md:w-1/2 p-6 md:pr-8 border-b md:border-b-0 md:border-r border-gray-200 flex flex-col justify-center">
         <div className="space-y-6 px-6">
           <div className="text-center">
             <span className="inline-block px-3 py-1 text-sm font-semibold text-indigo-700 bg-indigo-100 rounded-full mb-4">
@@ -147,7 +147,7 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
       </div>
 
       {/* Login Form Section */}
-      <div className="w-1/2 pl-8 flex flex-col justify-center">
+      <div className="w-full md:w-1/2 p-6 md:pl-8 flex flex-col justify-center">
         <div className="px-6">
           <div className="text-center mb-8">
             <h3 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h3>
