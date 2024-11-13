@@ -19,7 +19,19 @@ const RegisterForm = ({ onClose, onShowLogin, className = '' }) => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setCredentials({ ...credentials, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setCredentials({ ...credentials, [name]: value });
+    
+    // Add real-time password validation
+    if (name === 'password' || name === 'confirmPassword') {
+      if (name === 'confirmPassword' && value !== credentials.password) {
+        setPasswordError("Passwords don't match");
+      } else if (name === 'password' && value !== credentials.confirmPassword && credentials.confirmPassword) {
+        setPasswordError("Passwords don't match");
+      } else {
+        setPasswordError('');
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -54,6 +66,14 @@ const RegisterForm = ({ onClose, onShowLogin, className = '' }) => {
     );
   };
 
+  // Add new function to prevent copying
+  const preventCopy = (e) => {
+    if (e.target.type === 'password' || e.target.type === 'text') {
+      e.preventDefault();
+      return false;
+    }
+  };
+
   return (
     <div className={`pl-8 flex flex-col justify-center ${className}`}>
       <div className="px-6">
@@ -83,6 +103,8 @@ const RegisterForm = ({ onClose, onShowLogin, className = '' }) => {
                   name={field}
                   id={field}
                   required
+                  onCopy={preventCopy}
+                  onCut={preventCopy}
                   placeholder={field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
                   className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 bg-white/50 backdrop-blur-sm transition-all duration-200 text-sm"
                   value={credentials[field]}
