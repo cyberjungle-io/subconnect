@@ -3,13 +3,17 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { registerUser } from '../../features/userSlice';
 import { useNavigate, Link } from 'react-router-dom';
-import { FaUser, FaEnvelope, FaLock, FaArrowRight } from 'react-icons/fa';
+import { FaUser, FaEnvelope, FaLock, FaArrowRight, FaEye, FaEyeSlash } from 'react-icons/fa';
 
 const RegisterForm = ({ onClose, onShowLogin, className = '' }) => {
   const [credentials, setCredentials] = useState({ username: '', email: '', password: '', confirmPassword: '' });
   const [passwordError, setPasswordError] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [subscribeNewsletter, setSubscribeNewsletter] = useState(false);
+  const [showPasswords, setShowPasswords] = useState({
+    password: false,
+    confirmPassword: false,
+  });
   const dispatch = useDispatch();
   const { status, error } = useSelector((state) => state.user);
   const navigate = useNavigate();
@@ -62,21 +66,42 @@ const RegisterForm = ({ onClose, onShowLogin, className = '' }) => {
           {['username', 'email', 'password', 'confirmPassword'].map((field) => (
             <div key={field}>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  {field === 'username' && <FaUser className="h-5 w-5 text-gray-400" />}
-                  {field === 'email' && <FaEnvelope className="h-5 w-5 text-gray-400" />}
-                  {(field === 'password' || field === 'confirmPassword') && <FaLock className="h-5 w-5 text-gray-400" />}
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                  {field === 'username' && <FaUser className="h-4 w-4 text-gray-400" />}
+                  {field === 'email' && <FaEnvelope className="h-4 w-4 text-gray-400" />}
+                  {(field === 'password' || field === 'confirmPassword') && <FaLock className="h-4 w-4 text-gray-400" />}
                 </div>
                 <input
-                  type={field.includes('password') ? 'password' : field === 'email' ? 'email' : 'text'}
+                  type={
+                    (field === 'password' || field === 'confirmPassword') 
+                      ? (showPasswords[field] ? 'text' : 'password')
+                      : field === 'email' 
+                      ? 'email' 
+                      : 'text'
+                  }
                   name={field}
                   id={field}
                   required
                   placeholder={field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 bg-white/50 backdrop-blur-sm transition-all duration-200 text-sm"
+                  className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 bg-white/50 backdrop-blur-sm transition-all duration-200 text-sm"
                   value={credentials[field]}
                   onChange={handleChange}
                 />
+                {(field === 'password' || field === 'confirmPassword') && (
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
+                    onClick={() => setShowPasswords(prev => ({
+                      ...prev,
+                      [field]: !prev[field]
+                    }))}
+                  >
+                    {showPasswords[field] 
+                      ? <FaEyeSlash className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                      : <FaEye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                    }
+                  </button>
+                )}
               </div>
             </div>
           ))}
