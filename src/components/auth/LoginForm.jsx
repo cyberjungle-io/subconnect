@@ -66,6 +66,7 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
 
   const handleShowRegister = (e) => {
     e.preventDefault();
+    dispatch({ type: 'user/clearError' });
     setShowRegister(true);
   };
 
