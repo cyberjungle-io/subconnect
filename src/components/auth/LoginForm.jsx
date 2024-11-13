@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FaLock, FaEnvelope, FaArrowRight } from 'react-icons/fa';
+import { FaLock, FaEnvelope, FaArrowRight, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { loginUser, setGuestMode } from '../../features/userSlice';
 import { fetchProjects, setCurrentProject } from '../../w3s/w3sSlice';
 import RegisterForm from './RegisterForm';
@@ -13,6 +13,7 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const { status, error } = useSelector((state) => state.user);
   const [showRegister, setShowRegister] = useState(initialView === 'register');
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     setShowRegister(initialView === 'register');
@@ -180,15 +181,29 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
                   <FaLock className="h-4 w-4 text-gray-400" />
                 </div>
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   name="password"
                   id="password"
                   required
                   placeholder="Password"
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 bg-white/50 backdrop-blur-sm transition-all duration-200"
+                  className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 bg-white/50 backdrop-blur-sm transition-all duration-200"
                   value={credentials.password}
                   onChange={handleChange}
+                  onCopy={(e) => e.preventDefault()}
+                  onCut={(e) => e.preventDefault()}
+                  onPaste={(e) => e.preventDefault()}
+                  autoComplete="current-password"
                 />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center z-10"
+                  onClick={() => setShowPassword(prev => !prev)}
+                >
+                  {showPassword 
+                    ? <FaEyeSlash className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                    : <FaEye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                  }
+                </button>
               </div>
             </div>
 
