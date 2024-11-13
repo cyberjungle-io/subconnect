@@ -328,19 +328,14 @@ const LandingPage = () => {
           </div>
 
           {/* Featured Use Cases Section */}
-          <section className="py-20 bg-gradient-to-br from-indigo-50 to-blue-50 overflow-hidden">
+          <section className="py-20 bg-gradient-to-br from-indigo-50 to-blue-50 overflow-hidden mt-2">
             <div className="container mx-auto px-4">
               {/* Bottom CTA Section */}
-              <div className="text-center mt-16">
+              <div className="text-center">
                 <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
                   Whether you're building for DeFi, DAOs, NFTs, or pioneering an entirely new Web3 vertical, our platform adapts to your vision.
                 </p>
-                <a 
-                  href="#" 
-                  className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm transition-colors duration-200"
-                >
-                  Start Building
-                </a>
+               
               </div>
             </div>
           </section>
@@ -352,7 +347,7 @@ const LandingPage = () => {
       <section className="py-20 bg-indigo-900 text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold mb-8">Ready to Transform Your Web3 Experience?</h2>
-          <p className="text-xl mb-12 text-indigo-200">Join the next generation of Web3 analytics and collaboration</p>
+          <p className="text-xl mb-8 text-indigo-200">Join the next generation of Web3 analytics and collaboration</p>
           <div className="flex justify-center space-x-4">
             <button 
               onClick={openRegisterModal}
