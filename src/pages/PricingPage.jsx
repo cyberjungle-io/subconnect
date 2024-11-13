@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FaCheck } from 'react-icons/fa';
-import './pricingpage.css';  // Add this line to import the CSS
+import './pages.css';  // Changed from './pricingpage.css'
 import Toolbar from '../components/Editor/Toolbar';
 
 const PricingTier = ({ title, monthlyPrice, yearlyPrice, features, isPopular, isYearly }) => (

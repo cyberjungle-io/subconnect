@@ -191,13 +191,13 @@ const LandingPage = () => {
       </section>
 
       {/* After the "Build in Minutes" section */}
-      <section className="py-20 bg-gradient-to-br from-indigo-50 to-blue-50">
+      <section className="py-20 bg-gradient-to-br from-indigo-50 to-blue-50 overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-indigo-900 mb-4">Flexibility to Create Your Own Experience</h2>
             <p className="text-xl text-gray-600 mb-8">Build custom pages that align with your unique Web3 interests and goals</p>
             
-            {/* New elegant divider and subtitle */}
+            {/* Elegant divider and subtitle */}
             <div className="max-w-3xl mx-auto">
               <div className="flex items-center justify-center gap-4 mb-6">
                 <div className="h-px bg-indigo-200 w-12"></div>
@@ -205,103 +205,149 @@ const LandingPage = () => {
                 <div className="h-px bg-indigo-200 w-12"></div>
               </div>
               <p className="text-gray-600 italic">
-                Explore these popular implementations—just a glimpse of the infinite possibilities our platform enables. Your unique vision drives the next innovative use case.
+                Explore these popular implementations—just a glimpse of the infinite possibilities our platform enables.
               </p>
             </div>
           </div>
 
-          {/* Existing cards code remains the same */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
-              <div className="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mb-6">
-                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">DAO Management</h3>
-              <p className="text-gray-600 mb-4">Create custom dashboards for treasury management, proposal tracking, and member engagement.</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center">
-                  <span className="mr-2">•</span>
-                  Governance metrics
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2">•</span>
-                  Treasury analytics
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2">•</span>
-                  Voting patterns
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
-              <div className="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mb-6">
-                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">DeFi Analytics</h3>
-              <p className="text-gray-600 mb-4">Monitor your DeFi portfolio with customizable views for yields, liquidity pools, and market trends.</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center">
-                  <span className="mr-2">•</span>
-                  Portfolio tracking
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2">•</span>
-                  Yield optimization
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2">•</span>
-                  Risk analysis
-                </li>
-              </ul>
-            </div>
-
-            <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
-              <div className="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mb-6">
-                <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-4">NFT Collections</h3>
-              <p className="text-gray-600 mb-4">Build dynamic galleries and tracking tools for NFT collections and marketplace activity.</p>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li className="flex items-center">
-                  <span className="mr-2">•</span>
-                  Collection analytics
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2">•</span>
-                  Price tracking
-                </li>
-                <li className="flex items-center">
-                  <span className="mr-2">•</span>
-                  Rarity insights
-                </li>
-              </ul>
+          {/* Carousel Container */}
+          <div className="relative">
+            <div className="animate-carousel flex gap-8">
+              {/* First set of cards */}
+              <CarouselCard
+                icon={<TeamIcon />}
+                title="DAO Management"
+                description="Create custom dashboards for treasury management, proposal tracking, and member engagement."
+                features={['Governance metrics', 'Treasury analytics', 'Voting patterns']}
+              />
+              <CarouselCard
+                icon={<ChartIcon />}
+                title="DeFi Analytics"
+                description="Monitor your DeFi portfolio with customizable views for yields, liquidity pools, and market trends."
+                features={['Portfolio tracking', 'Yield optimization', 'Risk analysis']}
+              />
+              <CarouselCard
+                icon={<DocumentIcon />}
+                title="NFT Collections"
+                description="Build dynamic galleries and tracking tools for NFT collections and marketplace activity."
+                features={['Collection analytics', 'Price tracking', 'Rarity insights']}
+              />
+              <CarouselCard
+                icon={<WalletIcon />}
+                title="Wallet Tracking"
+                description="Monitor wallet activities, transactions, and portfolio performance across multiple chains."
+                features={['Multi-chain support', 'Transaction history', 'Asset overview']}
+              />
+              <CarouselCard
+                icon={<GraphIcon />}
+                title="Market Analysis"
+                description="Create comprehensive market analysis dashboards with real-time data and custom metrics."
+                features={['Price feeds', 'Market indicators', 'Custom alerts']}
+              />
+              <CarouselCard
+                icon={<CommunityIcon />}
+                title="Community Engagement"
+                description="Build interactive spaces for community participation and social engagement tracking."
+                features={['Member analytics', 'Engagement metrics', 'Social tracking']}
+              />
+              <CarouselCard
+                icon={<ProfileIcon />}
+                title="Web3 Profiles"
+                description="Create dynamic profile pages that aggregate on-chain activity and social presence."
+                features={['Identity verification', 'Reputation scoring', 'Cross-chain activity']}
+              />
+              <CarouselCard
+                icon={<HomeIcon />}
+                title="Smart Home Hub"
+                description="Monitor and control IoT devices with blockchain-based authentication and automation."
+                features={['Device management', 'Energy tracking', 'Smart contracts']}
+              />
+              <CarouselCard
+                icon={<GovIcon />}
+                title="OpenGov Analytics"
+                description="Track and analyze Polkadot's governance activities with comprehensive dashboards."
+                features={['Track active referenda', 'Delegation insights', 'Vote participation metrics']}
+              />
+              
+              {/* Duplicate set for seamless loop */}
+              <CarouselCard
+                icon={<TeamIcon />}
+                title="DAO Management"
+                description="Create custom dashboards for treasury management, proposal tracking, and member engagement."
+                features={['Governance metrics', 'Treasury analytics', 'Voting patterns']}
+              />
+              <CarouselCard
+                icon={<ChartIcon />}
+                title="DeFi Analytics"
+                description="Monitor your DeFi portfolio with customizable views for yields, liquidity pools, and market trends."
+                features={['Portfolio tracking', 'Yield optimization', 'Risk analysis']}
+              />
+              <CarouselCard
+                icon={<DocumentIcon />}
+                title="NFT Collections"
+                description="Build dynamic galleries and tracking tools for NFT collections and marketplace activity."
+                features={['Collection analytics', 'Price tracking', 'Rarity insights']}
+              />
+              <CarouselCard
+                icon={<WalletIcon />}
+                title="Wallet Tracking"
+                description="Monitor wallet activities, transactions, and portfolio performance across multiple chains."
+                features={['Multi-chain support', 'Transaction history', 'Asset overview']}
+              />
+              <CarouselCard
+                icon={<GraphIcon />}
+                title="Market Analysis"
+                description="Create comprehensive market analysis dashboards with real-time data and custom metrics."
+                features={['Price feeds', 'Market indicators', 'Custom alerts']}
+              />
+              <CarouselCard
+                icon={<CommunityIcon />}
+                title="Community Engagement"
+                description="Build interactive spaces for community participation and social engagement tracking."
+                features={['Member analytics', 'Engagement metrics', 'Social tracking']}
+              />
+              <CarouselCard
+                icon={<ProfileIcon />}
+                title="Web3 Profiles"
+                description="Create dynamic profile pages that aggregate on-chain activity and social presence."
+                features={['Identity verification', 'Reputation scoring', 'Cross-chain activity']}
+              />
+              <CarouselCard
+                icon={<HomeIcon />}
+                title="Smart Home Hub"
+                description="Monitor and control IoT devices with blockchain-based authentication and automation."
+                features={['Device management', 'Energy tracking', 'Smart contracts']}
+              />
+              <CarouselCard
+                icon={<GovIcon />}
+                title="OpenGov Analytics"
+                description="Track and analyze Polkadot's governance activities with comprehensive dashboards."
+                features={['Track active referenda', 'Delegation insights', 'Vote participation metrics']}
+              />
             </div>
           </div>
 
-          {/* Enhanced footer section */}
-          <div className="mt-16 text-center">
-            <div className="max-w-2xl mx-auto mb-8">
-              <p className="text-gray-600">
-                Whether you're building for DeFi, DAOs, NFTs, or pioneering an entirely new Web3 vertical, our platform adapts to your vision.
-              </p>
+          {/* Featured Use Cases Section */}
+          <section className="py-20 bg-gradient-to-br from-indigo-50 to-blue-50 overflow-hidden">
+            <div className="container mx-auto px-4">
+              {/* Bottom CTA Section */}
+              <div className="text-center mt-16">
+                <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                  Whether you're building for DeFi, DAOs, NFTs, or pioneering an entirely new Web3 vertical, our platform adapts to your vision.
+                </p>
+                <a 
+                  href="#" 
+                  className="inline-flex items-center justify-center px-8 py-3 text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm transition-colors duration-200"
+                >
+                  Start Building
+                </a>
+              </div>
             </div>
-            <button 
-              onClick={openRegisterModal}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300"
-            >
-              Start Building
-            </button>
-          </div>
+          </section>
         </div>
       </section>
 
+     
       {/* Call to Action - The Future */}
       <section className="py-20 bg-indigo-900 text-white">
         <div className="container mx-auto px-4 text-center">
@@ -626,7 +672,7 @@ const BlockchainFeaturesSection = () => (
       <div className="flex gap-4">
         <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center">
           <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
           </svg>
         </div>
         <div>
@@ -649,5 +695,61 @@ const BlockchainFeaturesSection = () => (
     </div>
   </div>
 </section>
+
+// Add this new component
+const CarouselCard = ({ icon, title, description, features }) => (
+  <div className="flex-shrink-0 w-[400px] bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300">
+    <div className="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mb-6">
+      {icon}
+    </div>
+    <h3 className="text-xl font-bold text-gray-900 mb-4">{title}</h3>
+    <p className="text-gray-600 mb-4">{description}</p>
+    <ul className="space-y-2 text-sm text-gray-600">
+      {features.map((feature, index) => (
+        <li key={index} className="flex items-center">
+          <span className="mr-2">•</span>
+          {feature}
+        </li>
+      ))}
+    </ul>
+  </div>
+);
+
+// Add new icon components
+const ProfileIcon = () => (
+  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+  </svg>
+);
+
+const HomeIcon = () => (
+  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+  </svg>
+);
+
+const GovIcon = () => (
+  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+  </svg>
+);
+
+const WalletIcon = () => (
+  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+  </svg>
+);
+
+const GraphIcon = () => (
+  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+  </svg>
+);
+
+const CommunityIcon = () => (
+  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+  </svg>
+);
 
 export default LandingPage;
