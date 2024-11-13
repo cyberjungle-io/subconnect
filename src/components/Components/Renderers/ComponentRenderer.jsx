@@ -384,10 +384,8 @@ const ComponentRenderer = React.memo(({
     };
 
     // Modify the height handling logic
-    if (type === 'TEXT') {
-      componentStyle.height = 'auto';
-      componentStyle.minHeight = style.minHeight || style.height || 'auto';
-    } else if (type === 'CHART') {
+    
+   if (type === 'CHART') {
       componentStyle.width = style.width || '100%';
       componentStyle.height = style.height || '300px';
       componentStyle.minWidth = style.minWidth || "200px";
@@ -453,6 +451,13 @@ const ComponentRenderer = React.memo(({
 
     if (style.cursor) {
       componentStyle.cursor = style.cursor;
+    }
+
+    // Modify the height handling logic for TEXT components
+    if (type === 'TEXT') {
+      componentStyle.height = style.height || '100%'; // Default to 100% for text components
+      componentStyle.display = 'flex'; // Add flex display
+      componentStyle.flexDirection = 'column'; // Stack children vertically
     }
 
     return componentStyle;

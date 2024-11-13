@@ -67,7 +67,10 @@ export const componentConfig = {
         tablet: '16px',
         desktop: '16px'
       },
-      borderRadius: '4px'
+      borderRadius: '4px',
+      borderWidth: '1px',
+      borderStyle: 'solid',
+      borderColor: '#e2e8f0',
     },
     style: {
       textAlign: 'left',
@@ -75,6 +78,9 @@ export const componentConfig = {
       verticalAlign: 'top',
       height: '200px',
       width: '100%',
+      borderWidth: '1px',
+      borderStyle: 'solid',
+      borderColor: '#e2e8f0',
       // ... (keep other style properties)
     }
   },

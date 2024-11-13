@@ -37,17 +37,24 @@ const TextRenderer = ({
       overflow: 'auto',
       wordWrap: 'break-word',
       transition: 'color 0.2s ease-in-out',
-      minHeight: '100%',
       display: 'block'
     };
   };
 
   const containerStyle = {
     width: '100%',
-    height: component.style.height || '200px',
+    height: '100%',
     position: 'relative',
     backgroundColor: component.style.backgroundColor || 'transparent',
-    border: component.style.border || '1px solid #e2e8f0',
+    borderWidth: component.style.borderWidth || '1px',
+    borderStyle: component.style.borderStyle || 'solid',
+    borderColor: component.style.borderColor || '#e2e8f0',
+    ...(component.style.borderWidth === '0px' && {
+      border: 'none',
+      borderWidth: '0px',
+      borderStyle: 'none',
+      borderColor: 'transparent'
+    }),
     borderRadius: component.style.borderRadius || '4px',
     transition: 'border-color 0.2s ease-in-out'
   };
@@ -96,13 +103,12 @@ const TextRenderer = ({
           style: { 
             ...component.style, 
             content: sanitizedContent,
-            height: 'auto',
           } 
         });
       } else {
         console.warn('Invalid HTML content:', newContent);
       }
-    }, 100); // Adjust this delay as needed
+    }, 100);
   };
 
   const handleKeyDown = (e) => {
