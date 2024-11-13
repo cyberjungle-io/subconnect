@@ -158,8 +158,8 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaEnvelope className="h-5 w-5 text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                  <FaEnvelope className="h-4 w-4 text-gray-400" />
                 </div>
                 <input
                   type="email"
@@ -176,8 +176,8 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
 
             <div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaLock className="h-5 w-5 text-gray-400" />
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                  <FaLock className="h-4 w-4 text-gray-400" />
                 </div>
                 <input
                   type="password"
