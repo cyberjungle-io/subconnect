@@ -73,39 +73,10 @@ const TextRenderer = ({
     if (textRef.current) {
       const contentToUse = component.content || component.props?.content || '';
       const sanitizedContent = DOMPurify.sanitize(contentToUse);
-      
-      if (contentRef.current !== contentToUse) {
-        textRef.current.innerHTML = sanitizedContent;
-        contentRef.current = contentToUse;
-      }
+      textRef.current.innerHTML = sanitizedContent;
+      contentRef.current = contentToUse;
     }
   }, [component.content, component.props?.content]);
-
-  const handleFocus = () => {
-    if (textRef.current) {
-      const currentContent = component.content || component.props?.content || '';
-      if (!textRef.current.innerHTML && currentContent) {
-        textRef.current.innerHTML = DOMPurify.sanitize(currentContent);
-      }
-    }
-  };
-
-  const handleBlur = () => {
-    if (textRef.current) {
-      const sanitizedContent = sanitizeHtml(textRef.current.innerHTML);
-      if (sanitizedContent !== contentRef.current) {
-        contentRef.current = sanitizedContent;
-        onUpdate(component.id, {
-          ...component,
-          content: sanitizedContent,
-          props: {
-            ...component.props,
-            content: sanitizedContent,
-          }
-        });
-      }
-    }
-  };
 
   const handleInput = (e) => {
     const element = e.target;
@@ -138,9 +109,12 @@ const TextRenderer = ({
     }, 300);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Backspace' && textRef.current.innerText.trim() === '') {
-      e.preventDefault();
+  const handleFocus = () => {
+    if (textRef.current) {
+      const currentContent = component.content || component.props?.content || '';
+      if (!textRef.current.innerHTML) {
+        textRef.current.innerHTML = DOMPurify.sanitize(currentContent);
+      }
     }
   };
 
@@ -153,9 +127,7 @@ const TextRenderer = ({
         contentEditable={isEditing}
         onDoubleClick={onDoubleClick}
         onFocus={handleFocus}
-        onBlur={handleBlur}
         onInput={handleInput}
-        onKeyDown={handleKeyDown}
         suppressContentEditableWarning={true}
       />
       {isToolbarOpen && !isViewMode && (
@@ -167,7 +139,10 @@ const TextRenderer = ({
             content={contentRef.current}
             onContentChange={(newContent) => {
               contentRef.current = newContent;
-              onUpdate(component.id, { style: { ...component.style, content: newContent } });
+              onUpdate(component.id, { 
+                content: newContent,
+                props: { ...component.props, content: newContent }
+              });
             }}
           />
         </div>
