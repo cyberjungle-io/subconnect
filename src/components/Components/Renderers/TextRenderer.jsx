@@ -16,7 +16,7 @@ const TextRenderer = ({
   parent
 }) => {
   const textRef = useRef(null);
-  const contentRef = useRef(component.style.content || '');
+  const contentRef = useRef(component.content || '');
   const updateTimeoutRef = useRef(null);
 
   const getTextStyle = () => {
@@ -70,11 +70,13 @@ const TextRenderer = ({
   const ElementType = component.style.headingLevel || 'p';
 
   useEffect(() => {
-    if (textRef.current && component.style.content !== contentRef.current) {
-      textRef.current.innerHTML = DOMPurify.sanitize(component.style.content || '');
-      contentRef.current = component.style.content;
+    if (textRef.current) {
+      const contentToUse = component.content || component.props?.content || '';
+      const sanitizedContent = DOMPurify.sanitize(contentToUse);
+      textRef.current.innerHTML = sanitizedContent;
+      contentRef.current = contentToUse;
     }
-  }, [component.style.content]);
+  }, [component.content, component.props?.content]);
 
   const handleFocus = () => {
     // Remove setShowPlaceholder(false);
@@ -88,25 +90,29 @@ const TextRenderer = ({
     const element = e.target;
     const newContent = element.innerHTML;
     
-    // Clear any pending updates
     if (updateTimeoutRef.current) {
       clearTimeout(updateTimeoutRef.current);
     }
 
-    // Debounce the update to prevent rapid re-renders
     updateTimeoutRef.current = setTimeout(() => {
       const sanitizedContent = sanitizeHtml(newContent);
       
       if (validateHtmlContent(sanitizedContent)) {
         contentRef.current = sanitizedContent;
-        onUpdate(component.id, { 
-          style: { 
-            ...component.style, 
+        
+        const updatedComponent = {
+          ...component,
+          content: sanitizedContent,
+          props: {
+            ...component.props,
             content: sanitizedContent,
-          } 
-        });
-      } else {
-        console.warn('Invalid HTML content:', newContent);
+          },
+          style: {
+            ...component.style,
+          }
+        };
+
+        onUpdate(component.id, updatedComponent);
       }
     }, 100);
   };
@@ -130,6 +136,7 @@ const TextRenderer = ({
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         suppressContentEditableWarning={true}
+        dangerouslySetInnerHTML={isEditing ? undefined : { __html: DOMPurify.sanitize(component.content || component.props?.content || '') }}
       />
       {isToolbarOpen && !isViewMode && (
         <div className="absolute top-full left-0 z-10 w-full">
