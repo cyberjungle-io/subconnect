@@ -46,8 +46,15 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
   };
 
   const handleAddTask = (newTask) => {
-    const updatedTasks = [...tasks, { id: Date.now(), ...newTask, completed: false }];
+    const updatedTasks = [...tasks, {
+      id: `${component.props.id}_${Date.now()}`,
+      ...newTask,
+      completed: false,
+      componentId: component.props.id
+    }];
+    
     onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
+    
     const todoData = {
       componentId: component.props.id,
       name: component.props.name,
@@ -55,7 +62,6 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       tasks: updatedTasks
     };
     
-    // Store the TodoData in w3s
     dispatch(createComponentData(todoData))
       .unwrap()
       .then(() => {
@@ -63,23 +69,19 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       })
       .catch((error) => {
         console.error('Failed to store todo data:', error);
-        if (error.name === 'TypeError' && error.message.includes('Cannot read properties of undefined (reading \'list\')')) {
-          console.error('Error: The componentData state might not be initialized properly.');
-        } else {
-          console.error('Error details:', error.stack);
-        }
       });
-
-
-
   };
 
   const handleEditTask = (editedTask) => {
     const updatedTasks = tasks.map(task =>
-      task.id === editedTask.id ? { ...task, ...editedTask } : task
+      task.id === editedTask.id ? {
+        ...task,
+        ...editedTask,
+        componentId: component.props.id
+      } : task
     );
+    
     onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
-
 
     const todoData = {
       componentId: component.props.id,
@@ -88,7 +90,6 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       tasks: updatedTasks
     };
     
-    // Store the TodoData in w3s
     dispatch(createComponentData(todoData))
       .unwrap()
       .then(() => {
@@ -96,13 +97,7 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       })
       .catch((error) => {
         console.error('Failed to store todo data:', error);
-        if (error.name === 'TypeError' && error.message.includes('Cannot read properties of undefined (reading \'list\')')) {
-          console.error('Error: The componentData state might not be initialized properly.');
-        } else {
-          console.error('Error details:', error.stack);
-        }
       });
-
   };
 
   const handleToggleTask = (taskId) => {

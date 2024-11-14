@@ -14,7 +14,11 @@ const TodoModal = ({ task, onSave, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave({ id: task ? task.id : Date.now(), name, description });
+    onSave({
+      id: task ? task.id : undefined,
+      name,
+      description
+    });
     onClose();
   };
 
