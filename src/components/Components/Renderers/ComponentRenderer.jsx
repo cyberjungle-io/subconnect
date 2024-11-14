@@ -365,7 +365,7 @@ const ComponentRenderer = React.memo(({
       ...generalComponentStyle,
       ...style,
       position: 'relative',
-      overflow: "hidden",
+      overflow: type === "FLEX_CONTAINER" ? "visible" : "hidden",
       cursor: style.cursor || (parentHasHover ? "pointer" : (type === "FLEX_CONTAINER" ? "pointer" : "default")),
       color: style.color || parent?.style?.color || 'inherit',
       boxSizing: 'border-box',
@@ -421,19 +421,14 @@ const ComponentRenderer = React.memo(({
         alignContent: style.alignContent || props.alignContent || "stretch",
         gap: style.gap || "0px",
         transition: style.transition || `all ${style.transitionDuration || 200}ms ease-in-out`,
+        minWidth: style.minWidth || 'auto',
+        minHeight: style.minHeight || 'auto',
+        width: style.width || 'auto',
+        height: style.height || 'auto',
+        flexGrow: style.flexGrow || 0,
+        flexShrink: style.flexShrink || 1,
+        flexBasis: style.flexBasis || 'auto',
       });
-
-      if (!isFlexChild) {
-        componentStyle[globalComponentLayout === "horizontal" ? "width" : "height"] = "100%";
-      } else {
-        Object.assign(componentStyle, {
-          flexGrow: style.flexGrow || 0,
-          flexShrink: style.flexShrink || 1,
-          flexBasis: style.flexBasis || 'auto',
-          width: style.width || 'auto',
-          height: style.height || 'auto',
-        });
-      }
     } else if (isFlexChild) {
       Object.assign(componentStyle, {
         flexGrow: style.flexGrow || 0,
