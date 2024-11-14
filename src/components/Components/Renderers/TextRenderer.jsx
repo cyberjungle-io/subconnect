@@ -82,6 +82,11 @@ const TextRenderer = ({
     const element = e.target;
     const newContent = element.innerHTML;
     
+    // Store the cursor position
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+    const offset = range.startOffset;
+    
     if (updateTimeoutRef.current) {
       clearTimeout(updateTimeoutRef.current);
     }
@@ -105,6 +110,16 @@ const TextRenderer = ({
         };
 
         onUpdate(component.id, updatedComponent);
+        
+        // Restore cursor position after the update
+        if (textRef.current) {
+          const newRange = document.createRange();
+          const sel = window.getSelection();
+          newRange.setStart(textRef.current.childNodes[0], offset);
+          newRange.collapse(true);
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+        }
       }
     }, 300);
   };
