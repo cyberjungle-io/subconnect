@@ -70,13 +70,13 @@ const TextRenderer = ({
   const ElementType = component.style.headingLevel || 'p';
 
   useEffect(() => {
-    if (textRef.current) {
+    if (textRef.current && !isEditing) {
       const contentToUse = component.content || component.props?.content || '';
       const sanitizedContent = DOMPurify.sanitize(contentToUse);
       textRef.current.innerHTML = sanitizedContent;
       contentRef.current = contentToUse;
     }
-  }, [component.content, component.props?.content]);
+  }, [component.content, component.props?.content, isEditing]);
 
   const handleFocus = () => {
     // Remove setShowPlaceholder(false);
@@ -94,12 +94,12 @@ const TextRenderer = ({
       clearTimeout(updateTimeoutRef.current);
     }
 
+    contentRef.current = newContent;
+
     updateTimeoutRef.current = setTimeout(() => {
       const sanitizedContent = sanitizeHtml(newContent);
       
       if (validateHtmlContent(sanitizedContent)) {
-        contentRef.current = sanitizedContent;
-        
         const updatedComponent = {
           ...component,
           content: sanitizedContent,
@@ -114,7 +114,7 @@ const TextRenderer = ({
 
         onUpdate(component.id, updatedComponent);
       }
-    }, 100);
+    }, 300);
   };
 
   const handleKeyDown = (e) => {
