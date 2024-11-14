@@ -70,20 +70,41 @@ const TextRenderer = ({
   const ElementType = component.style.headingLevel || 'p';
 
   useEffect(() => {
-    if (textRef.current && !isEditing) {
+    if (textRef.current) {
       const contentToUse = component.content || component.props?.content || '';
       const sanitizedContent = DOMPurify.sanitize(contentToUse);
-      textRef.current.innerHTML = sanitizedContent;
-      contentRef.current = contentToUse;
+      
+      if (contentRef.current !== contentToUse) {
+        textRef.current.innerHTML = sanitizedContent;
+        contentRef.current = contentToUse;
+      }
     }
-  }, [component.content, component.props?.content, isEditing]);
+  }, [component.content, component.props?.content]);
 
   const handleFocus = () => {
-    // Remove setShowPlaceholder(false);
+    if (textRef.current) {
+      const currentContent = component.content || component.props?.content || '';
+      if (!textRef.current.innerHTML && currentContent) {
+        textRef.current.innerHTML = DOMPurify.sanitize(currentContent);
+      }
+    }
   };
 
   const handleBlur = () => {
-    // Remove placeholder-related logic
+    if (textRef.current) {
+      const sanitizedContent = sanitizeHtml(textRef.current.innerHTML);
+      if (sanitizedContent !== contentRef.current) {
+        contentRef.current = sanitizedContent;
+        onUpdate(component.id, {
+          ...component,
+          content: sanitizedContent,
+          props: {
+            ...component.props,
+            content: sanitizedContent,
+          }
+        });
+      }
+    }
   };
 
   const handleInput = (e) => {
@@ -136,7 +157,6 @@ const TextRenderer = ({
         onInput={handleInput}
         onKeyDown={handleKeyDown}
         suppressContentEditableWarning={true}
-        dangerouslySetInnerHTML={isEditing ? undefined : { __html: DOMPurify.sanitize(component.content || component.props?.content || '') }}
       />
       {isToolbarOpen && !isViewMode && (
         <div className="absolute top-full left-0 z-10 w-full">
