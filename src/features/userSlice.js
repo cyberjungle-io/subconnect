@@ -1,7 +1,7 @@
 // src/features/userSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { w3sService } from '../w3s/w3sService';
-import { fetchProjects, setCurrentProject, clearW3sState } from '../w3s/w3sSlice';
+import { fetchProjects, setCurrentProject, clearW3sState, fetchSharedProjects } from '../w3s/w3sSlice';
 import { setEditorMode, resetEditorState } from './editorSlice';
 import { showToast } from './toastSlice'; // Import the showToast action
 
@@ -112,6 +112,8 @@ export const addUserAccessByEmail = createAsyncThunk(
     try {
       const response = await w3sService.addUserAccessByEmail(accessData);
       dispatch(showToast({ message: 'User access added successfully', type: 'success' }));
+      dispatch(fetchProjects());
+      dispatch(fetchSharedProjects());
       return response.data;
     } catch (error) {
       console.error('Error adding user access by email:', error);

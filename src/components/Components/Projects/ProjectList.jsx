@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { setCurrentProject, deleteProject, fetchProjects } from '../../../w3s/w3sSlice';
+import { setCurrentProject, deleteProject, fetchProjects, fetchSharedProjects } from '../../../w3s/w3sSlice';
 import { addUserAccessByEmail } from '../../../features/userSlice';
 import { showToast } from '../../../features/toastSlice';
 import DeleteConfirmModal from '../../common/DeleteConfirmModal';
@@ -10,14 +10,15 @@ import ProjectForm from './ProjectForm';
 const ProjectList = ({ onClose }) => {
   const dispatch = useDispatch();
   const { list: projects, status } = useSelector((state) => state.w3s.projects);
+  const { list: sharedProjects } = useSelector((state) => state.w3s.sharedProjects);
   const currentProject = useSelector((state) => state.w3s.currentProject.data);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [showNewProject, setShowNewProject] = useState(false);
 
   useEffect(() => {
-    // Remove the status === 'idle' check to ensure it always fetches
     dispatch(fetchProjects());
+    dispatch(fetchSharedProjects());
   }, [dispatch]);
 
   const handleSelectProject = (project) => {
@@ -78,7 +79,7 @@ const ProjectList = ({ onClose }) => {
       {status === 'failed' && <p>Error loading projects. Please try again.</p>}
       {status === 'succeeded' && (
         <ul className="space-y-2">
-          {projects.map((project) => (
+          {[...projects, ...sharedProjects].map((project) => (
             <li 
               key={project._id} 
               onClick={() => handleSelectProject(project)}
