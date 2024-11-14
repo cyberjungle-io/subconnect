@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { FaTrash } from 'react-icons/fa';
+import DeleteConfirmModal from './DeleteConfirmModal';
 
-const TodoModal = ({ task, onSave, onClose }) => {
+const TodoModal = ({ task, onSave, onClose, onDelete }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [editingField, setEditingField] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -145,9 +148,32 @@ const TodoModal = ({ task, onSave, onClose }) => {
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
     >
       <div className="bg-white rounded-lg p-6 w-96">
-        <h2 className="text-xl font-bold mb-4">{task ? 'Edit Task' : 'Add New Task'}</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">{task ? 'Edit Task' : 'Add New Task'}</h2>
+          {task && (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="text-gray-900 hover:text-red-600 p-2 transition-colors"
+            >
+              <FaTrash />
+            </button>
+          )}
+        </div>
         {task ? renderEditTaskForm() : renderNewTaskForm()}
       </div>
+
+      {showDeleteConfirm && (
+        <DeleteConfirmModal
+          isOpen={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          onDelete={() => {
+            onDelete(task.id);
+            onClose();
+          }}
+          title="Delete Task"
+          message="Are you sure you want to delete this task? This action cannot be undone."
+        />
+      )}
     </div>
   );
 };

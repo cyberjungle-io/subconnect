@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import TodoModal from '../../common/TodoModal';
+import DeleteConfirmModal from '../../common/DeleteConfirmModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { createComponentData } from '../../../w3s/w3sSlice';
 import { w3sService } from '../../../w3s/w3sService';
@@ -53,6 +54,7 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       componentId: component.props.id
     }];
     
+    setTasks(updatedTasks);
     onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
     
     const todoData = {
@@ -81,6 +83,7 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       } : task
     );
     
+    setTasks(updatedTasks);
     onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
 
     const todoData = {
@@ -105,6 +108,28 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       task.id === taskId ? { ...task, completed: !task.completed } : task
     );
     onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
+  };
+
+  const handleDeleteTask = (taskId) => {
+    const updatedTasks = tasks.filter(task => task.id !== taskId);
+    setTasks(updatedTasks);
+    onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
+
+    const todoData = {
+      componentId: component.props.id,
+      name: component.props.name,
+      type: component.type,
+      tasks: updatedTasks
+    };
+    
+    dispatch(createComponentData(todoData))
+      .unwrap()
+      .then(() => {
+        // console.log('Todo data deleted successfully');
+      })
+      .catch((error) => {
+        console.error('Failed to update todo data:', error);
+      });
   };
 
   const openModal = (task = null) => {
@@ -243,6 +268,7 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
           task={editingTask}
           onSave={editingTask ? handleEditTask : handleAddTask}
           onClose={closeModal}
+          onDelete={handleDeleteTask}
         />
       )}
     </div>
