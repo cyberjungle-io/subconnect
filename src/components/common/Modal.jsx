@@ -17,14 +17,16 @@ const Modal = ({ isOpen, onClose, children, extraButton }) => {
       onClick={handleBackdropClick}
     >
       <div className="bg-white w-full max-w-[800px] rounded-lg shadow-lg overflow-hidden max-h-[90vh] overflow-y-auto relative">
-        <div className="absolute right-4 top-4 flex items-center gap-2 z-10">
-          {extraButton}
+        <div className="absolute right-4 top-4 z-10">
           <button 
             onClick={onClose} 
             className="text-gray-500 hover:text-gray-700"
           >
             <FaTimes />
           </button>
+        </div>
+        <div className="absolute left-4 top-4 z-10">
+          {extraButton}
         </div>
         {children}
       </div>

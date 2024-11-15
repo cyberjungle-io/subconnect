@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from '../../common/Modal';
 import { FaEdit, FaTrash, FaFileAlt } from 'react-icons/fa';
 
 const PageSettingsModal = ({ isOpen, onClose, page, onDelete, onSave }) => {
   const [name, setName] = useState(page?.name || '');
   const [description, setDescription] = useState(page?.description || '');
+
+  useEffect(() => {
+    setName(page?.name || '');
+    setDescription(page?.description || '');
+  }, [page]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
