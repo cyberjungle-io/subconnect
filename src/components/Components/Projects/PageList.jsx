@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateProject } from "../../../w3s/w3sSlice";
-import { FaPlus, FaCheck, FaTimes, FaTrash } from "react-icons/fa";
+import { FaPlus, FaCheck, FaTimes, FaEllipsisV } from "react-icons/fa";
+import PageSettingsModal from "./PageSettingsModal";
 import DeleteConfirmModal from "../../common/DeleteConfirmModal";
 
 const PageList = ({
@@ -16,6 +17,8 @@ const PageList = ({
   const [newPageName, setNewPageName] = useState("");
   const [showNewPageInput, setShowNewPageInput] = useState(false);
   const [deletePageIndex, setDeletePageIndex] = useState(null);
+  const [selectedPageSettings, setSelectedPageSettings] = useState(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   // Create a style tag for dynamic hover effect and selected page
   useEffect(() => {
@@ -65,9 +68,21 @@ const PageList = ({
     setShowNewPageInput(false);
   };
 
-  const handleDeleteClick = (e, index) => {
+  const handleDeleteClick = () => {
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedPageSettings) {
+      handleDeletePage(selectedPageSettings.index);
+      setDeleteConfirmOpen(false);
+      setSelectedPageSettings(null);
+    }
+  };
+
+  const handleSettingsClick = (e, page, index) => {
     e.stopPropagation();
-    setDeletePageIndex(index);
+    setSelectedPageSettings({ page, index });
   };
 
   if (!currentProject) return <div>No project selected</div>;
@@ -137,20 +152,38 @@ const PageList = ({
             >
               <span className="text-sm">{page.name}</span>
               <button
-                onClick={(e) => handleDeleteClick(e, index)}
-                className="hover:opacity-70 transition-opacity"
+                onClick={(e) => handleSettingsClick(e, page, index)}
+                className="hover:opacity-70 transition-opacity px-2"
               >
-                <FaTrash size={12} />
+                <FaEllipsisV size={12} />
               </button>
             </li>
           ))}
         </ul>
       )}
 
+      <PageSettingsModal
+        isOpen={selectedPageSettings !== null}
+        onClose={() => setSelectedPageSettings(null)}
+        page={selectedPageSettings?.page}
+        onDelete={handleDeleteClick}
+        onSave={(updatedPage) => {
+          if (selectedPageSettings && currentProject) {
+            const updatedPages = [...currentProject.pages];
+            updatedPages[selectedPageSettings.index] = {
+              ...updatedPages[selectedPageSettings.index],
+              ...updatedPage
+            };
+            dispatch(updateProject({ ...currentProject, pages: updatedPages }));
+            setSelectedPageSettings(null);
+          }
+        }}
+      />
+
       <DeleteConfirmModal
-        isOpen={deletePageIndex !== null}
-        onClose={() => setDeletePageIndex(null)}
-        onDelete={() => handleDeletePage(deletePageIndex)}
+        isOpen={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        onDelete={handleConfirmDelete}
         title="Delete Page"
         message="Are you sure you want to delete this page? This action cannot be undone."
       />
