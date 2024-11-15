@@ -94,7 +94,11 @@ const PageList = ({
   if (!currentProject) return <div>No project selected</div>;
 
   return (
-    <div className="page-list" style={{ color: toolbarSettings.textColor }}>
+    <div className="page-list" style={{ 
+      color: toolbarSettings.textColor,
+      right: 0, // Ensure dropdown aligns to the right
+      minWidth: '250px' // Ensure minimum width for content
+    }}>
       <div className="flex justify-between items-center mb-2 px-3 pt-2">
         <h3 className="text-sm font-semibold">Pages</h3>
         <button

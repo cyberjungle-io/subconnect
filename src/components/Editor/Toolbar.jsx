@@ -142,52 +142,17 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
       }}
     >
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJhIiB4PSIwIiB5PSIwIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc1IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PGZlQ29sb3JNYXRyaXggdHlwZT0ic2F0dXJhdGUiIHZhbHVlcz0iMCIvPjwvZmlsdGVyPjxwYXRoIGZpbHRlcj0idXJsKCNhKSIgb3BhY2l0eT0iLjA1IiBkPSJNMCAwaDMwMHYzMDBIMHoiLz48L3N2Zz4=')] opacity-30 mix-blend-overlay"></div>
+      
+      {/* Left side - Hamburger Menu */}
       <div className="relative z-10">
         <HamburgerMenu onOpenProjectModal={onOpenProjectModal} />
       </div>
 
+      {/* Right side - Icons and Project Dropdown */}
       <div className="flex items-center space-x-5 relative z-10">
-        
-        {currentUser && currentProject && (
+        {currentUser && (
           <>
-            <div className="relative mr-3" ref={pageListRef}>
-              <button
-                onClick={toggleProjectInfo}
-                className="toolbar-button flex flex-col items-start px-3 py-1.5 pr-8 rounded text-sm transition-colors"
-                style={buttonStyle}
-              >
-                <span className="font-semibold">{currentProject.name}</span>
-                {currentPage && (
-                  <div className="current-page-name text-xs">{currentPage.name}</div>
-                )}
-                <FaChevronDown className={`absolute right-2 top-1/2 transform -translate-y-1/2 transition-transform ${expandedSections.currentProject ? 'rotate-180' : ''}`} />
-              </button>
-              {expandedSections.currentProject && (
-                <div 
-                  className="absolute top-full left-0 mt-1 w-64 rounded shadow-lg z-[990]"
-                  style={{
-                    backgroundColor: toolbarSettings.backgroundColor || '#e8e8e8',
-                    // Removed the borderColor style
-                  }}
-                >
-                  <div className="current-project-container">
-                    
-                    <div className="page-list-container max-h-48 overflow-y-auto">
-                      <PageList
-                        projectId={currentProject._id}
-                        selectedPageId={currentPage?._id}
-                        onSelectPage={onSelectPage}
-                        onDeletePage={onDeletePage}
-                        toolbarSettings={{
-                          ...toolbarSettings,
-                          inputBackgroundColor,
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Save button - only visible in edit mode */}
             {mode === 'edit' && (
               <button
                 onClick={onSaveProject}
@@ -198,17 +163,57 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
                 <FaSave className="text-base" />
               </button>
             )}
+            
+            {/* View/Edit toggle button */}
+            <button
+              onClick={handleToggleMode}
+              className="toolbar-button flex items-center justify-center w-9 h-9 rounded text-sm transition-colors"
+              style={buttonStyle}
+              title={mode === 'edit' ? 'View Mode' : 'Edit Mode'}
+            >
+              {mode === 'edit' ? <FaEye className="text-base" /> : <FaEdit className="text-base" />}
+            </button>
+
+            {/* Project dropdown - only visible when there's a current project */}
+            {currentProject && (
+              <div className="relative" ref={pageListRef}>
+                <button
+                  onClick={toggleProjectInfo}
+                  className="toolbar-button flex flex-col items-start px-3 py-1.5 pr-8 rounded text-sm transition-colors"
+                  style={buttonStyle}
+                >
+                  <span className="font-semibold">{currentProject.name}</span>
+                  {currentPage && (
+                    <div className="current-page-name text-xs">{currentPage.name}</div>
+                  )}
+                  <FaChevronDown className={`absolute right-2 top-1/2 transform -translate-y-1/2 transition-transform ${expandedSections.currentProject ? 'rotate-180' : ''}`} />
+                </button>
+                {expandedSections.currentProject && (
+                  <div 
+                    className="absolute top-full right-0 mt-1 rounded shadow-lg z-[990]"
+                    style={{
+                      backgroundColor: toolbarSettings.backgroundColor || '#e8e8e8',
+                    }}
+                  >
+                    <div className="current-project-container">
+                      <div className="page-list-container max-h-48 overflow-y-auto">
+                        <PageList
+                          projectId={currentProject._id}
+                          selectedPageId={currentPage?._id}
+                          onSelectPage={onSelectPage}
+                          onDeletePage={onDeletePage}
+                          toolbarSettings={{
+                            ...toolbarSettings,
+                            inputBackgroundColor,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </>
-        )}
-        {currentUser && (
-          <button
-            onClick={handleToggleMode}
-            className="toolbar-button flex items-center justify-center w-9 h-9 rounded text-sm transition-colors"
-            style={buttonStyle}
-            title={mode === 'edit' ? 'View Mode' : 'Edit Mode'}
-          >
-            {mode === 'edit' ? <FaEye className="text-base" /> : <FaEdit className="text-base" />}
-          </button>
         )}
       </div>
 
