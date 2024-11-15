@@ -40,98 +40,133 @@ const HamburgerMenu = ({ onOpenProjectModal }) => {
     <>
       <button
         onClick={toggleMenu}
-        className="text-xl focus:outline-none"
+        className="text-gray-600 hover:text-gray-800 transition-colors duration-200 p-2 rounded-lg"
         aria-label="Toggle menu"
       >
-        <FaBars />
+        <FaBars className="h-5 w-5" />
       </button>
 
       {isOpen && (
         <div className="fixed inset-0 z-[1000] flex">
-          <div className="bg-white w-64 shadow-lg transform transition-transform duration-300 ease-in-out">
-            <div className="p-4 flex justify-between items-center">
-              <h2 className="text-xl font-bold">Menu</h2>
-              <button onClick={toggleMenu} className="text-md text-gray-600" aria-label="Close menu">
-                <FaTimes />
-              </button>
+          <div className="bg-white w-80 shadow-xl transform transition-transform duration-300 ease-in-out overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Welcome</h2>
+                  
+                </div>
+                <button 
+                  onClick={toggleMenu} 
+                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-2 rounded-lg"
+                  aria-label="Close menu"
+                >
+                  <FaTimes className="h-5 w-5" />
+                </button>
+              </div>
             </div>
-            <nav>
-              <a
-                href="/"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-300 flex items-center"
-              >
-                <FaHome className="mr-2" />
-                Home
-              </a>
-              <button
-                onClick={handleOpenProject}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-300 flex items-center"
-              >
-                <FaFolderOpen className="mr-2" />
-                Projects
-              </button>
-              <button
-                onClick={handleOpenDataModal}
-                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-300 flex items-center"
-              >
-                <FaDatabase className="mr-2" />
-                Data
-              </button>
-              <a
-                href="/node-services"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-300 flex items-center"
-              >
-                <FaServer className="mr-2" />
-                Nodes
-              </a>
-              <a
-                href="/tutorials"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-300 flex items-center"
-              >
-                <FaBook className="mr-2" />
-                Tutorials
-              </a>
-              <Link
-                to="/docs"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-300 flex items-center"
-                onClick={toggleMenu}
-              >
-                <FaFileAlt className="mr-2" />
-                Documentation
-              </Link>
-              <a
-                href="/pricing"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-300 flex items-center"
-              >
-                <FaDollarSign className="mr-2" />
-                Pricing
-              </a>
-              <a
-                href="/settings"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-300 flex items-center"
-              >
-                <FaCog className="mr-2" />
-                Settings
-              </a>
-              <a
-                href="/bug-report"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-300 flex items-center"
-              >
-                <FaBug className="mr-2" />
-                Report a Bug
-              </a>
-              <a
-                href="/help"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-300 flex items-center"
-              >
-                <FaQuestionCircle className="mr-2" />
-                Help
-              </a>
-              
+
+            <nav className="p-6 space-y-4">
+              <div className="space-y-2">
+                <a
+                  href="/"
+                  className="flex items-center w-full p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                >
+                  <FaHome className="h-4 w-4 mr-3" />
+                  <span className="font-medium">Home</span>
+                </a>
+
+                <button
+                  onClick={handleOpenProject}
+                  className="flex items-center w-full p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                >
+                  <FaFolderOpen className="h-4 w-4 mr-3" />
+                  <span className="font-medium">Projects</span>
+                </button>
+
+                <button
+                  onClick={handleOpenDataModal}
+                  className="flex items-center w-full p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                >
+                  <FaDatabase className="h-4 w-4 mr-3" />
+                  <span className="font-medium">Data</span>
+                </button>
+
+                <a
+                  href="/node-services"
+                  className="flex items-center w-full p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                >
+                  <FaServer className="h-4 w-4 mr-3" />
+                  <span className="font-medium">Nodes</span>
+                </a>
+              </div>
+
+              <div className="pt-4 border-t border-gray-200">
+                <div className="mb-4">
+                  <span className="px-3 text-xs font-semibold text-gray-500 uppercase">Resources</span>
+                </div>
+                <div className="space-y-2">
+                  <a
+                    href="/tutorials"
+                    className="flex items-center w-full p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                  >
+                    <FaBook className="h-4 w-4 mr-3" />
+                    <span className="font-medium">Tutorials</span>
+                  </a>
+
+                  <Link
+                    to="/docs"
+                    onClick={toggleMenu}
+                    className="flex items-center w-full p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                  >
+                    <FaFileAlt className="h-4 w-4 mr-3" />
+                    <span className="font-medium">Documentation</span>
+                  </Link>
+
+                  <a
+                    href="/pricing"
+                    className="flex items-center w-full p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                  >
+                    <FaDollarSign className="h-4 w-4 mr-3" />
+                    <span className="font-medium">Pricing</span>
+                  </a>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-gray-200">
+                <div className="mb-4">
+                  <span className="px-3 text-xs font-semibold text-gray-500 uppercase">Support</span>
+                </div>
+                <div className="space-y-2">
+                  <a
+                    href="/settings"
+                    className="flex items-center w-full p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                  >
+                    <FaCog className="h-4 w-4 mr-3" />
+                    <span className="font-medium">Settings</span>
+                  </a>
+
+                  <a
+                    href="/bug-report"
+                    className="flex items-center w-full p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                  >
+                    <FaBug className="h-4 w-4 mr-3" />
+                    <span className="font-medium">Report a Bug</span>
+                  </a>
+
+                  <a
+                    href="/help"
+                    className="flex items-center w-full p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                  >
+                    <FaQuestionCircle className="h-4 w-4 mr-3" />
+                    <span className="font-medium">Help</span>
+                  </a>
+                </div>
+              </div>
             </nav>
           </div>
+
           <div
-            className="bg-gray-800 bg-opacity-50 flex-grow"
+            className="bg-black bg-opacity-50 flex-grow"
             onClick={toggleMenu}
           ></div>
         </div>
