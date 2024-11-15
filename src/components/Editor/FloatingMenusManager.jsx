@@ -121,7 +121,14 @@ const FloatingMenusManager = () => {
         x: window.innerWidth / 2 - 140,
         y: window.innerHeight / 2 - 200,
       });
-      setSelectedComponent(component);
+      setSelectedComponent({
+        id: component.id,
+        type: component.type,
+        style: component.style || {},
+        props: component.props || {},
+        content: component.content || {},
+        children: component.children || [],
+      });
     }
   }, [dispatch]);
 

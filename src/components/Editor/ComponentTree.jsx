@@ -91,8 +91,8 @@ const ComponentTree = ({ components, onSelectComponent, selectedComponentId, isV
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
-  const handleComponentSelect = (component, openToolbar = false) => {
-    onSelectComponent(component.id, component, openToolbar); // Pass the full component and openToolbar flag
+  const handleComponentSelect = (componentId, component, openToolbar = false) => {
+    onSelectComponent(componentId, component, openToolbar);
   };
 
   useEffect(() => {
