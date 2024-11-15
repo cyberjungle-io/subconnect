@@ -365,7 +365,7 @@ const ComponentRenderer = React.memo(({
       ...generalComponentStyle,
       ...style,
       position: 'relative',
-      overflow: type === "FLEX_CONTAINER" ? "visible" : "hidden",
+      overflow: type === "FLEX_CONTAINER" ? "visible" : "visible",
       cursor: style.cursor || (parentHasHover ? "pointer" : (type === "FLEX_CONTAINER" ? "pointer" : "default")),
       color: style.color || parent?.style?.color || 'inherit',
       boxSizing: 'border-box',

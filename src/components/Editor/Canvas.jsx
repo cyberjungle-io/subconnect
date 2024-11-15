@@ -410,11 +410,15 @@ const Canvas = ({
         drop(node);
         canvasRef.current = node;
       }}
-      className="canvas-area w-full h-full bg-gray-100 overflow-auto"
+      className="canvas-area w-full h-full bg-gray-100"
       style={{
         ...canvasStyle,
-        height: canvasHeight,
+        height: 'auto',
         minHeight: '100%',
+        display: 'flex',
+        flexDirection: componentLayout === 'vertical' ? 'column' : 'column',
+        flexWrap: 'nowrap',
+        alignItems: 'stretch',
       }}
       onClick={handleCanvasClick}
       onMouseDown={() => setIsClickFromToolbar(false)}
