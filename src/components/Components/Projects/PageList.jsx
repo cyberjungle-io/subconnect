@@ -14,9 +14,6 @@ const PageList = ({
 }) => {
   const dispatch = useDispatch();
   const currentProject = useSelector((state) => state.w3s.currentProject.data);
-  const [newPageName, setNewPageName] = useState("");
-  const [showNewPageInput, setShowNewPageInput] = useState(false);
-  const [deletePageIndex, setDeletePageIndex] = useState(null);
   const [selectedPageSettings, setSelectedPageSettings] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
@@ -39,33 +36,16 @@ const PageList = ({
     };
   }, [toolbarSettings.buttonHoverColor]);
 
-  const handleCreatePage = () => {
-    if (newPageName.trim() && currentProject) {
-      const newPage = {
-        name: newPageName.trim(),
-        content: {
-          components: [],
-          layout: {},
-        },
-      };
-      const updatedPages = [...currentProject.pages, newPage];
-      dispatch(updateProject({ ...currentProject, pages: updatedPages }));
-      setNewPageName("");
-      setShowNewPageInput(false);
-    }
+  const openNewPageModal = () => {
+    setSelectedPageSettings({ page: {}, index: -1 }); // Use -1 to indicate new page
   };
 
   const handleDeletePage = (pageIndex) => {
     if (currentProject) {
       const updatedPages = currentProject.pages.filter((_, index) => index !== pageIndex);
       dispatch(updateProject({ ...currentProject, pages: updatedPages }));
-      setDeletePageIndex(null); // Close modal after deletion
+      setSelectedPageSettings(null); // Close modal after deletion
     }
-  };
-
-  const handleCancelNewPage = () => {
-    setNewPageName("");
-    setShowNewPageInput(false);
   };
 
   const handleDeleteClick = () => {
@@ -85,59 +65,45 @@ const PageList = ({
     setSelectedPageSettings({ page, index });
   };
 
+  const handleSavePage = (updatedPage) => {
+    if (selectedPageSettings) {
+      if (selectedPageSettings.index === -1) {
+        // Creating new page
+        const newPage = {
+          ...updatedPage,
+          content: {
+            components: [],
+            layout: {},
+          },
+        };
+        const updatedPages = [...currentProject.pages, newPage];
+        dispatch(updateProject({ ...currentProject, pages: updatedPages }));
+      } else {
+        // Updating existing page
+        const updatedPages = [...currentProject.pages];
+        updatedPages[selectedPageSettings.index] = {
+          ...updatedPages[selectedPageSettings.index],
+          ...updatedPage
+        };
+        dispatch(updateProject({ ...currentProject, pages: updatedPages }));
+      }
+      setSelectedPageSettings(null);
+    }
+  };
+
   if (!currentProject) return <div>No project selected</div>;
 
   return (
     <div className="page-list" style={{ color: toolbarSettings.textColor }}>
       <div className="flex justify-between items-center mb-2 px-3 pt-2">
         <h3 className="text-sm font-semibold">Pages</h3>
-        {!showNewPageInput && (
-          <button
-            onClick={() => setShowNewPageInput(true)}
-            className="hover:opacity-70 transition-opacity"
-          >
-            <FaPlus size={12} />
-          </button>
-        )}
+        <button
+          onClick={openNewPageModal}
+          className="hover:opacity-70 transition-opacity"
+        >
+          <FaPlus size={12} />
+        </button>
       </div>
-      {showNewPageInput && (
-        <div className="flex justify-center mt-2 px-3">
-          <div className="flex w-full mb-2">
-            <input
-              type="text"
-              value={newPageName}
-              onChange={(e) => setNewPageName(e.target.value)}
-              placeholder="New Page Name"
-              className="w-full px-2 py-1 text-sm rounded-l focus:outline-none"
-              style={{
-                backgroundColor: toolbarSettings.inputBackgroundColor,
-                color: toolbarSettings.textColor,
-                border: 'none',
-              }}
-            />
-            <button
-              onClick={handleCreatePage}
-              className="px-2 py-1 hover:opacity-70 focus:outline-none transition-opacity"
-              style={{
-                backgroundColor: toolbarSettings.inputBackgroundColor,
-                color: toolbarSettings.textColor,
-              }}
-            >
-              <FaCheck size={12} />
-            </button>
-            <button
-              onClick={handleCancelNewPage}
-              className="px-2 py-1 rounded-r hover:opacity-70 focus:outline-none transition-opacity"
-              style={{
-                backgroundColor: toolbarSettings.inputBackgroundColor,
-                color: toolbarSettings.textColor,
-              }}
-            >
-              <FaTimes size={12} />
-            </button>
-          </div>
-        </div>
-      )}
       {currentProject.pages.length === 0 ? (
         <p className="text-sm px-3" style={{ opacity: 0.7 }}>No pages found. Create a new one to get started!</p>
       ) : (
@@ -167,17 +133,7 @@ const PageList = ({
         onClose={() => setSelectedPageSettings(null)}
         page={selectedPageSettings?.page}
         onDelete={handleDeleteClick}
-        onSave={(updatedPage) => {
-          if (selectedPageSettings && currentProject) {
-            const updatedPages = [...currentProject.pages];
-            updatedPages[selectedPageSettings.index] = {
-              ...updatedPages[selectedPageSettings.index],
-              ...updatedPage
-            };
-            dispatch(updateProject({ ...currentProject, pages: updatedPages }));
-            setSelectedPageSettings(null);
-          }
-        }}
+        onSave={handleSavePage}
       />
 
       <DeleteConfirmModal

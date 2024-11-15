@@ -2,7 +2,7 @@
 import React from 'react';
 import { FaTimes } from 'react-icons/fa';
 
-const Modal = ({ isOpen, onClose, children }) => {
+const Modal = ({ isOpen, onClose, children, extraButton }) => {
   if (!isOpen) return null;
 
   const handleBackdropClick = (e) => {
@@ -17,12 +17,15 @@ const Modal = ({ isOpen, onClose, children }) => {
       onClick={handleBackdropClick}
     >
       <div className="bg-white w-full max-w-[800px] rounded-lg shadow-lg overflow-hidden max-h-[90vh] overflow-y-auto relative">
-        <button 
-          onClick={onClose} 
-          className="absolute right-4 top-4 text-gray-500 hover:text-gray-700 z-10"
-        >
-          <FaTimes />
-        </button>
+        <div className="absolute right-4 top-4 flex items-center gap-2 z-10">
+          {extraButton}
+          <button 
+            onClick={onClose} 
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <FaTimes />
+          </button>
+        </div>
         {children}
       </div>
     </div>

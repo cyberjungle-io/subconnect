@@ -11,14 +11,22 @@ const PageSettingsModal = ({ isOpen, onClose, page, onDelete, onSave }) => {
     onSave({ name, description });
   };
 
+  const deleteButton = (
+    <button
+      type="button"
+      onClick={onDelete}
+      className="text-gray-400 hover:text-red-600 transition-colors duration-200 p-2 rounded-lg"
+      title="Delete Page"
+    >
+      <FaTrash className="h-4 w-4" />
+    </button>
+  );
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} extraButton={deleteButton}>
       <div className="p-6">
         <div className="text-center mb-8">
-          <span className="inline-block px-3 py-1 text-sm font-semibold text-indigo-700 bg-indigo-100 rounded-full mb-4">
-            Page Settings
-          </span>
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Configure Page</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Page Settings</h3>
           <p className="text-gray-600">Customize your page settings</p>
         </div>
 
@@ -37,14 +45,6 @@ const PageSettingsModal = ({ isOpen, onClose, page, onDelete, onSave }) => {
                 className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 placeholder-gray-400 bg-white/50 backdrop-blur-sm transition-all duration-200"
                 required
               />
-              <button
-                type="button"
-                onClick={onDelete}
-                className="absolute right-3 text-gray-400 hover:text-red-600 transition-colors duration-200 p-2 rounded-lg"
-                title="Delete Page"
-              >
-                <FaTrash className="h-4 w-4" />
-              </button>
             </div>
           </div>
           
