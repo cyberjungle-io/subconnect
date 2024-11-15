@@ -49,22 +49,26 @@ const ProjectList = ({ onClose }) => {
   };
 
   return (
-    <div>
-      <div className="flex justify-end items-center mb-2">
+    <div className="p-6">
+      
+      
+      {/* New Project Button */}
+      <div className="flex justify-between items-center mb-6">
+        <span className="text-gray-600 font-medium">Select a project</span>
         {!showNewProject && (
           <button
             onClick={() => setShowNewProject(true)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-bold px-4 py-2 rounded-full hover:bg-gray-300 transition-colors duration-200"
-            title="Create New Project"
+            className="group bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-bold px-6 py-3 rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all duration-200 flex items-center gap-2"
           >
-            <FaPlus size={20} />
+            <FaPlus size={16} />
             <span>New Project</span>
           </button>
         )}
       </div>
 
+      {/* Project Form */}
       {showNewProject && (
-        <div className="mb-4">
+        <div className="mb-6">
           <ProjectForm 
             onSubmit={() => {
               onClose();
@@ -74,34 +78,40 @@ const ProjectList = ({ onClose }) => {
           />
         </div>
       )}
-<h3 className="text-lg font-semibold pb-3">Select a Project</h3>
-      {status === 'loading' && <p>Loading projects...</p>}
-      {status === 'failed' && <p>Error loading projects. Please try again.</p>}
+
+      {/* Project List */}
+      {status === 'loading' && (
+        <div className="text-center py-8 text-gray-600">Loading projects...</div>
+      )}
+      {status === 'failed' && (
+        <div className="text-center py-8 text-red-600">Error loading projects. Please try again.</div>
+      )}
       {status === 'succeeded' && (
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {[...projects, ...sharedProjects].map((project) => (
             <li 
               key={project._id} 
               onClick={() => handleSelectProject(project)}
               className={`
-                text-gray-800 flex justify-between items-center p-2 rounded cursor-pointer
+                flex justify-between items-center p-4 rounded-lg cursor-pointer
+                border transition-all duration-200
                 ${currentProject?._id === project._id 
-                  ? 'bg-blue-200 hover:bg-blue-300' 
-                  : 'bg-gray-100 hover:bg-gray-200'
+                  ? 'border-indigo-300 bg-indigo-50 hover:bg-indigo-100' 
+                  : 'border-gray-200 bg-white hover:bg-gray-50'
                 }
               `}
             >
-              <span>{project.name}</span>
-              <div className="flex gap-6">
+              <span className="font-medium text-gray-900">{project.name}</span>
+              <div className="flex gap-4">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleAddEmail(project._id);
                   }}
-                  className="text-gray-600 hover:text-gray-900"
+                  className="p-2 text-gray-400 hover:text-indigo-600 transition-colors duration-200"
                   title="Add User"
                 >
-                  <FaUserPlus size={20} />
+                  <FaUserPlus size={18} />
                 </button>
                 <button
                   onClick={(e) => {
@@ -109,10 +119,10 @@ const ProjectList = ({ onClose }) => {
                     setProjectToDelete(project._id);
                     setDeleteModalOpen(true);
                   }}
-                  className="text-gray-600 hover:text-gray-900"
+                  className="p-2 text-gray-400 hover:text-red-600 transition-colors duration-200"
                   title="Delete Project"
                 >
-                  <FaTrash size={20} />
+                  <FaTrash size={18} />
                 </button>
               </div>
             </li>
@@ -120,6 +130,7 @@ const ProjectList = ({ onClose }) => {
         </ul>
       )}
 
+      {/* Delete Modal - remains unchanged */}
       <DeleteConfirmModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

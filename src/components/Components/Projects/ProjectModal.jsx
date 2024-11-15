@@ -18,16 +18,28 @@ const ProjectModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-[980] flex justify-center items-center">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-50 z-[980] flex justify-center items-center"
+      onClick={handleBackdropClick}
+    >
       <div className="bg-white w-3/4 h-3/4 rounded-lg flex flex-col overflow-hidden">
-        <div className="p-4 bg-gray-100 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-800">Projects</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+        <div className="p-4 flex justify-between items-center">
+          <div className="w-8">
+            {/* Spacer for visual balance */}
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900">Projects</h2>
+          <button onClick={onClose} className="w-8 text-gray-400 hover:text-gray-600 transition-colors duration-200">
             <FaTimes />
           </button>
         </div>
-        <div className="flex-grow overflow-auto p-4">
+        <div className="flex-grow overflow-auto">
           <ProjectList onClose={onClose} />
         </div>
       </div>
