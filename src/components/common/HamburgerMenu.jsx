@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaBars, FaTimes, FaFolderOpen, FaDatabase, FaHome, FaDollarSign, FaCog, FaQuestionCircle, FaBug, FaServer, FaBook, FaFileAlt } from 'react-icons/fa';
+import { FaBars, FaTimes, FaFolderOpen, FaDatabase, FaHome, FaDollarSign, FaCog, FaQuestionCircle, FaBug, FaServer, FaBook, FaFileAlt, FaSignOutAlt } from 'react-icons/fa';
 import DataModal from '../Editor/DataModal'; // Import the DataModal component
+import { useSelector, useDispatch } from 'react-redux';
+import { logoutUser } from '../../features/userSlice';
+import Modal from './Modal';
+import LoginForm from '../auth/LoginForm';
+import RegisterForm from '../auth/RegisterForm';
 
 const HamburgerMenu = ({ onOpenProjectModal }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDataModalOpen, setIsDataModalOpen] = useState(false);
+  const dispatch = useDispatch();
+  const { currentUser } = useSelector((state) => state.user);
+  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+  const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -34,6 +43,11 @@ const HamburgerMenu = ({ onOpenProjectModal }) => {
 
   const handleCloseDataModal = () => {
     setIsDataModalOpen(false);
+  };
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    toggleMenu();
   };
 
   return (
@@ -162,6 +176,37 @@ const HamburgerMenu = ({ onOpenProjectModal }) => {
                   </a>
                 </div>
               </div>
+
+              <div className="pt-4 border-t border-gray-200">
+                <div className="space-y-2">
+                  {currentUser ? (
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center w-full p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                    >
+                      <FaSignOutAlt className="h-4 w-4 mr-3" />
+                      <span className="font-medium">Logout</span>
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => setLoginModalOpen(true)}
+                        className="flex items-center w-full p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                      >
+                        <FaSignOutAlt className="h-4 w-4 mr-3" />
+                        <span className="font-medium">Login</span>
+                      </button>
+                      <button
+                        onClick={() => setRegisterModalOpen(true)}
+                        className="flex items-center w-full p-3 rounded-lg transition-all duration-200 hover:bg-gray-100 text-gray-700"
+                      >
+                        <FaSignOutAlt className="h-4 w-4 mr-3" />
+                        <span className="font-medium">Register</span>
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
             </nav>
           </div>
 
@@ -176,6 +221,22 @@ const HamburgerMenu = ({ onOpenProjectModal }) => {
         isOpen={isDataModalOpen}
         onClose={handleCloseDataModal}
       />
+
+      <Modal
+        isOpen={isLoginModalOpen}
+        onClose={() => setLoginModalOpen(false)}
+        title="Login"
+      >
+        <LoginForm onClose={() => setLoginModalOpen(false)} />
+      </Modal>
+
+      <Modal
+        isOpen={isRegisterModalOpen}
+        onClose={() => setRegisterModalOpen(false)}
+        title="Register"
+      >
+        <RegisterForm onClose={() => setRegisterModalOpen(false)} />
+      </Modal>
     </>
   );
 };

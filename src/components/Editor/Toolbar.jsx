@@ -1,16 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FaSignOutAlt, FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye, FaFolderOpen, FaDatabase, FaTools } from 'react-icons/fa';
+import { FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye, FaFolderOpen, FaDatabase, FaTools } from 'react-icons/fa';
 import Modal from '../common/Modal';
-import RegisterForm from '../auth/RegisterForm';
-import LoginForm from '../auth/LoginForm';
-import { logoutUser } from '../../features/userSlice';
-import { setEditorMode } from '../../features/editorSlice';
 import HamburgerMenu from '../common/HamburgerMenu';
 import PageList from '../Components/Projects/PageList';
 import ProjectModal from '../Components/Projects/ProjectModal';
-import { toggleFloatingMenu } from '../../features/editorSlice';
+import { toggleFloatingMenu, setEditorMode } from '../../features/editorSlice';
 
 // Add these helper functions at the top of your file, outside the component
 const hexToRgb = (hex) => {
@@ -55,8 +51,6 @@ const generateComplementaryShade = (baseColor) => {
 };
 
 const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal }) => {
-  const [isRegisterModalOpen, setRegisterModalOpen] = useState(false);
-  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     currentProject: false,
   });
@@ -81,11 +75,6 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-
-  const handleLogout = async () => {
-    await dispatch(logoutUser());
-    navigate('/');
-  };
 
   const handleEnterEditMode = () => {
     dispatch(setEditorMode('edit'));
@@ -212,44 +201,16 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
           </>
         )}
         {currentUser && (
-          <>
-            <button
-              onClick={handleToggleMode}
-              className="toolbar-button flex items-center justify-center w-9 h-9 rounded text-sm transition-colors"
-              style={buttonStyle}
-              title={mode === 'edit' ? 'View Mode' : 'Edit Mode'}
-            >
-              {mode === 'edit' ? <FaEye className="text-base" /> : <FaEdit className="text-base" />}
-            </button>
-          </>
-        )}
-        {currentUser && (
           <button
-            onClick={handleLogout}
-            className="toolbar-button flex items-center space-x-2 px-3 py-1.5 rounded text-sm hover:bg-[#d0d0d0] transition-colors"
+            onClick={handleToggleMode}
+            className="toolbar-button flex items-center justify-center w-9 h-9 rounded text-sm transition-colors"
             style={buttonStyle}
+            title={mode === 'edit' ? 'View Mode' : 'Edit Mode'}
           >
-            <FaSignOutAlt />
-            <span>Logout</span>
+            {mode === 'edit' ? <FaEye className="text-base" /> : <FaEdit className="text-base" />}
           </button>
         )}
       </div>
-
-      <Modal
-        isOpen={isRegisterModalOpen}
-        onClose={() => setRegisterModalOpen(false)}
-        title="Register"
-      >
-        <RegisterForm onClose={() => setRegisterModalOpen(false)} />
-      </Modal>
-
-      <Modal
-        isOpen={isLoginModalOpen}
-        onClose={() => setLoginModalOpen(false)}
-        title="Login"
-      >
-        <LoginForm onClose={() => setLoginModalOpen(false)} />
-      </Modal>
 
       {isProjectModalOpen && (
         <ProjectModal
