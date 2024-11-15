@@ -20,7 +20,7 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       dataFetchedRef.current = true;
 
       try {
-        const response = await w3sService.getComponentDataById(component.props.id);
+        const response = await w3sService.getComponentDataById(component.id);
         
         if (response && response.data && response.data.tasks) {
           setTasks(response.data.tasks);
@@ -58,7 +58,7 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
     onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
     
     const todoData = {
-      componentId: component.props.id,
+      componentId: component.id,
       name: component.props.name,
       type: component.type,
       tasks: updatedTasks
@@ -83,12 +83,13 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       } : task
     );
     
+    
     setTasks(updatedTasks);
     onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
 
     const todoData = {
       componentId: component.props.id,
-      name: component.props.name,
+      name: component.name,
       type: component.type,
       tasks: updatedTasks
     };
