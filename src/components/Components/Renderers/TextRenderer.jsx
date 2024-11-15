@@ -112,13 +112,22 @@ const TextRenderer = ({
         onUpdate(component.id, updatedComponent);
         
         // Restore cursor position after the update
-        if (textRef.current) {
-          const newRange = document.createRange();
-          const sel = window.getSelection();
-          newRange.setStart(textRef.current.childNodes[0], offset);
-          newRange.collapse(true);
-          sel.removeAllRanges();
-          sel.addRange(newRange);
+        if (textRef.current && textRef.current.childNodes.length > 0) {
+          try {
+            const newRange = document.createRange();
+            const sel = window.getSelection();
+            const firstNode = textRef.current.childNodes[0];
+            const nodeLength = firstNode.length || 0;
+            // Ensure offset doesn't exceed the length of the content
+            const safeOffset = Math.min(offset, nodeLength);
+            
+            newRange.setStart(firstNode, safeOffset);
+            newRange.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+          } catch (error) {
+            console.warn('Failed to restore cursor position:', error);
+          }
         }
       }
     }, 300);
