@@ -33,7 +33,7 @@ export const componentConfig = {
     name: 'Text',
     icon: FaFont,
     acceptsChildren: false,
-    defaultSize: { width: '100%', height: '200px' },
+    defaultSize: { width: '100%', height: '50px' },
     defaultProps: {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
@@ -75,7 +75,7 @@ export const componentConfig = {
       textAlign: 'left',
       fontSize: '16px',
       verticalAlign: 'top',
-      height: '200px',
+      height: '50px',
       width: '100%',
       borderWidth: '1px',
       borderStyle: 'solid',
