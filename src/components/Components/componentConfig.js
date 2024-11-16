@@ -4,7 +4,6 @@ export const componentTypes = {
   FLEX_CONTAINER: 'FLEX_CONTAINER',
   TEXT: 'TEXT',
   IMAGE: 'IMAGE',
-  BUTTON: 'BUTTON',
   CHART: 'CHART',
   TABLE: 'TABLE',
   VIDEO: 'VIDEO',
@@ -116,16 +115,7 @@ export const componentConfig = {
       overflow: 'hidden',
     }
   },
-  [componentTypes.BUTTON]: {
-    name: 'Button',
-    icon: FaSquare,
-    acceptsChildren: false,
-    defaultSize: { width: 'auto', height: 'auto' },
-    defaultContent: 'Click me',
-    defaultProps: {
-      borderRadius: '4px'
-    }
-  },
+  
   [componentTypes.CHART]: {
     name: 'Chart',
     icon: FaChartBar,

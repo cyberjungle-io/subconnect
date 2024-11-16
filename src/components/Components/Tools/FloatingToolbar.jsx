@@ -65,13 +65,6 @@ const iconMap = {
     { icon: FaPalette, tooltip: 'Background' },
     { icon: FaPlay, tooltip: 'Video Controls' },
   ],
-  BUTTON: [
-    { icon: FaExpand, tooltip: 'Size' },
-    { icon: FaArrowsAlt, tooltip: 'Spacing' },
-    { icon: FaBorderStyle, tooltip: 'Border' },
-    { icon: FaPalette, tooltip: 'Background' },
-    { icon: FaMousePointer, tooltip: 'Button Controls' },
-  ],
   WHITEBOARD: [
     { icon: FaExpand, tooltip: 'Size' },
     { icon: FaArrowsAlt, tooltip: 'Spacing' },
