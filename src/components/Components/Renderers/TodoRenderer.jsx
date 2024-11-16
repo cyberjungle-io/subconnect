@@ -215,6 +215,8 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
           padding: 0,
           minHeight: tasks.length === 0 ? '100px' : 'auto',
           flexGrow: 1,
+          overflowY: 'auto',
+          maxHeight: 'calc(100% - 100px)',
         }}>
           {getDisplayTasks().map(task => (
             <li key={task.id} style={{
