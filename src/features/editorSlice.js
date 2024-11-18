@@ -449,7 +449,8 @@ export const editorSlice = createSlice({
     },
     loadPageContent: (state, action) => {
       const { components, globalSettings, canvasSettings } = action.payload;
-      const regenerateIds = (component) => {
+      console.log('Loading page content:', components);
+      /* const regenerateIds = (component) => {
         const timestamp = Date.now();
         const randomString = Math.random().toString(36).substring(2, 15);
         const uniqueId = `${component.type}_${timestamp}_${randomString}`;
@@ -459,8 +460,9 @@ export const editorSlice = createSlice({
           name: `${component.type}_${uniqueId.substr(0, 8)}`,
           children: component.children ? component.children.map(regenerateIds) : undefined,
         };
-      };
-      state.components = components.map(regenerateIds);
+      }; */
+      //state.components = components.map(regenerateIds);
+      state.components = components;
       state.globalSettings = globalSettings;
       state.canvasSettings = canvasSettings || state.canvasSettings; // Use existing canvasSettings if not provided
     },

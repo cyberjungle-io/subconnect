@@ -1,21 +1,20 @@
 import { componentTypes, componentConfig } from './componentConfig';
 import { v4 as uuidv4 } from 'uuid';
 
-let nextId = 1;
-
 export const createComponent = (type, props = {}) => {
   if (!componentTypes[type]) {
     throw new Error(`Invalid component type: ${type}`);
   }
 
   const config = componentConfig[type];
+  const componentId = props.id || props.props?.id || uuidv4();
   
   const newComponent = {
-    id: `component-${nextId++}`,
+    id: componentId,
     type,
-    name: props.name || type,
+    name: props.name || `${type}_${componentId.substr(0, 8)}`,
     acceptsChildren: config.acceptsChildren,
-    children: [],
+    children: props.children || [],
     content: props.content || config.defaultContent || '',
     style: {
       width: props.width || config.defaultSize?.width || 'auto',
@@ -27,7 +26,8 @@ export const createComponent = (type, props = {}) => {
     },
     props: {
       ...config.defaultProps,
-      ...props
+      ...props,
+      id: componentId
     }
   };
 
