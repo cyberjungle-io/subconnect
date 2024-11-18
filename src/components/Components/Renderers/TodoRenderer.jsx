@@ -47,13 +47,15 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
   };
 
   const handleAddTask = (newTask) => {
-    const updatedTasks = [...tasks, {
-      id: `${component.props.id}_${Date.now()}`,
-      ...newTask,
-      completed: false,
-      componentId: component.props.id
-    }];
+    const taskId = `${component.id}_${Date.now()}`;
     
+    const updatedTasks = [...tasks, {
+      ...newTask,
+      id: taskId,
+      completed: false,
+      componentId: component.id
+    }];
+    console.log('handleAddTask  updatedTasks', updatedTasks);
     setTasks(updatedTasks);
     onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
     
@@ -79,16 +81,16 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       task.id === editedTask.id ? {
         ...task,
         ...editedTask,
-        componentId: component.props.id
+        componentId: component.id
       } : task
     );
-    
+
     
     setTasks(updatedTasks);
     onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
 
     const todoData = {
-      componentId: component.props.id,
+      componentId: component.id,
       name: component.name,
       type: component.type,
       tasks: updatedTasks
@@ -105,10 +107,28 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
   };
 
   const handleToggleTask = (taskId) => {
+    console.log('handleToggleTask  Task', tasks);
+    console.log('handleToggleTask  TaskId', taskId);
     const updatedTasks = tasks.map(task =>
       task.id === taskId ? { ...task, completed: !task.completed } : task
     );
+    setTasks(updatedTasks);
     onUpdate(component.id, { props: { ...props, tasks: updatedTasks } });
+    const todoData = {
+      componentId: component.id,
+      name: component.name,
+      type: component.type,
+      tasks: updatedTasks
+    };
+    
+    dispatch(createComponentData(todoData))
+      .unwrap()
+      .then(() => {
+        // console.log('Todo data stored successfully');
+      })
+      .catch((error) => {
+        console.error('Failed to store todo data:', error);
+      });
   };
 
   const handleDeleteTask = (taskId) => {
