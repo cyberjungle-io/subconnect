@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTree, FaGlobe, FaEye, FaHandPointer, FaPaintBrush, FaPalette, FaTimes } from 'react-icons/fa';
+import { FaTree, FaGlobe, FaEye, FaHandPointer, FaPaintBrush, FaPalette, FaTimes, FaRobot } from 'react-icons/fa';
 import FourSquaresIcon from '../common/CustomIcons/FourSquareIcon';
 
 const FloatingRightMenu = React.forwardRef((props, ref) => {
@@ -16,6 +16,8 @@ const FloatingRightMenu = React.forwardRef((props, ref) => {
     onShowCanvasSettings,
     isCanvasSettingsVisible,
     onClose,
+    onShowAIChat,
+    isAIChatVisible,
   } = props;
 
   const buttonClass = (isActive) => `
@@ -71,6 +73,14 @@ const FloatingRightMenu = React.forwardRef((props, ref) => {
         disabled={!isEditMode}
       >
         <FaPaintBrush />
+      </button>
+      <button
+        onClick={isEditMode ? onShowAIChat : undefined}
+        className={buttonClass(isAIChatVisible)}
+        title="AI Design Assistant"
+        disabled={!isEditMode}
+      >
+        <FaRobot />
       </button>
       <button
         onClick={onClose}

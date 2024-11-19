@@ -58,6 +58,7 @@ const initialState = {
     backgroundColor: '#e8e8e8',
     textColor: '#333333',
   },
+  isAIChatVisible: false,
 };
 
 const findComponentById = (components, id) => {
@@ -580,6 +581,9 @@ export const editorSlice = createSlice({
         component.props.tasks = updatedTasks;
       }
     },
+    toggleAIChat: (state) => {
+      state.isAIChatVisible = !state.isAIChatVisible;
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(saveComponentThunk.fulfilled, (state, action) => {
@@ -635,6 +639,7 @@ export const {
   updateToolbarSettings,
   updateTodoTasks,
   updateKanbanTask,
+  toggleAIChat,
 } = editorSlice.actions;
 
 export default editorSlice.reducer;

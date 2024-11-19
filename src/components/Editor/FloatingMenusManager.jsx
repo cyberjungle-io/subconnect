@@ -12,13 +12,15 @@ import {
   setDragModeEnabled, 
   updateGlobalSettings,
   updateToolbarSettings,
-  updateComponent
+  updateComponent,
+  toggleFloatingMenu,
+  toggleAIChat
 } from '../../features/editorSlice';
-import { toggleFloatingMenu } from '../../features/editorSlice';
+import AIFloatingChat from './AIChat/AIFloatingChat';
 
 const FloatingMenusManager = () => {
   const dispatch = useDispatch();
-  const { components, selectedIds, mode, isDragModeEnabled, globalSettings, isFloatingMenuVisible } = useSelector(state => state.editor);
+  const { components, selectedIds, mode, isDragModeEnabled, globalSettings, isFloatingMenuVisible, isAIChatVisible } = useSelector(state => state.editor);
   const toolbarSettings = useSelector(state => state.editor.toolbarSettings) || {};
 
   const canvasSettings = useSelector(state => state.editor.canvasSettings);
@@ -150,6 +152,10 @@ const FloatingMenusManager = () => {
     };
   }, []);
 
+  const handleToggleAIChat = useCallback(() => {
+    dispatch(toggleAIChat());
+  }, [dispatch]);
+
   if (mode !== 'edit') {
     return null;
   }
@@ -185,6 +191,8 @@ const FloatingMenusManager = () => {
           isCanvasSettingsVisible={isCanvasSettingsVisible}
           isEditMode={mode === 'edit'}
           onClose={handleToggleFloatingMenu}
+          onShowAIChat={handleToggleAIChat}
+          isAIChatVisible={isAIChatVisible}
         />
       )}
 
@@ -235,6 +243,12 @@ const FloatingMenusManager = () => {
           }}
           onStyleChange={handleUpdateCanvasSettings}
           onToolbarInteraction={() => {}}
+        />
+      )}
+      {isAIChatVisible && (
+        <AIFloatingChat
+          onClose={handleToggleAIChat}
+          initialPosition={{ x: window.innerWidth - 500, y: 100 }}
         />
       )}
       {/* Conditionally render the floating button */}
