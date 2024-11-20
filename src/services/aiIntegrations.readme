@@ -82,6 +82,119 @@ Manage button interactions:
   - Medium
   - Strong
 
+## 7. Text Controls
+Comprehensive text styling and behavior management:
+
+### Typography
+- Font Properties:
+  - Font family (with fallbacks)
+  - Font size (responsive)
+  - Font weight (100-900)
+  - Font style (normal, italic)
+  - Text decoration (none, underline, overline, line-through)
+  - Text transform (uppercase, lowercase, capitalize)
+  - Letter spacing
+  - Line height
+  - Word spacing
+
+### Text Layout
+- Text alignment (left, center, right)
+- Element types:
+  - Paragraph (p)
+  - Headings (h1-h6)
+- Text shadow:
+  - Offset X/Y
+  - Blur radius
+  - Shadow color
+
+### Style Presets
+- Heading styles:
+  - Large (32px, bold)
+  - Medium (24px, bold)
+  - Small (20px, bold)
+- Body styles:
+  - Large (18px)
+  - Medium (16px)
+  - Small (14px)
+- Emphasis styles:
+  - Strong
+  - Subtle
+  - Highlight
+
+### Pattern Support
+- Modern (Inter font, tight spacing)
+- Classic (Georgia font, relaxed spacing)
+- Minimal (Arial font, balanced spacing)
+
+### Accessibility Features
+- WCAG contrast compliance:
+  - AA standard (4.5:1 ratio)
+  - AAA standard (7:1 ratio)
+- Font size recommendations
+- Line height optimization
+- Color contrast analysis
+- Accessibility warnings
+
+### Animation Capabilities
+- Preset animations:
+  - Fade in
+  - Slide in
+  - Typewriter effect
+- Customizable:
+  - Duration
+  - Delay
+  - Timing function
+
+### Localization Support
+- Language-specific styling:
+  - RTL/LTR support
+  - Script-specific adjustments
+  - Font family recommendations
+- Script detection:
+  - Latin
+  - CJK (Chinese, Japanese, Korean)
+  - Arabic
+- Typography optimization per language
+
+### SEO Optimization
+- Content analysis:
+  - Length optimization
+  - Keyword density
+  - Heading structure
+- SEO scoring
+- Improvement suggestions
+
+### Text Enhancement
+- Readability patterns:
+  - Line height adjustment
+  - Letter spacing optimization
+  - Maximum width constraints
+- Content hierarchy:
+  - Margin management
+  - Spacing optimization
+- Emphasis patterns:
+  - Weight variation
+  - Color emphasis
+
+### Responsive Behavior
+- Font size scaling
+- Line height adjustment
+- Spacing adaptation
+- Breakpoint-specific styles:
+  - Mobile
+  - Tablet
+  - Desktop
+
+### AI Processing Capabilities
+- Natural language style generation
+- Intent recognition
+- Style pattern matching
+- Content analysis
+- Enhancement suggestions
+
+### Example Prompts
+- "Make the text larger and bold"
+
 ## Valid Units
 - Absolute: px, em, rem
 - Relative: %, vw, vh
@@ -107,3 +220,145 @@ Manage button interactions:
 - Background images must be provided as URLs
 - Custom timing functions for transitions need specific syntax
 - Some advanced flexbox features may require manual configuration
+
+## 8. Chart Controls
+Comprehensive chart configuration and data visualization management:
+
+### Chart Types
+- Supported types:
+  - Line chart
+  - Bar chart
+  - Area chart
+  - Pie chart
+- Type-specific optimizations
+- Auto-suggestions based on data structure
+
+### Data Configuration
+- Query Integration:
+  - Data source selection
+  - Field mapping
+  - Auto-refresh settings
+- Series Management:
+  - Multiple data series support
+  - Series naming and reordering
+  - Custom series colors
+  - Data point styling
+
+### Visual Elements
+- Title Configuration:
+  - Text content
+  - Font size and color
+  - Alignment options
+- Legend Management:
+  - Position (top, right, bottom, left)
+  - Visibility toggle
+  - Custom formatting
+- Grid Configuration:
+  - Visibility toggle
+  - Line style and color
+  - Background patterns
+- Data Points:
+  - Visibility toggle
+  - Shape and size
+  - Custom styling
+
+### Axis Configuration
+- X-Axis Options:
+  - Data type (category, date, number)
+  - Format patterns
+  - Label rotation
+  - Scale type (linear, logarithmic)
+- Y-Axis Options:
+  - Data type (number, category)
+  - Format patterns
+  - Scale range
+  - Grid lines
+
+### Tooltip Configuration
+- Style Properties:
+  - Background color
+  - Border color and style
+  - Text color and size
+- Format Options:
+  - Value formatting
+  - Custom templates
+  - Multi-series display
+
+### Animation Capabilities
+- Chart Animations:
+  - Initial load
+  - Data updates
+  - Series transitions
+- Duration Control:
+  - Animation speed
+  - Delay timing
+  - Easing functions
+
+### Accessibility Features
+- Color Contrast:
+  - WCAG compliance
+  - Colorblind-friendly palettes
+- Text Elements:
+  - Readable fonts
+  - Adequate sizing
+  - Screen reader support
+
+### Performance Optimization
+- Data Management:
+  - Large dataset handling
+  - Data sampling
+  - Aggregation options
+- Rendering Options:
+  - Progressive loading
+  - Animation throttling
+  - Memory optimization
+
+### Example Prompts
+- "Change to bar chart"
+- "Show legend at bottom"
+- "Format y-axis as currency"
+- "Make series 'Revenue' blue"
+- "Add title 'Sales Overview'"
+- "Show data points"
+- "Format dates as MM/DD/YYYY"
+
+### Pattern Support
+- Modern visualization
+- Classic chart styles
+- Minimal design
+- Custom themes
+
+### AI Processing Features
+- Intent Recognition:
+  - Command parsing
+  - Context awareness
+  - Pattern matching
+- Smart Suggestions:
+  - Chart type recommendations
+  - Style improvements
+  - Accessibility enhancements
+- Data Analysis:
+  - Pattern detection
+  - Outlier identification
+  - Scale optimization
+
+### Validation Rules
+1. Chart type compatibility with data structure
+2. Color contrast and accessibility standards
+3. Performance implications of configuration
+4. Data format consistency
+5. Visual effectiveness guidelines
+
+### Best Practices
+1. Choose appropriate chart types for data
+2. Maintain clear visual hierarchy
+3. Ensure readable text and labels
+4. Use consistent color schemes
+5. Consider mobile responsiveness
+6. Optimize for performance with large datasets
+
+### Limitations
+- Complex animations may impact performance
+- Some chart types require specific data structures
+- Custom chart types require manual configuration
+- Advanced statistical features may need extension

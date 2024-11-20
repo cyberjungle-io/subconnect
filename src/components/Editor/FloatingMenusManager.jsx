@@ -1,38 +1,60 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { FaTools } from 'react-icons/fa';
-import FloatingRightMenu from './FloatingRightMenu';
-import ComponentTree from './ComponentTree';
-import ComponentPalette from '../Components/ComponentPalette';
-import FloatingGlobalSettings from './FloatingGlobalSettings';
-import FloatingToolbar from '../Components/Tools/FloatingToolbar';
-import { 
-  setSelectedIds, 
-  updateCanvasSettings, 
-  setDragModeEnabled, 
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { FaTools } from "react-icons/fa";
+import FloatingRightMenu from "./FloatingRightMenu";
+import ComponentTree from "./ComponentTree";
+import ComponentPalette from "../Components/ComponentPalette";
+import FloatingGlobalSettings from "./FloatingGlobalSettings";
+import FloatingToolbar from "../Components/Tools/FloatingToolbar";
+import {
+  setSelectedIds,
+  updateCanvasSettings,
+  setDragModeEnabled,
   updateGlobalSettings,
   updateToolbarSettings,
   updateComponent,
   toggleFloatingMenu,
-  toggleAIChat
-} from '../../features/editorSlice';
-import AIFloatingChat from './AIChat/AIFloatingChat';
+  toggleAIChat,
+} from "../../features/editorSlice";
+import AIFloatingChat from "./AIFloatingChat";
 
 const FloatingMenusManager = () => {
   const dispatch = useDispatch();
-  const { components, selectedIds, mode, isDragModeEnabled, globalSettings, isFloatingMenuVisible, isAIChatVisible } = useSelector(state => state.editor);
-  const toolbarSettings = useSelector(state => state.editor.toolbarSettings) || {};
+  const {
+    components,
+    selectedIds,
+    mode,
+    isDragModeEnabled,
+    globalSettings,
+    isFloatingMenuVisible,
+    isAIChatVisible,
+  } = useSelector((state) => state.editor);
+  const toolbarSettings =
+    useSelector((state) => state.editor.toolbarSettings) || {};
 
-  const canvasSettings = useSelector(state => state.editor.canvasSettings);
+  const canvasSettings = useSelector((state) => state.editor.canvasSettings);
 
   const [isComponentTreeVisible, setIsComponentTreeVisible] = useState(false);
-  const [componentTreePosition, setComponentTreePosition] = useState({ x: 0, y: 0 });
-  const [isComponentPaletteVisible, setIsComponentPaletteVisible] = useState(false);
-  const [componentPalettePosition, setComponentPalettePosition] = useState({ x: 0, y: 0 });
+  const [componentTreePosition, setComponentTreePosition] = useState({
+    x: 0,
+    y: 0,
+  });
+  const [isComponentPaletteVisible, setIsComponentPaletteVisible] =
+    useState(false);
+  const [componentPalettePosition, setComponentPalettePosition] = useState({
+    x: 0,
+    y: 0,
+  });
   const [isGlobalSettingsVisible, setIsGlobalSettingsVisible] = useState(false);
-  const [globalSettingsPosition, setGlobalSettingsPosition] = useState({ x: 0, y: 0 });
+  const [globalSettingsPosition, setGlobalSettingsPosition] = useState({
+    x: 0,
+    y: 0,
+  });
   const [isCanvasSettingsVisible, setIsCanvasSettingsVisible] = useState(false);
-  const [canvasToolbarPosition, setCanvasToolbarPosition] = useState({ x: 100, y: 100 });
+  const [canvasToolbarPosition, setCanvasToolbarPosition] = useState({
+    x: 100,
+    y: 100,
+  });
 
   const floatingRightMenuRef = useRef(null);
 
@@ -44,31 +66,31 @@ const FloatingMenusManager = () => {
   const floatingMenuRef = useRef(null);
 
   const handleToggleComponentTree = useCallback(() => {
-    if (mode === 'edit') {
-      setIsComponentTreeVisible(prev => !prev);
+    if (mode === "edit") {
+      setIsComponentTreeVisible((prev) => !prev);
     }
   }, [mode]);
 
   const handleToggleComponentPalette = useCallback(() => {
-    if (mode === 'edit') {
-      setIsComponentPaletteVisible(prev => !prev);
+    if (mode === "edit") {
+      setIsComponentPaletteVisible((prev) => !prev);
     }
   }, [mode]);
 
   const handleToggleGlobalSettings = useCallback(() => {
-    if (mode === 'edit') {
-      setIsGlobalSettingsVisible(prev => !prev);
+    if (mode === "edit") {
+      setIsGlobalSettingsVisible((prev) => !prev);
     }
   }, [mode]);
 
   const handleToggleDragMode = useCallback(() => {
-    if (mode === 'edit') {
+    if (mode === "edit") {
       dispatch(setDragModeEnabled(!isDragModeEnabled));
     }
   }, [mode, isDragModeEnabled, dispatch]);
 
   const handleShowCanvasSettings = useCallback(() => {
-    if (mode === 'edit') {
+    if (mode === "edit") {
       setIsCanvasSettingsVisible(true);
     }
   }, [mode]);
@@ -77,24 +99,30 @@ const FloatingMenusManager = () => {
     setIsCanvasSettingsVisible(false);
   }, []);
 
-  const handleUpdateCanvasSettings = useCallback((updates) => {
-    dispatch(updateCanvasSettings(updates));
-  }, [dispatch]);
+  const handleUpdateCanvasSettings = useCallback(
+    (updates) => {
+      dispatch(updateCanvasSettings(updates));
+    },
+    [dispatch]
+  );
 
-  const handleUpdateGlobalSettings = useCallback((updates) => {
-    dispatch(updateGlobalSettings(updates));
-  }, [dispatch]);
+  const handleUpdateGlobalSettings = useCallback(
+    (updates) => {
+      dispatch(updateGlobalSettings(updates));
+    },
+    [dispatch]
+  );
 
   // Implement hotkeys
   useEffect(() => {
     const handleKeyDown = (event) => {
-      if (mode === 'edit' && (event.ctrlKey || event.metaKey)) {
+      if (mode === "edit" && (event.ctrlKey || event.metaKey)) {
         switch (event.key.toLowerCase()) {
-          case 'q':
+          case "q":
             event.preventDefault();
             handleToggleComponentPalette();
             break;
-          case 'e':
+          case "e":
             event.preventDefault();
             handleToggleComponentTree();
             break;
@@ -105,50 +133,56 @@ const FloatingMenusManager = () => {
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [mode, handleToggleComponentPalette, handleToggleComponentTree]);
 
   const handleToggleFloatingMenu = () => {
-    setIsRightMenuVisible(prev => !prev);
+    setIsRightMenuVisible((prev) => !prev);
   };
 
-  const handleComponentSelect = useCallback((componentId, component, openToolbar = false) => {
-    dispatch(setSelectedIds([componentId]));
-    if (openToolbar && component) {
-      setToolbarPosition({
-        x: window.innerWidth / 2 - 140,
-        y: window.innerHeight / 2 - 200,
-      });
-      setSelectedComponent({
-        id: component.id,
-        type: component.type,
-        style: component.style || {},
-        props: component.props || {},
-        content: component.content || {},
-        children: component.children || [],
-      });
-    }
-  }, [dispatch]);
+  const handleComponentSelect = useCallback(
+    (componentId, component, openToolbar = false) => {
+      dispatch(setSelectedIds([componentId]));
+      if (openToolbar && component) {
+        setToolbarPosition({
+          x: window.innerWidth / 2 - 140,
+          y: window.innerHeight / 2 - 200,
+        });
+        setSelectedComponent({
+          id: component.id,
+          type: component.type,
+          style: component.style || {},
+          props: component.props || {},
+          content: component.content || {},
+          children: component.children || [],
+        });
+      }
+    },
+    [dispatch]
+  );
 
   // Add this useEffect to handle clicks outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (floatingMenuRef.current && !floatingMenuRef.current.contains(event.target)) {
+      if (
+        floatingMenuRef.current &&
+        !floatingMenuRef.current.contains(event.target)
+      ) {
         // Only close if clicking outside both the menu and the toolbar
-        const toolbarElement = document.querySelector('.floating-toolbar');
+        const toolbarElement = document.querySelector(".floating-toolbar");
         if (!toolbarElement || !toolbarElement.contains(event.target)) {
           setSelectedComponent(null);
         }
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -156,7 +190,7 @@ const FloatingMenusManager = () => {
     dispatch(toggleAIChat());
   }, [dispatch]);
 
-  if (mode !== 'edit') {
+  if (mode !== "edit") {
     return null;
   }
 
@@ -189,7 +223,7 @@ const FloatingMenusManager = () => {
           isGlobalSettingsVisible={isGlobalSettingsVisible}
           isDragModeEnabled={isDragModeEnabled}
           isCanvasSettingsVisible={isCanvasSettingsVisible}
-          isEditMode={mode === 'edit'}
+          isEditMode={mode === "edit"}
           onClose={handleToggleFloatingMenu}
           onShowAIChat={handleToggleAIChat}
           isAIChatVisible={isAIChatVisible}
