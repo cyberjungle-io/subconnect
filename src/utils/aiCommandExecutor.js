@@ -6,65 +6,29 @@ import {
   deleteComponents 
 } from '../features/editorSlice';
 import { addToHistory } from '../features/historySlice';
-
-export const executeAICommands = (commands, dispatch) => {
-  try {
-    const executedCommands = [];
-
-    commands.forEach(command => {
-      const result = executeCommand(command, dispatch);
-      if (result) {
-        executedCommands.push({
-          command,
-          result,
-          timestamp: Date.now()
-        });
-      }
-    });
-
-    // Add to history for undo/redo
-    if (executedCommands.length > 0) {
-      dispatch(addToHistory(executedCommands));
-    }
-
-  } catch (error) {
-    console.error('Error executing AI commands:', error);
-    throw error;
-  }
-};
+import { componentConfig } from '../components/Components/componentConfig';
 
 const executeCommand = (command, dispatch) => {
   switch (command.type) {
     case 'add':
       const newComponent = createComponent(command.componentType, {
+        ...componentConfig[command.componentType].defaultProps,
         ...command.props,
-        style: command.style,
+        style: {
+          ...componentConfig[command.componentType].defaultSize,
+          ...command.style
+        },
         id: uuidv4()
       });
       dispatch(addComponent(newComponent));
       return { type: 'add', componentId: newComponent.id };
 
     case 'modify':
-      // Extract background-related styles
-      const { backgroundColor, backgroundImage, ...otherStyles } = command.style || {};
-      
-      // Create style updates object similar to BackgroundControls
-      const styleUpdates = {
-        ...otherStyles,
-        ...(backgroundColor && { backgroundColor }),
-        ...(backgroundImage && { backgroundImage }),
-      };
-
       dispatch(updateComponent({
         id: command.componentId,
         updates: {
-          style: styleUpdates,
-          props: command.props || {},
-          // Add these to match BackgroundControls behavior
-          initialStyle: {
-            ...(backgroundColor && { backgroundColor }),
-            ...(backgroundImage && { backgroundImage }),
-          }
+          style: command.style || {},
+          props: command.props || {}
         }
       }));
       return { type: 'modify', componentId: command.componentId };
@@ -73,12 +37,24 @@ const executeCommand = (command, dispatch) => {
       dispatch(deleteComponents([command.componentId]));
       return { type: 'delete', componentId: command.componentId };
 
-    case 'arrange':
-      // Handle component arrangement
-      return null;
-
     default:
       console.warn('Unknown command type:', command.type);
       return null;
+  }
+};
+
+export const executeAICommands = (commands, dispatch) => {
+  try {
+    const executedCommands = commands
+      .map(command => executeCommand(command, dispatch))
+      .filter(Boolean);
+
+    if (executedCommands.length > 0) {
+      dispatch(addToHistory(executedCommands));
+    }
+
+  } catch (error) {
+    console.error('Error executing AI commands:', error);
+    throw error;
   }
 }; 

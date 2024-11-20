@@ -20,17 +20,23 @@ const AIFloatingChat = ({ onClose, initialPosition = { x: 300, y: 100 } }) => {
     if (selectedIds.length === 0) return null;
 
     const selectedComponents = selectedIds
-      .map((id) => components.find((comp) => comp.id === id))
+      .map((id) => {
+        const component = components.find((comp) => comp.id === id);
+        return {
+          id: component.id,
+          type: component.type,
+          name: component.name || component.type,
+        };
+      })
       .filter(Boolean);
 
     return (
       <div className="px-4 py-2 bg-blue-50 border-b text-sm">
-        Selected Components:
+        <div className="font-semibold mb-1">Selected Components:</div>
         {selectedComponents.map((comp) => (
-          <div key={comp.id} className="text-xs text-gray-600">
-            • {comp.type} (ID: {comp.id})
-            <br />
-            Current styles: {JSON.stringify(comp.style, null, 2)}
+          <div key={comp.id} className="text-xs text-gray-600 mb-1">
+            • {comp.name} ({comp.type})
+            <div className="text-xs text-blue-600 ml-2">ID: {comp.id}</div>
           </div>
         ))}
       </div>
@@ -72,34 +78,26 @@ const AIFloatingChat = ({ onClose, initialPosition = { x: 300, y: 100 } }) => {
         return {
           id: component.id,
           type: component.type,
-          style: component.style,
-          props: component.props,
-          children: component.children
+          name: component.name || component.type,
         };
       }).filter(Boolean);
 
-      console.log("Selected IDs:", selectedIds);
-      console.log("Selected Components:", selectedComponents);
-
-      const context = {
-        hasSelection: selectedComponents.length > 0,
-        selectionCount: selectedComponents.length,
-        selectedComponentIds: selectedIds,
-        selectedComponentTypes: selectedComponents.map(comp => comp.type),
-        isModifyingExisting: selectedComponents.length > 0
+      const contextMessage = {
+        role: "system",
+        content: selectedComponents.length === 0 
+          ? "No components are currently selected."
+          : `Currently selected components:\n${selectedComponents
+              .map(comp => `- ${comp.name} (${comp.type}) with ID: ${comp.id}`)
+              .join('\n')}`
       };
 
-      console.log("Context being sent to AI:", context);
-
       const newUserMessage = { role: "user", content: input };
-      setMessages(prev => [...prev, newUserMessage]);
-      setInput("");
 
-      console.log("Sending request to AI service...", {
-        message: input,
-        selectedComponents,
-        context
-      });
+      setMessages(prev => [
+        ...prev,
+        contextMessage,
+        newUserMessage
+      ]);
 
       const response = await fetch("/api/ai/chat", {
         method: "POST",
@@ -108,12 +106,18 @@ const AIFloatingChat = ({ onClose, initialPosition = { x: 300, y: 100 } }) => {
         },
         body: JSON.stringify({
           message: input,
-          history: messages.map(msg => ({
-            role: msg.role,
-            content: msg.content,
-          })),
+          history: [
+            contextMessage,
+            ...messages,
+            newUserMessage
+          ],
           selectedComponents,
-          context
+          context: {
+            hasSelection: selectedComponents.length > 0,
+            selectionCount: selectedComponents.length,
+            selectedComponentIds: selectedIds,
+            selectedComponents: selectedComponents
+          }
         }),
       });
 
@@ -157,6 +161,41 @@ const AIFloatingChat = ({ onClose, initialPosition = { x: 300, y: 100 } }) => {
       document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDragging]);
+
+  useEffect(() => {
+    if (selectedIds.length > 0) {
+      const selectedComponents = selectedIds
+        .map(id => {
+          const component = components.find(comp => comp.id === id);
+          return {
+            id: component.id,
+            type: component.type,
+            name: component.name || component.type,
+          };
+        })
+        .filter(Boolean);
+
+      const selectionUpdateMessage = {
+        role: "system",
+        content: `Currently selected components:\n${selectedComponents
+          .map(comp => `- ${comp.name} (${comp.type}) with ID: ${comp.id}`)
+          .join('\n')}`
+      };
+
+      setMessages(prev => [
+        ...prev,
+        selectionUpdateMessage
+      ]);
+    } else {
+      setMessages(prev => [
+        ...prev,
+        {
+          role: "system",
+          content: "No components are currently selected."
+        }
+      ]);
+    }
+  }, [selectedIds, components]);
 
   return (
     <div

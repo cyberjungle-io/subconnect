@@ -1,4 +1,4 @@
-import { componentTypes } from '../components/Components/componentConfig';
+import { componentTypes, componentConfig } from '../components/Components/componentConfig';
 
 const validateStyles = (styles) => {
   if (typeof styles !== 'object' || styles === null) {
@@ -8,11 +8,14 @@ const validateStyles = (styles) => {
 };
 
 const validateComponentProps = (componentType, props) => {
-  if (!componentTypes[componentType]) {
+  const config = componentTypes[componentType];
+  if (!config) {
     throw new Error(`Invalid component type: ${componentType}`);
   }
-  // Basic props validation - extend as needed
-  return { ...props };
+
+  // Merge with default props from config
+  const defaultProps = componentConfig[componentType].defaultProps || {};
+  return { ...defaultProps, ...props };
 };
 
 const validateTextProps = (props) => {
@@ -108,34 +111,43 @@ export const validateAndProcessAICommands = (commands) => {
     }
 
     return commands.map(command => {
-      // Validate required fields
       if (!command.type) {
-        throw new Error('Missing required command fields');
+        throw new Error('Missing required command type');
       }
 
-      // For modify commands, ensure componentId exists
-      if (command.type === 'modify') {
-        if (!command.componentId) {
-          throw new Error('Missing componentId for modify command');
-        }
-
-        // Validate and sanitize style updates
-        if (command.style) {
-          command.style = sanitizeStyles(command.style);
-          
-          // Convert color names to hex values if needed
-          if (command.style.backgroundColor) {
-            command.style.backgroundColor = convertColorToHex(command.style.backgroundColor);
+      switch (command.type) {
+        case 'modify':
+          if (!command.componentId) {
+            throw new Error('Missing componentId for modify command');
           }
-          if (command.style.color) {
-            command.style.color = convertColorToHex(command.style.color);
+          if (!command.componentType) {
+            throw new Error('Missing componentType for modify command');
           }
-        }
 
-        // Validate and sanitize props
-        if (command.props) {
-          command.props = validateComponentProps(command.componentType, command.props);
-        }
+          // Validate and sanitize style updates
+          if (command.style) {
+            command.style = validateTextStyles(command.style);
+          }
+
+          // Validate and sanitize props
+          if (command.props) {
+            command.props = validateComponentProps(command.componentType, command.props);
+          }
+          break;
+
+        case 'add':
+          if (!command.componentType) {
+            throw new Error('Missing componentType for add command');
+          }
+          // Use default props from componentConfig
+          command.props = validateComponentProps(command.componentType, command.props || {});
+          break;
+
+        case 'delete':
+          if (!command.componentId) {
+            throw new Error('Missing componentId for delete command');
+          }
+          break;
       }
 
       return command;
