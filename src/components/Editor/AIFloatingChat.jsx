@@ -25,7 +25,14 @@ const AIFloatingChat = ({ onClose, initialPosition = { x: 300, y: 100 } }) => {
 
     return (
       <div className="px-4 py-2 bg-blue-50 border-b text-sm">
-        Selected: {selectedComponents.map((comp) => comp.type).join(", ")}
+        Selected Components:
+        {selectedComponents.map((comp) => (
+          <div key={comp.id} className="text-xs text-gray-600">
+            • {comp.type} (ID: {comp.id})
+            <br />
+            Current styles: {JSON.stringify(comp.style, null, 2)}
+          </div>
+        ))}
       </div>
     );
   };
@@ -60,17 +67,38 @@ const AIFloatingChat = ({ onClose, initialPosition = { x: 300, y: 100 } }) => {
     try {
       setIsProcessing(true);
 
-      const selectedComponents = selectedIds
-        .map((id) => components.find((comp) => comp.id === id))
-        .filter(Boolean);
+      const selectedComponents = selectedIds.map(id => {
+        const component = components.find(comp => comp.id === id);
+        return {
+          id: component.id,
+          type: component.type,
+          style: component.style,
+          props: component.props,
+          children: component.children
+        };
+      }).filter(Boolean);
+
+      console.log("Selected IDs:", selectedIds);
+      console.log("Selected Components:", selectedComponents);
+
+      const context = {
+        hasSelection: selectedComponents.length > 0,
+        selectionCount: selectedComponents.length,
+        selectedComponentIds: selectedIds,
+        selectedComponentTypes: selectedComponents.map(comp => comp.type),
+        isModifyingExisting: selectedComponents.length > 0
+      };
+
+      console.log("Context being sent to AI:", context);
 
       const newUserMessage = { role: "user", content: input };
-      setMessages((prev) => [...prev, newUserMessage]);
+      setMessages(prev => [...prev, newUserMessage]);
       setInput("");
 
       console.log("Sending request to AI service...", {
         message: input,
         selectedComponents,
+        context
       });
 
       const response = await fetch("/api/ai/chat", {
@@ -80,11 +108,12 @@ const AIFloatingChat = ({ onClose, initialPosition = { x: 300, y: 100 } }) => {
         },
         body: JSON.stringify({
           message: input,
-          history: messages.map((msg) => ({
+          history: messages.map(msg => ({
             role: msg.role,
             content: msg.content,
           })),
-          selectedComponents: selectedComponents,
+          selectedComponents,
+          context
         }),
       });
 
@@ -96,7 +125,7 @@ const AIFloatingChat = ({ onClose, initialPosition = { x: 300, y: 100 } }) => {
       const data = await response.json();
       console.log("AI response data:", data);
 
-      setMessages((prev) => [
+      setMessages(prev => [
         ...prev,
         { role: "assistant", content: data.message },
       ]);
@@ -108,7 +137,7 @@ const AIFloatingChat = ({ onClose, initialPosition = { x: 300, y: 100 } }) => {
       }
     } catch (error) {
       console.error("AI Chat Error:", error);
-      setMessages((prev) => [
+      setMessages(prev => [
         ...prev,
         {
           role: "system",

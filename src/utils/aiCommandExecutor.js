@@ -45,11 +45,26 @@ const executeCommand = (command, dispatch) => {
       return { type: 'add', componentId: newComponent.id };
 
     case 'modify':
+      // Extract background-related styles
+      const { backgroundColor, backgroundImage, ...otherStyles } = command.style || {};
+      
+      // Create style updates object similar to BackgroundControls
+      const styleUpdates = {
+        ...otherStyles,
+        ...(backgroundColor && { backgroundColor }),
+        ...(backgroundImage && { backgroundImage }),
+      };
+
       dispatch(updateComponent({
         id: command.componentId,
         updates: {
-          style: command.style,
-          props: command.props
+          style: styleUpdates,
+          props: command.props || {},
+          // Add these to match BackgroundControls behavior
+          initialStyle: {
+            ...(backgroundColor && { backgroundColor }),
+            ...(backgroundImage && { backgroundImage }),
+          }
         }
       }));
       return { type: 'modify', componentId: command.componentId };

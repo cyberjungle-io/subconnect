@@ -109,23 +109,30 @@ export const validateAndProcessAICommands = (commands) => {
 
     return commands.map(command => {
       // Validate required fields
-      if (!command.type || !command.componentType) {
+      if (!command.type) {
         throw new Error('Missing required command fields');
       }
 
-      // Special handling for TEXT components
-      if (command.componentType === 'TEXT') {
-        if (command.props) {
-          command.props = validateTextProps(command.props);
+      // For modify commands, ensure componentId exists
+      if (command.type === 'modify') {
+        if (!command.componentId) {
+          throw new Error('Missing componentId for modify command');
         }
-        if (command.style) {
-          command.style = validateTextStyles(command.style);
-        }
-      } else {
-        // Handle other component types...
+
+        // Validate and sanitize style updates
         if (command.style) {
           command.style = sanitizeStyles(command.style);
+          
+          // Convert color names to hex values if needed
+          if (command.style.backgroundColor) {
+            command.style.backgroundColor = convertColorToHex(command.style.backgroundColor);
+          }
+          if (command.style.color) {
+            command.style.color = convertColorToHex(command.style.color);
+          }
         }
+
+        // Validate and sanitize props
         if (command.props) {
           command.props = validateComponentProps(command.componentType, command.props);
         }
@@ -160,4 +167,17 @@ const sanitizeStyles = (styles) => {
   });
 
   return sanitized;
+};
+
+// Helper function to convert color names to hex
+const convertColorToHex = (color) => {
+  const colorMap = {
+    purple: '#8B5CF6',
+    blue: '#3B82F6',
+    red: '#EF4444',
+    green: '#10B981',
+    // Add more color mappings as needed
+  };
+  
+  return colorMap[color.toLowerCase()] || color;
 }; 
