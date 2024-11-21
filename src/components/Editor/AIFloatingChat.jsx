@@ -1,262 +1,173 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { FaTimes, FaPaperPlane } from "react-icons/fa";
-import { executeAICommands } from "../../utils/aiCommandExecutor";
-import { validateAndProcessAICommands } from "../../utils/aiCommandProcessor";
+import React, { useState, useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { processAICommand } from '../../services/ai/processors';
+import { FaTimes, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { toggleAIChat } from '../../features/editorSlice';
 
-const AIFloatingChat = ({ onClose, initialPosition = { x: 300, y: 100 } }) => {
-  const [position, setPosition] = useState(initialPosition);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
-  const chatRef = useRef(null);
+const AIFloatingChat = () => {
   const dispatch = useDispatch();
-  const selectedIds = useSelector((state) => state.editor.selectedIds);
-  const components = useSelector((state) => state.editor.components);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const messagesEndRef = useRef(null);
+  const inputRef = useRef(null);
+  const isVisible = useSelector(state => state.editor.isAIChatVisible);
 
-  const getSelectedComponentsInfo = () => {
-    if (selectedIds.length === 0) return null;
-
-    const selectedComponents = selectedIds
-      .map((id) => {
-        const component = components.find((comp) => comp.id === id);
-        return {
-          id: component.id,
-          type: component.type,
-          name: component.name || component.type,
-        };
-      })
-      .filter(Boolean);
-
-    return (
-      <div className="px-4 py-2 bg-blue-50 border-b text-sm">
-        <div className="font-semibold mb-1">Selected Components:</div>
-        {selectedComponents.map((comp) => (
-          <div key={comp.id} className="text-xs text-gray-600 mb-1">
-            • {comp.name} ({comp.type})
-            <div className="text-xs text-blue-600 ml-2">ID: {comp.id}</div>
-          </div>
-        ))}
-      </div>
-    );
+  // Auto-scroll to bottom when new messages arrive
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleMouseDown = (e) => {
-    if (e.target.closest(".chat-header")) {
-      setIsDragging(true);
-      setDragOffset({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y,
-      });
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Focus input when chat opens
+  useEffect(() => {
+    if (isVisible && !isMinimized) {
+      inputRef.current?.focus();
     }
-  };
+  }, [isVisible, isMinimized]);
 
-  const handleMouseMove = (e) => {
-    if (isDragging) {
-      setPosition({
-        x: e.clientX - dragOffset.x,
-        y: e.clientY - dragOffset.y,
-      });
+  useEffect(() => {
+    if (isVisible && messages.length === 0) {
+      setMessages([{
+        role: 'assistant',
+        content: 'Hello! I can help you create and modify components. Try saying "Add a text component" or "Create a flex container".',
+        timestamp: new Date().toISOString()
+      }]);
     }
-  };
+  }, [isVisible]);
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!input.trim() || isProcessing) return;
-
+  const handleSendMessage = async (message) => {
+    setIsProcessing(true);
+    setMessages(prev => [...prev, { 
+      role: 'user', 
+      content: message,
+      timestamp: new Date().toISOString()
+    }]);
+    
     try {
-      setIsProcessing(true);
-
-      const selectedComponents = selectedIds.map(id => {
-        const component = components.find(comp => comp.id === id);
-        return {
-          id: component.id,
-          type: component.type,
-          name: component.name || component.type,
-        };
-      }).filter(Boolean);
-
-      const contextMessage = {
-        role: "system",
-        content: selectedComponents.length === 0 
-          ? "No components are currently selected."
-          : `Currently selected components:\n${selectedComponents
-              .map(comp => `- ${comp.name} (${comp.type}) with ID: ${comp.id}`)
-              .join('\n')}`
-      };
-
-      const newUserMessage = { role: "user", content: input };
-
-      setMessages(prev => [
-        ...prev,
-        contextMessage,
-        newUserMessage
-      ]);
-
-      const response = await fetch("/api/ai/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: input,
-          history: [
-            contextMessage,
-            ...messages,
-            newUserMessage
-          ],
-          selectedComponents,
-          context: {
-            hasSelection: selectedComponents.length > 0,
-            selectionCount: selectedComponents.length,
-            selectedComponentIds: selectedIds,
-            selectedComponents: selectedComponents
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to get AI response: ${errorText}`);
-      }
-
-      const data = await response.json();
-      console.log("AI response data:", data);
-
-      setMessages(prev => [
-        ...prev,
-        { role: "assistant", content: data.message },
-      ]);
-
-      if (data.commands && data.commands.length > 0) {
-        console.log("Executing AI commands:", data.commands);
-        const processedCommands = validateAndProcessAICommands(data.commands);
-        executeAICommands(processedCommands, dispatch);
+      const response = await processAICommand(message);
+      
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: response.message,
+        timestamp: new Date().toISOString()
+      }]);
+      
+      if (response.commands) {
+        response.commands.forEach(command => {
+          dispatch(command);
+        });
       }
     } catch (error) {
-      console.error("AI Chat Error:", error);
-      setMessages(prev => [
-        ...prev,
-        {
-          role: "system",
-          content: `Error: ${error.message}`,
-        },
-      ]);
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: error.message,
+        timestamp: new Date().toISOString(),
+        isError: true
+      }]);
     } finally {
       setIsProcessing(false);
+      scrollToBottom();
     }
   };
 
-  useEffect(() => {
-    document.addEventListener("mousemove", handleMouseMove);
-    document.addEventListener("mouseup", handleMouseUp);
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [isDragging]);
-
-  useEffect(() => {
-    if (selectedIds.length > 0) {
-      const selectedComponents = selectedIds
-        .map(id => {
-          const component = components.find(comp => comp.id === id);
-          return {
-            id: component.id,
-            type: component.type,
-            name: component.name || component.type,
-          };
-        })
-        .filter(Boolean);
-
-      const selectionUpdateMessage = {
-        role: "system",
-        content: `Currently selected components:\n${selectedComponents
-          .map(comp => `- ${comp.name} (${comp.type}) with ID: ${comp.id}`)
-          .join('\n')}`
-      };
-
-      setMessages(prev => [
-        ...prev,
-        selectionUpdateMessage
-      ]);
-    } else {
-      setMessages(prev => [
-        ...prev,
-        {
-          role: "system",
-          content: "No components are currently selected."
-        }
-      ]);
-    }
-  }, [selectedIds, components]);
+  if (!isVisible) return null;
 
   return (
-    <div
-      ref={chatRef}
-      className="fixed bg-white rounded-lg shadow-xl z-[980] w-96"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        height: "500px",
-        display: "flex",
-        flexDirection: "column",
-      }}
-      onMouseDown={handleMouseDown}
-    >
-      <div className="chat-header bg-blue-600 text-white px-4 py-2 rounded-t-lg flex justify-between items-center cursor-move">
-        <h3>AI Design Assistant</h3>
-        <button onClick={onClose} className="hover:text-gray-200">
-          <FaTimes />
-        </button>
-      </div>
-
-      {getSelectedComponentsInfo()}
-
-      <div className="flex-grow overflow-y-auto p-4 space-y-4">
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`p-2 rounded-lg ${
-              msg.role === "user"
-                ? "bg-blue-100 ml-8"
-                : msg.role === "system"
-                ? "bg-red-100"
-                : "bg-gray-100 mr-8"
-            }`}
-          >
-            {msg.content}
-          </div>
-        ))}
-      </div>
-
-      <form onSubmit={handleSubmit} className="p-4 border-t">
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            disabled={isProcessing}
-            className="flex-grow px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder={
-              isProcessing ? "Processing..." : "Type your design request..."
-            }
-          />
+    <div className="fixed bottom-4 right-4 w-96 bg-white shadow-lg rounded-lg z-50">
+      {/* Header */}
+      <div className="flex items-center justify-between p-3 bg-blue-500 text-white rounded-t-lg">
+        <h3 className="font-semibold">AI Assistant</h3>
+        <div className="flex items-center space-x-2">
           <button
-            type="submit"
-            disabled={isProcessing}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            onClick={() => setIsMinimized(!isMinimized)}
+            className="p-1 hover:bg-blue-600 rounded"
           >
-            <FaPaperPlane />
+            {isMinimized ? <FaChevronUp /> : <FaChevronDown />}
+          </button>
+          <button
+            onClick={() => dispatch(toggleAIChat())}
+            className="p-1 hover:bg-blue-600 rounded"
+          >
+            <FaTimes />
           </button>
         </div>
-      </form>
+      </div>
+
+      {/* Chat Content */}
+      {!isMinimized && (
+        <div className="h-96 flex flex-col">
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto p-4">
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`mb-2 ${
+                  msg.role === 'user' ? 'text-right' : 'text-left'
+                }`}
+              >
+                <div
+                  className={`inline-block p-2 rounded-lg max-w-[80%] ${
+                    msg.role === 'user'
+                      ? 'bg-blue-500 text-white'
+                      : msg.isError
+                      ? 'bg-red-100 text-red-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}
+                >
+                  {msg.content}
+                  <div className="text-xs opacity-50 mt-1">
+                    {new Date(msg.timestamp).toLocaleTimeString()}
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Area */}
+          <div className="border-t p-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (input.trim() && !isProcessing) {
+                  handleSendMessage(input.trim());
+                  setInput('');
+                }
+              }}
+              className="flex gap-2"
+            >
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={isProcessing}
+                className="flex-1 border rounded-lg px-3 py-2 disabled:opacity-50"
+                placeholder={isProcessing ? "Processing..." : "Type your command..."}
+              />
+              <button
+                type="submit"
+                disabled={isProcessing || !input.trim()}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg disabled:opacity-50 hover:bg-blue-600 transition-colors"
+              >
+                Send
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Loading Overlay */}
+      {isProcessing && !isMinimized && (
+        <div className="absolute inset-0 bg-black bg-opacity-10 flex items-center justify-center rounded-lg">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      )}
     </div>
   );
 };

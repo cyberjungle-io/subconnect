@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye, FaFolderOpen, FaDatabase, FaTools } from 'react-icons/fa';
+import { FaEdit, FaChevronDown, FaChevronUp, FaSave, FaEye, FaFolderOpen, FaDatabase, FaTools, FaRobot } from 'react-icons/fa';
 import Modal from '../common/Modal';
 import HamburgerMenu from '../common/HamburgerMenu';
 import PageList from '../Components/Projects/PageList';
 import ProjectModal from '../Components/Projects/ProjectModal';
-import { toggleFloatingMenu, setEditorMode } from '../../features/editorSlice';
+import { toggleFloatingMenu, setEditorMode, toggleAIChat } from '../../features/editorSlice';
 
 // Add these helper functions at the top of your file, outside the component
 const hexToRgb = (hex) => {
@@ -223,6 +223,14 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
           onClose={handleCloseProjectModal}
         />
       )}
+
+      <button
+        onClick={() => dispatch(toggleAIChat())}
+        className="toolbar-button"
+        title="Toggle AI Assistant"
+      >
+        <FaRobot />
+      </button>
     </div>
   );
 };

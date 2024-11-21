@@ -1,74 +1,163 @@
-import { processBackgroundCommand } from './backgroundProcessor';
-import { processBorderCommand } from './borderProcessor';
-import { processSpacingCommand } from './spacingProcessor';
-import { processSizeCommand } from './sizeProcessor';
-import { processLayoutCommand } from './layoutProcessor';
-import { processButtonCommand } from './buttonProcessor';
+import { validateCommand } from '../validators/validators.js';
+import { executeCommand } from '../../../utils/aiCommandExecutor';
+import { componentTypes, componentConfig } from '../../../components/Components/componentConfig';
+import { getStore } from '../../../utils/storeAccess';
+import { generateCommandFeedback, generateErrorFeedback } from '../../../utils/aiCommandFeedback';
+import { parseNaturalLanguage } from './languageProcessor';
+import { CommandContext } from './contextProcessor';
+import { inferProperties } from './propertyInference';
+import { validateComponentRelationships } from '../validators/validators.js';
+import { CommandChainProcessor } from './commandChainProcessor';
+import { CommandHistoryManager } from './historyManager';
+import { ContextAnalyzer } from './contextAnalyzer';
+import { FeedbackProcessor } from './feedbackProcessor';
+import { 
+  generateClarificationResponse, 
+  generateChainedCommandFeedback 
+} from './feedbackGenerator';
+import { LayoutManager } from './layoutManager';
+import { StyleInferenceEngine } from './styleInference';
+import { ComponentSuggestionEngine } from './componentSuggestion';
+import { ErrorRecoveryHandler } from './errorRecovery';
+import { ThemeManager } from './themeManager';
+import { AccessibilityAnalyzer } from './accessibilityAnalyzer';
+import { PerformanceOptimizer } from './performanceOptimizer';
+import { FeedbackLoop } from './feedbackLoop';
+import { LearningEngine } from './learningEngine';
+import { UserPreferenceAnalyzer } from './userPreferenceAnalyzer';
+import { SequencePredictor } from './sequencePredictor';
+import { CommandComposer } from './commandComposer';
+import { RealtimeSuggestionEngine } from './realtimeSuggestionEngine';
 
-export const processAICommands = (commands) => {
-  return commands.map(command => {
-    if (command.style) {
-      // Check for button properties
-      if (command.style.cursor !== undefined ||
-          command.style.hoverBackgroundColor !== undefined ||
-          command.style.hoverColor !== undefined ||
-          command.style.hoverScale !== undefined ||
-          command.style.transitionDuration !== undefined ||
-          command.style.transition !== undefined ||
-          command.style.enablePageNavigation !== undefined ||
-          command.style.targetPageId !== undefined ||
-          command.style.hoverPreset !== undefined) {
-        command = processButtonCommand(command);
-      }
+// Add these functions before processAICommand
 
-      // Check for layout properties
-      if (command.style.display !== undefined ||
-          command.style.flexDirection !== undefined ||
-          command.style.flexWrap !== undefined ||
-          command.style.justifyContent !== undefined ||
-          command.style.alignItems !== undefined ||
-          command.style.alignContent !== undefined ||
-          command.style.flex !== undefined ||
-          command.style.layoutPreset !== undefined) {
-        command = processLayoutCommand(command);
-      }
+const determineCommandType = (message) => {
+  const patterns = {
+    add: /\b(add|create|insert|new)\b/i,
+    modify: /\b(change|modify|update|set|make)\b/i,
+    delete: /\b(delete|remove|eliminate)\b/i,
+  };
 
-      // Check for size properties
-      if (command.style.width !== undefined ||
-          command.style.height !== undefined ||
-          command.style.minWidth !== undefined ||
-          command.style.maxWidth !== undefined ||
-          command.style.minHeight !== undefined ||
-          command.style.maxHeight !== undefined ||
-          command.style.aspectRatio !== undefined ||
-          command.style.preset !== undefined) {
-        command = processSizeCommand(command);
-      }
+  for (const [type, pattern] of Object.entries(patterns)) {
+    if (pattern.test(message)) {
+      console.log(`Found command type: ${type} for message: ${message}`);
+      return type;
+    }
+  }
 
-      // Check for background properties
-      if (command.style.backgroundColor !== undefined || command.style.backgroundImage !== undefined) {
-        command = processBackgroundCommand(command);
+  // Default to 'add' for component creation
+  return 'add';
+};
+
+const findContainerByName = (containerName, context) => {
+  const findContainer = (components) => {
+    for (const component of components) {
+      // Check if this component matches the name
+      if (component.props?.name?.toLowerCase() === containerName.toLowerCase() ||
+          component.type.toLowerCase().includes(containerName.toLowerCase())) {
+        return component.id;
       }
       
-      // Check for border properties
-      if (command.style.borderWidth !== undefined || 
-          command.style.borderStyle !== undefined ||
-          command.style.borderColor !== undefined ||
-          command.style.borderRadius !== undefined ||
-          command.style.boxShadow !== undefined ||
-          command.style.border !== undefined) {
-        command = processBorderCommand(command);
-      }
-
-      // Check for spacing properties
-      if (command.style.padding !== undefined ||
-          command.style.margin !== undefined ||
-          command.style.gap !== undefined ||
-          Object.keys(command.style).some(key => 
-            key.startsWith('padding') || key.startsWith('margin'))) {
-        command = processSpacingCommand(command);
+      // Check children if this component has them
+      if (component.children) {
+        const found = findContainer(component.children);
+        if (found) return found;
       }
     }
-    return command;
-  });
+    return null;
+  };
+
+  return findContainer(context.components);
+};
+
+// Add a command tracking Set at the top of the file
+const processedCommands = new Set();
+
+export const processAICommand = async (message) => {
+  try {
+    console.log('Processing command:', message);
+    
+    // Generate a unique command ID based on message and timestamp
+    const commandId = `${message}_${Date.now()}`;
+    
+    // Check if this command was already processed recently
+    if (processedCommands.has(commandId)) {
+      console.log('Duplicate command detected, skipping:', commandId);
+      return null;
+    }
+    
+    // Add to processed commands
+    processedCommands.add(commandId);
+    
+    // Clear old commands (older than 1 second)
+    const now = Date.now();
+    processedCommands.forEach(cmd => {
+      const [, timestamp] = cmd.split('_');
+      if (now - Number(timestamp) > 1000) {
+        processedCommands.delete(cmd);
+      }
+    });
+
+    const context = new CommandContext();
+    const parsedLanguage = parseNaturalLanguage(message);
+    
+    let command = generateCommand(message, parsedLanguage, context);
+    console.log('Generated command:', command);
+
+    // Validate command
+    validateCommand(command, context);
+    
+    // Execute command
+    const result = await executeCommand(command);
+    console.log('Command execution result:', result);
+
+    if (!result) {
+      throw new Error('Failed to execute command');
+    }
+
+    return {
+      message: generateCommandFeedback(command, result),
+      commands: [result]
+    };
+  } catch (error) {
+    console.error('Error in processAICommand:', error);
+    throw new Error(`Failed to add component: ${error.message}`);
+  }
+};
+
+const generateCommand = (message, parsedLanguage, context) => {
+  const type = determineCommandType(message);
+  const componentType = extractComponentType(message);
+
+  if (!type) {
+    throw new Error('Unable to determine command type');
+  }
+
+  // Ensure we're not creating duplicate commands
+  return {
+    type: type.toLowerCase(),
+    componentType: componentType || 'FLEX_CONTAINER',
+    componentId: null,
+    style: {},
+    props: {
+      name: `${componentType || 'FLEX_CONTAINER'}_${Date.now()}`
+    },
+    parentId: null,
+    layout: {
+      direction: 'row',
+      gap: '8px'
+    },
+    position: {}
+  };
+};
+
+const extractComponentType = (message) => {
+  // Convert message to lowercase for case-insensitive matching
+  const lowerMessage = message.toLowerCase();
+  
+  // Look for component type mentions
+  const componentMatches = Object.keys(componentTypes)
+    .find(type => lowerMessage.includes(type.toLowerCase()));
+    
+  return componentMatches || null;
 }; 

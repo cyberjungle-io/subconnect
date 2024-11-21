@@ -153,6 +153,19 @@ export const editorSlice = createSlice({
   reducers: {
     addComponent: (state, action) => {
       const { type, parentId, savedComponent, position, ...otherProps } = action.payload;
+      
+      // Check for duplicate components created within the last second
+      const now = Date.now();
+      const recentComponents = state.components.filter(comp => {
+        const compTimestamp = parseInt(comp.id.split('_')[0]);
+        return now - compTimestamp < 1000 && comp.type === type;
+      });
+
+      if (recentComponents.length > 0) {
+        console.log('Recent similar component found, skipping creation');
+        return;
+      }
+
       let newComponent;
       let depth = 0;
 

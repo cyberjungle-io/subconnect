@@ -1,60 +1,54 @@
-import { v4 as uuidv4 } from 'uuid';
-import { createComponent } from '../components/Components/componentFactory';
+import { store } from '../store/store';
 import { 
-  addComponent, 
-  updateComponent, 
-  deleteComponents 
+  addComponent,
+  updateComponent,
+  deleteComponent 
 } from '../features/editorSlice';
-import { addToHistory } from '../features/historySlice';
-import { componentConfig } from '../components/Components/componentConfig';
 
-const executeCommand = (command, dispatch) => {
-  switch (command.type) {
-    case 'add':
-      const newComponent = createComponent(command.componentType, {
-        ...componentConfig[command.componentType].defaultProps,
-        ...command.props,
-        style: {
-          ...componentConfig[command.componentType].defaultSize,
-          ...command.style
-        },
-        id: uuidv4()
-      });
-      dispatch(addComponent(newComponent));
-      return { type: 'add', componentId: newComponent.id };
+let isExecutingCommand = false;
 
-    case 'modify':
-      dispatch(updateComponent({
-        id: command.componentId,
-        updates: {
+export const executeCommand = async (command) => {
+  if (isExecutingCommand) {
+    console.log('Command already executing, skipping');
+    return null;
+  }
+
+  try {
+    isExecutingCommand = true;
+    console.log('Executing command:', command);
+
+    switch (command.type) {
+      case 'add':
+        const result = store.dispatch(addComponent({
+          type: command.componentType,
+          props: command.props || {},
           style: command.style || {},
-          props: command.props || {}
-        }
-      }));
-      return { type: 'modify', componentId: command.componentId };
+          parentId: command.parentId,
+          layout: command.layout || {}
+        }));
+        console.log('Add component result:', result);
+        return result;
 
-    case 'delete':
-      dispatch(deleteComponents([command.componentId]));
-      return { type: 'delete', componentId: command.componentId };
+      case 'modify':
+        return store.dispatch(updateComponent({
+          id: command.componentId,
+          updates: {
+            props: command.props,
+            style: command.style,
+            layout: command.layout
+          }
+        }));
 
-    default:
-      console.warn('Unknown command type:', command.type);
-      return null;
+      case 'delete':
+        return store.dispatch(deleteComponent(command.componentId));
+
+      default:
+        throw new Error(`Unknown command type: ${command.type}`);
+    }
+  } catch (error) {
+    console.error('Command execution error:', error);
+    throw error;
+  } finally {
+    isExecutingCommand = false;
   }
 };
-
-export const executeAICommands = (commands, dispatch) => {
-  try {
-    const executedCommands = commands
-      .map(command => executeCommand(command, dispatch))
-      .filter(Boolean);
-
-    if (executedCommands.length > 0) {
-      dispatch(addToHistory(executedCommands));
-    }
-
-  } catch (error) {
-    console.error('Error executing AI commands:', error);
-    throw error;
-  }
-}; 

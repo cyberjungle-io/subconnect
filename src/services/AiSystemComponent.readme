@@ -1,0 +1,224 @@
+# AI Component Manipulation System Architecture
+
+## Overview
+This system enables natural language interaction for manipulating components within the editor interface. Users can create, modify, and delete components through a chat interface, with the AI interpreting commands and executing appropriate actions.
+
+## Core Components
+
+### 1. AI Chat Interface (`AIFloatingChat.jsx`)
+- Handles user input and message display
+- Manages chat history and context
+- Dispatches commands to the Redux store
+- Provides real-time feedback on command execution
+
+#### Key Features:
+- Message threading
+- Command history
+- Error feedback
+- Context awareness
+- Command suggestions
+
+### 2. Command Processing Pipeline (`processors/index.js`)
+
+#### A. Natural Language Processing
+- Interprets user intent
+- Extracts key parameters
+- Maintains conversation context
+- Maps natural language to system commands
+
+#### B. Command Categories
+1. Creation Commands
+   - Component creation
+   - Parent-child relationships
+   - Initial property setting
+
+2. Modification Commands
+   - Style updates
+   - Property changes
+   - Component relationships
+   - Multi-component operations
+
+3. Deletion Commands
+   - Single component removal
+   - Bulk deletions
+   - Child component handling
+
+### 3. Validation System (`validators.js`)
+
+#### A. Command Validation
+- Command structure verification
+- Parameter type checking
+- Relationship validation
+- Permission checking
+
+#### B. Component Validation
+- Property constraints
+- Style limitations
+- Parent-child rules
+- Component-specific rules
+
+### 4. Command Executor (`aiCommandExecutor.js`)
+
+#### A. Action Execution
+- Redux action dispatch
+- Component state updates
+- Style application
+- Error handling
+
+#### B. Response Generation
+- Success/failure messages
+- Action confirmation
+- Error explanations
+- Suggestions for corrections
+
+## Command Structure
+
+### Basic Command Format
+javascript
+{
+type: 'add' | 'modify' | 'delete',
+componentType?: string,
+targetId?: string,
+properties?: {
+style?: {},
+props?: {},
+content?: any
+},
+parentId?: string,
+position?: { x: number, y: number }
+}
+
+### Example Commands
+
+#### 1. Creation
+javascript
+// Add component
+{
+type: 'add',
+componentType: 'TEXT',
+properties: {
+style: { backgroundColor: 'blue' },
+props: { content: 'Hello World' }
+}
+}
+// Add with parent
+{
+type: 'add',
+componentType: 'TEXT',
+parentId: 'flex-container-1',
+properties: {
+style: { color: 'red' }
+}
+}
+
+#### 2. Modification
+javascript
+// Update style
+{
+type: 'modify',
+targetId: 'text-1',
+properties: {
+style: { fontSize: '20px' }
+}
+}
+
+// Update props
+{
+type: 'modify',
+targetId: 'chart-1',
+properties: {
+props: { chartType: 'bar' }
+}
+}
+
+#### 3. Deletion
+javascript
+// Delete component
+{
+type: 'delete',
+targetId: 'image-1'
+}
+
+## Natural Language Examples
+
+### Creation Commands
+- "Add a text component"
+- "Create a flex container with 3 columns"
+- "Insert an image component inside the flex container"
+- "Add a chart showing sales data"
+
+### Modification Commands
+- "Change the background color to blue"
+- "Make the text larger"
+- "Update the chart type to bar"
+- "Set the flex direction to column"
+
+### Deletion Commands
+- "Remove the image component"
+- "Delete all text components"
+- "Clear the flex container"
+
+## Error Handling
+
+### Validation Errors
+- Invalid component types
+- Invalid property values
+- Invalid relationships
+- Missing required properties
+
+### Execution Errors
+- Component not found
+- Invalid state transitions
+- Permission issues
+- Runtime errors
+
+## Context Management
+
+### Session Context
+- Recently modified components
+- Component relationships
+- User preferences
+- Command history
+
+### Component Context
+- Parent-child relationships
+- Component type constraints
+- Style inheritance
+- Layout context
+
+## Future Enhancements
+
+### Planned Features
+1. Multi-step operations
+2. Undo/redo support
+3. Batch modifications
+4. Style suggestions
+5. Component templates
+6. Natural language shortcuts
+
+### Advanced Capabilities
+1. Layout optimization
+2. Style consistency checking
+3. Accessibility suggestions
+4. Performance optimization
+5. Component relationship suggestions
+
+## Integration Points
+
+### Redux Store
+- Component state management
+- Action dispatching
+- State updates
+- History tracking
+
+### Component System
+- Component creation
+- Property management
+- Relationship handling
+- Rendering updates
+
+### User Interface
+- Chat interface
+- Visual feedback
+- Command suggestions
+- Error display
