@@ -26,7 +26,7 @@ import { v4 as uuidv4 } from 'uuid';
 import FloatingMenusManager from './FloatingMenusManager';
 import { fetchSavedComponents } from '../../features/savedComponentsSlice';
 import { PageNavigationProvider } from '../../contexts/PageNavigationContext';
-import AIFloatingChat from './AIFloatingChat';
+
 
 const MainEditor = () => {
   const dispatch = useDispatch();
@@ -312,7 +312,7 @@ const MainEditor = () => {
             )}
           </div>
           <FloatingMenusManager />
-          <AIFloatingChat />
+          
         </div>
       </div>
       {isProjectModalOpen && (

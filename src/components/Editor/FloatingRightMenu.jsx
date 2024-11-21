@@ -77,11 +77,12 @@ const FloatingRightMenu = React.forwardRef((props, ref) => {
       <button
         onClick={isEditMode ? onShowAIChat : undefined}
         className={buttonClass(isAIChatVisible)}
-        title="AI Design Assistant"
+        title="Toggle AI Chat"
         disabled={!isEditMode}
       >
         <FaRobot />
       </button>
+      
       <button
         onClick={onClose}
         className="mt-2 p-2 rounded-full hover:bg-[#d9ecff] border border-transparent"

@@ -16,7 +16,8 @@ import {
   toggleFloatingMenu,
   toggleAIChat,
 } from "../../features/editorSlice";
-import AIFloatingChat from "./AIFloatingChat";
+import AIChat from "./AIChat";
+
 
 const FloatingMenusManager = () => {
   const dispatch = useDispatch();
@@ -230,6 +231,13 @@ const FloatingMenusManager = () => {
         />
       )}
 
+      {isAIChatVisible && (
+        <AIChat
+          onClose={handleToggleAIChat}
+          initialPosition={{ x: 100, y: 100 }}
+        />
+      )}
+
       {selectedComponent && (
         <FloatingToolbar
           className="floating-toolbar"
@@ -279,12 +287,7 @@ const FloatingMenusManager = () => {
           onToolbarInteraction={() => {}}
         />
       )}
-      {isAIChatVisible && (
-        <AIFloatingChat
-          onClose={handleToggleAIChat}
-          initialPosition={{ x: window.innerWidth - 500, y: 100 }}
-        />
-      )}
+     
       {/* Conditionally render the floating button */}
       {!isRightMenuVisible && (
         <button

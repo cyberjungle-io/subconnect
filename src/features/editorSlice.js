@@ -147,6 +147,55 @@ export const saveComponentThunk = createAsyncThunk(
   }
 );
 
+export const processAICommand = createAsyncThunk(
+  'editor/processAICommand',
+  async ({ command, selectedIds }, { getState, dispatch }) => {
+    try {
+      const state = getState();
+      const selectedComponents = selectedIds.map(id => 
+        findComponentById(state.editor.components, id)
+      ).filter(Boolean);
+
+      if (selectedComponents.length === 0) {
+        return {
+          message: "Please select a component first before giving modification commands."
+        };
+      }
+
+      // Call Anthropic's Haiku API
+      const response = await fetch('/api/ai/haiku', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          command,
+          components: selectedComponents,
+        }),
+      });
+
+      const aiResponse = await response.json();
+
+      // Handle component modifications based on AI response
+      if (aiResponse.modifications) {
+        selectedComponents.forEach(component => {
+          dispatch(updateComponent({
+            id: component.id,
+            updates: aiResponse.modifications
+          }));
+        });
+      }
+
+      return {
+        message: aiResponse.message,
+        modifications: aiResponse.modifications
+      };
+    } catch (error) {
+      throw new Error('Failed to process AI command: ' + error.message);
+    }
+  }
+);
+
 export const editorSlice = createSlice({
   name: "editor",
   initialState,
