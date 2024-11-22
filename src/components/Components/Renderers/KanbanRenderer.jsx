@@ -192,54 +192,49 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   }, [isInteractive]);
 
   const handleAddOrUpdateTask = useCallback((columnId, taskData) => {
-    const updatedColumns = { ...columns };
-
-    if (selectedTask) {
-      // Update existing task
-      updatedColumns[columnId].tasks = updatedColumns[columnId].tasks.map(task =>
-        task.id === selectedTask.id ? { ...task, ...taskData } : task
-      );
-    } else {
-      // Add new task
-      const newTask = { ...taskData, id: uuidv4(), columnId, createdAt: new Date().toISOString() };
-      updatedColumns[columnId].tasks.push(newTask);
-    }
-
-    setColumns(updatedColumns);
-
-    // Flatten tasks for updating the component
-    const allTasks = Object.values(updatedColumns).flatMap(column => column.tasks);
-    // console.log('allTasks', allTasks);
-    onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
-
-    const kanbanData = {
-      componentId: component.props.id,
-      name: component.props.name,
-      type: component.type,
-      tasks: allTasks
-    };
-    // console.log('Kanban Data:', kanbanData);
-    // console.log('allTasks', allTasks);
-    // console.log('component props ', component.props);
-
-    // Store the kanbanData in w3s
-    dispatch(createComponentData(kanbanData))
-      .unwrap()
-      .then(() => {
-        // console.log('Kanban data stored successfully');
-      })
-      .catch((error) => {
-        console.error('Failed to store kanban data:', error);
-        if (error.name === 'TypeError' && error.message.includes('Cannot read properties of undefined (reading \'list\')')) {
-          console.error('Error: The componentData state might not be initialized properly.');
-        } else {
-          console.error('Error details:', error.stack);
+    const isNewTask = !taskData.id;
+    
+    // For new tasks
+    if (isNewTask) {
+      const newTask = {
+        id: uuidv4(),
+        columnId,
+        createdAt: new Date().toISOString(),
+        ...taskData
+      };
+      
+      const updatedColumns = {
+        ...columns,
+        [columnId]: {
+          ...columns[columnId],
+          tasks: [...columns[columnId].tasks, newTask]
         }
-      });
-
-    setIsModalOpen(false);
-    setSelectedTask(null);
-  }, [columns, onUpdate, component.id, component.props, selectedTask]);
+      };
+      
+      setColumns(updatedColumns);
+      const allTasks = Object.values(updatedColumns).flatMap(column => column.tasks);
+      onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
+      setIsModalOpen(false); // Only close for new tasks
+      setSelectedTask(null); // Only clear for new tasks
+    } 
+    // For existing tasks (updates)
+    else {
+      const updatedColumns = {
+        ...columns,
+        [columnId]: {
+          ...columns[columnId],
+          tasks: columns[columnId].tasks.map(task =>
+            task.id === taskData.id ? { ...task, ...taskData } : task
+          )
+        }
+      };
+      
+      setColumns(updatedColumns);
+      const allTasks = Object.values(updatedColumns).flatMap(column => column.tasks);
+      onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
+      // Don't close modal or clear selected task for updates
+    }
+  }, [columns, component.id, component.props, onUpdate]);
 
   const getFormattedDuration = useCallback((start, end) => {
     const durationInMinutes = Math.floor((end - start) / (1000 * 60));

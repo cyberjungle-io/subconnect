@@ -1,34 +1,19 @@
 import React, { useState, useEffect } from 'react';
 
-const CommentsSection = ({ taskId }) => {
-  const [comments, setComments] = useState([]);
+const CommentsSection = ({ taskId, onAddComment, comments = [] }) => {
+  console.log('CommentsSection initialized with taskId:', taskId);
   const [newComment, setNewComment] = useState('');
-
-  useEffect(() => {
-    // Fetch comments for the task
-    // This is a placeholder - you'll need to implement the actual fetching logic
-    fetchComments(taskId);
-  }, [taskId]);
-
-  const fetchComments = async (taskId) => {
-    // Placeholder for API call
-    // Replace this with your actual API call
-    // For now, we'll just set an empty array
-    setComments([]);
-  };
 
   const handleSubmitComment = (e) => {
     e.preventDefault();
     if (newComment.trim()) {
-      // Add the new comment
-      // This is a placeholder - you'll need to implement the actual submission logic
       const newCommentObj = {
-        id: comments.length + 1,
-        author: 'Current User',
+        id: Date.now(), // Use timestamp as ID
+        author: 'Current User', // You might want to get this from your auth system
         text: newComment,
         timestamp: new Date().toISOString(),
       };
-      setComments([...comments, newCommentObj]);
+      onAddComment(newCommentObj);
       setNewComment('');
     }
   };

@@ -28,17 +28,20 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
   const [linkedTodoList, setLinkedTodoList] = useState(task?.linkedTodoList || null);
   const allComponents = useSelector(state => state.editor.components);
   const todoLists = findTodoLists(allComponents);
+  const [comments, setComments] = useState(task?.comments || []);
 
   useEffect(() => {
     if (task) {
       setTaskTitle(task.title);
       setTaskDescription(task.description || '');
       setTaskColor(task.color || '#ffffff');
+      setComments(task.comments || []);
       setHasChanges(false);
     } else {
       setTaskTitle('');
       setTaskDescription('');
       setTaskColor('#ffffff');
+      setComments([]);
       setHasChanges(false);
     }
   }, [task]);
@@ -63,11 +66,42 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
     setHasChanges(true);
   };
 
+  const handleAddComment = (newComment) => {
+    const updatedComments = [...comments, newComment];
+    setComments(updatedComments);
+    
+    if (task) {
+      const updatedTask = {
+        ...task,
+        title: taskTitle,
+        description: taskDescription,
+        color: taskColor,
+        linkedTodoList,
+        comments: updatedComments
+      };
+      
+      onAddTask(columnId, updatedTask);
+    }
+  };
+
   const handleSubmit = () => {
     if (task) {
-      onAddTask(columnId, { ...task, title: taskTitle, description: taskDescription, color: taskColor, linkedTodoList });
+      onAddTask(columnId, { 
+        ...task, 
+        title: taskTitle, 
+        description: taskDescription, 
+        color: taskColor, 
+        linkedTodoList,
+        comments
+      });
     } else {
-      onAddTask(columnId, { title: taskTitle, description: taskDescription, color: taskColor, linkedTodoList });
+      onAddTask(columnId, { 
+        title: taskTitle, 
+        description: taskDescription, 
+        color: taskColor, 
+        linkedTodoList,
+        comments
+      });
     }
     onClose();
   };
@@ -123,7 +157,11 @@ const KanbanTaskModal = ({ isOpen, onClose, onAddTask, columnId, task, isViewMod
                 />
               </div>
               <div className="w-1/2 pl-6 border-l">
-                <CommentsSection taskId={task.id} />
+                <CommentsSection 
+                  taskId={task.id} 
+                  comments={comments}
+                  onAddComment={handleAddComment}
+                />
               </div>
             </>
           ) : (
