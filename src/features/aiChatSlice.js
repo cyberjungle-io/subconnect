@@ -13,8 +13,17 @@ const llmService = new LLMService();
 
 export const sendMessage = createAsyncThunk(
   'aiChat/sendMessage',
-  async (message, { getState }) => {
+  async (message, { getState, dispatch }) => {
     try {
+      const contextualMessage = `
+        Note: I am an AI assistant that can help you with this canvas editor application.
+        I can perform actions like adding components to your canvas.
+        Available commands:
+        - "Add a flex container" - Creates a new flex container on the canvas
+        
+        User message: ${message}
+      `;
+
       // Get relevant editor context from state
       const state = getState();
       const editorContext = {
@@ -23,7 +32,7 @@ export const sendMessage = createAsyncThunk(
         globalSettings: state.editor.globalSettings,
       };
 
-      const response = await llmService.sendMessage(message, editorContext);
+      const response = await llmService.sendMessage(contextualMessage, editorContext);
       return response;
     } catch (error) {
       console.error('Error sending message:', error);

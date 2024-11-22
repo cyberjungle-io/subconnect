@@ -3,6 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { sendMessage, addMessage, changeProvider } from '../../features/aiChatSlice';
 import { FaTimes, FaPaperPlane } from 'react-icons/fa';
 import { LLMProviders } from '../../services/llm/llmService';
+import { aiAddComponent } from '../../features/editorSlice';
+import { AICommandExecutor } from '../../services/aiExecutor';
 
 const AIChatWindow = ({ onClose }) => {
   const dispatch = useDispatch();
@@ -31,7 +33,25 @@ const AIChatWindow = ({ onClose }) => {
     const currentInput = input;
     setInput('');
     
-    await dispatch(sendMessage(currentInput));
+    // Try to process as a command first
+    const commandResult = await AICommandExecutor.processCommand(currentInput, dispatch);
+    
+    if (commandResult) {
+      if (commandResult.success) {
+        dispatch(addMessage({
+          role: 'assistant',
+          content: "I've added a new Flex Container to your canvas. You can now drag and drop other components into it, or adjust its properties using the toolbar.",
+        }));
+      } else {
+        dispatch(addMessage({
+          role: 'assistant',
+          content: `Sorry, I encountered an error while trying to add the component: ${commandResult.message}`,
+        }));
+      }
+    } else {
+      // If no command was recognized, send to regular AI chat
+      await dispatch(sendMessage(currentInput));
+    }
   };
 
   const handleProviderChange = (e) => {

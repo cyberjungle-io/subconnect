@@ -146,6 +146,44 @@ export const saveComponentThunk = createAsyncThunk(
   }
 );
 
+export const aiAddComponent = createAsyncThunk(
+  'editor/aiAddComponent',
+  async (componentData, { dispatch, getState }) => {
+    const { type, position = { x: 0, y: 0 }, props = {} } = componentData;
+    
+    // Create the component using existing configuration
+    const baseConfig = componentConfig[type];
+    if (!baseConfig) {
+      throw new Error(`Invalid component type: ${type}`);
+    }
+
+    const newComponent = {
+      id: uuidv4(),
+      type,
+      style: {
+        position: 'relative',
+        left: position.x,
+        top: position.y,
+        ...baseConfig.defaultSize,
+        ...baseConfig.style,
+      },
+      props: {
+        ...baseConfig.defaultProps,
+        ...props,
+      },
+      children: [],
+    };
+
+    // Use the existing addComponent action
+    dispatch(addComponent({
+      ...newComponent,
+      parentId: null, // Add to root level
+    }));
+
+    return newComponent;
+  }
+);
+
 export const editorSlice = createSlice({
   name: "editor",
   initialState,
