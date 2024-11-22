@@ -7,6 +7,7 @@ import userReducer from '../features/userSlice';
 import toastReducer from '../features/toastSlice';
 import graphQLReducer from '../features/graphQLSlice';
 import savedComponentsReducer from '../features/savedComponentsSlice';
+import aiChatReducer from '../features/aiChatSlice';
 
 const rootReducer = combineReducers({
   editor: editorReducer,
@@ -14,7 +15,8 @@ const rootReducer = combineReducers({
   user: userReducer,
   toast: toastReducer,
   graphQL: graphQLReducer,
-  savedComponents: savedComponentsReducer, // Add this line
+  savedComponents: savedComponentsReducer,
+  aiChat: aiChatReducer,
 });
 
 const persistConfig = {
