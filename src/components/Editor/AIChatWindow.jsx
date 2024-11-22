@@ -40,7 +40,7 @@ const AIChatWindow = ({ onClose }) => {
       if (commandResult.success) {
         dispatch(addMessage({
           role: 'assistant',
-          content: "I've added a new Flex Container to your canvas. You can now drag and drop other components into it, or adjust its properties using the toolbar.",
+          content: commandResult.message,
         }));
       } else {
         dispatch(addMessage({

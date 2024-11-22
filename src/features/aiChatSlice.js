@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import LLMService, { LLMProviders } from '../services/llm/llmService';
+import { componentConfig } from '../components/Components/componentConfig';
 
 const initialState = {
   isVisible: false,
@@ -11,6 +12,12 @@ const initialState = {
 
 const llmService = new LLMService();
 
+const generateAvailableCommands = () => {
+  return Object.entries(componentConfig)
+    .map(([_, config]) => `- "Add a ${config.name}" - Creates a new ${config.name.toLowerCase()} on the canvas`)
+    .join('\n');
+};
+
 export const sendMessage = createAsyncThunk(
   'aiChat/sendMessage',
   async (message, { getState, dispatch }) => {
@@ -19,7 +26,7 @@ export const sendMessage = createAsyncThunk(
         Note: I am an AI assistant that can help you with this canvas editor application.
         I can perform actions like adding components to your canvas.
         Available commands:
-        - "Add a flex container" - Creates a new flex container on the canvas
+        ${generateAvailableCommands()}
         
         User message: ${message}
       `;
