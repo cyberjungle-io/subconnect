@@ -40,7 +40,13 @@ export const sendMessage = createAsyncThunk(
       };
 
       const response = await llmService.sendMessage(contextualMessage, editorContext);
-      return response;
+      dispatch(addMessage({
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: response.content,
+        timestamp: new Date(),
+        status: 'success'
+      }));
     } catch (error) {
       console.error('Error sending message:', error);
       throw error;
