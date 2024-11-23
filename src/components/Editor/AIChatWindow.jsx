@@ -127,7 +127,11 @@ const AIChatWindow = ({ onClose }) => {
     setIsTyping(true);
     
     try {
-      const commandResult = await AICommandExecutor.processCommand(currentInput, dispatch);
+      const commandResult = await AICommandExecutor.processCommand(
+        currentInput, 
+        dispatch,
+        selectedComponent
+      );
       
       if (commandResult) {
         dispatch(addMessage({

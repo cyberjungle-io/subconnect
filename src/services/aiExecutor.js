@@ -1,5 +1,5 @@
 import { componentConfig } from '../components/Components/componentConfig';
-import { aiAddComponent } from '../features/editorSlice';
+import { aiAddComponent, updateComponent } from '../features/editorSlice';
 
 export class AICommandExecutor {
   // Helper function to generate variations of component names
@@ -20,8 +20,50 @@ export class AICommandExecutor {
     ].filter(Boolean); // Remove null values
   }
 
-  static async processCommand(input, dispatch) {
+  static async processCommand(input, dispatch, selectedComponent = null) {
+    console.log('Processing command:', input);
+    console.log('Selected component:', selectedComponent);
+
     const lowercaseInput = input.toLowerCase();
+
+    // First, check if we're trying to modify a selected component
+    if (selectedComponent) {
+      const styleUpdates = this.processStyleCommand(lowercaseInput, selectedComponent);
+      console.log('Style updates:', styleUpdates);
+
+      if (styleUpdates) {
+        try {
+          const updatedComponent = {
+            ...selectedComponent,
+            style: {
+              ...selectedComponent.style,
+              ...styleUpdates.style
+            }
+          };
+          
+          console.log('Final component update:', updatedComponent);
+
+          dispatch({
+            type: 'editor/updateComponent',
+            payload: {
+              id: selectedComponent.id,
+              updates: updatedComponent
+            }
+          });
+
+          return {
+            success: true,
+            message: `Updated the ${selectedComponent.type}'s background color to ${styleUpdates.style.backgroundColor}`
+          };
+        } catch (error) {
+          console.error('Update failed:', error);
+          return {
+            success: false,
+            message: `Failed to update component: ${error.message}`
+          };
+        }
+      }
+    }
 
     // Common action words that might indicate component creation
     const actionWords = [
@@ -98,6 +140,43 @@ export class AICommandExecutor {
       }
     }
 
+    return null;
+  }
+
+  static processStyleCommand(input, component) {
+    console.log('Input received:', input);
+
+    const stylePatterns = {
+      backgroundColor: [
+        // Simplified patterns that should catch more variations
+        /background\s*(?:color)?\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|#[0-9a-fA-F]{3,6})/i,
+      ]
+    };
+
+    // Debug log the input against each pattern
+    for (const [property, patterns] of Object.entries(stylePatterns)) {
+      for (const pattern of patterns) {
+        console.log('Testing pattern:', pattern);
+        const match = input.match(pattern);
+        console.log('Match result:', match);
+        
+        if (match) {
+          const colorValue = match[1].toLowerCase();
+          console.log('Captured color value:', colorValue);
+          
+          const updates = {
+            style: {
+              [property]: colorValue
+            }
+          };
+          
+          console.log('Generated updates:', updates);
+          return updates;
+        }
+      }
+    }
+
+    console.log('No pattern matched');
     return null;
   }
 } 
