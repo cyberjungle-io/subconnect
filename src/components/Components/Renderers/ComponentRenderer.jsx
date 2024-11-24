@@ -372,7 +372,7 @@ const ComponentRenderer = React.memo(({
       borderRadius: style.borderRadius || props.borderRadius || generalComponentStyle.borderRadius || '4px',
       padding: style.padding || "0px",
       margin: style.margin || "0px",
-      backgroundColor:  'transparent',
+      backgroundColor: style.backgroundColor || 'transparent',
       boxShadow: style.boxShadow || 'none',
       opacity: style.opacity || 1,
       transform: style.transform || 'none',

@@ -16,6 +16,8 @@ export class AICommandExecutor {
       baseName === 'todo list' ? 'todos' : null,
       baseName === 'kanban board' ? 'kanban' : null,
       baseName === 'flex container' ? 'flexbox' : null,
+      baseName === 'flex_container' ? 'flexbox' : null,
+      baseName === 'flexcontainer' ? 'flexbox' : null,
       baseName === 'query value' ? 'query' : null,
     ].filter(Boolean); // Remove null values
   }
@@ -75,6 +77,11 @@ export class AICommandExecutor {
     // Check each component type for a match
     for (const [type, config] of Object.entries(componentConfig)) {
       const nameVariations = this.getNameVariations(config.name);
+      
+      // Add type-based variations
+      if (type === 'FLEX_CONTAINER') {
+        nameVariations.push('flex', 'flex container', 'flex_container', 'flexcontainer');
+      }
       
       // Generate natural language patterns
       const patterns = [];
