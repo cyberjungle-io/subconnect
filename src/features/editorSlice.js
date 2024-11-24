@@ -149,36 +149,55 @@ export const saveComponentThunk = createAsyncThunk(
 export const aiAddComponent = createAsyncThunk(
   'editor/aiAddComponent',
   async (componentData, { dispatch, getState }) => {
-    const { type, position = { x: 0, y: 0 }, props = {} } = componentData;
+    const { type } = componentData;
     
-    // Create the component using existing configuration
+    // Get the base configuration from componentConfig
     const baseConfig = componentConfig[type];
     if (!baseConfig) {
       throw new Error(`Invalid component type: ${type}`);
     }
 
+    // Generate a unique ID
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substring(2, 15);
+    const uniqueId = `${timestamp}_${randomString}`;
+
+    // Get the current components to determine position
+    const state = getState();
+    const existingComponents = state.editor.components;
+    
+    // Calculate position based on existing components
+    let position = { x: 0, y: 0 };
+    if (existingComponents.length > 0) {
+      const lastComponent = existingComponents[existingComponents.length - 1];
+      position = {
+        x: 0, // Keep x at 0 for consistent left alignment
+        y: lastComponent.style?.top ? parseInt(lastComponent.style.top) + 20 : 20
+      };
+    }
+
+    // Create the component with the same defaults as ComponentPalette
     const newComponent = {
-      id: uuidv4(),
+      id: uniqueId,
       type,
+      name: `${type}_${uniqueId.substr(0, 8)}`,
       style: {
+        ...baseConfig.defaultSize,
+        ...baseConfig.style,
         position: 'relative',
         left: position.x,
         top: position.y,
-        ...baseConfig.defaultSize,
-        ...baseConfig.style,
       },
       props: {
         ...baseConfig.defaultProps,
-        ...props,
+        name: `${baseConfig.name}`,
       },
       children: [],
+      depth: 0,
     };
 
     // Use the existing addComponent action
-    dispatch(addComponent({
-      ...newComponent,
-      parentId: null, // Add to root level
-    }));
+    dispatch(addComponent(newComponent));
 
     return newComponent;
   }
