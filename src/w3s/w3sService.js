@@ -398,7 +398,7 @@ const w3sService = {
     try {
       console.log('w3sService: Fetching saved components');
       const response = await api.get('/savedComponents');
-      console.log('Raw data from getSavedComponents:', response.data);
+      //console.log('Raw data from getSavedComponents:', response.data);
       return response.data;
     } catch (error) {
       handleApiError(error);
@@ -416,7 +416,7 @@ const w3sService = {
 
   createOrUpdateSavedComponent: async (componentData) => {
     try {
-      console.log('createOrUpdateSavedComponent: Creating or updating saved component', componentData);
+      //console.log('createOrUpdateSavedComponent: Creating or updating saved component', componentData);
       const response = await api.post('/savedComponents', componentData);
       console.log('Create or update saved component response:', response.data);
       return response.data;

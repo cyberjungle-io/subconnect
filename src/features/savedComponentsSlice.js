@@ -6,7 +6,7 @@ import { componentTypes } from '../components/Components/componentConfig';
 export const fetchSavedComponents = createAsyncThunk(
   'savedComponents/fetchAll',
   async () => {
-    console.log('fetchSavedComponents: Fetching saved components');
+    // console.log('fetchSavedComponents: Fetching saved components');
     const response = await w3sService.getSavedComponents();
     return response;
   }
@@ -36,7 +36,7 @@ export const saveSingleComponent = createAsyncThunk(
 export const deleteSavedComponent = createAsyncThunk(
   'savedComponents/delete',
   async (id) => {
-    console.log('deleteSavedComponent: Deleting saved component', id);
+    // console.log('deleteSavedComponent: Deleting saved component', id);
     await w3sService.deleteSavedComponent(id);
     return id;
   }
@@ -64,12 +64,12 @@ const savedComponentsSlice = createSlice({
         state.status = 'loading';
       })
       .addCase(fetchSavedComponents.fulfilled, (state, action) => {
-        console.log('fetchSavedComponents: Successfully fetched saved components', action.payload);
+        // console.log('fetchSavedComponents: Successfully fetched saved components', action.payload);
         state.status = 'succeeded';
         state.items = action.payload;
       })
       .addCase(fetchSavedComponents.rejected, (state, action) => {
-        console.error('fetchSavedComponents: Error fetching saved components:', action.error);
+        // console.error('fetchSavedComponents: Error fetching saved components:', action.error);
         state.status = 'failed';
         state.error = action.error.message;
       })

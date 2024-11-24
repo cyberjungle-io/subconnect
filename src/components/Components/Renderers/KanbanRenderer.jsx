@@ -192,7 +192,9 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   }, [isInteractive]);
 
   const handleAddOrUpdateTask = useCallback((columnId, taskData) => {
+    console.log('handleAddOrUpdateTask: taskData:', taskData);
     const isNewTask = !taskData.id;
+    console.log('handleAddOrUpdateTask: isNewTask:', isNewTask);
     
     // For new tasks
     if (isNewTask) {
@@ -213,9 +215,28 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
       
       setColumns(updatedColumns);
       const allTasks = Object.values(updatedColumns).flatMap(column => column.tasks);
+      
+      // Update local state through onUpdate
       onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
-      setIsModalOpen(false); // Only close for new tasks
-      setSelectedTask(null); // Only clear for new tasks
+      
+      // Save to w3s using component.id instead of component.props.id
+      const kanbanData = {
+        componentId: component.id, // Changed from component.props.id
+        name: component.props.name,
+        type: component.type,
+        tasks: allTasks
+      };
+      
+      dispatch(createComponentData(kanbanData))
+        .unwrap()
+        .then(() => {
+          console.log('New task saved successfully');
+          setIsModalOpen(false);
+          setSelectedTask(null);
+        })
+        .catch((error) => {
+          console.error('Failed to save new task:', error);
+        });
     } 
     // For existing tasks (updates)
     else {
@@ -231,10 +252,28 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
       
       setColumns(updatedColumns);
       const allTasks = Object.values(updatedColumns).flatMap(column => column.tasks);
+      
+      // Update local state through onUpdate
       onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
-      // Don't close modal or clear selected task for updates
+      
+      // Save to w3s using component.id
+      const kanbanData = {
+        componentId: component.id, // Changed from component.props.id
+        name: component.props.name,
+        type: component.type,
+        tasks: allTasks
+      };
+      
+      dispatch(createComponentData(kanbanData))
+        .unwrap()
+        .then(() => {
+          console.log('Task update saved successfully');
+        })
+        .catch((error) => {
+          console.error('Failed to save task update:', error);
+        });
     }
-  }, [columns, component.id, component.props, onUpdate]);
+  }, [columns, component.id, component.props, component.type, dispatch, onUpdate]);
 
   const getFormattedDuration = useCallback((start, end) => {
     const durationInMinutes = Math.floor((end - start) / (1000 * 60));
