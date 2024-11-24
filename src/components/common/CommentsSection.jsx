@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 
 const CommentsSection = ({ taskId, onAddComment, comments = [] }) => {
   console.log('CommentsSection initialized with taskId:', taskId);
+  const currentUser = useSelector((state) => state.user.currentUser);
   const [newComment, setNewComment] = useState('');
 
   const handleSubmitComment = (e) => {
     e.preventDefault();
     if (newComment.trim()) {
       const newCommentObj = {
-        id: Date.now(), // Use timestamp as ID
-        author: 'Current User', // You might want to get this from your auth system
+        id: Date.now(),
+        author: currentUser?.username || 'Guest',
+        author_id: currentUser?._id,
         text: newComment,
         timestamp: new Date().toISOString(),
       };
