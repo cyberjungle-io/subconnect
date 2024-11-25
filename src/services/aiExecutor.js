@@ -167,7 +167,7 @@ export class AICommandExecutor {
     console.log('Processing style command:', input);
 
     const stylePatterns = {
-        backgroundColor: [
+       backgroundColor: [
             /background\s*(?:color)?\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|#[0-9a-fA-F]{3,6})/i,
         ],
         borderRadius: [
