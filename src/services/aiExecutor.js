@@ -1,5 +1,6 @@
 import { componentConfig } from '../components/Components/componentConfig';
 import { aiAddComponent, updateComponent } from '../features/editorSlice';
+import { StyleCommandProcessor } from './styleCommandProcessor';
 
 export class AICommandExecutor {
   // Helper function to generate variations of component names
@@ -30,7 +31,7 @@ export class AICommandExecutor {
 
     // First, check if we're trying to modify a selected component
     if (selectedComponent) {
-      const styleUpdates = this.processStyleCommand(lowercaseInput, selectedComponent);
+      const styleUpdates = StyleCommandProcessor.processStyleCommand(lowercaseInput, selectedComponent);
       console.log('Style updates:', styleUpdates);
 
       if (styleUpdates) {
@@ -53,17 +54,7 @@ export class AICommandExecutor {
           // Generate appropriate success message based on what was updated
           const updatedProperty = Object.keys(styleUpdates.style)[0];
           const updatedValue = styleUpdates.style[updatedProperty];
-          
-          // Create friendly property name
-          const propertyNames = {
-            backgroundColor: 'background color',
-            borderRadius: 'border radius',
-            width: 'width',
-            height: 'height',
-            borderWidth: 'border width',
-            borderStyle: 'border style',
-            borderColor: 'border color'
-          };
+          const propertyNames = StyleCommandProcessor.getPropertyNames();
 
           return {
             success: true,
@@ -161,59 +152,5 @@ export class AICommandExecutor {
     }
 
     return null;
-  }
-
-  static processStyleCommand(input, component) {
-    console.log('Processing style command:', input);
-
-    const stylePatterns = {
-       backgroundColor: [
-            /background\s*(?:color)?\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|#[0-9a-fA-F]{3,6})/i,
-        ],
-        borderRadius: [
-            /border\s*radius\s*(?:to|=|:)?\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh))/i,
-            /round(?:ed)?\s*(?:corners?)?\s*(?:to|=|:)?\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh))/i,
-        ],
-        borderWidth: [
-            /border\s*width\s*(?:to|=|:)?\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh))/i,
-            /(?:make|set)\s*(?:the)?\s*border\s*(?:to|=|:)?\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh))\s*(?:thick|wide|width)?/i,
-        ],
-        borderStyle: [
-            /border\s*style\s*(?:to|=|:)?\s*(solid|dashed|dotted|double|groove|ridge|inset|outset)/i,
-            /(?:make|set)\s*(?:the)?\s*border\s*(?:to|=|:)?\s*(solid|dashed|dotted|double|groove|ridge|inset|outset)/i,
-        ],
-        borderColor: [
-            /border\s*color\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|#[0-9a-fA-F]{3,6})/i,
-        ]
-    };
-
-    let matchFound = false;
-    let result = null;
-
-    // Test all patterns, even after finding a match
-    for (const [property, patterns] of Object.entries(stylePatterns)) {
-        console.log(`Testing property: ${property}`);
-        
-        for (const pattern of patterns) {
-            console.log(`  Testing pattern: ${pattern}`);
-            const match = input.match(pattern);
-            console.log(`  Match result:`, match);
-            
-            if (match && !matchFound) {
-                matchFound = true;
-                const value = match[1].toLowerCase();
-                console.log(`  Found match for ${property}: ${value}`);
-                
-                result = {
-                    style: {
-                        [property]: value
-                    }
-                };
-            }
-        }
-    }
-
-    console.log('Final result:', result);
-    return result;
   }
 } 
