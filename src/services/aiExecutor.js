@@ -53,9 +53,24 @@ export class AICommandExecutor {
             }
           });
 
+          // Generate appropriate success message based on what was updated
+          const updatedProperty = Object.keys(styleUpdates.style)[0];
+          const updatedValue = styleUpdates.style[updatedProperty];
+          
+          // Create friendly property name
+          const propertyNames = {
+            backgroundColor: 'background color',
+            borderRadius: 'border radius',
+            width: 'width',
+            height: 'height',
+            borderWidth: 'border width',
+            borderStyle: 'border style',
+            borderColor: 'border color'
+          };
+
           return {
             success: true,
-            message: `Updated the ${selectedComponent.type}'s background color to ${styleUpdates.style.backgroundColor}`
+            message: `Updated the ${selectedComponent.type}'s ${propertyNames[updatedProperty] || updatedProperty} to ${updatedValue}`
           };
         } catch (error) {
           console.error('Update failed:', error);
