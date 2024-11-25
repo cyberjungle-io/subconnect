@@ -3,6 +3,13 @@ import { aiAddComponent, updateComponent } from '../features/editorSlice';
 import { StyleCommandProcessor } from './styleCommandProcessor';
 
 export class AICommandExecutor {
+  // Define actionWords as a static class property
+  static actionWords = [
+    'add', 'create', 'insert', 'place', 'put', 'make', 'generate', 
+    'give me', 'i want', 'i need', 'can you add', 'could you add',
+    'please add', 'would you add', 'i\'d like'
+  ];
+
   // Helper function to generate variations of component names
   static getNameVariations(componentName) {
     const baseName = componentName.toLowerCase();
@@ -29,19 +36,93 @@ export class AICommandExecutor {
 
     const lowercaseInput = input.toLowerCase();
 
-    // First, check if we're trying to modify a selected component
+    // First, check if we're trying to modify a selected FLEX_CONTAINER
+    if (selectedComponent?.type === 'FLEX_CONTAINER') {
+      console.log('Processing command for FLEX_CONTAINER');
+
+      // Check each component type for a match
+      for (const [type, config] of Object.entries(componentConfig)) {
+        const nameVariations = this.getNameVariations(config.name);
+        const patterns = [];
+        
+        // Use the static actionWords property
+        for (const action of AICommandExecutor.actionWords) {
+          for (const name of nameVariations) {
+            patterns.push(
+              `${action} a ${name}`,
+              `${action} an ${name}`,
+              `${action} ${name}`,
+              `${action} some ${name}`
+            );
+          }
+        }
+
+        // Check if any pattern matches the input
+        if (patterns.some(pattern => lowercaseInput.includes(pattern))) {
+          try {
+            console.log(`Adding ${type} as child to FLEX_CONTAINER`);
+            
+            // Generate a unique ID for the child
+            const timestamp = Date.now();
+            const randomString = Math.random().toString(36).substring(2, 15);
+            const uniqueId = `${timestamp}_${randomString}`;
+
+            // Create the child component
+            const childComponent = {
+              id: uniqueId,
+              type: type,
+              name: `${config.name}_${uniqueId.substr(0, 8)}`,
+              props: {
+                name: `AI Created ${config.name}`,
+                ...config.defaultProps
+              },
+              style: {
+                ...config.defaultSize,
+                ...config.style
+              },
+              children: [],
+              acceptsChildren: config.acceptsChildren || false
+            };
+
+            // Update the parent FLEX_CONTAINER with the new child
+            const updatedComponent = {
+              ...selectedComponent,
+              children: [
+                ...(selectedComponent.children || []),
+                childComponent
+              ]
+            };
+
+            console.log('Updating FLEX_CONTAINER with new child:', updatedComponent);
+
+            dispatch(updateComponent({
+              id: selectedComponent.id,
+              updates: updatedComponent
+            }));
+
+            return {
+              success: true,
+              message: `Added a new ${config.name} to the selected container!`
+            };
+          } catch (error) {
+            console.error('Error adding child component:', error);
+            return {
+              success: false,
+              message: `Failed to add child component: ${error.message}`
+            };
+          }
+        }
+      }
+    }
+
+    // If we get here, either:
+    // 1. No FLEX_CONTAINER is selected
+    // 2. The command wasn't for adding a component
+    // 3. The selected component isn't a FLEX_CONTAINER
+    
+    // Try processing style commands
     if (selectedComponent) {
-      // Add logging to help debug nested component selection
-      console.log('Processing style command for component:', {
-        id: selectedComponent.id,
-        type: selectedComponent.type,
-        isNested: selectedComponent.parent ? true : false,
-        parentId: selectedComponent.parent?.id
-      });
-
       const styleUpdates = StyleCommandProcessor.processStyleCommand(lowercaseInput, selectedComponent);
-      console.log('Style updates:', styleUpdates);
-
       if (styleUpdates) {
         try {
           const updatedComponent = {
@@ -79,14 +160,7 @@ export class AICommandExecutor {
       }
     }
 
-    // If no style updates were found, continue checking for component creation
-    // Common action words that might indicate component creation
-    const actionWords = [
-      'add', 'create', 'insert', 'place', 'put', 'make', 'generate', 
-      'give me', 'i want', 'i need', 'can you add', 'could you add',
-      'please add', 'would you add', 'i\'d like'
-    ];
-
+    // If nothing else matched, try adding a component to the canvas
     // Check each component type for a match
     for (const [type, config] of Object.entries(componentConfig)) {
       const nameVariations = this.getNameVariations(config.name);
@@ -99,8 +173,8 @@ export class AICommandExecutor {
       // Generate natural language patterns
       const patterns = [];
       
-      // Combine action words with name variations
-      for (const action of actionWords) {
+      // Use the static actionWords property
+      for (const action of AICommandExecutor.actionWords) {
         for (const name of nameVariations) {
           patterns.push(
             `${action} a ${name}`,
