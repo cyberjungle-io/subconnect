@@ -1,22 +1,17 @@
 import { BorderProcessor } from './Processors/BorderProcessor';
 import { BackgroundProcessor } from './Processors/BackgroundProcessor';
+import { SizeProcessor } from './Processors/SizeProcessor';
 
 export class StyleCommandProcessor {
   static getStylePatterns() {
     return {
-      width: [
-        /width\s*(?:to|=|:)?\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh))/i,
-      ],
-      height: [
-        /height\s*(?:to|=|:)?\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh))/i,
-      ]
+      // Remove width and height from here since they're now in SizeProcessor
     };
   }
 
   static getPropertyNames() {
     return {
-      width: 'width',
-      height: 'height',
+      ...SizeProcessor.getPropertyNames(),
       ...BorderProcessor.getPropertyNames(),
       ...BackgroundProcessor.getPropertyNames()
     };
@@ -24,6 +19,13 @@ export class StyleCommandProcessor {
 
   static processStyleCommand(input, component) {
     console.log('StyleCommandProcessor received input:', input);
+
+    // Try size processor
+    const sizeResult = SizeProcessor.processCommand(input);
+    console.log('Size processor result:', sizeResult);
+    if (sizeResult) {
+      return sizeResult;
+    }
 
     // Try background processor first (since it's more specific)
     const backgroundResult = BackgroundProcessor.processCommand(input);
