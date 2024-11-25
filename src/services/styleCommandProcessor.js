@@ -1,11 +1,9 @@
 import { BorderProcessor } from './Processors/BorderProcessor';
+import { BackgroundProcessor } from './Processors/BackgroundProcessor';
 
 export class StyleCommandProcessor {
   static getStylePatterns() {
     return {
-      backgroundColor: [
-        /background\s*(?:color)?\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|#[0-9a-fA-F]{3,6})/i,
-      ],
       width: [
         /width\s*(?:to|=|:)?\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh))/i,
       ],
@@ -17,23 +15,31 @@ export class StyleCommandProcessor {
 
   static getPropertyNames() {
     return {
-      backgroundColor: 'background color',
       width: 'width',
       height: 'height',
-      ...BorderProcessor.getPropertyNames()
+      ...BorderProcessor.getPropertyNames(),
+      ...BackgroundProcessor.getPropertyNames()
     };
   }
 
   static processStyleCommand(input, component) {
-    console.log('Processing style command:', input);
+    console.log('StyleCommandProcessor received input:', input);
 
-    // First try border processor
+    // Try background processor first (since it's more specific)
+    const backgroundResult = BackgroundProcessor.processCommand(input);
+    console.log('Background processor result:', backgroundResult);
+    if (backgroundResult) {
+      return backgroundResult;
+    }
+
+    // Try border processor
     const borderResult = BorderProcessor.processCommand(input);
+    console.log('Border processor result:', borderResult);
     if (borderResult) {
       return borderResult;
     }
 
-    // If no border match, continue with other style patterns
+    // If no specific processor matched, try the generic style patterns
     const stylePatterns = this.getStylePatterns();
     let matchFound = false;
     let result = null;
