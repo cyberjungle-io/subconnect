@@ -45,13 +45,10 @@ export class AICommandExecutor {
           
           console.log('Final component update:', updatedComponent);
 
-          dispatch({
-            type: 'editor/updateComponent',
-            payload: {
-              id: selectedComponent.id,
-              updates: updatedComponent
-            }
-          });
+          dispatch(updateComponent({
+            id: selectedComponent.id,
+            updates: updatedComponent
+          }));
 
           // Generate appropriate success message based on what was updated
           const updatedProperty = Object.keys(styleUpdates.style)[0];
@@ -82,6 +79,7 @@ export class AICommandExecutor {
       }
     }
 
+    // If no style updates were found, continue checking for component creation
     // Common action words that might indicate component creation
     const actionWords = [
       'add', 'create', 'insert', 'place', 'put', 'make', 'generate', 
@@ -166,39 +164,56 @@ export class AICommandExecutor {
   }
 
   static processStyleCommand(input, component) {
-    console.log('Input received:', input);
+    console.log('Processing style command:', input);
 
     const stylePatterns = {
-      backgroundColor: [
-        // Simplified patterns that should catch more variations
-        /background\s*(?:color)?\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|#[0-9a-fA-F]{3,6})/i,
-      ]
+        backgroundColor: [
+            /background\s*(?:color)?\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|#[0-9a-fA-F]{3,6})/i,
+        ],
+        borderRadius: [
+            /border\s*radius\s*(?:to|=|:)?\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh))/i,
+            /round(?:ed)?\s*(?:corners?)?\s*(?:to|=|:)?\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh))/i,
+        ],
+        borderWidth: [
+            /border\s*width\s*(?:to|=|:)?\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh))/i,
+            /(?:make|set)\s*(?:the)?\s*border\s*(?:to|=|:)?\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh))\s*(?:thick|wide|width)?/i,
+        ],
+        borderStyle: [
+            /border\s*style\s*(?:to|=|:)?\s*(solid|dashed|dotted|double|groove|ridge|inset|outset)/i,
+            /(?:make|set)\s*(?:the)?\s*border\s*(?:to|=|:)?\s*(solid|dashed|dotted|double|groove|ridge|inset|outset)/i,
+        ],
+        borderColor: [
+            /border\s*color\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|#[0-9a-fA-F]{3,6})/i,
+        ]
     };
 
-    // Debug log the input against each pattern
+    let matchFound = false;
+    let result = null;
+
+    // Test all patterns, even after finding a match
     for (const [property, patterns] of Object.entries(stylePatterns)) {
-      for (const pattern of patterns) {
-        console.log('Testing pattern:', pattern);
-        const match = input.match(pattern);
-        console.log('Match result:', match);
+        console.log(`Testing property: ${property}`);
         
-        if (match) {
-          const colorValue = match[1].toLowerCase();
-          console.log('Captured color value:', colorValue);
-          
-          const updates = {
-            style: {
-              [property]: colorValue
+        for (const pattern of patterns) {
+            console.log(`  Testing pattern: ${pattern}`);
+            const match = input.match(pattern);
+            console.log(`  Match result:`, match);
+            
+            if (match && !matchFound) {
+                matchFound = true;
+                const value = match[1].toLowerCase();
+                console.log(`  Found match for ${property}: ${value}`);
+                
+                result = {
+                    style: {
+                        [property]: value
+                    }
+                };
             }
-          };
-          
-          console.log('Generated updates:', updates);
-          return updates;
         }
-      }
     }
 
-    console.log('No pattern matched');
-    return null;
+    console.log('Final result:', result);
+    return result;
   }
 } 
