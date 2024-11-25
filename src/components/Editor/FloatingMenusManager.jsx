@@ -6,6 +6,7 @@ import ComponentTree from './ComponentTree';
 import ComponentPalette from '../Components/ComponentPalette';
 import FloatingGlobalSettings from './FloatingGlobalSettings';
 import FloatingToolbar from '../Components/Tools/FloatingToolbar';
+import AIChatWindow from './AIChatWindow';
 import { 
   setSelectedIds, 
   updateCanvasSettings, 
@@ -15,6 +16,7 @@ import {
   updateComponent
 } from '../../features/editorSlice';
 import { toggleFloatingMenu } from '../../features/editorSlice';
+import { toggleAiChat } from '../../features/aiChatSlice';
 
 const FloatingMenusManager = () => {
   const dispatch = useDispatch();
@@ -40,6 +42,8 @@ const FloatingMenusManager = () => {
   const [toolbarPosition, setToolbarPosition] = useState({ x: 100, y: 100 });
 
   const floatingMenuRef = useRef(null);
+
+  const isAiChatVisible = useSelector(state => state.aiChat.isVisible);
 
   const handleToggleComponentTree = useCallback(() => {
     if (mode === 'edit') {
@@ -150,6 +154,12 @@ const FloatingMenusManager = () => {
     };
   }, []);
 
+  const handleToggleAiChat = useCallback(() => {
+    if (mode === 'edit') {
+      dispatch(toggleAiChat());
+    }
+  }, [mode, dispatch]);
+
   if (mode !== 'edit') {
     return null;
   }
@@ -168,6 +178,12 @@ const FloatingMenusManager = () => {
             onPositionChange={setComponentTreePosition}
           />
         )}
+
+        {isAiChatVisible && (
+          <AIChatWindow
+            onClose={handleToggleAiChat}
+          />
+        )}
       </div>
 
       {isRightMenuVisible && (
@@ -177,13 +193,15 @@ const FloatingMenusManager = () => {
           onShowComponentPalette={handleToggleComponentPalette}
           onShowGlobalSettings={handleToggleGlobalSettings}
           onToggleDragMode={handleToggleDragMode}
-          onShowCanvasSettings={handleShowCanvasSettings}
+          onShowAiChat={handleToggleAiChat}
           isComponentTreeVisible={isComponentTreeVisible}
           isComponentPaletteVisible={isComponentPaletteVisible}
           isGlobalSettingsVisible={isGlobalSettingsVisible}
           isDragModeEnabled={isDragModeEnabled}
-          isCanvasSettingsVisible={isCanvasSettingsVisible}
+          isAiChatVisible={isAiChatVisible}
           isEditMode={mode === 'edit'}
+          onShowCanvasSettings={handleShowCanvasSettings}
+          isCanvasSettingsVisible={isCanvasSettingsVisible}
           onClose={handleToggleFloatingMenu}
         />
       )}
