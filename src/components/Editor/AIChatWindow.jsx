@@ -47,9 +47,29 @@ const AIChatWindow = ({ onClose }) => {
   const selectedIds = useSelector(state => state.editor.selectedIds);
   const components = useSelector(state => state.editor.components);
   
-  // Get the selected component details
+  // Enhanced function to find selected component, including nested children
+  const findSelectedComponent = (components, selectedId) => {
+    for (const component of components) {
+      if (component.id === selectedId) {
+        return component;
+      }
+      if (component.children && component.children.length > 0) {
+        const found = findSelectedComponent(component.children, selectedId);
+        if (found) {
+          // Add parent reference to help with context
+          return {
+            ...found,
+            parent: component
+          };
+        }
+      }
+    }
+    return null;
+  };
+
+  // Get the selected component details, including nested components
   const selectedComponent = selectedIds.length === 1 
-    ? components.find(c => c.id === selectedIds[0])
+    ? findSelectedComponent(components, selectedIds[0])
     : null;
 
   const messagesEndRef = useRef(null);
@@ -180,6 +200,11 @@ const AIChatWindow = ({ onClose }) => {
           {selectedComponent && (
             <span className="text-sm text-blue-600">
               Selected: {selectedComponent.props?.name || selectedComponent.type}
+              {selectedComponent.parent && (
+                <span className="text-xs text-gray-500">
+                  {' '}(nested in {selectedComponent.parent.type})
+                </span>
+              )}
             </span>
           )}
           <div className="flex items-center gap-2">

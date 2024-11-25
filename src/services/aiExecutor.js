@@ -31,6 +31,14 @@ export class AICommandExecutor {
 
     // First, check if we're trying to modify a selected component
     if (selectedComponent) {
+      // Add logging to help debug nested component selection
+      console.log('Processing style command for component:', {
+        id: selectedComponent.id,
+        type: selectedComponent.type,
+        isNested: selectedComponent.parent ? true : false,
+        parentId: selectedComponent.parent?.id
+      });
+
       const styleUpdates = StyleCommandProcessor.processStyleCommand(lowercaseInput, selectedComponent);
       console.log('Style updates:', styleUpdates);
 
@@ -46,12 +54,13 @@ export class AICommandExecutor {
           
           console.log('Final component update:', updatedComponent);
 
+          // Update the component, whether it's nested or not
           dispatch(updateComponent({
             id: selectedComponent.id,
             updates: updatedComponent
           }));
 
-          // Generate appropriate success message based on what was updated
+          // Generate appropriate success message
           const updatedProperty = Object.keys(styleUpdates.style)[0];
           const updatedValue = styleUpdates.style[updatedProperty];
           const propertyNames = StyleCommandProcessor.getPropertyNames();
