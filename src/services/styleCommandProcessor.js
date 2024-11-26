@@ -33,6 +33,7 @@ export class StyleCommandProcessor {
 
   static processStyleCommand(input, component) {
     console.log('StyleCommandProcessor received input:', input);
+    console.log('Component style:', component?.style);
 
     // Pass the current style to each processor
     const currentStyle = component?.style || {};
@@ -44,76 +45,48 @@ export class StyleCommandProcessor {
       return borderResult;
     }
 
-    // Try layout processor first
-    const layoutResult = LayoutProcessor.processCommand(input);
+    // Try layout processor
+    const layoutResult = LayoutProcessor.processCommand(input, currentStyle);
     console.log('Layout processor result:', layoutResult);
     if (layoutResult) {
       return layoutResult;
     }
 
-    // Try spacing processor first
-    const spacingResult = SpacingProcessor.processCommand(input);
+    // Try spacing processor
+    const spacingResult = SpacingProcessor.processCommand(input, currentStyle);
     console.log('Spacing processor result:', spacingResult);
     if (spacingResult) {
       return spacingResult;
     }
 
     // Try size processor
-    const sizeResult = SizeProcessor.processCommand(input);
+    const sizeResult = SizeProcessor.processCommand(input, currentStyle);
     console.log('Size processor result:', sizeResult);
     if (sizeResult) {
       return sizeResult;
     }
 
-    // Try background processor first (since it's more specific)
-    const backgroundResult = BackgroundProcessor.processCommand(input);
+    // Try background processor
+    const backgroundResult = BackgroundProcessor.processCommand(input, currentStyle);
     console.log('Background processor result:', backgroundResult);
     if (backgroundResult) {
       return backgroundResult;
     }
 
-    // Add shadow processor check (after background processor)
-    const shadowResult = ShadowProcessor.processCommand(input);
+    // Add shadow processor check
+    const shadowResult = ShadowProcessor.processCommand(input, currentStyle);
     console.log('Shadow processor result:', shadowResult);
     if (shadowResult) {
       return shadowResult;
     }
 
     // Add button processor check
-    const buttonResult = ButtonProcessor.processCommand(input);
+    const buttonResult = ButtonProcessor.processCommand(input, currentStyle);
     console.log('Button processor result:', buttonResult);
     if (buttonResult) {
       return buttonResult;
     }
 
-    // If no specific processor matched, try the generic style patterns
-    const stylePatterns = this.getStylePatterns();
-    let matchFound = false;
-    let result = null;
-
-    for (const [property, patterns] of Object.entries(stylePatterns)) {
-      console.log(`Testing property: ${property}`);
-      
-      for (const pattern of patterns) {
-        console.log(`  Testing pattern: ${pattern}`);
-        const match = input.match(pattern);
-        console.log(`  Match result:`, match);
-        
-        if (match && !matchFound) {
-          matchFound = true;
-          const value = match[1].toLowerCase();
-          console.log(`  Found match for ${property}: ${value}`);
-          
-          result = {
-            style: {
-              [property]: value
-            }
-          };
-        }
-      }
-    }
-
-    console.log('Final result:', result);
-    return result;
+    return null;
   }
 } 

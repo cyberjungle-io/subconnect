@@ -35,9 +35,51 @@ export class AICommandExecutor {
     console.log('Processing command:', input);
     console.log('Selected component:', selectedComponent);
 
+    if (selectedComponent) {
+      // Clean the input - remove any JSON or explanatory text
+      const cleanInput = input.replace(/\{[\s\S]*\}/g, '').trim();
+      console.log('Cleaned input:', cleanInput);
+
+      // Try processing style commands directly first
+      const styleResult = StyleCommandProcessor.processStyleCommand(cleanInput, selectedComponent);
+      console.log('Style processing result:', styleResult);
+      
+      if (styleResult && styleResult.style) {
+        try {
+          const updatedComponent = {
+            ...selectedComponent,
+            style: {
+              ...selectedComponent.style,
+              ...styleResult.style
+            }
+          };
+          
+          console.log('Dispatching component update:', updatedComponent);
+          
+          // Ensure we're actually dispatching the update
+          await dispatch(updateComponent({
+            id: selectedComponent.id,
+            updates: updatedComponent
+          }));
+
+          return {
+            success: true,
+            message: `Updated style successfully`
+          };
+        } catch (error) {
+          console.error('Style update failed:', error);
+          return {
+            success: false,
+            message: `Failed to update style: ${error.message}`
+          };
+        }
+      }
+    }
+
+    // Only proceed to LLM if style processing didn't work
     const llmService = new LLMService();
 
-    // First, try to understand the user's intent using the LLM
+    // If direct style processing didn't work, try LLM interpretation
     const intentPrompt = `
       Analyze the following user input and match it to one of these command types:
       1. Add Component: User wants to add/create a new component
