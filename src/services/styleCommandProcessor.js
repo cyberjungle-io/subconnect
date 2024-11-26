@@ -4,6 +4,7 @@ import { SizeProcessor } from './Processors/SizeProcessor';
 import { SpacingProcessor } from './Processors/SpacingProcessor';
 import { ShadowProcessor } from './Processors/ShadowProcessor';
 import { LayoutProcessor } from './Processors/LayoutProcessor';
+import { ButtonProcessor } from './Processors/ButtonProcessor';
 
 export class StyleCommandProcessor {
   static getStylePatterns() {
@@ -19,7 +20,8 @@ export class StyleCommandProcessor {
       ...BackgroundProcessor.getPropertyNames(),
       ...SpacingProcessor.getPropertyNames(),
       ...ShadowProcessor.getPropertyNames(),
-      ...LayoutProcessor.getPropertyNames()
+      ...LayoutProcessor.getPropertyNames(),
+      ...ButtonProcessor.getPropertyNames()
     };
   }
 
@@ -66,6 +68,13 @@ export class StyleCommandProcessor {
     console.log('Shadow processor result:', shadowResult);
     if (shadowResult) {
       return shadowResult;
+    }
+
+    // Add button processor check
+    const buttonResult = ButtonProcessor.processCommand(input);
+    console.log('Button processor result:', buttonResult);
+    if (buttonResult) {
+      return buttonResult;
     }
 
     // If no specific processor matched, try the generic style patterns
