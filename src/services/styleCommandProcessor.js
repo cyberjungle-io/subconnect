@@ -9,7 +9,13 @@ import { ButtonProcessor } from './Processors/ButtonProcessor';
 export class StyleCommandProcessor {
   static getStylePatterns() {
     return {
-      // Remove width and height from here since they're now in SizeProcessor
+      ...BorderProcessor.getStylePatterns(),
+      ...BackgroundProcessor.getStylePatterns(),
+      ...SizeProcessor.getStylePatterns(),
+      ...SpacingProcessor.getStylePatterns(),
+      ...ShadowProcessor.getStylePatterns(),
+      ...LayoutProcessor.getStylePatterns(),
+      ...ButtonProcessor.getStylePatterns()
     };
   }
 
@@ -27,6 +33,16 @@ export class StyleCommandProcessor {
 
   static processStyleCommand(input, component) {
     console.log('StyleCommandProcessor received input:', input);
+
+    // Pass the current style to each processor
+    const currentStyle = component?.style || {};
+
+    // Try border processor first for radius-related commands
+    const borderResult = BorderProcessor.processCommand(input, currentStyle);
+    console.log('Border processor result:', borderResult);
+    if (borderResult) {
+      return borderResult;
+    }
 
     // Try layout processor first
     const layoutResult = LayoutProcessor.processCommand(input);
@@ -54,13 +70,6 @@ export class StyleCommandProcessor {
     console.log('Background processor result:', backgroundResult);
     if (backgroundResult) {
       return backgroundResult;
-    }
-
-    // Try border processor
-    const borderResult = BorderProcessor.processCommand(input);
-    console.log('Border processor result:', borderResult);
-    if (borderResult) {
-      return borderResult;
     }
 
     // Add shadow processor check (after background processor)

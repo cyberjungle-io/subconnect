@@ -1,6 +1,7 @@
 import { componentConfig } from '../components/Components/componentConfig';
 import { aiAddComponent, updateComponent } from '../features/editorSlice';
 import { StyleCommandProcessor } from './styleCommandProcessor';
+import LLMService from './llm/llmService';
 
 export class AICommandExecutor {
   // Define actionWords as a static class property
@@ -34,8 +35,101 @@ export class AICommandExecutor {
     console.log('Processing command:', input);
     console.log('Selected component:', selectedComponent);
 
-    const lowercaseInput = input.toLowerCase();
+    const llmService = new LLMService();
 
+    // First, try to understand the user's intent using the LLM
+    const intentPrompt = `
+      Analyze the following user input and match it to one of these command types:
+      1. Add Component: User wants to add/create a new component
+      2. Style Update: User wants to modify the style of an existing component
+      3. Unknown: Command doesn't match known patterns
+
+      Consider these style patterns:
+      ${JSON.stringify(StyleCommandProcessor.getPropertyNames(), null, 2)}
+
+      User input: "${input}"
+      
+      Respond in JSON format:
+      {
+        "type": "ADD_COMPONENT | STYLE_UPDATE | UNKNOWN",
+        "targetProperty": "style property name if applicable",
+        "value": "suggested value if applicable",
+        "confidence": "number between 0 and 1"
+      }
+    `;
+
+    try {
+      const intentResponse = await llmService.sendMessage(intentPrompt);
+      const intent = JSON.parse(intentResponse.content);
+      console.log('Detected intent:', intent);
+
+      if (intent.type === 'STYLE_UPDATE' && selectedComponent) {
+        // If it's a style update, construct a more precise command
+        const stylePrompt = `
+          Convert this natural language request into a specific style command.
+          Original request: "${input}"
+          Target property: "${intent.targetProperty}"
+          
+          Available patterns:
+          ${JSON.stringify(StyleCommandProcessor.getStylePatterns(), null, 2)}
+          
+          Respond with the most appropriate command that matches the patterns.
+        `;
+
+        const styleResponse = await llmService.sendMessage(stylePrompt);
+        const processedCommand = styleResponse.content.trim();
+        
+        // Try processing the constructed command
+        const styleResult = StyleCommandProcessor.processStyleCommand(processedCommand, selectedComponent);
+        if (styleResult) {
+          try {
+            const updatedComponent = {
+              ...selectedComponent,
+              style: {
+                ...selectedComponent.style,
+                ...styleResult.style
+              }
+            };
+            
+            console.log('Final component update:', updatedComponent);
+
+            // Update the component, whether it's nested or not
+            dispatch(updateComponent({
+              id: selectedComponent.id,
+              updates: updatedComponent
+            }));
+
+            // Generate appropriate success message
+            const updatedProperty = Object.keys(styleResult.style)[0];
+            const updatedValue = styleResult.style[updatedProperty];
+            const propertyNames = StyleCommandProcessor.getPropertyNames();
+
+            return {
+              success: true,
+              message: `Updated ${intent.targetProperty} to ${intent.value}`
+            };
+          } catch (error) {
+            console.error('Update failed:', error);
+            return {
+              success: false,
+              message: `Failed to update component: ${error.message}`
+            };
+          }
+        }
+      }
+
+      // If it's an add component request or the style update failed, continue with existing logic
+      return await this.processTraditionalCommand(input, dispatch, selectedComponent);
+    } catch (error) {
+      console.error('Error processing command with LLM:', error);
+      // Fallback to traditional processing
+      return await this.processTraditionalCommand(input, dispatch, selectedComponent);
+    }
+  }
+
+  static async processTraditionalCommand(input, dispatch, selectedComponent) {
+    const lowercaseInput = input.toLowerCase();
+    
     // First, check if we're trying to modify a selected FLEX_CONTAINER
     if (selectedComponent?.type === 'FLEX_CONTAINER') {
       console.log('Processing command for FLEX_CONTAINER');
