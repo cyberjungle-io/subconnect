@@ -76,15 +76,15 @@ export class ShadowProcessor {
     return {
       outer: {
         subtle: '0px 2px 4px 0px rgba(0, 0, 0, 0.15)',
-        medium: '0px 4px 8px 0px rgba(0, 0, 0, 0.2)',
-        harsh: '4px 4px 8px 0px rgba(0, 0, 0, 0.25)',
-        floating: '0px 8px 16px -2px rgba(0, 0, 0, 0.25)',
-        layered: '0px 2px 4px 0px rgba(0, 0, 0, 0.2)'
+        medium: '0px 4px 8px 0px rgba(0, 0, 0, 0.25)',
+        harsh: '0px 6px 12px 0px rgba(0, 0, 0, 0.35)',
+        darker: '0px 8px 16px 0px rgba(0, 0, 0, 0.45)',
+        darkest: '0px 10px 20px 0px rgba(0, 0, 0, 0.6)'
       },
       inner: {
         subtle: 'inset 0 0 4px 0px rgba(0, 0, 0, 0.15)',
         medium: 'inset 0 0 10px 3px rgba(0, 0, 0, 0.25)',
-        deep: 'inset 0 0 16px 6px rgba(0, 0, 0, 0.3)',
+        deep: 'inset 0 0 16px 6px rgba(0, 0, 0, 0.35)',
         pressed: 'inset 0 0 2px 1px rgba(0, 0, 0, 0.3)',
         hollow: 'inset 0 0 16px 8px rgba(0, 0, 0, 0.15)'
       }
@@ -95,11 +95,29 @@ export class ShadowProcessor {
     console.log('ShadowProcessor received input:', input, 'Current style:', currentStyle);
     const lowercaseInput = input.toLowerCase();
 
-    // Handle inner shadow commands
-    if (lowercaseInput.includes('inner shadow')) {
+    // Handle intensity modifications
+    const intensityMatch = lowercaseInput.match(/(?:make|set)\s*(?:it|the shadow|the outer shadow)?\s*(darker|lighter|stronger|weaker)/i);
+    if (intensityMatch) {
+      const currentShadow = this.getCurrentShadowStyle(currentStyle);
+      if (!currentShadow) {
+        // If no shadow exists, add a medium outer shadow first
+        return {
+          style: {
+            boxShadow: this.getShadowPresets().outer.medium
+          }
+        };
+      }
+
+      const isInnerShadow = currentShadow.includes('inset');
+      const currentPreset = this.getCurrentPresetLevel(currentShadow);
+      const intensityTerm = intensityMatch[1];
+
+      // Get the next shadow value based on intensity
+      const nextShadow = this.getNextIntensityLevel(currentPreset, intensityTerm);
+      
       return {
         style: {
-          boxShadow: 'inset 0px 0px 10px rgba(0, 0, 0, 0.5)'
+          boxShadow: isInnerShadow ? `inset ${nextShadow}` : nextShadow
         }
       };
     }
@@ -109,7 +127,7 @@ export class ShadowProcessor {
         (lowercaseInput.includes('shadow') && !lowercaseInput.includes('inner'))) {
       return {
         style: {
-          boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.25)'
+          boxShadow: this.getShadowPresets().outer.medium
         }
       };
     }
