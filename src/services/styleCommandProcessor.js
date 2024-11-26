@@ -1,6 +1,9 @@
 import { BorderProcessor } from './Processors/BorderProcessor';
 import { BackgroundProcessor } from './Processors/BackgroundProcessor';
 import { SizeProcessor } from './Processors/SizeProcessor';
+import { SpacingProcessor } from './Processors/SpacingProcessor';
+import { ShadowProcessor } from './Processors/ShadowProcessor';
+import { LayoutProcessor } from './Processors/LayoutProcessor';
 
 export class StyleCommandProcessor {
   static getStylePatterns() {
@@ -13,12 +16,29 @@ export class StyleCommandProcessor {
     return {
       ...SizeProcessor.getPropertyNames(),
       ...BorderProcessor.getPropertyNames(),
-      ...BackgroundProcessor.getPropertyNames()
+      ...BackgroundProcessor.getPropertyNames(),
+      ...SpacingProcessor.getPropertyNames(),
+      ...ShadowProcessor.getPropertyNames(),
+      ...LayoutProcessor.getPropertyNames()
     };
   }
 
   static processStyleCommand(input, component) {
     console.log('StyleCommandProcessor received input:', input);
+
+    // Try layout processor first
+    const layoutResult = LayoutProcessor.processCommand(input);
+    console.log('Layout processor result:', layoutResult);
+    if (layoutResult) {
+      return layoutResult;
+    }
+
+    // Try spacing processor first
+    const spacingResult = SpacingProcessor.processCommand(input);
+    console.log('Spacing processor result:', spacingResult);
+    if (spacingResult) {
+      return spacingResult;
+    }
 
     // Try size processor
     const sizeResult = SizeProcessor.processCommand(input);
@@ -39,6 +59,13 @@ export class StyleCommandProcessor {
     console.log('Border processor result:', borderResult);
     if (borderResult) {
       return borderResult;
+    }
+
+    // Add shadow processor check (after background processor)
+    const shadowResult = ShadowProcessor.processCommand(input);
+    console.log('Shadow processor result:', shadowResult);
+    if (shadowResult) {
+      return shadowResult;
     }
 
     // If no specific processor matched, try the generic style patterns
