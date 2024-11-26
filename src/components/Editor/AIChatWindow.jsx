@@ -47,6 +47,9 @@ const AIChatWindow = ({ onClose }) => {
   const selectedIds = useSelector(state => state.editor.selectedIds);
   const components = useSelector(state => state.editor.components);
   
+  // Add the awaitingResponse state
+  const [awaitingResponse, setAwaitingResponse] = useState(null);
+  
   // Enhanced function to find selected component, including nested children
   const findSelectedComponent = (components, selectedId) => {
     for (const component of components) {
@@ -137,6 +140,11 @@ const AIChatWindow = ({ onClose }) => {
     const currentInput = input;
     setInput('');
     
+    // If we have an awaiting response, combine it with the current input
+    const processedInput = awaitingResponse 
+      ? `${awaitingResponse.originalCommand} (${awaitingResponse.type}: ${currentInput})`
+      : currentInput;
+    
     dispatch(addMessage({
       id: messageId,
       role: 'user',
@@ -148,7 +156,7 @@ const AIChatWindow = ({ onClose }) => {
     
     try {
       const commandResult = await AICommandExecutor.processCommand(
-        currentInput, 
+        processedInput, 
         dispatch,
         selectedComponent
       );
@@ -157,16 +165,29 @@ const AIChatWindow = ({ onClose }) => {
         dispatch(addMessage({
           id: Date.now().toString(),
           role: 'assistant',
-          content: commandResult.success 
-            ? commandResult.message 
-            : `Sorry, I encountered an error: ${commandResult.message}`,
+          content: commandResult.message,
           timestamp: new Date(),
           status: commandResult.success ? 'success' : 'error',
+          needsMoreInfo: commandResult.needsMoreInfo,
+          type: commandResult.type
         }));
+
+        // If we need more info, store the context for the next message
+        if (commandResult.needsMoreInfo) {
+          setAwaitingResponse({
+            type: commandResult.type,
+            originalCommand: currentInput
+          });
+        } else {
+          // Clear awaiting response if we don't need more info
+          setAwaitingResponse(null);
+        }
       } else {
+        setAwaitingResponse(null); // Clear awaiting response
         await dispatch(sendMessage(currentInput));
       }
     } catch (error) {
+      setAwaitingResponse(null); // Clear awaiting response on error
       dispatch(addMessage({
         id: Date.now().toString(),
         role: 'assistant',
@@ -182,6 +203,11 @@ const AIChatWindow = ({ onClose }) => {
   const handleProviderChange = (e) => {
     dispatch(changeProvider(e.target.value));
   };
+
+  // Optional: Add visual indicator when awaiting response
+  const inputPlaceholder = awaitingResponse 
+    ? `Please specify ${awaitingResponse.type}...`
+    : (isLoading ? "Processing..." : "Ask me anything...");
 
   return (
     <div 
@@ -247,7 +273,7 @@ const AIChatWindow = ({ onClose }) => {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={isLoading ? "Processing..." : "Ask me anything..."}
+            placeholder={inputPlaceholder}
             className="flex-grow p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
             disabled={isLoading}
           />

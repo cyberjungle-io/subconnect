@@ -35,6 +35,96 @@ export class AICommandExecutor {
     console.log('Processing command:', input);
     console.log('Selected component:', selectedComponent);
 
+    // Check if this is a follow-up response
+    const followUpMatch = input.match(/\(([\w]+):\s*(.+)\)$/);
+    if (followUpMatch) {
+      const [_, type, value] = followUpMatch;
+      console.log('Processing follow-up response:', type, value);
+
+      // Handle shadow follow-up
+      if (type === 'shadow') {
+        const shadowType = value.toLowerCase();
+        const newInput = `add ${shadowType} shadow`;
+        console.log('Converted to shadow command:', newInput);
+        
+        if (!selectedComponent) {
+          return {
+            success: true,
+            message: "Where would you like to apply this shadow?\n- The canvas\n- A specific component (please select one first)",
+            needsMoreInfo: true,
+            type: 'target'
+          };
+        }
+
+        // Process the shadow command
+        const styleResult = StyleCommandProcessor.processStyleCommand(newInput, selectedComponent);
+        if (styleResult && styleResult.style) {
+          try {
+            const updatedComponent = {
+              ...selectedComponent,
+              style: {
+                ...selectedComponent.style,
+                ...styleResult.style
+              }
+            };
+            
+            await dispatch(updateComponent({
+              id: selectedComponent.id,
+              updates: updatedComponent
+            }));
+
+            return {
+              success: true,
+              message: `Added ${shadowType} shadow successfully`
+            };
+          } catch (error) {
+            return {
+              success: false,
+              message: `Failed to add shadow: ${error.message}`
+            };
+          }
+        }
+      }
+
+      // Handle target follow-up
+      if (type === 'target' && value.toLowerCase() === 'canvas') {
+        // Process the original command for the canvas
+        const originalCommand = input.split('(')[0].trim();
+        return await this.processCommand(originalCommand, dispatch, null);
+      }
+    }
+
+    // Check if it's a shadow command without specifying inner/outer
+    const shadowPattern = /(?:add|make|create|give|set|apply)\s*(?:a|an|the)?\s*shadow/i;
+    if (input.match(shadowPattern) && !input.match(/(?:inner|outer)\s*shadow/i)) {
+      return {
+        success: true,
+        message: "What kind of shadow would you like? You can specify:\n- Inner shadow\n- Outer shadow",
+        needsMoreInfo: true,
+        type: 'shadow'
+      };
+    }
+
+    // If no component is selected and command seems to be a style modification
+    if (!selectedComponent) {
+      const stylePatterns = [
+        /(?:make|set|change|update|modify|adjust)/i,
+        /(?:color|background|border|shadow|radius|size|width|height|margin|padding)/i,
+        /(?:bigger|smaller|larger|shorter|taller|wider|narrower)/i,
+        /(?:align|center|position|move|place)/i
+      ];
+
+      if (stylePatterns.some(pattern => pattern.test(input))) {
+        return {
+          success: true,
+          message: "Where would you like to apply this change?\n- The canvas\n- A specific component (please select one first)",
+          needsMoreInfo: true,
+          type: 'target'
+        };
+      }
+    }
+
+    // Continue with existing logic for processing the command
     if (selectedComponent) {
       // Clean the input - remove any JSON or explanatory text
       const cleanInput = input.replace(/\{[\s\S]*\}/g, '').trim();
@@ -172,6 +262,28 @@ export class AICommandExecutor {
   static async processTraditionalCommand(input, dispatch, selectedComponent) {
     const lowercaseInput = input.toLowerCase();
     
+    // Check for ambiguous commands that need clarification
+    const colorPattern = /(?:make|set|change|add)\s*(?:it|this)?\s*(?:to|the)?\s*(?:color|background)/i;
+    if (colorPattern.test(lowercaseInput) && !/#[0-9a-fA-F]{6}|(?:blue|red|green|yellow|purple|black|white|gray)/i.test(lowercaseInput)) {
+      return {
+        success: true,
+        message: "What color would you like to use? You can specify:\n- A color name (e.g., blue, red, green)\n- A hex color code (#RRGGBB)",
+        needsMoreInfo: true,
+        type: 'color'
+      };
+    }
+
+    // Check for size-related commands without specific values
+    const sizePattern = /(?:make|set|change)\s*(?:it|this)?\s*(?:bigger|larger|smaller|size)/i;
+    if (sizePattern.test(lowercaseInput) && !(/\d+(?:px|em|rem|%)/i.test(lowercaseInput))) {
+      return {
+        success: true,
+        message: "How would you like to adjust the size?\n- Specify a width/height (e.g., 200px)\n- Use relative terms (e.g., 'a little bigger', '50% larger')",
+        needsMoreInfo: true,
+        type: 'size'
+      };
+    }
+
     // First, check if we're trying to modify a selected FLEX_CONTAINER
     if (selectedComponent?.type === 'FLEX_CONTAINER') {
       console.log('Processing command for FLEX_CONTAINER');
