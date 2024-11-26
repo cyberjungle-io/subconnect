@@ -7,86 +7,97 @@ import { LayoutProcessor } from './Processors/LayoutProcessor';
 import { ButtonProcessor } from './Processors/ButtonProcessor';
 
 export class StyleCommandProcessor {
-  static getStylePatterns() {
-    return {
-      ...BorderProcessor.getStylePatterns(),
-      ...BackgroundProcessor.getStylePatterns(),
-      ...SizeProcessor.getStylePatterns(),
-      ...SpacingProcessor.getStylePatterns(),
-      ...ShadowProcessor.getStylePatterns(),
-      ...LayoutProcessor.getStylePatterns(),
-      ...ButtonProcessor.getStylePatterns()
-    };
+  static lastModifiedProperty = null;  // Track the last modified property
+  static lastModifiedValue = null;     // Track the last value
+  static lastUsedProcessor = null;     // Track the last processor used
+
+  static processStyleCommand(input, component) {
+    console.log('StyleCommandProcessor received input:', input);
+    console.log('Component style:', component.style);
+    console.log('Last context:', {
+      property: this.lastModifiedProperty,
+      value: this.lastModifiedValue,
+      processor: this.lastUsedProcessor?.name
+    });
+
+    const processors = [
+      BorderProcessor,
+      LayoutProcessor,
+      SpacingProcessor,
+      SizeProcessor,
+      BackgroundProcessor,
+      ShadowProcessor,
+      ButtonProcessor
+    ];
+
+    // Check if this is a contextual command (like "make it darker")
+    const contextualPattern = /(?:can you |please |could you )?(?:make|set)\s*(?:it|this)\s*(stronger|weaker|lighter|darker|more intense|less intense|more|less)/i;
+    const isContextual = input.match(contextualPattern);
+
+    if (isContextual && this.lastModifiedProperty && this.lastUsedProcessor) {
+      console.log('Processing contextual command with:', this.lastUsedProcessor.name);
+      
+      const result = this.lastUsedProcessor.processCommand(input, component.style);
+      if (result) {
+        // Update context
+        this.lastModifiedProperty = Object.keys(result.style)[0];
+        this.lastModifiedValue = result.style[this.lastModifiedProperty];
+        return result;
+      }
+    }
+
+    // Try each processor
+    for (const processor of processors) {
+      console.log(`Trying ${processor.name}`);
+      const result = processor.processCommand(input, component.style);
+      
+      if (result) {
+        // Store context
+        this.lastModifiedProperty = Object.keys(result.style)[0];
+        this.lastModifiedValue = result.style[this.lastModifiedProperty];
+        this.lastUsedProcessor = processor;
+        
+        console.log('Updated context:', {
+          property: this.lastModifiedProperty,
+          value: this.lastModifiedValue,
+          processor: this.lastUsedProcessor.name
+        });
+        
+        return result;
+      }
+    }
+
+    return null;
+  }
+
+  // Add method to clear context
+  static clearContext() {
+    this.lastModifiedProperty = null;
+    this.lastModifiedValue = null;
+    this.lastUsedProcessor = null;
   }
 
   static getPropertyNames() {
     return {
-      ...SizeProcessor.getPropertyNames(),
       ...BorderProcessor.getPropertyNames(),
-      ...BackgroundProcessor.getPropertyNames(),
-      ...SpacingProcessor.getPropertyNames(),
-      ...ShadowProcessor.getPropertyNames(),
       ...LayoutProcessor.getPropertyNames(),
+      ...SpacingProcessor.getPropertyNames(),
+      ...SizeProcessor.getPropertyNames(),
+      ...BackgroundProcessor.getPropertyNames(),
+      ...ShadowProcessor.getPropertyNames(),
       ...ButtonProcessor.getPropertyNames()
     };
   }
 
-  static processStyleCommand(input, component) {
-    console.log('StyleCommandProcessor received input:', input);
-    console.log('Component style:', component?.style);
-
-    // Pass the current style to each processor
-    const currentStyle = component?.style || {};
-
-    // Try border processor first for radius-related commands
-    const borderResult = BorderProcessor.processCommand(input, currentStyle);
-    console.log('Border processor result:', borderResult);
-    if (borderResult) {
-      return borderResult;
-    }
-
-    // Try layout processor
-    const layoutResult = LayoutProcessor.processCommand(input, currentStyle);
-    console.log('Layout processor result:', layoutResult);
-    if (layoutResult) {
-      return layoutResult;
-    }
-
-    // Try spacing processor
-    const spacingResult = SpacingProcessor.processCommand(input, currentStyle);
-    console.log('Spacing processor result:', spacingResult);
-    if (spacingResult) {
-      return spacingResult;
-    }
-
-    // Try size processor
-    const sizeResult = SizeProcessor.processCommand(input, currentStyle);
-    console.log('Size processor result:', sizeResult);
-    if (sizeResult) {
-      return sizeResult;
-    }
-
-    // Try background processor
-    const backgroundResult = BackgroundProcessor.processCommand(input, currentStyle);
-    console.log('Background processor result:', backgroundResult);
-    if (backgroundResult) {
-      return backgroundResult;
-    }
-
-    // Add shadow processor check
-    const shadowResult = ShadowProcessor.processCommand(input, currentStyle);
-    console.log('Shadow processor result:', shadowResult);
-    if (shadowResult) {
-      return shadowResult;
-    }
-
-    // Add button processor check
-    const buttonResult = ButtonProcessor.processCommand(input, currentStyle);
-    console.log('Button processor result:', buttonResult);
-    if (buttonResult) {
-      return buttonResult;
-    }
-
-    return null;
+  static getStylePatterns() {
+    return {
+      ...BorderProcessor.getStylePatterns(),
+      ...LayoutProcessor.getStylePatterns(),
+      ...SpacingProcessor.getStylePatterns(),
+      ...SizeProcessor.getStylePatterns(),
+      ...BackgroundProcessor.getStylePatterns(),
+      ...ShadowProcessor.getStylePatterns(),
+      ...ButtonProcessor.getStylePatterns()
+    };
   }
 } 
