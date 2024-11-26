@@ -65,40 +65,72 @@ export class BackgroundProcessor {
     console.log('BackgroundProcessor received input:', input, 'Current style:', currentStyle);
     const lowercaseInput = input.toLowerCase();
     
-    // Handle relative color changes FIRST
-    const relativePatterns = [
-      /(?:make|change)\s*(?:the|it|background)?\s*(?:color)?\s*(?:a\s*)?(?:little|bit|more|much)?\s*(darker|lighter)/i,
-      /(?:darken|lighten)\s*(?:the|it|background)?\s*(?:color)?\s*(?:a\s*)?(?:little|bit|more|much)?/i
+    // Handle opacity/transparency changes FIRST
+    const opacityPatterns = [
+      /(?:make|set)\s*(?:the|it|background)?\s*(?:a\s*)?(?:little|bit|more|less|much)?\s*(?:more|less)\s*(transparent|opaque)/i,
+      /(?:increase|decrease)\s*(?:the)?\s*(?:background)?\s*opacity/i,
+      /(?:make|set)\s*(?:the|it|background)?\s*opacity\s*(?:a\s*)?(?:little|bit)?\s*(higher|lower)/i
     ];
 
-    for (const pattern of relativePatterns) {
+    for (const pattern of opacityPatterns) {
       const match = lowercaseInput.match(pattern);
       if (match) {
-        console.log('Matched relative color change:', match);
+        console.log('Matched opacity change:', match);
         
-        // Get the current background color, ensuring it's in a usable format
-        let currentColor = currentStyle?.backgroundColor || '#0000ff'; // Default to blue if no color
-        console.log('Current color before processing:', currentColor);
+        // Get current background color and convert to RGB if it's hex
+        let currentColor = currentStyle?.backgroundColor || '#0000ff';
+        let currentOpacity = 1;
+        let r, g, b;
         
-        // If the color is in rgb/rgba format, convert it to hex
-        if (currentColor?.startsWith('rgb')) {
-          const rgb = currentColor.match(/\d+/g).map(Number);
-          currentColor = `#${rgb[0].toString(16).padStart(2, '0')}${rgb[1].toString(16).padStart(2, '0')}${rgb[2].toString(16).padStart(2, '0')}`;
+        console.log('Current color:', currentColor);
+        
+        // Handle different color formats
+        if (currentColor.startsWith('#')) {
+          // Convert hex to RGB
+          const hex = currentColor.replace('#', '');
+          r = parseInt(hex.substr(0, 2), 16);
+          g = parseInt(hex.substr(2, 2), 16);
+          b = parseInt(hex.substr(4, 2), 16);
+        } else if (currentColor.startsWith('rgba')) {
+          // Extract values from rgba
+          const values = currentColor.match(/[\d.]+/g).map(Number);
+          r = values[0];
+          g = values[1];
+          b = values[2];
+          currentOpacity = values[3];
+        } else if (currentColor.startsWith('rgb')) {
+          // Extract values from rgb
+          const values = currentColor.match(/\d+/g).map(Number);
+          r = values[0];
+          g = values[1];
+          b = values[2];
         }
         
-        console.log('Current color after processing:', currentColor);
+        console.log('Parsed RGB values:', r, g, b, 'Current opacity:', currentOpacity);
         
-        let adjustmentFactor;
+        // Determine opacity adjustment
+        let opacityChange = 0.2; // Default change amount
+        
+        // Handle different types of opacity changes
         if (lowercaseInput.includes('little') || lowercaseInput.includes('bit')) {
-          adjustmentFactor = match[1] === 'darker' ? -0.1 : 0.1;
-        } else if (lowercaseInput.includes('much') || lowercaseInput.includes('more')) {
-          adjustmentFactor = match[1] === 'darker' ? -0.3 : 0.3;
-        } else {
-          adjustmentFactor = match[1] === 'darker' ? -0.2 : 0.2;
+          opacityChange *= 0.5; // Smaller change for "a little" modifiers
+        } else if (lowercaseInput.includes('much')) {
+          opacityChange *= 1.5; // Larger change for "much" modifier
         }
-
-        console.log('Applying adjustment factor:', adjustmentFactor, 'to color:', currentColor);
-        const newColor = this.adjustColorBrightness(currentColor, adjustmentFactor);
+        
+        // Determine direction of change
+        if (lowercaseInput.includes('more transparent') || 
+            lowercaseInput.includes('decrease opacity') || 
+            lowercaseInput.includes('opacity lower')) {
+          opacityChange *= -1;
+        }
+        
+        // Calculate new opacity
+        const newOpacity = Math.max(0, Math.min(1, currentOpacity + opacityChange));
+        console.log('Adjusting opacity from', currentOpacity, 'to', newOpacity);
+        
+        // Create new rgba color
+        const newColor = `rgba(${r}, ${g}, ${b}, ${newOpacity})`;
         console.log('New color:', newColor);
         
         return {
@@ -110,7 +142,7 @@ export class BackgroundProcessor {
     }
 
     // Handle exact color changes with intensity modifiers
-    const colorPattern = /(?:set|make|change)?\s*(?:the|it|background)?\s*(?:color)?\s*(?:to)?\s*(?:a\s*)?(light|dark)?\s*(blue|red|green|black|white|yellow|purple|gray|grey|transparent|#[0-9a-fA-F]{3,6}|sky|navy|forest|crimson|gold|silver)/i;
+    const colorPattern = /(?:set|make|change)?\s*(?:the|it|background)?\s*(?:color)?\s*(?:to)?\s*(?:a\s*)?(light|dark)?\s*(blue|red|green|black|white|yellow|purple|gray|grey|#[0-9a-fA-F]{3,6}|sky|navy|forest|crimson|gold|silver)/i;
     const colorMatch = lowercaseInput.match(colorPattern);
     
     if (colorMatch) {
