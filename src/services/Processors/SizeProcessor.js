@@ -24,7 +24,11 @@ export class SizeProcessor {
         /(?:set|make|change)?\s*(?:the)?\s*height\s*(?:to|=|:)?\s*fit\s*content/i,
         // Auto size
         /(?:set|make|change)?\s*(?:the)?\s*height\s*(?:to)?\s*auto/i,
-        /automatic\s*height/i
+        /automatic\s*height/i,
+        
+        // New patterns for relative changes
+        new RegExp(`(?:increase|add|increment|raise)\\s*(?:the)?\\s*height\\s*(?:by)?\\s*(${number})\\s*${units}`, 'i'),
+        new RegExp(`(?:decrease|subtract|reduce|lower)\\s*(?:the)?\\s*height\\s*(?:by)?\\s*(${number})\\s*${units}`, 'i'),
       ],
       // Min/Max patterns
       minWidth: [
@@ -64,86 +68,66 @@ export class SizeProcessor {
     };
   }
 
-  static processCommand(input) {
+  static processCommand(input, currentStyle = {}) {
     console.log('SizeProcessor received input:', input);
-
+    console.log('Current style:', currentStyle);
     const stylePatterns = this.getStylePatterns();
 
-    // Check for presets first
-    if (input.match(stylePatterns.presets[0])) { // Square
+    // Process height patterns specifically for relative changes first
+    const relativeHeightPattern = new RegExp(`(?:increase|add|increment|raise|decrease|subtract|reduce|lower)\\s*(?:the)?\\s*height\\s*(?:by)?\\s*(\\d+)\\s*(?:px|em|rem|%|vw|vh)`, 'i');
+    const relativeMatch = input.match(relativeHeightPattern);
+    
+    if (relativeMatch) {
+      console.log('Matched relative height change:', relativeMatch);
+      const changeAmount = parseInt(relativeMatch[1]);
+      const currentHeight = currentStyle.height || '0px';
+      console.log('Current height:', currentHeight);
+      
+      // Extract current numeric value and unit
+      const currentMatch = currentHeight.match(/^(\d+)([a-z%]+)$/i);
+      if (!currentMatch) {
+        console.log('Could not parse current height:', currentHeight);
+        return null;
+      }
+      
+      const currentValue = parseInt(currentMatch[1]);
+      const unit = currentMatch[2];
+      console.log('Current value:', currentValue, 'Unit:', unit);
+      
+      // Determine if increasing or decreasing
+      const isIncreasing = /(?:increase|add|increment|raise)/i.test(input);
+      const newValue = isIncreasing ? currentValue + changeAmount : currentValue - changeAmount;
+      console.log('New value:', newValue);
+      
       return {
         style: {
-          width: '200px',
-          height: '200px'
+          height: `${newValue}${unit}`
         }
       };
     }
 
-    if (input.match(stylePatterns.presets[1])) { // Banner
-      return {
-        style: {
-          width: '100%',
-          height: '150px'
-        }
-      };
-    }
-
-    // Check for fit options
-    for (const pattern of stylePatterns.fit) {
+    // Process regular height patterns
+    for (const pattern of stylePatterns.height) {
       const match = input.match(pattern);
       if (match) {
-        if (input.includes('vertical')) {
-          return {
-            style: {
-              height: 'fit-content'
-            }
-          };
+        let value = match[1]?.toLowerCase();
+
+        // Handle auto
+        if (input.includes('auto')) {
+          value = 'auto';
         }
-        if (input.includes('horizontal')) {
-          return {
-            style: {
-              width: 'fit-content'
-            }
-          };
+
+        // Handle percentage shortcuts
+        if (['25', '50', '75', '100'].includes(value)) {
+          value = `${value}%`;
         }
-        if (input.includes('content')) {
-          return {
-            style: {
-              width: 'fit-content',
-              height: 'fit-content'
-            }
-          };
-        }
-      }
-    }
 
-    // Process regular size patterns
-    for (const [property, patterns] of Object.entries(stylePatterns)) {
-      if (property !== 'presets' && property !== 'fit') {
-        for (const pattern of patterns) {
-          const match = input.match(pattern);
-          
-          if (match) {
-            let value = match[1]?.toLowerCase();
-
-            // Handle auto
-            if (input.includes('auto')) {
-              value = 'auto';
-            }
-
-            // Handle percentage shortcuts
-            if (['25', '50', '75', '100'].includes(value)) {
-              value = `${value}%`;
-            }
-
-            console.log(`Matched pattern for ${property}:`, value);
-            return {
-              style: {
-                [property]: value
-              }
-            };
+        console.log('Matched height pattern, value:', value);
+        return {
+          style: {
+            height: value
           }
-        }
+        };
       }
     }
 
