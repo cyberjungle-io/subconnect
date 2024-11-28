@@ -1,4 +1,5 @@
 import { ANTHROPIC_API_KEY } from '../../config/keys';
+import { store } from '../../store/store';
 
 const API_BASE_URL = process.env.REACT_APP_W3S_API_URL;
 const LLM_ENDPOINT = `${API_BASE_URL}/llm/chat`;
@@ -27,12 +28,22 @@ class LLMService {
     });
 
     try {
+      const state = store.getState();
+      const token = state.user.currentUser?.token;
+      const isGuestMode = state.user.isGuestMode;
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      };
+
+      if (isGuestMode) {
+        headers['X-Guest-Mode'] = 'true';
+      }
+
       const response = await fetch(LLM_ENDPOINT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${ANTHROPIC_API_KEY}`
-        },
+        headers,
         body: JSON.stringify({
           message,
           model: this.model,
