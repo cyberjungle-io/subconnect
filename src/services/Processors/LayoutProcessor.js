@@ -2,43 +2,49 @@ export class LayoutProcessor {
   // Add natural language mappings
   static naturalLanguageMap = {
     // Direction mappings
-    'left to right': 'row',
-    'right to left': 'row-reverse',
-    'top to bottom': 'column',
-    'bottom to top': 'column-reverse',
-    'horizontal': 'row',
-    'vertical': 'column',
-    'sideways': 'row',
-    'up and down': 'column',
-    'across': 'row',
-    'down': 'column',
-    
+    "left to right": "row",
+    "right to left": "row-reverse",
+    "top to bottom": "column",
+    "bottom to top": "column-reverse",
+    horizontal: "row",
+    vertical: "column",
+    sideways: "row",
+    "up and down": "column",
+    across: "row",
+    down: "column",
+    "change to row": "row",
+    "change to column": "column",
+    "set to row": "row",
+    "set to column": "column",
+    row: "row",
+    column: "column",
+
     // Justify content mappings
-    'spread out': 'space-between',
-    'spaced evenly': 'space-evenly',
-    'spaced equally': 'space-evenly',
-    'equal gaps': 'space-evenly',
-    'equal spacing': 'space-evenly',
-    'spread apart': 'space-around',
-    'centered': 'center',
-    'in the middle': 'center',
-    'at the start': 'flex-start',
-    'at the beginning': 'flex-start',
-    'at the end': 'flex-end',
-    'push to start': 'flex-start',
-    'push to end': 'flex-end',
-    
+    "spread out": "space-between",
+    "spaced evenly": "space-evenly",
+    "spaced equally": "space-evenly",
+    "equal gaps": "space-evenly",
+    "equal spacing": "space-evenly",
+    "spread apart": "space-around",
+    centered: "center",
+    "in the middle": "center",
+    "at the start": "flex-start",
+    "at the beginning": "flex-start",
+    "at the end": "flex-end",
+    "push to start": "flex-start",
+    "push to end": "flex-end",
+
     // Align items mappings
-    'stretch to fit': 'stretch',
-    'fill space': 'stretch',
-    'full height': 'stretch',
-    'same height': 'stretch',
-    'at the top': 'flex-start',
-    'at the bottom': 'flex-end',
-    'in the center': 'center',
-    'middle': 'center',
-    'line up': 'baseline',
-    'align text': 'baseline'
+    "stretch to fit": "stretch",
+    "fill space": "stretch",
+    "full height": "stretch",
+    "same height": "stretch",
+    "at the top": "flex-start",
+    "at the bottom": "flex-end",
+    "in the center": "center",
+    middle: "center",
+    "line up": "baseline",
+    "align text": "baseline",
   };
 
   static getStylePatterns() {
@@ -54,7 +60,7 @@ export class LayoutProcessor {
         /(?:flow|arrange)\s*(?:from)?\s*(left to right|top to bottom)/i,
         /(?:i want|i need|i'd like|could you|can you|please)?\s*(?:make|set|arrange|put)\s*(?:it|everything|the items|the elements)?\s*(?:go|flow|run|layout)?\s*(left to right|right to left|top to bottom|bottom to top|horizontal|vertical|sideways|up and down|across|down)/i,
         /(?:items|elements|everything)\s*should\s*(?:go|flow|run|be\s*arranged)?\s*(left to right|right to left|top to bottom|bottom to top|horizontal|vertical)/i,
-        /(?:display|show|arrange|organize)\s*(?:items|elements|everything)?\s*(?:going)?\s*(left to right|right to left|top to bottom|bottom to top|horizontal|vertical)/i
+        /(?:display|show|arrange|organize)\s*(?:items|elements|everything)?\s*(?:going)?\s*(left to right|right to left|top to bottom|bottom to top|horizontal|vertical)/i,
       ],
       flexWrap: [
         /(?:set|make|change)?\s*(?:the)?\s*(?:flex)?\s*wrap\s*(?:to)?\s*(wrap|nowrap|wrap-reverse)/i,
@@ -63,7 +69,7 @@ export class LayoutProcessor {
         /(?:items|elements)\s*should\s*(?:wrap|not wrap)/i,
         /(?:keep|maintain)\s*(?:everything)?\s*(?:on)?\s*(?:one|single)\s*(?:row|line)/i,
         /(?:let|make)\s*(?:items)?\s*(?:flow|move)\s*(?:to)?\s*(?:the)?\s*next\s*(?:row|line)/i,
-        /(?:wrap|move)\s*(?:items)?\s*(?:to)?\s*(?:new|next)?\s*(?:row|line)/i
+        /(?:wrap|move)\s*(?:items)?\s*(?:to)?\s*(?:new|next)?\s*(?:row|line)/i,
       ],
       justifyContent: [
         /(?:set|make|change)?\s*(?:the)?\s*justify\s*content\s*(?:to)?\s*(flex-start|flex-end|center|space-between|space-around|space-evenly)/i,
@@ -76,7 +82,7 @@ export class LayoutProcessor {
         /(?:make|add)\s*(?:equal)?\s*spacing\s*(between|around)\s*(?:items|elements)/i,
         /(?:i want|i need|i'd like|could you|can you|please)?\s*(?:make|set|put|place)\s*(?:it|everything|the items|the elements)?\s*(?:spread out|spaced evenly|spaced equally|equal gaps|equal spacing|spread apart|centered|in the middle|at the start|at the beginning|at the end)/i,
         /(?:can you|could you|please)?\s*(?:add|put|place|make)\s*(?:some|equal)?\s*(?:space|spacing|gaps)\s*(?:between|around)\s*(?:items|elements|everything)/i,
-        /(?:everything|items|elements)\s*should\s*(?:be|have)?\s*(?:spread out|spaced evenly|spaced equally|equal gaps|equal spacing|spread apart|centered|in the middle)/i
+        /(?:everything|items|elements)\s*should\s*(?:be|have)?\s*(?:spread out|spaced evenly|spaced equally|equal gaps|equal spacing|spread apart|centered|in the middle)/i,
       ],
       alignItems: [
         /(?:set|make|change)?\s*(?:the)?\s*align\s*items\s*(?:to)?\s*(flex-start|flex-end|center|stretch|baseline)/i,
@@ -88,7 +94,7 @@ export class LayoutProcessor {
         /(?:items|elements)\s*should\s*(?:be|align)?\s*(stretched|centered|at the top|at the bottom)/i,
         /(?:i want|i need|i'd like|could you|can you|please)?\s*(?:make|set|have)\s*(?:it|everything|the items|the elements)?\s*(?:stretch to fit|fill space|full height|same height|at the top|at the bottom|in the center|middle|line up|align text)/i,
         /(?:can you|could you|please)?\s*(?:align|position|put)\s*(?:everything|items|elements)?\s*(?:at the top|at the bottom|in the center|middle|baseline)/i,
-        /(?:make|set)\s*(?:all)?\s*(?:items|elements)\s*(?:the same|equal)\s*(?:height|size)/i
+        /(?:make|set)\s*(?:all)?\s*(?:items|elements)\s*(?:the same|equal)\s*(?:height|size)/i,
       ],
       alignContent: [
         /(?:set|make|change)?\s*(?:the)?\s*align\s*content\s*(?:to)?\s*(flex-start|flex-end|center|stretch|space-between|space-around)/i,
@@ -98,8 +104,8 @@ export class LayoutProcessor {
         /(?:move|push)\s*(?:all)?\s*(?:rows|lines)\s*(?:to)?\s*(?:the)?\s*(top|bottom|center)/i,
         /(?:stretch|expand)\s*(?:rows|lines)\s*(?:to\s*fill|fully)/i,
         /(?:pack|compress)\s*(?:rows|lines)\s*(?:to)?\s*(?:the)?\s*(top|bottom|center)/i,
-        /(?:space|gap)\s*(?:between|around)\s*(?:rows|lines)/i
-      ]
+        /(?:space|gap)\s*(?:between|around)\s*(?:rows|lines)/i,
+      ],
     };
   }
 
@@ -108,24 +114,41 @@ export class LayoutProcessor {
     const lowercaseInput = input.toLowerCase();
 
     // First, try to match natural language patterns
-    for (const [naturalPhrase, value] of Object.entries(this.naturalLanguageMap)) {
+    for (const [naturalPhrase, value] of Object.entries(
+      this.naturalLanguageMap
+    )) {
       if (lowercaseInput.includes(naturalPhrase.toLowerCase())) {
         // Determine which property to set based on the value
         let property;
-        if (['row', 'column', 'row-reverse', 'column-reverse'].includes(value)) {
-          property = 'flexDirection';
-        } else if (['flex-start', 'flex-end', 'center', 'space-between', 'space-around', 'space-evenly'].includes(value)) {
-          property = lowercaseInput.includes('vertical') ? 'alignItems' : 'justifyContent';
-        } else if (['stretch', 'baseline'].includes(value)) {
-          property = 'alignItems';
+        if (
+          ["row", "column", "row-reverse", "column-reverse"].includes(value)
+        ) {
+          property = "flexDirection";
+        } else if (
+          [
+            "flex-start",
+            "flex-end",
+            "center",
+            "space-between",
+            "space-around",
+            "space-evenly",
+          ].includes(value)
+        ) {
+          property = lowercaseInput.includes("vertical")
+            ? "alignItems"
+            : "justifyContent";
+        } else if (["stretch", "baseline"].includes(value)) {
+          property = "alignItems";
         }
 
         if (property) {
-          console.log(`Matched natural language: "${naturalPhrase}" -> ${property}: ${value}`);
+          console.log(
+            `Matched natural language: "${naturalPhrase}" -> ${property}: ${value}`
+          );
           return {
             style: {
-              [property]: value
-            }
+              [property]: value,
+            },
           };
         }
       }
@@ -138,7 +161,7 @@ export class LayoutProcessor {
         const match = lowercaseInput.match(pattern);
         if (match) {
           let value = match[1]?.toLowerCase();
-          
+
           // Convert natural language to valid values
           if (this.naturalLanguageMap[value]) {
             value = this.naturalLanguageMap[value];
@@ -147,8 +170,8 @@ export class LayoutProcessor {
           console.log(`Matched pattern for ${property}:`, value);
           return {
             style: {
-              [property]: value
-            }
+              [property]: value,
+            },
           };
         }
       }
@@ -163,7 +186,7 @@ export class LayoutProcessor {
       flexWrap: "flex wrap",
       justifyContent: "justify content",
       alignItems: "align items",
-      alignContent: "align content"
+      alignContent: "align content",
     };
   }
 }
