@@ -6,6 +6,7 @@ import { FaLock, FaEnvelope, FaArrowRight, FaEye, FaEyeSlash } from 'react-icons
 import { loginUser, setGuestMode } from '../../features/userSlice';
 import { fetchProjects, setCurrentProject } from '../../w3s/w3sSlice';
 import RegisterForm from './RegisterForm';
+import ForgotPasswordForm from './ForgotPasswordForm';
 
 const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
   const dispatch = useDispatch();
@@ -14,6 +15,7 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
   const { status, error } = useSelector((state) => state.user);
   const [showRegister, setShowRegister] = useState(initialView === 'register');
   const [showPassword, setShowPassword] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   useEffect(() => {
     setShowRegister(initialView === 'register');
@@ -112,6 +114,12 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
           className="w-full md:w-1/2"
         />
       </div>
+    );
+  }
+
+  if (showForgotPassword) {
+    return (
+      <ForgotPasswordForm onBack={() => setShowForgotPassword(false)} />
     );
   }
 
@@ -225,7 +233,14 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
                   Remember me
                 </label>
               </div>
-              <a href="#" className="text-indigo-600 hover:text-indigo-700 font-medium">
+              <a 
+                href="#" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowForgotPassword(true);
+                }} 
+                className="text-indigo-600 hover:text-indigo-700 font-medium"
+              >
                 Forgot password?
               </a>
             </div>

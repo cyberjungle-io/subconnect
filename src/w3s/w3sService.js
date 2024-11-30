@@ -435,6 +435,24 @@ const w3sService = {
       handleApiError(error);
     }
   },
+
+  async requestPasswordReset(email) {
+    try {
+      const response = await api.post('/users/forgot-password', { email });
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  async resetPassword(token, password) {
+    try {
+      const response = await api.post(`/users/reset-password/${token}`, { password });
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
 };
 
 export { w3sService };

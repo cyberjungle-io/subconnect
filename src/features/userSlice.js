@@ -139,6 +139,30 @@ export const setGuestMode = createAsyncThunk(
   }
 );
 
+export const requestPasswordReset = createAsyncThunk(
+  'user/requestPasswordReset',
+  async (email, { rejectWithValue }) => {
+    try {
+      await w3sService.requestPasswordReset(email);
+      return true;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to request password reset');
+    }
+  }
+);
+
+export const resetPassword = createAsyncThunk(
+  'user/resetPassword',
+  async ({ token, password }, { rejectWithValue }) => {
+    try {
+      await w3sService.resetPassword(token, password);
+      return true;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to reset password');
+    }
+  }
+);
+
 const userSlice = createSlice({
     name: 'user',
     initialState: {
@@ -245,6 +269,30 @@ const userSlice = createSlice({
         state.currentUser = null;
         state.status = 'succeeded';
         state.error = null;
+      })
+      .addCase(requestPasswordReset.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(requestPasswordReset.fulfilled, (state) => {
+        state.status = 'succeeded';
+        state.error = null;
+      })
+      .addCase(requestPasswordReset.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+      .addCase(resetPassword.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(resetPassword.fulfilled, (state) => {
+        state.status = 'succeeded';
+        state.error = null;
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
       });
   },
 });

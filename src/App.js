@@ -33,6 +33,8 @@ import ResponsiveDesignDocs from './pages/Docs/ResponsiveDesignDocs';
 import DocsLanding from './pages/Docs/DocsLandingPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsOfService from './pages/TermsOfService';
+import ResetPasswordForm from './components/auth/ResetPasswordForm';
+import AuthLayout from './components/layouts/AuthLayout';
 
 const PrivateRoute = ({ children }) => {
   const { currentUser } = useSelector((state) => state.user);
@@ -86,7 +88,18 @@ function AppContent() {
           <Route path="guides/responsive-design" element={<ResponsiveDesignDocs />} />
           <Route path="legal/terms" element={<TermsOfService />} />
           <Route path="legal/privacy" element={<PrivacyPolicy />} />
+          <Route path="reset-password/:token" element={<AuthLayout />} />
         </Route>
+        <Route
+          path="/reset-password/:token"
+          element={
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+              <div className="max-w-md w-full space-y-8">
+                <ResetPasswordForm />
+              </div>
+            </div>
+          }
+        />
       </Routes>
     </Router>
   );
