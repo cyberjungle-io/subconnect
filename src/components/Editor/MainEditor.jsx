@@ -48,19 +48,19 @@ const MainEditor = () => {
   }, [projectId, dispatch]);
 
   useEffect(() => {
-    if (currentProject && currentProject.pages.length > 0) {
+    if (currentProject?.data?.project?.pages?.length > 0) {
       const storedPageId = localStorage.getItem('currentPageId');
       const pageToLoad = storedPageId
-        ? currentProject.pages.find(page => page._id === storedPageId)
-        : currentProject.pages[0];
+        ? currentProject.data.project.pages.find(page => page._id === storedPageId)
+        : currentProject.data.project.pages[0];
 
       if (pageToLoad) {
         dispatch(setCurrentPage(pageToLoad));
         dispatch(loadPageContent(pageToLoad.content));
         dispatch(setEditorMode('view'));
         
-        if (currentProject.toolbarSettings) {
-          dispatch(updateToolbarSettings(currentProject.toolbarSettings));
+        if (currentProject.data.project.toolbarSettings) {
+          dispatch(updateToolbarSettings(currentProject.data.project.toolbarSettings));
         }
       }
     }
