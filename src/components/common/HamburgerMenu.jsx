@@ -66,8 +66,9 @@ const HamburgerMenu = ({ onOpenProjectModal }) => {
             <div className="p-6 border-b border-gray-200">
               <div className="flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Welcome</h2>
-                  
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {currentUser ? `Welcome, ${currentUser.nickname || currentUser.email}` : 'Welcome'}
+                  </h2>
                 </div>
                 <button 
                   onClick={toggleMenu} 
