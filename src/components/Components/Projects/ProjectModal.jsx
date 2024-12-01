@@ -6,7 +6,8 @@ import { FaTimes } from 'react-icons/fa';
 import { 
   fetchProjects, 
   fetchSharedProjects,
-  deleteProject 
+  deleteProject,
+  updateCurrentProject 
 } from '../../../w3s/w3sSlice';
 import { addUserAccessByEmail } from '../../../features/userSlice';
 import { showToast } from '../../../features/toastSlice';
@@ -70,6 +71,59 @@ const ProjectModal = ({ isOpen, onClose }) => {
     }
   };
 
+  const handleUpdatePage = (updatedPage) => {
+    const updatedProject = {
+      ...selectedProject,
+      pages: selectedProject.pages.map(page => 
+        page._id === updatedPage._id ? { 
+          ...page, 
+          ...updatedPage,
+          content: {
+            ...page.content,
+            ...updatedPage.content,
+            components: updatedPage.content?.components || page.content?.components || [],
+            globalSettings: updatedPage.content?.globalSettings || page.content?.globalSettings || {
+              backgroundColor: '#f0f0f0',
+              componentLayout: 'horizontal',
+              style: {
+                paddingTop: '20px',
+                paddingRight: '20px',
+                paddingBottom: '20px',
+                paddingLeft: '20px',
+                marginTop: '0px',
+                marginRight: '0px',
+                marginBottom: '0px',
+                marginLeft: '0px',
+                gap: '20px'
+              }
+            },
+            canvasSettings: updatedPage.content?.canvasSettings || page.content?.canvasSettings || {
+              style: {
+                backgroundColor: '#ffffff',
+                padding: '20px',
+                margin: '0px',
+                gap: '20px'
+              },
+              canvasHeight: '943px'
+            }
+          }
+        } : page
+      )
+    };
+    setSelectedProject(updatedProject);
+    // Here you would typically dispatch an action to update the project in the backend
+    dispatch(updateCurrentProject(updatedProject));
+  };
+
+  const handleDeletePage = (pageToDelete) => {
+    const updatedProject = {
+      ...selectedProject,
+      pages: selectedProject.pages.filter(page => page._id !== pageToDelete._id)
+    };
+    setSelectedProject(updatedProject);
+    // Here you would typically dispatch an action to update the project in the backend
+  };
+
   return (
     <div 
       className="fixed inset-0 bg-black bg-opacity-50 z-[980] flex justify-center items-center"
@@ -105,6 +159,8 @@ const ProjectModal = ({ isOpen, onClose }) => {
                 setProjectToDelete(projectId);
                 setDeleteModalOpen(true);
               }}
+              onUpdatePage={handleUpdatePage}
+              onDeletePage={handleDeletePage}
             />
           )}
         </div>
