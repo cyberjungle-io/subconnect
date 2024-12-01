@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import store from './store/store';
 import { checkAuthStatus } from './features/userSlice';
+import { fetchProjects, fetchSharedProjects } from './w3s/w3sSlice';
 import LandingPage from './pages/LandingPage';
 import LoginForm from './components/auth/LoginForm';
 import RegisterForm from './components/auth/RegisterForm';
@@ -49,6 +50,13 @@ function AppContent() {
   useEffect(() => {
     dispatch(checkAuthStatus());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (currentUser) {
+      dispatch(fetchProjects());
+      dispatch(fetchSharedProjects());
+    }
+  }, [currentUser, dispatch]);
 
   return (
     <Router>
