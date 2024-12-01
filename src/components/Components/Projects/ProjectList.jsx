@@ -4,10 +4,10 @@ import { setCurrentProject, deleteProject, fetchProjects, fetchSharedProjects } 
 import { addUserAccessByEmail } from '../../../features/userSlice';
 import { showToast } from '../../../features/toastSlice';
 import DeleteConfirmModal from '../../common/DeleteConfirmModal';
-import { FaTrash, FaUserPlus, FaPlus } from 'react-icons/fa';
+import { FaTrash, FaUserPlus, FaPlus, FaEllipsisV } from 'react-icons/fa';
 import ProjectForm from './ProjectForm';
 
-const ProjectList = ({ onClose }) => {
+const ProjectList = ({ onClose, onProjectSettings }) => {
   const dispatch = useDispatch();
   const { list: projects, status } = useSelector((state) => state.w3s.projects);
   const { list: sharedProjects } = useSelector((state) => state.w3s.sharedProjects);
@@ -91,9 +91,8 @@ const ProjectList = ({ onClose }) => {
           {[...projects, ...sharedProjects].map((project) => (
             <li 
               key={project._id} 
-              onClick={() => handleSelectProject(project)}
               className={`
-                flex justify-between items-center p-4 rounded-lg cursor-pointer
+                flex justify-between items-center p-4 rounded-lg
                 border transition-all duration-200
                 ${currentProject?._id === project._id 
                   ? 'border-indigo-300 bg-indigo-50 hover:bg-indigo-100' 
@@ -101,30 +100,22 @@ const ProjectList = ({ onClose }) => {
                 }
               `}
             >
-              <span className="font-medium text-gray-900">{project.name}</span>
-              <div className="flex gap-4">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAddEmail(project._id);
-                  }}
-                  className="p-2 text-gray-400 hover:text-indigo-600 transition-colors duration-200"
-                  title="Add User"
-                >
-                  <FaUserPlus size={18} />
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setProjectToDelete(project._id);
-                    setDeleteModalOpen(true);
-                  }}
-                  className="p-2 text-gray-400 hover:text-red-600 transition-colors duration-200"
-                  title="Delete Project"
-                >
-                  <FaTrash size={18} />
-                </button>
-              </div>
+              <span 
+                className="font-medium text-gray-900 flex-grow cursor-pointer"
+                onClick={() => handleSelectProject(project)}
+              >
+                {project.name}
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onProjectSettings(project);
+                }}
+                className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                title="Project Settings"
+              >
+                <FaEllipsisV size={18} />
+              </button>
             </li>
           ))}
         </ul>
