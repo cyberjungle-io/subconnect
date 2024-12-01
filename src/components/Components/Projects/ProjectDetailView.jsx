@@ -2,6 +2,14 @@ import React from 'react';
 import { FaUserPlus, FaTrash, FaArrowLeft, FaUser, FaFile } from 'react-icons/fa';
 
 const ProjectDetailView = ({ project, onBack, onAddUser, onDelete }) => {
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   return (
     <div className="p-6 flex flex-col min-h-full">
       <button
@@ -30,19 +38,19 @@ const ProjectDetailView = ({ project, onBack, onAddUser, onDelete }) => {
           </div>
           <div className="bg-white border border-gray-200 rounded-lg">
             <ul className="divide-y divide-gray-200">
-              {/* Always show owner */}
+              {/* Project Owner */}
               <li className="px-4 py-3 flex items-center justify-between">
                 <span className="text-gray-700">
-                  {project.owner?.email || project.owner?.nickname || project.ownerEmail || 'Unknown Owner'}
+                  {project.createdBy}
                 </span>
                 <span className="text-sm font-medium text-blue-600">Owner</span>
               </li>
               
-              {/* Show other users if they exist */}
-              {project.users?.filter(user => user.email !== project.owner?.email).map((user, index) => (
+              {/* Other Users */}
+              {project.access_records?.map((record, index) => (
                 <li key={index} className="px-4 py-3 flex items-center justify-between">
-                  <span className="text-gray-700">{user.email}</span>
-                  <span className="text-sm text-gray-500">{user.role || 'Member'}</span>
+                  <span className="text-gray-700">{record.user_details.email}</span>
+                  <span className="text-sm text-gray-500">Member</span>
                 </li>
               ))}
             </ul>
@@ -59,9 +67,9 @@ const ProjectDetailView = ({ project, onBack, onAddUser, onDelete }) => {
               <ul className="divide-y divide-gray-200">
                 {project.pages.map((page, index) => (
                   <li key={index} className="px-4 py-3 flex items-center justify-between">
-                    <span className="text-gray-700">{page.name || 'Untitled Page'}</span>
+                    <span className="text-gray-700">{page.name}</span>
                     <span className="text-sm text-gray-500">
-                      {new Date(page.updatedAt).toLocaleDateString()}
+                      {formatDate(page.updatedAt)}
                     </span>
                   </li>
                 ))}
