@@ -237,7 +237,7 @@ const ProjectDetailView = ({ project, onBack, onAddUser, onDelete, onUpdatePage,
               {/* Project Owner */}
               <li className="px-4 py-3 flex items-center justify-between">
                 <span className="text-gray-700">
-                  {project.createdBy}
+                  {project.creatorUsername || 'Unknown Owner'}
                 </span>
                 <span className="text-sm font-medium text-blue-600">Owner</span>
               </li>
