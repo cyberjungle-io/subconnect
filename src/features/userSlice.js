@@ -180,6 +180,24 @@ export const acceptUserAccess = createAsyncThunk(
   }
 );
 
+export const grantUserAccess = createAsyncThunk(
+  'user/grantAccess',
+  async (accessRecord, { rejectWithValue, dispatch }) => {
+    try {
+      console.log('Granting user access with record:', accessRecord);
+      const response = await w3sService.grantUserAccess(accessRecord);
+      dispatch(showToast({ message: 'Access granted successfully', type: 'success' }));
+      dispatch(fetchProjects());
+      dispatch(fetchSharedProjects());
+      return response;
+    } catch (error) {
+      console.error('Error granting user access:', error);
+      dispatch(showToast({ message: 'Failed to grant access', type: 'error' }));
+      return rejectWithValue(error.response?.data || error.message || 'Failed to grant access');
+    }
+  }
+);
+
 const userSlice = createSlice({
     name: 'user',
     initialState: {
@@ -327,6 +345,20 @@ const userSlice = createSlice({
         }
       })
       .addCase(acceptUserAccess.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+      .addCase(grantUserAccess.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(grantUserAccess.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        if (!state.userAccesses) {
+          state.userAccesses = [];
+        }
+        state.userAccesses.push(action.payload);
+      })
+      .addCase(grantUserAccess.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       });

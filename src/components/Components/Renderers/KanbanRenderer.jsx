@@ -1,12 +1,34 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import KanBanTaskModal from '../../common/KanBanTaskModal';
+import KanbanAccessModal from '../../common/KanbanAccessModal';
 import { v4 as uuidv4 } from 'uuid';
 import { useDispatch, useSelector } from 'react-redux';
-import { createComponentData, checkAccess } from '../../../w3s/w3sSlice';
+import { createComponentData } from '../../../w3s/w3sSlice';
 import { w3sService } from '../../../w3s/w3sService';
 
-// Add this helper function at the top of the file, outside the component
+// Define UI permissions for Kanban
+const KANBAN_UI_PERMISSIONS = {
+  ADD: 'add',    // Can add new tasks
+  MODIFY: 'modify', // Can modify task details
+  MOVE: 'move'   // Can move tasks between columns
+};
+
+// Helper function to find todo lists
+const findTodoLists = (components) => {
+  let todoLists = [];
+  components.forEach(component => {
+    if (component.type === 'TODO') {
+      todoLists.push(component);
+    }
+    if (component.children && component.children.length > 0) {
+      todoLists = todoLists.concat(findTodoLists(component.children));
+    }
+  });
+  return todoLists;
+};
+
+// Helper function to find todo lists by ID
 const findTodoListById = (components, id) => {
   for (let component of components) {
     if (component.id === id && component.type === 'TODO') {
@@ -23,6 +45,7 @@ const findTodoListById = (components, id) => {
 const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const [columns, setColumns] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [columnBorderStyle, setColumnBorderStyle] = useState(component.props.columnBorderStyle || {});
@@ -31,42 +54,77 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const [accessRecord, setAccessRecord] = useState(null);
 
   const boardRef = useRef(null);
-
   const dispatch = useDispatch();
   const dataFetchedRef = useRef(false);
 
-  const allComponents = useSelector(state => state.editor.components);
   const currentUser = useSelector(state => state.user.currentUser);
-  const todoLists = findTodoLists(allComponents);
+  const currentProject = useSelector(state => state.w3s.currentProject.data);
+
+  // Helper function to check if user has admin privileges
+  const isAdminOrOwner = useCallback(() => {
+    // Check if user is the project creator
+    if (currentProject?.createdBy === currentUser?._id) {
+      console.log('User is project creator/owner');
+      return true;
+    }
+    
+    // Check for admin permission in access record
+    if (accessRecord?.backend_permissions) {
+      const isAdmin = accessRecord.backend_permissions.includes('admin');
+      console.log('User admin status:', isAdmin);
+      return isAdmin;
+    }
+    
+    console.log('User is not admin or owner');
+    return false;
+  }, [accessRecord, currentProject?.createdBy, currentUser?._id]);
+
+  // Helper function to check if user has a specific UI permission
+  const hasPermission = useCallback((permission) => {
+    // Admins and owners have all permissions
+    const adminOwnerStatus = isAdminOrOwner();
+    console.log('Checking permission:', {
+      permission,
+      isAdminOrOwner: adminOwnerStatus,
+      uiPermissions: accessRecord?.ui_permissions,
+      projectCreator: currentProject?.createdBy,
+      currentUser: currentUser?._id
+    });
+
+    if (adminOwnerStatus) {
+      console.log('Granting permission due to admin/owner status');
+      return true;
+    }
+
+    // Otherwise check specific UI permissions
+    if (!accessRecord || !accessRecord.ui_permissions) {
+      console.log('No access record or UI permissions found');
+      return false;
+    }
+    const hasUIPermission = accessRecord.ui_permissions.includes(permission);
+    console.log('UI permission check result:', hasUIPermission);
+    return hasUIPermission;
+  }, [accessRecord, isAdminOrOwner, currentProject?.createdBy, currentUser?._id]);
 
   // Add useEffect for checking access
   useEffect(() => {
     const checkUserAccess = async () => {
-      console.log('Checking Kanban access with:', {
-        componentId: component.props.id,
-        currentUser: currentUser,
-        componentProps: component.props
-      });
-
-      if (!component.props.id) {
-        console.log('No component ID available');
-        return;
-      }
-
-      if (!currentUser?._id) {
-        console.log('No user ID available');
+      if (!component.props.id || !currentUser?._id) {
+        console.log('Missing component ID or user ID:', {
+          componentId: component.props.id,
+          userId: currentUser?._id,
+          projectCreator: component.props.project?.createdBy
+        });
         return;
       }
 
       try {
-        const result = await dispatch(checkAccess({ 
-          linkId: component.props.id, 
-          userId: currentUser._id 
-        })).unwrap();
+        const result = await w3sService.getUserAccess(component.props.id, currentUser._id);
         console.log('Kanban access record loaded:', {
+          result,
           componentId: component.props.id,
           userId: currentUser._id,
-          accessRecord: result
+          projectCreator: component.props.project?.createdBy
         });
         setAccessRecord(result);
       } catch (error) {
@@ -76,7 +134,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     };
 
     checkUserAccess();
-  }, [component.props.id, currentUser?._id, dispatch]);
+  }, [component.props.id, currentUser?._id, component.props.project?.createdBy]);
 
   const onDragStart = useCallback(() => {
     if (boardRef.current) {
@@ -86,32 +144,44 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   }, []);
 
   useEffect(() => {
-    // console.log('KanbanRenderer component rendered');
-    // console.log('Component props:', component.props);
-
     const fetchComponentData = async () => {
       if (dataFetchedRef.current) return;
       dataFetchedRef.current = true;
 
+      console.log('KanbanRenderer - Starting to fetch component data:', {
+        component_id: component.props.id,
+        current_user: currentUser,
+        access_records: currentProject?.access_records
+      });
+
       try {
         const response = await w3sService.getComponentDataById(component.props.id);
-        // console.log('Fetched component data:', response);
+        console.log('KanbanRenderer - Component data response:', response);
         
         if (response && response.data && response.data.tasks) {
-          // console.log('Fetched tasks:', response.data.tasks);
           const fetchedTasks = response.data.tasks;
-          // console.log('Fetched tasks:', fetchedTasks);
+          console.log('KanbanRenderer - Initializing columns with fetched tasks:', fetchedTasks);
           initializeColumns(fetchedTasks);
         } else {
+          console.log('KanbanRenderer - No tasks in response, using default tasks:', component.props.tasks);
           initializeColumns(component.props.tasks || []);
         }
       } catch (error) {
-        console.error('Error fetching component data:', error);
+        console.error('KanbanRenderer - Error fetching component data:', {
+          error_message: error.message,
+          error_response: error.response?.data,
+          component_id: component.props.id
+        });
         initializeColumns(component.props.tasks || []);
       }
     };
 
     const initializeColumns = (tasks) => {
+      console.log('KanbanRenderer - Initializing columns:', {
+        tasks,
+        default_columns: component.props.columns
+      });
+
       const initialColumns = component.props.columns || [
         { id: 'col1', title: 'To Do' },
         { id: 'col2', title: 'In Progress' },
@@ -126,52 +196,35 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
         return acc;
       }, {});
 
+      console.log('KanbanRenderer - Final columns structure:', newColumns);
       setColumns(newColumns);
     };
 
     fetchComponentData();
-
-  }, [component.props.id]); // Only re-run if the component ID changes
+  }, [component.props.id, component.props.tasks, component.props.columns]);
 
   useEffect(() => {
-    // Update columnBorderStyle and calculate inner border radius when component props change
     const newColumnBorderStyle = component.props.columnBorderStyle || {};
     setColumnBorderStyle(newColumnBorderStyle);
-
-    // Get the padding from props or use a default value
     const newColumnPadding = component.props.columnPadding || '16px 8px 12px 8px';
     setColumnPadding(newColumnPadding);
-
-    // Calculate task card border radius based on column border radius
     const columnRadius = parseInt(newColumnBorderStyle.borderRadius || '0px');
-    // Make task cards slightly less rounded than the column
     const taskRadius = Math.max(0, columnRadius - 2);
     setTaskCardBorderRadius(`${taskRadius}px`);
   }, [component.props.columnBorderStyle, component.props.columnPadding]);
 
-  // Add this new useEffect hook
-  useEffect(() => {
-    // Update columns when component props change
-    if (component.props.columns) {
-      const updatedColumns = component.props.columns.reduce((acc, column) => {
-        acc[column.id] = {
-          ...column,
-          tasks: columns[column.id]?.tasks || []
-        };
-        return acc;
-      }, {});
-      setColumns(updatedColumns);
-    }
-  }, [component.props.columns]);
-
   const onDragEnd = useCallback((result) => {
+    if (!hasPermission(KANBAN_UI_PERMISSIONS.MOVE)) {
+      console.log('User does not have permission to move tasks');
+      return;
+    }
+
     if (boardRef.current) {
       const { parentElement } = boardRef.current;
       parentElement.style.userSelect = '';
     }
 
     const { source, destination } = result;
-
     if (!destination || !isInteractive) return;
 
     const sourceColumn = columns[source.droppableId];
@@ -180,7 +233,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     const destTasks = source.droppableId === destination.droppableId ? sourceTasks : [...destColumn.tasks];
 
     const [removed] = sourceTasks.splice(source.index, 1);
-    destTasks.splice(destination.index, 0, { ...removed, columnId: destination.droppableId, movedAt: new Date().toISOString() });
+    destTasks.splice(destination.index, 0, { ...removed, columnId: destination.droppableId });
 
     const newColumns = {
       ...columns,
@@ -196,9 +249,10 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
 
     setColumns(newColumns);
 
-    // Flatten tasks for updating the component
+    // Update component with new task positions
     const allTasks = Object.values(newColumns).flatMap(column => column.tasks);
     onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
+
     const kanbanData = {
       componentId: component.props.id,
       name: component.props.name,
@@ -206,304 +260,214 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
       tasks: allTasks
     };
     
-    // Store the kanbanData in w3s
     dispatch(createComponentData(kanbanData))
       .unwrap()
-      .then(() => {
-        // console.log('Kanban data stored successfully');
-      })
       .catch((error) => {
         console.error('Failed to store kanban data:', error);
-        if (error.name === 'TypeError' && error.message.includes('Cannot read properties of undefined (reading \'list\')')) {
-          console.error('Error: The componentData state might not be initialized properly.');
-        } else {
-          console.error('Error details:', error.stack);
-        }
       });
-
-  }, [columns, isInteractive, onUpdate, component.id, component.props, dispatch]);
+  }, [columns, isInteractive, onUpdate, component.id, component.props, component.type, dispatch, hasPermission]);
 
   const handleDoubleClick = useCallback((event, columnId, task = null) => {
-    if (isInteractive) {
-      event.stopPropagation();
+    event.stopPropagation();
+    
+    console.log('Handle double click:', {
+      isOwnerOrAdmin: isAdminOrOwner(),
+      columnId,
+      task,
+      createdBy: component.props.createdBy,
+      currentUserId: currentUser?._id
+    });
+    
+    // Always allow if user is admin or owner
+    if (isAdminOrOwner()) {
+      console.log('Allowing action due to admin/owner status');
       setSelectedColumnId(columnId);
       setSelectedTask(task);
       setIsModalOpen(true);
+      return;
     }
-  }, [isInteractive]);
 
-  const handleAddOrUpdateTask = useCallback((columnId, taskData) => {
-    console.log('handleAddOrUpdateTask: taskData:', taskData);
+    // For regular users, check permissions
+    if (!isInteractive) return;
+    
+    // For existing tasks, check MODIFY permission
+    if (task && !hasPermission(KANBAN_UI_PERMISSIONS.MODIFY)) {
+      console.log('User does not have permission to modify tasks');
+      return;
+    }
+    
+    // For new tasks, check ADD permission
+    if (!task && !hasPermission(KANBAN_UI_PERMISSIONS.ADD)) {
+      console.log('User does not have permission to add tasks');
+      return;
+    }
+
+    setSelectedColumnId(columnId);
+    setSelectedTask(task);
+    setIsModalOpen(true);
+  }, [isInteractive, hasPermission, isAdminOrOwner, component.props.createdBy, currentUser?._id]);
+
+  const handleAddOrUpdateTask = useCallback((taskData) => {
     const isNewTask = !taskData.id;
-    console.log('handleAddOrUpdateTask: isNewTask:', isNewTask);
     
-    // For new tasks
-    if (isNewTask) {
-      const newTask = {
-        id: uuidv4(),
-        columnId,
-        createdAt: new Date().toISOString(),
-        ...taskData
-      };
+    // Skip permission check for admin/owner
+    if (!isAdminOrOwner()) {
+      // Check permissions for regular users
+      if (isNewTask && !hasPermission(KANBAN_UI_PERMISSIONS.ADD)) {
+        console.log('User does not have permission to add tasks');
+        return;
+      }
       
-      const updatedColumns = {
-        ...columns,
-        [columnId]: {
-          ...columns[columnId],
-          tasks: [...columns[columnId].tasks, newTask]
-        }
-      };
-      
-      setColumns(updatedColumns);
-      const allTasks = Object.values(updatedColumns).flatMap(column => column.tasks);
-      
-      // Update local state through onUpdate
-      onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
-      
-      // Save to w3s using component.id instead of component.props.id
-      const kanbanData = {
-        componentId: component.id, // Changed from component.props.id
-        name: component.props.name,
-        type: component.type,
-        tasks: allTasks
-      };
-      
-      dispatch(createComponentData(kanbanData))
-        .unwrap()
-        .then(() => {
-          console.log('New task saved successfully');
-          setIsModalOpen(false);
-          setSelectedTask(null);
-        })
-        .catch((error) => {
-          console.error('Failed to save new task:', error);
-        });
-    } 
-    // For existing tasks (updates)
-    else {
-      const updatedColumns = {
-        ...columns,
-        [columnId]: {
-          ...columns[columnId],
-          tasks: columns[columnId].tasks.map(task =>
-            task.id === taskData.id ? { ...task, ...taskData } : task
-          )
-        }
-      };
-      
-      setColumns(updatedColumns);
-      const allTasks = Object.values(updatedColumns).flatMap(column => column.tasks);
-      
-      // Update local state through onUpdate
-      onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
-      
-      // Save to w3s using component.id
-      const kanbanData = {
-        componentId: component.id, // Changed from component.props.id
-        name: component.props.name,
-        type: component.type,
-        tasks: allTasks
-      };
-      
-      dispatch(createComponentData(kanbanData))
-        .unwrap()
-        .then(() => {
-          console.log('Task update saved successfully');
-        })
-        .catch((error) => {
-          console.error('Failed to save task update:', error);
-        });
+      if (!isNewTask && !hasPermission(KANBAN_UI_PERMISSIONS.MODIFY)) {
+        console.log('User does not have permission to modify tasks');
+        return;
+      }
     }
-  }, [columns, component.id, component.props, component.type, dispatch, onUpdate]);
 
-  const getFormattedDuration = useCallback((start, end) => {
-    const durationInMinutes = Math.floor((end - start) / (1000 * 60));
-    
-    if (durationInMinutes < 60) {
-      return `${durationInMinutes} min${durationInMinutes !== 1 ? 's' : ''}`;
-    } else if (durationInMinutes < 1440) { // Less than 24 hours
-      const hours = Math.floor(durationInMinutes / 60);
-      return `${hours} hour${hours !== 1 ? 's' : ''}`;
-    } else {
-      const days = Math.floor(durationInMinutes / 1440);
-      return `${days} day${days !== 1 ? 's' : ''}`;
-    }
-  }, []);
+    const newTask = isNewTask ? {
+      id: uuidv4(),
+      columnId: selectedColumnId,
+      createdAt: new Date().toISOString(),
+      ...taskData
+    } : taskData;
 
-  const getTaskDuration = useCallback((task) => {
-    const start = new Date(task.createdAt);
-    const end = task.completedAt ? new Date(task.completedAt) : new Date();
-    return getFormattedDuration(start, end);
-  }, [getFormattedDuration]);
+    const updatedColumns = {
+      ...columns,
+      [selectedColumnId]: {
+        ...columns[selectedColumnId],
+        tasks: isNewTask
+          ? [...columns[selectedColumnId].tasks, newTask]
+          : columns[selectedColumnId].tasks.map(task =>
+              task.id === newTask.id ? newTask : task
+            )
+      }
+    };
 
-  const getColumnDuration = useCallback((task) => {
-    const start = new Date(task.movedAt || task.createdAt);
-    const end = new Date();
-    return getFormattedDuration(start, end);
-  }, [getFormattedDuration]);
+    setColumns(updatedColumns);
 
-  const getLinkedTodoListInfo = useCallback((task) => {
-    if (!task.linkedTodoList) return null;
-    const linkedTodoList = findTodoListById(todoLists, task.linkedTodoList);
-    if (!linkedTodoList) return null;
+    // Update component with new tasks
+    const allTasks = Object.values(updatedColumns).flatMap(column => column.tasks);
+    onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
 
-    const completedTasks = linkedTodoList.props.tasks.filter(t => t.completed).length;
-    const totalTasks = linkedTodoList.props.tasks.length;
-    const completionPercentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const kanbanData = {
+      componentId: component.props.id,
+      name: component.props.name,
+      type: component.type,
+      tasks: allTasks
+    };
 
-    return `${completedTasks}/${totalTasks} (${completionPercentage}%)`;
-  }, [todoLists]);
+    dispatch(createComponentData(kanbanData))
+      .unwrap()
+      .catch((error) => {
+        console.error('Failed to store kanban data:', error);
+      });
+
+    setIsModalOpen(false);
+  }, [columns, selectedColumnId, onUpdate, component.id, component.props, component.type, dispatch, hasPermission, isAdminOrOwner]);
 
   return (
-    <div 
-      ref={boardRef}
-      style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-      onDoubleClick={(e) => handleDoubleClick(e, Object.keys(columns)[0])}
-    >
-      <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
-        <div style={{ display: 'flex', height: '100%', overflowX: 'auto' }}>
-          {Object.values(columns).map((column) => (
-            <div 
-              key={column.id} 
-              style={{ 
-                display: 'flex', 
-                flexDirection: 'column', 
-                width: `${100 / Object.keys(columns).length}%`, 
-                minWidth: '200px', 
-                padding: columnPadding,
-                backgroundColor: column.backgroundColor || '#f4f5f7', // Use column-specific background color
-                margin: '0 4px',
-                height: '100%',
-                // Apply column border styles here
-                ...columnBorderStyle
-              }}
-              onDoubleClick={(e) => handleDoubleClick(e, column.id)}
+    <div className="flex flex-col h-full">
+      <div className="flex justify-between items-center mb-4">
+        {isAdminOrOwner() && (
+          <button
+            onClick={() => setIsAccessModalOpen(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center"
+          >
+            <svg 
+              className="w-4 h-4 mr-2" 
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
             >
-              <h3 style={{ 
-                marginBottom: '8px', 
-                color: getContrastColor(column.backgroundColor),
-                ...component.props.columnHeaderStyle
-              }}>
-                {column.title}
-              </h3>
-              <Droppable droppableId={column.id} key={column.id}>
-                {(provided, snapshot) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    style={{ 
-                      flex: 1, 
-                      padding: '8px', 
-                      minHeight: '100px',
-                      overflowY: 'auto',
-                      maxHeight: 'calc(100% - 40px)',
-                    }}
-                  >
-                    {column.tasks.map((task, index) => (
-                      <Draggable key={task.id} draggableId={task.id} index={index} isDragDisabled={!isInteractive}>
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            style={{
-                              userSelect: 'none',
-                              backgroundColor: task.color || 'white',
-                              padding: '8px',
-                              marginBottom: '8px',
-                              borderRadius: taskCardBorderRadius,
-                              boxShadow: snapshot.isDragging 
-                                ? '0 5px 10px rgba(0,0,0,0.3)' 
-                                : '0 3px 5px rgba(0,0,0,0.2)', // Added default shadow
-                              color: getContrastColor(task.color || '#ffffff'),
-                              position: 'relative',
-                              minHeight: '80px',
-                              ...component.props.taskTextStyle,
-                              ...provided.draggableProps.style,
-                            }}
-                            onDoubleClick={(e) => handleDoubleClick(e, column.id, task)}
-                          >
-                            <h4 style={{ marginBottom: '4px', fontSize: '14px', fontWeight: 'bold' }}>{task.title}</h4>
-                            {task.subtasks && (
-                              <button 
-                                onClick={() => {/* Navigate to subtasks */}}
-                                style={{ fontSize: '12px', marginTop: '4px' }}
-                              >
-                                View Subtasks
-                              </button>
-                            )}
-                            <div style={{
-                              position: 'absolute',
-                              bottom: '4px',
-                              right: '4px',
-                              fontSize: '10px',
-                              opacity: 0.7,
-                            }}>
-                              {getLinkedTodoListInfo(task) && (
-                                <span style={{ marginRight: '8px' }}>{getLinkedTodoListInfo(task)}</span>
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M12 4v16m8-8H4" 
+              />
+            </svg>
+            Manage Access
+          </button>
+        )}
+      </div>
+
+      <div ref={boardRef} className="kanban-board flex-1">
+        <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+          <div className="flex h-full p-4 w-full">
+            {Object.values(columns).map((column) => (
+              <div
+                key={column.id}
+                className="flex-1 mx-2 first:ml-0 last:mr-0 bg-gray-100 rounded-lg flex flex-col min-w-[250px]"
+                style={{
+                  ...columnBorderStyle,
+                  padding: columnPadding,
+                }}
+                onDoubleClick={(e) => handleDoubleClick(e, column.id)}
+              >
+                <h2 className="text-lg font-semibold mb-4">{column.title}</h2>
+                <Droppable droppableId={column.id}>
+                  {(provided) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.droppableProps}
+                      className="flex-1 min-h-[200px] overflow-y-auto"
+                    >
+                      {column.tasks.map((task, index) => (
+                        <Draggable
+                          key={task.id}
+                          draggableId={task.id}
+                          index={index}
+                          isDragDisabled={!hasPermission(KANBAN_UI_PERMISSIONS.MOVE)}
+                        >
+                          {(provided) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className="bg-white p-3 rounded shadow mb-2 cursor-pointer hover:shadow-md transition-shadow"
+                              style={{
+                                ...provided.draggableProps.style,
+                                borderRadius: taskCardBorderRadius,
+                              }}
+                              onDoubleClick={(e) => handleDoubleClick(e, column.id, task)}
+                            >
+                              <h3 className="font-medium">{task.title}</h3>
+                              {task.description && (
+                                <p className="text-sm text-gray-600 mt-1">{task.description}</p>
                               )}
-                              {getTaskDuration(task)} | {getColumnDuration(task)}
                             </div>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                  </div>
-                )}
-              </Droppable>
-            </div>
-          ))}
-        </div>
-      </DragDropContext>
-      {isInteractive && (
+                          )}
+                        </Draggable>
+                      ))}
+                      {provided.placeholder}
+                    </div>
+                  )}
+                </Droppable>
+              </div>
+            ))}
+          </div>
+        </DragDropContext>
+      </div>
+
+      {isModalOpen && (
         <KanBanTaskModal
           isOpen={isModalOpen}
-          onClose={() => {
-            setIsModalOpen(false);
-            setSelectedTask(null);
-          }}
-          onAddTask={handleAddOrUpdateTask}
-          columnId={selectedColumnId}
+          onClose={() => setIsModalOpen(false)}
+          onSubmit={handleAddOrUpdateTask}
           task={selectedTask}
-          isViewMode={!!selectedTask}
+          isReadOnly={selectedTask ? !hasPermission(KANBAN_UI_PERMISSIONS.MODIFY) : !hasPermission(KANBAN_UI_PERMISSIONS.ADD)}
+        />
+      )}
+
+      {isAccessModalOpen && (
+        <KanbanAccessModal
+          isOpen={isAccessModalOpen}
+          onClose={() => setIsAccessModalOpen(false)}
+          kanbanId={component.props.id}
         />
       )}
     </div>
   );
-};
-
-// Helper function to determine text color based on background color
-function getContrastColor(hexColor) {
-  // If no color is set, default to black text
-  if (!hexColor) return '#000000';
-
-  // Convert hex to RGB
-  const r = parseInt(hexColor.slice(1, 3), 16);
-  const g = parseInt(hexColor.slice(3, 5), 16);
-  const b = parseInt(hexColor.slice(5, 7), 16);
-
-  // Calculate luminance
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-
-  // Return black for light backgrounds, white for dark backgrounds
-  return luminance > 0.5 ? '#000000' : '#ffffff';
-}
-
-
-
-// Make sure to add the findTodoLists function here as well
-const findTodoLists = (components) => {
-  let todoLists = [];
-  components.forEach(component => {
-    if (component.type === 'TODO') {
-      todoLists.push(component);
-    }
-    if (component.children && component.children.length > 0) {
-      todoLists = todoLists.concat(findTodoLists(component.children));
-    }
-  });
-  return todoLists;
 };
 
 export default KanbanRenderer;
