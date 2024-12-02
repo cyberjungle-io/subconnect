@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaUserPlus, FaTrash, FaArrowLeft, FaUser, FaFile, FaEllipsisV, FaEdit, FaChevronRight, FaChevronDown } from 'react-icons/fa';
 
 const ComponentItem = ({ component, depth = 0 }) => {
@@ -67,10 +67,17 @@ const ComponentItem = ({ component, depth = 0 }) => {
   );
 };
 
-const ProjectDetailView = ({ project, onBack, onAddUser, onDelete, onUpdatePage, onDeletePage }) => {
-  const [selectedPage, setSelectedPage] = useState(null);
+const ProjectDetailView = ({ project, initialPage = null, onBack, onAddUser, onDelete, onUpdatePage, onDeletePage }) => {
+  const [selectedPage, setSelectedPage] = useState(initialPage);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
+
+  // Initialize selectedPage when initialPage changes
+  useEffect(() => {
+    if (initialPage) {
+      setSelectedPage(initialPage);
+    }
+  }, [initialPage]);
 
   const handlePageSettings = (page, e) => {
     e.stopPropagation();

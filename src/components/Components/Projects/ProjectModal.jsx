@@ -13,27 +13,39 @@ import { addUserAccessByEmail } from '../../../features/userSlice';
 import { showToast } from '../../../features/toastSlice';
 import DeleteConfirmModal from '../../common/DeleteConfirmModal';
 
-const ProjectModal = ({ isOpen, onClose }) => {
+const ProjectModal = ({ isOpen, onClose, initialView = 'list', initialProject = null, initialPage = null }) => {
   const dispatch = useDispatch();
   const { status } = useSelector((state) => state.w3s.projects);
-  const [selectedProject, setSelectedProject] = useState(null);
-  const [view, setView] = useState('list'); // 'list' or 'detail'
+  const [selectedProject, setSelectedProject] = useState(initialProject);
+  const [selectedPage, setSelectedPage] = useState(initialPage);
+  const [view, setView] = useState(initialView);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
 
   useEffect(() => {
     if (isOpen) {
-      dispatch(fetchProjects());
-      dispatch(fetchSharedProjects());
+      if (!initialProject) {
+        dispatch(fetchProjects());
+        dispatch(fetchSharedProjects());
+      }
     }
-  }, [isOpen, dispatch]);
+  }, [isOpen, dispatch, initialProject]);
+
+  useEffect(() => {
+    if (initialProject && initialView === 'detail') {
+      setSelectedProject(initialProject);
+      setSelectedPage(initialPage);
+      setView('detail');
+    }
+  }, [initialProject, initialView, initialPage]);
 
   useEffect(() => {
     if (!isOpen) {
-      setView('list');
-      setSelectedProject(null);
+      setView(initialView);
+      setSelectedProject(initialProject);
+      setSelectedPage(initialPage);
     }
-  }, [isOpen]);
+  }, [isOpen, initialView, initialProject, initialPage]);
 
   if (!isOpen) return null;
 
@@ -45,6 +57,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
 
   const handleProjectSettings = (project) => {
     setSelectedProject(project);
+    setSelectedPage(null);
     setView('detail');
   };
 
@@ -153,6 +166,7 @@ const ProjectModal = ({ isOpen, onClose }) => {
           ) : (
             <ProjectDetailView
               project={selectedProject}
+              initialPage={selectedPage}
               onBack={() => setView('list')}
               onAddUser={handleAddEmail}
               onDelete={(projectId) => {
