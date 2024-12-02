@@ -333,12 +333,22 @@ const w3sService = {
 
   getComponentDataById: async (componentId) => {
     try {
-      console.log('Fetching component data by ID:', componentId);
+      console.log('w3sService - Fetching component data:', {
+        component_id: componentId,
+        endpoint: `/componentData/by-component-id/${componentId}`,
+        headers: api.defaults.headers
+      });
+      
       const response = await api.get(`/componentData/by-component-id/${componentId}`);
-      console.log('Component data fetch response:', response.data);
+      console.log('w3sService - Component data response:', response.data);
       return response.data;
     } catch (error) {
-      console.error('Error fetching component data by ID:', error);
+      console.error('w3sService - Error fetching component data:', {
+        error_message: error.message,
+        error_response: error.response?.data,
+        error_status: error.response?.status,
+        component_id: componentId
+      });
       handleApiError(error);
     }
   },
@@ -347,6 +357,16 @@ const w3sService = {
   addUserAccess: async (accessData) => {
     try {
       const response = await api.post('/users/access', accessData);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  // Grant user access with the new endpoint
+  grantUserAccess: async (accessData) => {
+    try {
+      const response = await api.post('/users/access/grant', accessData);
       return response.data;
     } catch (error) {
       handleApiError(error);
@@ -468,6 +488,16 @@ const w3sService = {
   acceptUserAccess: async (linkId, userId) => {
     try {
       const response = await api.put(`/access/${linkId}/${userId}/accept`);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  // User Access methods
+  getUserAccess: async (linkId, userId) => {
+    try {
+      const response = await api.get(`/users/access/${linkId}/${userId}`);
       return response.data;
     } catch (error) {
       handleApiError(error);
