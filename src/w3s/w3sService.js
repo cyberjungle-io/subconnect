@@ -453,6 +453,26 @@ const w3sService = {
       handleApiError(error);
     }
   },
+
+  // Check access for a specific link and user
+  checkAccess: async (linkId, userId) => {
+    try {
+      const response = await api.get(`/users/access/${linkId}/${userId}`);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  // Add this method inside the w3sService object, alongside other methods
+  acceptUserAccess: async (linkId, userId) => {
+    try {
+      const response = await api.put(`/access/${linkId}/${userId}/accept`);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
 };
 
 export { w3sService };

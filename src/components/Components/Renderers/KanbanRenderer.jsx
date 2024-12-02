@@ -3,8 +3,8 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import KanBanTaskModal from '../../common/KanBanTaskModal';
 import { v4 as uuidv4 } from 'uuid';
 import { useDispatch, useSelector } from 'react-redux';
-import { createComponentData } from '../../../w3s/w3sSlice';
-import { w3sService } from '../../../w3s/w3sService'; // Import w3sService
+import { createComponentData, checkAccess } from '../../../w3s/w3sSlice';
+import { w3sService } from '../../../w3s/w3sService';
 
 // Add this helper function at the top of the file, outside the component
 const findTodoListById = (components, id) => {
@@ -28,6 +28,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const [columnBorderStyle, setColumnBorderStyle] = useState(component.props.columnBorderStyle || {});
   const [columnPadding, setColumnPadding] = useState('16px 8px 12px 8px');
   const [taskCardBorderRadius, setTaskCardBorderRadius] = useState('4px');
+  const [accessRecord, setAccessRecord] = useState(null);
 
   const boardRef = useRef(null);
 
@@ -35,7 +36,47 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const dataFetchedRef = useRef(false);
 
   const allComponents = useSelector(state => state.editor.components);
+  const currentUser = useSelector(state => state.user.currentUser);
   const todoLists = findTodoLists(allComponents);
+
+  // Add useEffect for checking access
+  useEffect(() => {
+    const checkUserAccess = async () => {
+      console.log('Checking Kanban access with:', {
+        componentId: component.props.id,
+        currentUser: currentUser,
+        componentProps: component.props
+      });
+
+      if (!component.props.id) {
+        console.log('No component ID available');
+        return;
+      }
+
+      if (!currentUser?._id) {
+        console.log('No user ID available');
+        return;
+      }
+
+      try {
+        const result = await dispatch(checkAccess({ 
+          linkId: component.props.id, 
+          userId: currentUser._id 
+        })).unwrap();
+        console.log('Kanban access record loaded:', {
+          componentId: component.props.id,
+          userId: currentUser._id,
+          accessRecord: result
+        });
+        setAccessRecord(result);
+      } catch (error) {
+        console.error('Error checking access:', error);
+        setAccessRecord(null);
+      }
+    };
+
+    checkUserAccess();
+  }, [component.props.id, currentUser?._id, dispatch]);
 
   const onDragStart = useCallback(() => {
     if (boardRef.current) {

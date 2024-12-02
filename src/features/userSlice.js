@@ -163,6 +163,23 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
+export const acceptUserAccess = createAsyncThunk(
+  'user/acceptAccess',
+  async ({ linkId, userId }, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await w3sService.acceptUserAccess(linkId, userId);
+      // Refresh projects after accepting access
+      dispatch(fetchProjects());
+      dispatch(fetchSharedProjects());
+      dispatch(showToast({ message: 'Access accepted successfully', type: 'success' }));
+      return response;
+    } catch (error) {
+      dispatch(showToast({ message: 'Failed to accept access', type: 'error' }));
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
 const userSlice = createSlice({
     name: 'user',
     initialState: {
@@ -291,6 +308,25 @@ const userSlice = createSlice({
         state.error = null;
       })
       .addCase(resetPassword.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+      .addCase(acceptUserAccess.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(acceptUserAccess.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        if (action.payload) {
+          const index = state.userAccesses.findIndex(
+            access => access.linkId === action.payload.linkId && 
+                      access.userId === action.payload.userId
+          );
+          if (index !== -1) {
+            state.userAccesses[index] = action.payload;
+          }
+        }
+      })
+      .addCase(acceptUserAccess.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload;
       });

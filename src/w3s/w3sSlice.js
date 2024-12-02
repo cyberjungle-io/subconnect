@@ -248,8 +248,18 @@ export const fetchComponentDataById = createAsyncThunk(
 // Create the setCurrentProject action
 export const setCurrentProject = createAction('w3s/setCurrentProject');
 
-// Add the updateCurrentProject action
-//export const updateCurrentProject = createAction('w3s/updateCurrentProject');
+// Add new async thunk for checking access
+export const checkAccess = createAsyncThunk(
+  'w3s/checkAccess',
+  async ({ linkId, userId }, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.checkAccess(linkId, userId);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to check access');
+    }
+  }
+);
 
 // Add this new async thunk
 export const fetchSharedProjects = createAsyncThunk(
