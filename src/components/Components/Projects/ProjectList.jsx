@@ -4,7 +4,7 @@ import { setCurrentProject, deleteProject, fetchProjects, fetchSharedProjects } 
 import { addUserAccessByEmail } from '../../../features/userSlice';
 import { showToast } from '../../../features/toastSlice';
 import DeleteConfirmModal from '../../common/DeleteConfirmModal';
-import { FaTrash, FaUserPlus, FaPlus, FaEllipsisV } from 'react-icons/fa';
+import { FaTrash, FaUserPlus, FaPlus, FaEllipsisV, FaUser } from 'react-icons/fa';
 import ProjectForm from './ProjectForm';
 
 const ProjectList = ({ onClose, onProjectSettings }) => {
@@ -20,6 +20,19 @@ const ProjectList = ({ onClose, onProjectSettings }) => {
     dispatch(fetchProjects());
     dispatch(fetchSharedProjects());
   }, [dispatch]);
+
+  const getMemberNames = (project) => {
+    const names = [];
+    if (project.creatorUsername) {
+      names.push(`${project.creatorUsername} (Creator)`);
+    }
+    if (project.access_records) {
+      project.access_records.forEach(record => {
+        names.push(record.user_details?.username || record.user_details?.email || 'Unknown User');
+      });
+    }
+    return names.join('\n');
+  };
 
   const handleSelectProject = (project) => {
     dispatch(setCurrentProject(project));
@@ -50,8 +63,6 @@ const ProjectList = ({ onClose, onProjectSettings }) => {
 
   return (
     <div className="p-6">
-      
-      
       {/* New Project Button */}
       <div className="flex justify-between items-center mb-6">
         <span className="text-gray-600 font-medium">Select a project</span>
@@ -88,40 +99,58 @@ const ProjectList = ({ onClose, onProjectSettings }) => {
       )}
       {status === 'succeeded' && (
         <ul className="space-y-3">
-          {[...projects, ...sharedProjects].map((project) => (
-            <li 
-              key={project._id} 
-              className={`
-                flex justify-between items-center p-4 rounded-lg
-                border transition-all duration-200
-                ${currentProject?._id === project._id 
-                  ? 'border-indigo-300 bg-indigo-50 hover:bg-indigo-100' 
-                  : 'border-gray-200 bg-white hover:bg-gray-50'
-                }
-              `}
-            >
-              <span 
-                className="font-medium text-gray-900 flex-grow cursor-pointer"
-                onClick={() => handleSelectProject(project)}
+          {[...projects, ...sharedProjects].map((project) => {
+            const isSelected = currentProject?._id === project._id;
+            return (
+              <li 
+                key={project._id} 
+                className={`
+                  flex justify-between items-center p-4 rounded-lg
+                  border transition-all duration-200
+                  ${isSelected
+                    ? 'border-indigo-300 bg-indigo-50 hover:bg-indigo-100' 
+                    : 'border-gray-200 bg-white hover:bg-gray-50'
+                  }
+                `}
               >
-                {project.name}
-              </span>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onProjectSettings(project);
-                }}
-                className="p-2 text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                title="Project Settings"
-              >
-                <FaEllipsisV size={18} />
-              </button>
-            </li>
-          ))}
+                <span 
+                  className="font-medium text-gray-900 flex-grow cursor-pointer"
+                  onClick={() => handleSelectProject(project)}
+                >
+                  {project.name}
+                </span>
+                <div className="flex items-center gap-8">
+                  <div className="relative group transition-colors duration-200 hover:text-gray-800">
+                    <FaUser className="text-gray-500 transition-colors duration-200 group-hover:text-gray-700" size={16} />
+                    <span className="absolute -top-1 -right-3 text-xs font-medium text-gray-600 transition-colors duration-200 group-hover:text-gray-800">
+                      {(project.access_records?.length || 0) + 1}
+                    </span>
+                    <div className="absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded p-2 whitespace-pre z-10 -left-2 top-8">
+                      {getMemberNames(project)}
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onProjectSettings(project);
+                    }}
+                    className={`p-2 text-gray-400 rounded-full transition-all duration-200 
+                      ${isSelected 
+                        ? 'hover:text-indigo-700 hover:bg-indigo-200' 
+                        : 'hover:text-gray-700 hover:bg-gray-200'
+                      }`}
+                    title="Project Settings"
+                  >
+                    <FaEllipsisV size={18} />
+                  </button>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
 
-      {/* Delete Modal - remains unchanged */}
+      {/* Delete Modal */}
       <DeleteConfirmModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}
