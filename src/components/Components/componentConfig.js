@@ -19,7 +19,7 @@ export const componentConfig = {
     name: 'Flex Container',
     icon: FaColumns,
     acceptsChildren: true,
-    defaultSize: { width: '100%', height: '200px' },
+    defaultSize: { width: '100%', height: '300px' },
     defaultProps: {
       direction: 'row',
       wrap: 'nowrap',

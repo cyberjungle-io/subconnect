@@ -80,6 +80,100 @@ const useDragDrop = (component, onMoveComponent, onAddChild, isDragModeEnabled) 
   return { isDragging, isOver, dragRef: drag, dropRef: drop };
 };
 
+const getComponentStyle = (component, globalSettings, isFlexChild, isTopLevel, parent) => {
+  const { style, type, props } = component;
+  const generalComponentStyle = globalSettings?.generalComponentStyle || defaultGlobalSettings.generalComponentStyle;
+  
+  const componentStyle = {
+    ...generalComponentStyle,
+    ...style,
+    position: 'relative',
+    overflow: 'visible',
+    cursor: style.cursor || (type === "FLEX_CONTAINER" ? "pointer" : "default"),
+    color: style.color || (parent?.style?.color || 'inherit'),
+    boxSizing: 'border-box',
+    borderRadius: style.borderRadius || props.borderRadius || generalComponentStyle.borderRadius || '4px',
+    padding: style.padding || "0px",
+    margin: style.margin || "0px",
+    backgroundColor: style.backgroundColor || 'transparent',
+    boxShadow: style.boxShadow || 'none',
+    opacity: style.opacity || 1,
+    transform: style.transform || 'none',
+    transition: style.transition || 'none',
+    minWidth: style.minWidth || 'auto',
+    minHeight: style.minHeight || 'auto',
+    // Explicitly set width and height from style if available
+    width: style.width || '100%',
+    height: style.height || 'auto',
+  };
+
+  // Handle component-specific styles
+  switch (type) {
+    case 'FLEX_CONTAINER':
+      Object.assign(componentStyle, {
+        display: "flex",
+        flexDirection: style.flexDirection || props.direction || "row",
+        flexWrap: style.flexWrap || props.wrap || "nowrap",
+        alignItems: style.alignItems || props.alignItems || "stretch",
+        justifyContent: style.justifyContent || props.justifyContent || "flex-start",
+        alignContent: style.alignContent || props.alignContent || "stretch",
+        gap: style.gap || "0px",
+        height: style.height || (isTopLevel ? '300px' : 'auto'),
+        minHeight: style.minHeight || '50px',
+      });
+
+      if (style.showBorder !== false) {
+        Object.assign(componentStyle, {
+          borderWidth: style.borderWidth || '1px',
+          borderStyle: style.borderStyle || 'solid',
+          borderColor: style.borderColor || '#000',
+        });
+      }
+      break;
+
+    case 'TEXT':
+      Object.assign(componentStyle, {
+        display: 'flex',
+        flexDirection: 'column',
+        height: style.height || 'auto',
+        minHeight: style.minHeight || '24px',
+      });
+      break;
+
+    case 'CHART':
+      Object.assign(componentStyle, {
+        width: style.width || '100%',
+        height: style.height || '300px',
+        minHeight: style.minHeight || '150px',
+      });
+      break;
+
+    default:
+      Object.assign(componentStyle, {
+        height: style.height || (isTopLevel ? '300px' : 'auto'),
+        minHeight: style.minHeight || '24px',
+      });
+  }
+
+  // Handle flex child properties
+  if (isFlexChild) {
+    Object.assign(componentStyle, {
+      flexGrow: style.flexGrow || 0,
+      flexShrink: style.flexShrink || 1,
+      flexBasis: style.height || style.flexBasis || 'auto',
+      width: style.width || 'auto',
+    });
+  }
+
+  // Ensure explicit dimensions take precedence
+  if (style.width) componentStyle.width = style.width;
+  if (style.height) componentStyle.height = style.height;
+  if (style.maxWidth) componentStyle.maxWidth = style.maxWidth;
+  if (style.maxHeight) componentStyle.maxHeight = style.maxHeight;
+
+  return componentStyle;
+};
+
 const ComponentRenderer = React.memo(({
   component,
   onUpdate,
@@ -350,121 +444,41 @@ const ComponentRenderer = React.memo(({
     }
   };
 
-  const getComponentStyle = () => {
-    const { style, type, props } = component;
-    const generalComponentStyle = globalSettings?.generalComponentStyle || defaultGlobalSettings.generalComponentStyle;
-    
-    const parentHasHover = parent && parent.type === "FLEX_CONTAINER" && (
-      parent.style?.hoverBackgroundColor ||
-      parent.style?.hoverColor ||
-      parent.style?.hoverScale ||
-      parent.style?.hoverTextColor
-    );
-
-    const componentStyle = {
-      ...generalComponentStyle,
-      ...style,
-      position: 'relative',
-      overflow: type === "FLEX_CONTAINER" ? "visible" : "visible",
-      cursor: style.cursor || (parentHasHover ? "pointer" : (type === "FLEX_CONTAINER" ? "pointer" : "default")),
-      color: style.color || parent?.style?.color || 'inherit',
-      boxSizing: 'border-box',
-      borderRadius: style.borderRadius || props.borderRadius || generalComponentStyle.borderRadius || '4px',
-      padding: style.padding || "0px",
-      margin: style.margin || "0px",
-      backgroundColor: style.backgroundColor || 'transparent',
-      boxShadow: style.boxShadow || 'none',
-      opacity: style.opacity || 1,
-      transform: style.transform || 'none',
-      transition: style.transition || 'none',
-      maxWidth: style.maxWidth || '100%',
-      maxHeight: style.maxHeight || '100%',
-      minWidth: style.minWidth || 'auto',
-      minHeight: style.minHeight || 'auto',
-    };
-
-    // Modify the height handling logic
-    
-   if (type === 'CHART') {
-      componentStyle.width = style.width || '100%';
-      componentStyle.height = style.height || '300px';
-      componentStyle.minWidth = style.minWidth || "200px";
-      componentStyle.minHeight = style.minHeight || "150px";
-    } else if (type === 'FLEX_CONTAINER') {
-      // Add specific handling for FLEX_CONTAINER
-      componentStyle.height = style.height || (isTopLevel ? '300px' : 'auto');
-      componentStyle.minHeight = style.minHeight || 'auto';
-      componentStyle.maxHeight = style.maxHeight || 'none';
-    } else if (isTopLevel) {
-      componentStyle.height = style.height || '300px';
-    } else {
-      componentStyle.height = style.height || 'auto';
-    }
-
-    // Only add border for FLEX_CONTAINER
-    if (type === "FLEX_CONTAINER" && style.showBorder !== false) {
-      componentStyle.borderWidth = style.borderWidth || '1px';
-      componentStyle.borderStyle = style.borderStyle || 'solid';
-      componentStyle.borderColor = style.borderColor || '#000';
-    } else {
-      // Remove border for other components
-      componentStyle.border = 'none';
-    }
-
-    if (type === "FLEX_CONTAINER") {
-      Object.assign(componentStyle, {
-        display: "flex",
-        flexDirection: style.flexDirection || props.direction || "row",
-        flexWrap: style.flexWrap || props.wrap || "nowrap",
-        alignItems: style.alignItems || props.alignItems || "stretch",
-        justifyContent: style.justifyContent || props.justifyContent || "flex-start",
-        alignContent: style.alignContent || props.alignContent || "stretch",
-        gap: style.gap || "0px",
-        transition: style.transition || `all ${style.transitionDuration || 200}ms ease-in-out`,
-        minWidth: style.minWidth || 'auto',
-        minHeight: style.minHeight || 'auto',
-        width: style.width || 'auto',
-        height: style.height || 'auto',
-        flexGrow: style.flexGrow || 0,
-        flexShrink: style.flexShrink || 1,
-        flexBasis: style.flexBasis || 'auto',
-      });
-    } else if (isFlexChild) {
-      Object.assign(componentStyle, {
-        flexGrow: style.flexGrow || 0,
-        flexShrink: style.flexShrink || 1,
-        flexBasis: style.flexBasis || 'auto',
-        width: style.width || 'auto',
-        height: style.height || 'auto',
-      });
-    }
-
-    // Add this condition for top-level components
-    if (isTopLevel) {
-      componentStyle.width = '100%';
-    }
-
-    if (style.cursor) {
-      componentStyle.cursor = style.cursor;
-    }
-
-    // Modify the height handling logic for TEXT components
-    if (type === 'TEXT') {
-      componentStyle.height = style.height || '100%'; // Default to 100% for text components
-      componentStyle.display = 'flex'; // Add flex display
-      componentStyle.flexDirection = 'column'; // Stack children vertically
-    }
-
-    return componentStyle;
-  };
-
   const handleResize = (newSize, unit, dimension) => {
-    onUpdate(component.id, {
+    // Ensure minimum sizes
+    const minSize = dimension === 'height' ? 24 : 50;
+    const adjustedSize = Math.max(minSize, newSize);
+
+    // Create a comprehensive style update
+    const updates = {
       style: {
         ...component.style,
-        [dimension]: `${newSize}${unit}`
+        [dimension]: `${adjustedSize}${unit}`,
+        [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]: `${adjustedSize}${unit}`,
+        // Ensure flex-basis is updated for flex children
+        ...(isFlexChild && dimension === 'height' ? { flexBasis: `${adjustedSize}${unit}` } : {}),
       }
-    });
+    };
+
+    // For flex containers, ensure proper flex properties
+    if (component.type === 'FLEX_CONTAINER') {
+      updates.style = {
+        ...updates.style,
+        display: 'flex',
+        flexDirection: component.style.flexDirection || 'row',
+      };
+    }
+
+    // For text components, ensure they maintain proper layout
+    if (component.type === 'TEXT') {
+      updates.style = {
+        ...updates.style,
+        display: 'flex',
+        flexDirection: 'column',
+      };
+    }
+
+    onUpdate(component.id, updates);
   };
 
   const getSize = (dimension) => {
@@ -490,7 +504,7 @@ const ComponentRenderer = React.memo(({
           dragRef(node);
         }}
         style={{
-          ...getComponentStyle(),
+          ...getComponentStyle(component, globalSettings, isFlexChild, isTopLevel, parent),
           ...(isThisComponentSelected && !isViewMode ? { outline: `2px solid ${highlightColor}` } : {}),
           position: 'relative',
         }}
