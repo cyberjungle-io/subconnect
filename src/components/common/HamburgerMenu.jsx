@@ -67,7 +67,7 @@ const HamburgerMenu = ({ onOpenProjectModal }) => {
               <div className="flex justify-between items-center">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">
-                    {currentUser ? `Welcome, ${currentUser.nickname || currentUser.email}` : 'Welcome'}
+                    {currentUser ? `Welcome, ${currentUser.username || currentUser.email}` : 'Welcome'}
                   </h2>
                 </div>
                 <button 
