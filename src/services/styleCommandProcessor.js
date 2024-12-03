@@ -5,11 +5,12 @@ import { SpacingProcessor } from './Processors/SpacingProcessor';
 import { ShadowProcessor } from './Processors/ShadowProcessor';
 import { LayoutProcessor } from './Processors/LayoutProcessor';
 import { ButtonProcessor } from './Processors/ButtonProcessor';
+import { TextProcessor } from './Processors/TextProcessor';
 
 export class StyleCommandProcessor {
-  static lastModifiedProperty = null;  // Track the last modified property
-  static lastModifiedValue = null;     // Track the last value
-  static lastUsedProcessor = null;     // Track the last processor used
+  static lastModifiedProperty = null;
+  static lastModifiedValue = null;
+  static lastUsedProcessor = null;
 
   static processStyleCommand(input, component) {
     console.log('StyleCommandProcessor received input:', input);
@@ -20,15 +21,33 @@ export class StyleCommandProcessor {
       processor: this.lastUsedProcessor?.name
     });
 
-    const processors = [
-      BorderProcessor,
-      LayoutProcessor,
-      SpacingProcessor,
-      SizeProcessor,
-      BackgroundProcessor,
-      ShadowProcessor,
-      ButtonProcessor
-    ];
+    // Check if this is a text-specific command
+    const isTextCommand = /(?:(?:change|set|make)?\s*(?:the)?\s*text\s+(?:to\s+)?(?:color|blue|red|green|yellow|purple|black|white|gray|#[0-9a-fA-F]{3,6})|(?:text|font)\s+(?:color|shadow|size|spacing|height|family|transform|align|style)|(?:make|set|change)\s+(?:the)?\s*text\s+(?:color|style|size|spacing|height|family|transform|align))/i.test(input);
+    
+    console.log('Command type:', isTextCommand ? 'Text Command' : 'Other Command');
+    
+    // Define processor order based on command type
+    const processors = isTextCommand ? 
+      [
+        TextProcessor,
+        BorderProcessor,
+        LayoutProcessor,
+        SpacingProcessor,
+        SizeProcessor,
+        ShadowProcessor,
+        ButtonProcessor,
+        BackgroundProcessor // Move to end for text commands
+      ] :
+      [
+        BorderProcessor,
+        LayoutProcessor,
+        SpacingProcessor,
+        SizeProcessor,
+        BackgroundProcessor,
+        ShadowProcessor,
+        ButtonProcessor,
+        TextProcessor
+      ];
 
     // Check if this is a contextual command (like "make it darker")
     const contextualPattern = /(?:can you |please |could you )?(?:make|set)\s*(?:it|this)\s*(stronger|weaker|lighter|darker|more intense|less intense|more|less)/i;
@@ -48,7 +67,7 @@ export class StyleCommandProcessor {
 
     // Try each processor
     for (const processor of processors) {
-      console.log(`Trying ${processor.name}`);
+      console.log(`Trying ${processor.name}${isTextCommand ? ' (Text Command Mode)' : ''}`);
       const result = processor.processCommand(input, component.style);
       
       if (result) {
@@ -70,7 +89,6 @@ export class StyleCommandProcessor {
     return null;
   }
 
-  // Add method to clear context
   static clearContext() {
     this.lastModifiedProperty = null;
     this.lastModifiedValue = null;
@@ -85,7 +103,8 @@ export class StyleCommandProcessor {
       ...SizeProcessor.getPropertyNames(),
       ...BackgroundProcessor.getPropertyNames(),
       ...ShadowProcessor.getPropertyNames(),
-      ...ButtonProcessor.getPropertyNames()
+      ...ButtonProcessor.getPropertyNames(),
+      ...TextProcessor.getPropertyNames()
     };
   }
 
@@ -97,7 +116,8 @@ export class StyleCommandProcessor {
       ...SizeProcessor.getStylePatterns(),
       ...BackgroundProcessor.getStylePatterns(),
       ...ShadowProcessor.getStylePatterns(),
-      ...ButtonProcessor.getStylePatterns()
+      ...ButtonProcessor.getStylePatterns(),
+      ...TextProcessor.getStylePatterns()
     };
   }
 } 
