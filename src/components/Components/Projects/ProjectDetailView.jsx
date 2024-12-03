@@ -139,17 +139,6 @@ const ProjectDetailView = ({
     return (
       <>
         <div className="p-6 flex flex-col min-h-full">
-          <button
-            onClick={() => {
-              setSelectedPage(null);
-              setIsEditingTitle(false);
-              setIsEditingDescription(false);
-            }}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
-          >
-            <FaArrowLeft className="mr-2" /> Back to Project
-          </button>
-
           <div className="space-y-4 mb-6">
             <div className="flex items-center group">
               {isEditingTitle ? (
@@ -223,22 +212,26 @@ const ProjectDetailView = ({
 
             {/* Components Section */}
             <div>
-              <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <FaFile className="mr-2" /> Components
-              </h4>
-              <div className="bg-white border border-gray-200 rounded-lg">
-                {selectedPage.content?.components && selectedPage.content.components.length > 0 ? (
-                  <ul className="divide-y divide-gray-200">
-                    {selectedPage.content.components.map((component, index) => (
-                      <ComponentItem 
-                        key={component.id || index} 
-                        component={component}
-                      />
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="px-4 py-3 text-gray-500">No components in this page yet.</p>
-                )}
+              <div className="border border-gray-200 rounded-lg">
+                <div className="flex items-center justify-between bg-gray-50 p-3 rounded-t-lg border-b border-gray-200">
+                  <h4 className="text-lg font-semibold text-gray-900 flex items-center">
+                    <FaFile className="mr-2 text-gray-600" /> Components
+                  </h4>
+                </div>
+                <div className="bg-white rounded-b-lg">
+                  {selectedPage.content?.components && selectedPage.content.components.length > 0 ? (
+                    <ul className="divide-y divide-gray-200">
+                      {selectedPage.content.components.map((component, index) => (
+                        <ComponentItem 
+                          key={component.id || index} 
+                          component={component}
+                        />
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="px-4 py-3 text-gray-500">No components in this page yet.</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -269,13 +262,6 @@ const ProjectDetailView = ({
   return (
     <>
       <div className="p-6 flex flex-col min-h-full">
-        <button
-          onClick={onBack}
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
-        >
-          <FaArrowLeft className="mr-2" /> Back to Projects
-        </button>
-
         <h3 className="text-xl font-semibold text-gray-900 mb-6">{project.name}</h3>
 
         {/* Main content grid */}

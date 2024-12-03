@@ -351,18 +351,38 @@ const ProjectModal = ({ isOpen, onClose, initialView = 'list', initialProject = 
     >
       <div className="bg-white w-3/4 h-3/4 rounded-lg flex flex-col overflow-hidden">
         <div className="p-4 flex justify-between items-center border-b">
-          <div className="w-8">
-            {/* Spacer for visual balance */}
+          <div className="flex items-center w-full">
+            <div className="w-1/4 flex items-center">
+              {view !== 'list' && (
+                <button 
+                  onClick={() => {
+                    if (view === 'detail' && selectedPage) {
+                      setSelectedPage(null);
+                    } else {
+                      setView('list');
+                    }
+                  }}
+                  className="flex items-center text-gray-600 hover:text-gray-900"
+                >
+                  <FaArrowLeft className="mr-2" />
+                  {view === 'detail' && selectedPage ? 'Back to Project' : 'Back to Projects'}
+                </button>
+              )}
+            </div>
+            <div className="flex-grow text-center">
+              <h2 className="text-2xl font-bold text-gray-900">
+                {view === 'list' ? 'Projects' : view === 'create-page' ? 'Create Page' : selectedProject?.name}
+              </h2>
+            </div>
+            <div className="w-1/4 flex justify-end">
+              <button 
+                onClick={onClose} 
+                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              >
+                <FaTimes />
+              </button>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900">
-            {view === 'list' ? 'Projects' : view === 'create-page' ? 'Create Page' : selectedProject?.name}
-          </h2>
-          <button 
-            onClick={onClose} 
-            className="w-8 text-gray-400 hover:text-gray-600 transition-colors duration-200"
-          >
-            <FaTimes />
-          </button>
         </div>
         <div className="flex-grow overflow-auto">
           {renderContent()}
