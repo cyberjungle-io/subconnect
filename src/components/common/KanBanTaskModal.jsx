@@ -44,8 +44,12 @@ const KanBanTaskModal = ({ isOpen, onClose, onSubmit, task, isReadOnly }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" 
+         style={{ zIndex: 9999 }}
+    >
+      <div className="bg-white rounded-lg p-6 w-full max-w-2xl" 
+           style={{ position: 'relative' }}
+      >
         <h2 className="text-2xl font-bold mb-4">
           {task ? 'Edit Task' : 'New Task'}
         </h2>
