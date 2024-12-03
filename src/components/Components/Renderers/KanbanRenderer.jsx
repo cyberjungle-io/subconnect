@@ -391,7 +391,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
         )}
       </div>
 
-      <div ref={boardRef} className="kanban-board flex-1">
+      <div ref={boardRef} className="kanban-board flex-1 overflow-hidden">
         <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
           <div className="flex h-full p-4 w-full">
             {Object.values(columns).map((column) => (
@@ -400,19 +400,41 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                 className="flex-1 mx-2 first:ml-0 last:mr-0 bg-gray-100 rounded-lg flex flex-col min-w-[200px] max-w-[300px]"
                 style={{
                   ...columnBorderStyle,
-                  padding: columnPadding,
+                  padding: '12px',
                   flex: '1 1 0%',
                   width: '0',
+                  height: '100%',
+                  overflow: 'hidden',
                 }}
                 onDoubleClick={(e) => handleDoubleClick(e, column.id)}
               >
-                <h2 className="text-lg font-semibold mb-4">{column.title}</h2>
+                <div 
+                  className="sticky top-0 bg-gray-100 z-10"
+                  style={{ 
+                    padding: columnPadding,
+                    margin: '-12px -12px 0',
+                    borderTopLeftRadius: columnBorderStyle.borderRadius || '4px',
+                    borderTopRightRadius: columnBorderStyle.borderRadius || '4px',
+                  }}
+                >
+                  <h2 className="text-lg font-semibold mb-4">{column.title}</h2>
+                </div>
+
                 <Droppable droppableId={column.id}>
                   {(provided) => (
                     <div
                       ref={provided.innerRef}
                       {...provided.droppableProps}
-                      className="flex-1 min-h-[200px] overflow-y-auto"
+                      className="flex-1 overflow-y-auto"
+                      style={{
+                        height: '100%',
+                        minHeight: '100px',
+                        maxHeight: 'calc(100% - 60px)',
+                        marginTop: '12px',
+                        borderBottomLeftRadius: columnBorderStyle.borderRadius || '4px',
+                        borderBottomRightRadius: columnBorderStyle.borderRadius || '4px',
+                        padding: '0 12px 12px 12px',
+                      }}
                     >
                       {column.tasks.map((task, index) => (
                         <Draggable
