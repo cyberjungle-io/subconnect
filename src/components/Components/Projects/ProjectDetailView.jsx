@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FaUserPlus, FaTrash, FaArrowLeft, FaUser, FaFile, FaEllipsisV, FaEdit, FaChevronRight, FaChevronDown } from 'react-icons/fa';
+import { FaUserPlus, FaTrash, FaArrowLeft, FaUser, FaFile, FaEllipsisV, FaEdit, FaChevronRight, FaChevronDown, FaPlus } from 'react-icons/fa';
+import DeleteConfirmModal from '../../common/DeleteConfirmModal';
 
 const ComponentItem = ({ component, depth = 0 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -67,10 +68,21 @@ const ComponentItem = ({ component, depth = 0 }) => {
   );
 };
 
-const ProjectDetailView = ({ project, initialPage = null, onBack, onAddUser, onDelete, onUpdatePage, onDeletePage }) => {
+const ProjectDetailView = ({ 
+  project, 
+  initialPage = null, 
+  onBack, 
+  onAddUser, 
+  onDelete, 
+  onUpdatePage, 
+  onDeletePage,
+  onCreatePage 
+}) => {
   const [selectedPage, setSelectedPage] = useState(initialPage);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteType, setDeleteType] = useState(null);
 
   // Initialize selectedPage when initialPage changes
   useEffect(() => {
@@ -89,215 +101,279 @@ const ProjectDetailView = ({ project, initialPage = null, onBack, onAddUser, onD
     setSelectedPage(null);
   };
 
-  const handleDeletePage = () => {
-    onDeletePage?.(selectedPage);
-    setSelectedPage(null);
+  const handleDeletePageClick = () => {
+    setDeleteType('page');
+    setDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteType === 'page') {
+      onDeletePage?.(selectedPage);
+      setSelectedPage(null);
+    } else if (deleteType === 'project') {
+      onDelete?.(project._id);
+    }
+    setDeleteModalOpen(false);
+  };
+
+  const handleDeleteProjectClick = () => {
+    setDeleteType('project');
+    setDeleteModalOpen(true);
+  };
+
+  const getDeleteModalConfig = () => {
+    if (deleteType === 'page') {
+      return {
+        title: 'Delete Page',
+        message: `Are you sure you want to delete the page "${selectedPage?.name}"? This action cannot be undone.`
+      };
+    }
+    return {
+      title: 'Delete Project',
+      message: `Are you sure you want to delete the project "${project?.name}"? This action cannot be undone.`
+    };
   };
 
   // Page Settings View
   if (selectedPage) {
     return (
-      <div className="p-6 flex flex-col min-h-full">
-        <button
-          onClick={() => {
-            setSelectedPage(null);
-            setIsEditingTitle(false);
-            setIsEditingDescription(false);
-          }}
-          className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
-        >
-          <FaArrowLeft className="mr-2" /> Back to Project
-        </button>
+      <>
+        <div className="p-6 flex flex-col min-h-full">
+          <button
+            onClick={() => {
+              setSelectedPage(null);
+              setIsEditingTitle(false);
+              setIsEditingDescription(false);
+            }}
+            className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
+          >
+            <FaArrowLeft className="mr-2" /> Back to Project
+          </button>
 
-        <div className="space-y-4 mb-6">
-          <div className="flex items-center group">
-            {isEditingTitle ? (
-              <input
-                type="text"
-                value={selectedPage.name}
-                onChange={(e) => setSelectedPage({ ...selectedPage, name: e.target.value })}
-                onBlur={() => setIsEditingTitle(false)}
-                autoFocus
-                className="text-xl font-semibold text-gray-900 bg-transparent border-none p-0 w-full focus:outline-none focus:ring-0"
-                placeholder="Page Name"
-              />
-            ) : (
-              <h3 className="text-xl font-semibold text-gray-900">{selectedPage.name}</h3>
-            )}
-            <button
-              onClick={() => setIsEditingTitle(true)}
-              className="ml-2 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            >
-              <FaEdit size={14} />
-            </button>
-          </div>
-
-          <div className="flex items-start group">
-            {isEditingDescription ? (
-              <textarea
-                value={selectedPage.description || ''}
-                onChange={(e) => setSelectedPage({ ...selectedPage, description: e.target.value })}
-                onBlur={() => setIsEditingDescription(false)}
-                autoFocus
-                placeholder="Add a description..."
-                className="w-full text-gray-600 bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
-                rows={2}
-              />
-            ) : (
-              <p className="text-gray-600">
-                {selectedPage.description || 'No description'}
-              </p>
-            )}
-            <button
-              onClick={() => setIsEditingDescription(true)}
-              className="ml-2 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-1"
-            >
-              <FaEdit size={14} />
-            </button>
-          </div>
-        </div>
-
-        {/* Main content grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow">
-          {/* Users Section */}
-          <div>
-            <div className="flex justify-between items-center mb-4">
-              <h4 className="text-lg font-semibold text-gray-900 flex items-center">
-                <FaUser className="mr-2" /> Users
-              </h4>
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center group">
+              {isEditingTitle ? (
+                <input
+                  type="text"
+                  value={selectedPage.name}
+                  onChange={(e) => setSelectedPage({ ...selectedPage, name: e.target.value })}
+                  onBlur={() => setIsEditingTitle(false)}
+                  autoFocus
+                  className="text-xl font-semibold text-gray-900 bg-transparent border-none p-0 w-full focus:outline-none focus:ring-0"
+                  placeholder="Page Name"
+                />
+              ) : (
+                <h3 className="text-xl font-semibold text-gray-900">{selectedPage.name}</h3>
+              )}
               <button
-                className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
+                onClick={() => setIsEditingTitle(true)}
+                className="ml-2 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
               >
-                <FaUserPlus className="text-xl" />
+                <FaEdit size={14} />
               </button>
             </div>
-            <div className="bg-white border border-gray-200 rounded-lg">
-              <p className="px-4 py-3 text-gray-500">No users added to this page yet.</p>
-            </div>
-          </div>
 
-          {/* Components Section */}
-          <div>
-            <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <FaFile className="mr-2" /> Components
-            </h4>
-            <div className="bg-white border border-gray-200 rounded-lg">
-              {selectedPage.content?.components && selectedPage.content.components.length > 0 ? (
-                <ul className="divide-y divide-gray-200">
-                  {selectedPage.content.components.map((component, index) => (
-                    <ComponentItem 
-                      key={component.id || index} 
-                      component={component}
-                    />
-                  ))}
-                </ul>
+            <div className="flex items-start group">
+              {isEditingDescription ? (
+                <textarea
+                  value={selectedPage.description || ''}
+                  onChange={(e) => setSelectedPage({ ...selectedPage, description: e.target.value })}
+                  onBlur={() => setIsEditingDescription(false)}
+                  autoFocus
+                  placeholder="Add a description..."
+                  className="w-full text-gray-600 bg-transparent border-none p-0 resize-none focus:outline-none focus:ring-0"
+                  rows={2}
+                />
               ) : (
-                <p className="px-4 py-3 text-gray-500">No components in this page yet.</p>
+                <p className="text-gray-600">
+                  {selectedPage.description || 'No description'}
+                </p>
               )}
+              <button
+                onClick={() => setIsEditingDescription(true)}
+                className="ml-2 text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-1"
+              >
+                <FaEdit size={14} />
+              </button>
             </div>
+          </div>
+
+          {/* Main content grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow">
+            {/* Users Section */}
+            <div>
+              <div className="border border-gray-200 rounded-lg">
+                <div className="flex justify-between items-center bg-gray-50 p-3 rounded-t-lg border-b border-gray-200">
+                  <h4 className="text-lg font-semibold text-gray-900 flex items-center">
+                    <FaUser className="mr-2 text-gray-600" /> Users
+                  </h4>
+                  <button
+                    onClick={() => onAddUser(project._id)}
+                    className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                    title="Add User"
+                  >
+                    <FaUserPlus className="text-xl" />
+                  </button>
+                </div>
+                <div className="bg-white rounded-b-lg">
+                  <p className="px-4 py-3 text-gray-500">No users added to this page yet.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Components Section */}
+            <div>
+              <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <FaFile className="mr-2" /> Components
+              </h4>
+              <div className="bg-white border border-gray-200 rounded-lg">
+                {selectedPage.content?.components && selectedPage.content.components.length > 0 ? (
+                  <ul className="divide-y divide-gray-200">
+                    {selectedPage.content.components.map((component, index) => (
+                      <ComponentItem 
+                        key={component.id || index} 
+                        component={component}
+                      />
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="px-4 py-3 text-gray-500">No components in this page yet.</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Delete Page Button */}
+          <div className="flex justify-end mt-auto pt-6">
+            <button
+              onClick={handleDeletePageClick}
+              className="flex items-center justify-center px-4 py-2 text-sm text-red-600 hover:text-white border border-red-600 hover:bg-red-600 rounded transition-colors duration-200"
+            >
+              <FaTrash className="mr-2" />
+              Delete Page
+            </button>
           </div>
         </div>
 
-        {/* Delete Page Button */}
-        <div className="flex justify-end mt-auto pt-6">
-          <button
-            onClick={handleDeletePage}
-            className="flex items-center justify-center px-4 py-2 text-sm text-red-600 hover:text-white border border-red-600 hover:bg-red-600 rounded transition-colors duration-200"
-          >
-            <FaTrash className="mr-2" />
-            Delete Page
-          </button>
-        </div>
-      </div>
+        <DeleteConfirmModal
+          isOpen={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          onDelete={handleDeleteConfirm}
+          {...getDeleteModalConfig()}
+        />
+      </>
     );
   }
 
   // Project Detail View
   return (
-    <div className="p-6 flex flex-col min-h-full">
-      <button
-        onClick={onBack}
-        className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
-      >
-        <FaArrowLeft className="mr-2" /> Back to Projects
-      </button>
-
-      <h3 className="text-xl font-semibold text-gray-900 mb-6">{project.name}</h3>
-
-      {/* Main content grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow">
-        {/* Users Section */}
-        <div>
-          <div className="flex justify-between items-center mb-4">
-            <h4 className="text-lg font-semibold text-gray-900 flex items-center">
-              <FaUser className="mr-2" /> Users
-            </h4>
-            <button
-              onClick={() => onAddUser(project._id)}
-              className="text-gray-600 hover:text-gray-900 transition-colors duration-200"
-            >
-              <FaUserPlus className="text-xl" />
-            </button>
-          </div>
-          <div className="bg-white border border-gray-200 rounded-lg">
-            <ul className="divide-y divide-gray-200">
-              {/* Project Owner */}
-              <li className="px-4 py-3 flex items-center justify-between">
-                <span className="text-gray-700">
-                  {project.creatorUsername || 'Unknown Owner'}
-                </span>
-                <span className="text-sm font-medium text-blue-600">Owner</span>
-              </li>
-              
-              {/* Other Users */}
-              {project.access_records?.map((record, index) => (
-                <li key={index} className="px-4 py-3 flex items-center justify-between">
-                  <span className="text-gray-700">{record.user_details.email}</span>
-                  <span className="text-sm text-gray-500">Member</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* Pages Section */}
-        <div>
-          <h4 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-            <FaFile className="mr-2" /> Pages
-          </h4>
-          <div className="bg-white border border-gray-200 rounded-lg">
-            {project.pages && project.pages.length > 0 ? (
-              <ul className="divide-y divide-gray-200">
-                {project.pages.map((page, index) => (
-                  <li key={index} className="px-4 py-3 flex items-center justify-between">
-                    <span className="text-gray-700">{page.name}</span>
-                    <button
-                      onClick={(e) => handlePageSettings(page, e)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
-                    >
-                      <FaEllipsisV />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="px-4 py-3 text-gray-500">No pages in this project yet.</p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Delete Project Button */}
-      <div className="flex justify-end mt-auto pt-6">
+    <>
+      <div className="p-6 flex flex-col min-h-full">
         <button
-          onClick={() => onDelete(project._id)}
-          className="flex items-center justify-center px-4 py-2 text-sm text-red-600 hover:text-white border border-red-600 hover:bg-red-600 rounded transition-colors duration-200"
+          onClick={onBack}
+          className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
         >
-          <FaTrash className="mr-2" />
-          Delete Project
+          <FaArrowLeft className="mr-2" /> Back to Projects
         </button>
+
+        <h3 className="text-xl font-semibold text-gray-900 mb-6">{project.name}</h3>
+
+        {/* Main content grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow">
+          {/* Users Section */}
+          <div>
+            <div className="border border-gray-200 rounded-lg">
+              <div className="flex justify-between items-center bg-gray-50 p-3 rounded-t-lg border-b border-gray-200">
+                <h4 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <FaUser className="mr-2 text-gray-600" /> Users
+                </h4>
+                <button
+                  onClick={() => onAddUser(project._id)}
+                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                  title="Add User"
+                >
+                  <FaUserPlus className="text-xl" />
+                </button>
+              </div>
+              <div className="bg-white rounded-b-lg">
+                <ul className="divide-y divide-gray-200">
+                  {/* Project Owner */}
+                  <li className="px-4 py-3 flex items-center justify-between">
+                    <span className="text-gray-700">
+                      {project.creatorUsername || 'Unknown Owner'}
+                    </span>
+                    <span className="text-sm font-medium text-blue-600">Owner</span>
+                  </li>
+                  
+                  {/* Other Users */}
+                  {project.access_records?.map((record, index) => (
+                    <li key={index} className="px-4 py-3 flex items-center justify-between">
+                      <span className="text-gray-700">{record.user_details.email}</span>
+                      <span className="text-sm text-gray-500">Member</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Pages Section */}
+          <div>
+            <div className="border border-gray-200 rounded-lg">
+              <div className="flex justify-between items-center bg-gray-50 p-3 rounded-t-lg border-b border-gray-200">
+                <h4 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <FaFile className="mr-2 text-gray-600" /> Pages
+                </h4>
+                <button
+                  onClick={onCreatePage}
+                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                  title="Add Page"
+                >
+                  <FaPlus className="text-xl" />
+                </button>
+              </div>
+              <div className="bg-white rounded-b-lg">
+                {project.pages && project.pages.length > 0 ? (
+                  <ul className="divide-y divide-gray-200">
+                    {project.pages.map((page, index) => (
+                      <li key={index} className="px-4 py-3 flex items-center justify-between">
+                        <span className="text-gray-700">{page.name}</span>
+                        <button
+                          onClick={(e) => handlePageSettings(page, e)}
+                          className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                        >
+                          <FaEllipsisV />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="px-4 py-3 text-gray-500">No pages in this project yet.</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Delete Project Button */}
+        <div className="flex justify-end mt-auto pt-6">
+          <button
+            onClick={handleDeleteProjectClick}
+            className="flex items-center justify-center px-4 py-2 text-sm text-red-600 hover:text-white border border-red-600 hover:bg-red-600 rounded transition-colors duration-200"
+          >
+            <FaTrash className="mr-2" />
+            Delete Project
+          </button>
+        </div>
       </div>
-    </div>
+
+      <DeleteConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onDelete={handleDeleteConfirm}
+        {...getDeleteModalConfig()}
+      />
+    </>
   );
 };
 

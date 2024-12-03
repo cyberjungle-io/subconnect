@@ -17,6 +17,7 @@ const PageList = ({
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [selectedPage, setSelectedPage] = useState(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [modalView, setModalView] = useState('detail');
 
   // Create a style tag for dynamic hover effect and selected page
   useEffect(() => {
@@ -39,12 +40,14 @@ const PageList = ({
 
   const handleNewPage = () => {
     setSelectedPage(null);
+    setModalView('create-page');
     setIsProjectModalOpen(true);
   };
 
   const handleSettingsClick = (e, page) => {
     e.stopPropagation();
     setSelectedPage(page);
+    setModalView('detail');
     setIsProjectModalOpen(true);
   };
 
@@ -94,8 +97,9 @@ const PageList = ({
         onClose={() => {
           setIsProjectModalOpen(false);
           setSelectedPage(null);
+          setModalView('detail');
         }}
-        initialView="detail"
+        initialView={modalView}
         initialProject={currentProject}
         initialPage={selectedPage}
       />

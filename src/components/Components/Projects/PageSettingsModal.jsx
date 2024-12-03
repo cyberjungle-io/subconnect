@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import Modal from '../../common/Modal';
-import { FaEdit, FaTrash, FaFileAlt } from 'react-icons/fa';
+import React, { useState, useEffect } from "react";
+import Modal from "../../common/Modal";
+import { FaEdit, FaTrash, FaFileAlt } from "react-icons/fa";
 
 const PageSettingsModal = ({ isOpen, onClose, page, onDelete, onSave }) => {
-  const [name, setName] = useState(page?.name || '');
-  const [description, setDescription] = useState(page?.description || '');
+  const [name, setName] = useState(page?.name || "");
+  const [description, setDescription] = useState(page?.description || "");
 
   useEffect(() => {
-    setName(page?.name || '');
-    setDescription(page?.description || '');
+    setName(page?.name || "");
+    setDescription(page?.description || "");
   }, [page]);
 
   const handleSubmit = (e) => {
@@ -31,13 +31,17 @@ const PageSettingsModal = ({ isOpen, onClose, page, onDelete, onSave }) => {
     <Modal isOpen={isOpen} onClose={onClose} extraButton={deleteButton}>
       <div className="p-6">
         <div className="text-center mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">Page Settings</h3>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">
+            Page Settings
+          </h3>
           <p className="text-gray-600">Customize your page settings</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Page Name</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Page Name
+            </label>
             <div className="relative flex items-center">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                 <FaEdit className="h-4 w-4 text-gray-400" />
@@ -52,9 +56,11 @@ const PageSettingsModal = ({ isOpen, onClose, page, onDelete, onSave }) => {
               />
             </div>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description
+            </label>
             <div className="relative">
               <div className="absolute top-3 left-0 pl-3 flex items-start pointer-events-none z-10">
                 <FaFileAlt className="h-4 w-4 text-gray-400" />
@@ -76,7 +82,7 @@ const PageSettingsModal = ({ isOpen, onClose, page, onDelete, onSave }) => {
             >
               Save Changes
             </button>
-            
+
             <button
               type="button"
               onClick={onClose}
@@ -91,4 +97,4 @@ const PageSettingsModal = ({ isOpen, onClose, page, onDelete, onSave }) => {
   );
 };
 
-export default PageSettingsModal; 
+export default PageSettingsModal;
