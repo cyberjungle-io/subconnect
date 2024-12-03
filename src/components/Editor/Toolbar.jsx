@@ -59,7 +59,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
   const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);
   const { mode, currentPage } = useSelector((state) => state.editor);
-  const currentProject = useSelector((state) => state.w3s.currentProject.data);
+  const currentProject = useSelector((state) => state.w3s.currentProject);
   const pageListRef = useRef(null);
   const toolbarSettings = useSelector(state => state.editor.toolbarSettings) || {};
 
@@ -175,14 +175,14 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
             </button>
 
             {/* Project dropdown - only visible when there's a current project */}
-            {currentProject && (
+            {currentProject?.data && currentProject.data._id && (
               <div className="relative" ref={pageListRef}>
                 <button
                   onClick={toggleProjectInfo}
                   className="toolbar-button flex flex-col items-start px-3 py-1.5 pr-8 rounded text-sm transition-colors"
                   style={buttonStyle}
                 >
-                  <span className="font-semibold">{currentProject.name}</span>
+                  <span className="font-semibold">{currentProject.data.name}</span>
                   {currentPage && (
                     <div className="current-page-name text-xs">{currentPage.name}</div>
                   )}
@@ -198,7 +198,7 @@ const Toolbar = ({ onSelectPage, onDeletePage, onSaveProject, onOpenProjectModal
                     <div className="current-project-container">
                       <div className="page-list-container max-h-48 overflow-y-auto">
                         <PageList
-                          projectId={currentProject._id}
+                          projectId={currentProject.data._id}
                           selectedPageId={currentPage?._id}
                           onSelectPage={onSelectPage}
                           onDeletePage={onDeletePage}

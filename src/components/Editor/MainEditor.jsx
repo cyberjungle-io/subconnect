@@ -200,15 +200,27 @@ const MainEditor = () => {
       return;
     }
 
-    console.log("Saving Project");
+    console.log("Saving Project - Current Project Data:", currentProject);
     
-    if (currentProject && currentProject._id) {
-      console.log("Saving project:", currentProject._id);
+    // Check if currentProject exists and has valid data
+    if (!currentProject || !currentProject._id) {
+      console.error('No project selected or invalid project data');
+      dispatch(showToast({ message: 'Error: No project selected', type: 'error' }));
+      return;
+    }
+
+    // Use currentProject.data as it contains the project data
+    const projectToUpdate = { ...currentProject};
+    
+    console.log("Project to update:", projectToUpdate);
+
+    if (projectToUpdate && projectToUpdate._id) {
+      console.log("Saving project:", projectToUpdate._id);
       
       const updatedProject = {
-        ...currentProject,
+        ...projectToUpdate,
         toolbarSettings: toolbarSettings,
-        pages: currentProject.pages.map(page => {
+        pages: projectToUpdate.pages.map(page => {
           if (page._id === currentPage._id) {
             const updatedComponents = components.map(component => ({
               ...component,
@@ -232,12 +244,30 @@ const MainEditor = () => {
         }),
       };
       
-      console.log("updatedProject:", updatedProject);
-      dispatch(updateProject(updatedProject));
-      dispatch(showToast({ message: 'Project saved successfully!', type: 'success' }));
+      console.log("Final updatedProject structure:", updatedProject);
+      dispatch(updateProject(updatedProject))
+        .unwrap()
+        .then((response) => {
+          dispatch(showToast({ message: 'Project saved successfully!', type: 'success' }));
+          // Refresh the project data after saving
+          if (projectToUpdate._id) {
+            dispatch(fetchProject(projectToUpdate._id))
+              .unwrap()
+              .then((fetchedProject) => {
+                console.log("Project refreshed after save:", fetchedProject);
+              })
+              .catch((error) => {
+                console.error('Error refreshing project:', error);
+              });
+          }
+        })
+        .catch(error => {
+          console.error('Error saving project:', error);
+          dispatch(showToast({ message: 'Error saving project: ' + error.message, type: 'error' }));
+        });
     } else {
-      console.error('No current project selected');
-      dispatch(showToast({ message: 'Error: No project selected', type: 'error' }));
+      console.error('Invalid project data - Project structure:', projectToUpdate);
+      dispatch(showToast({ message: 'Error: Invalid project data', type: 'error' }));
     }
   };
 
