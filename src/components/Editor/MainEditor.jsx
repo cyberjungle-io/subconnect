@@ -16,9 +16,11 @@ import {
   setCurrentPage,
   updateToolbarSettings,
 } from '../../features/editorSlice';
-import { updateProject as updateW3SProject } from '../../w3s/w3sSlice';
+import { 
+  updateProject,
+  updateCurrentProject,
+} from '../../w3s/w3sSlice';
 import Toast from '../common/Toast';
-import { updateProject } from '../../w3s/w3sSlice';
 import { showToast } from '../../features/toastSlice';
 import { useParams } from 'react-router-dom';
 import { fetchProject, fetchQueries } from '../../w3s/w3sSlice';
@@ -190,7 +192,7 @@ const MainEditor = () => {
   const handleDeletePage = (pageIndex) => {
     if (window.confirm('Are you sure you want to delete this page?') && currentProject) {
       const updatedPages = currentProject.pages.filter((_, index) => index !== pageIndex);
-      dispatch(updateW3SProject({ ...currentProject, pages: updatedPages }));
+      dispatch(updateProject({ ...currentProject, pages: updatedPages }));
     }
   };
 
@@ -202,14 +204,12 @@ const MainEditor = () => {
 
     console.log("Saving Project - Current Project Data:", currentProject);
     
-    // Check if currentProject exists and has valid data
     if (!currentProject || !currentProject._id) {
       console.error('No project selected or invalid project data');
       dispatch(showToast({ message: 'Error: No project selected', type: 'error' }));
       return;
     }
 
-    // Use currentProject.data as it contains the project data
     const projectToUpdate = { ...currentProject};
     
     console.log("Project to update:", projectToUpdate);
@@ -245,21 +245,21 @@ const MainEditor = () => {
       };
       
       console.log("Final updatedProject structure:", updatedProject);
+      
+      // First update the current project in the store
+      dispatch(updateCurrentProject(updatedProject));
+      
+      // Then save to backend
       dispatch(updateProject(updatedProject))
         .unwrap()
         .then((response) => {
           dispatch(showToast({ message: 'Project saved successfully!', type: 'success' }));
-          // Refresh the project data after saving
-          if (projectToUpdate._id) {
-            dispatch(fetchProject(projectToUpdate._id))
-              .unwrap()
-              .then((fetchedProject) => {
-                console.log("Project refreshed after save:", fetchedProject);
-              })
-              .catch((error) => {
-                console.error('Error refreshing project:', error);
-              });
-          }
+          // Update any backend-modified data while preserving current state
+          dispatch(updateCurrentProject({
+            ...updatedProject,
+            ...response,
+            pages: response.pages || updatedProject.pages
+          }));
         })
         .catch(error => {
           console.error('Error saving project:', error);

@@ -367,7 +367,11 @@ const w3sSlice = createSlice({
       })
       .addCase(fetchProject.fulfilled, (state, action) => {
         state.currentProject.status = 'succeeded';
-        state.currentProject.data = action.payload;
+        state.currentProject.data = {
+          ...state.currentProject.data,
+          ...action.payload,
+          pages: action.payload.pages
+        };
         state.currentProject.error = null;
       })
       .addCase(fetchProject.rejected, (state, action) => {
@@ -378,11 +382,17 @@ const w3sSlice = createSlice({
       // Update Project
       .addCase(updateProject.fulfilled, (state, action) => {
         const updatedProject = action.payload;
-        state.currentProject.data = updatedProject;
+        state.currentProject.data = {
+          ...state.currentProject.data,
+          ...updatedProject,
+          pages: updatedProject.pages || state.currentProject.data.pages,
+          _id: updatedProject._id || state.currentProject.data._id,
+        };
         const index = state.projects.list.findIndex(project => project._id === updatedProject._id);
         if (index !== -1) {
           state.projects.list[index] = updatedProject;
         }
+        state.currentProject.status = 'succeeded';
       })
 
       // Delete Project
