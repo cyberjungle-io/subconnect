@@ -1,12 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { useDispatch,useSelector } from 'react-redux';
-import { v4 as uuidv4 } from "uuid";
+import {useSelector } from 'react-redux';
+
 import {
   alignComponentsUtil,
   distributeComponentsUtil,
 } from "../utils/alignmentUtils";
-import { componentConfig, componentTypes } from "../components/Components/componentConfig";
-import { createComponent, updateComponent as updateComponentUtil } from "../components/Components/componentFactory";
+import { componentConfig } from "../components/Components/componentConfig";
+import { createComponent } from "../components/Components/componentFactory";
 import { defaultGlobalSettings } from '../utils/defaultGlobalSettings';
 import { saveComponent } from './savedComponentsSlice';
 
@@ -589,16 +589,6 @@ export const editorSlice = createSlice({
       state.canvasSettings = {
         ...state.canvasSettings,
         ...action.payload,
-      };
-    },
-    updateGlobalSettings: (state, action) => {
-      state.globalSettings = {
-        ...state.globalSettings,
-        ...action.payload,
-        style: {
-          ...state.globalSettings.style,
-          ...(action.payload.style || {}),
-        },
       };
     },
     updateKanbanBoard: (state, action) => {

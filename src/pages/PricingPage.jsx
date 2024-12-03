@@ -29,9 +29,12 @@ const PricingTier = ({ title, monthlyPrice, yearlyPrice, features, isPopular, is
       ))}
     </ul>
     <div className="mt-auto">
-      <a href="#" className={`text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center ${isPopular ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-600 hover:bg-gray-700'}`}>
+      <button 
+        className={`text-white font-medium rounded-lg text-sm px-5 py-2.5 text-center ${isPopular ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-600 hover:bg-gray-700'}`}
+        onClick={() => {/* Add your subscription logic here */}}
+      >
         Get started
-      </a>
+      </button>
     </div>
   </div>
 );

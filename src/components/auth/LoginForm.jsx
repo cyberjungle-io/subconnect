@@ -233,8 +233,7 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
                   Remember me
                 </label>
               </div>
-              <a 
-                href="#" 
+              <button 
                 onClick={(e) => {
                   e.preventDefault();
                   setShowForgotPassword(true);
@@ -242,7 +241,7 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
                 className="text-indigo-600 hover:text-indigo-700 font-medium"
               >
                 Forgot password?
-              </a>
+              </button>
             </div>
 
             <button
@@ -258,9 +257,9 @@ const LoginForm = ({ onClose, initialView = 'login', onShowRegister }) => {
           <div className="mt-6 text-center">
             <p className="text-gray-600">
               Don't have an account?{' '}
-              <a href="#" onClick={handleShowRegister} className="text-indigo-600 hover:text-indigo-700 font-medium">
+              <button href="#" onClick={handleShowRegister} className="text-indigo-600 hover:text-indigo-700 font-medium">
                 Sign up
-              </a>
+              </button>
             </p>
           </div>
         </div>

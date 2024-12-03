@@ -74,7 +74,6 @@ const savedComponentsSlice = createSlice({
         state.error = action.error.message;
       })
       .addCase(saveSingleComponent.fulfilled, (state, action) => {
-        const existingIndex = state.items.findIndex(comp => comp.id === action.payload.id);
         state.status = 'succeeded';
         state.items = action.payload;
       })

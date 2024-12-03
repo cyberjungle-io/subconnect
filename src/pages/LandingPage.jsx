@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Modal from '../components/common/Modal';
 import LoginForm from '../components/auth/LoginForm';
-import RegisterForm from '../components/auth/RegisterForm';
+
 import LandingPageGraphic_2 from '../pages/Images/LandingPageGraphic_2.svg';
 
 const LandingPage = () => {
@@ -367,19 +367,19 @@ const LandingPage = () => {
             <div>
               <h3 className="font-bold text-gray-900 mb-4">Product</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">Features</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">Pricing</a></li>
+                <li><Link to="/features" className="text-gray-600 hover:text-indigo-600">Features</Link></li>
+                <li><Link to="/pricing" className="text-gray-600 hover:text-indigo-600">Pricing</Link></li>
                 <li><Link to="/docs" className="text-gray-600 hover:text-indigo-600">Documentation</Link></li>
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">Updates</a></li>
+                <li><Link to="/updates" className="text-gray-600 hover:text-indigo-600">Updates</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="font-bold text-gray-900 mb-4">Company</h3>
               <ul className="space-y-2">
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">About</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">Blog</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">Careers</a></li>
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">Contact</a></li>
+                <li><Link to="/about" className="text-gray-600 hover:text-indigo-600">About</Link></li>
+                <li><Link to="/blog" className="text-gray-600 hover:text-indigo-600">Blog</Link></li>
+                <li><Link to="/careers" className="text-gray-600 hover:text-indigo-600">Careers</Link></li>
+                <li><Link to="/contact" className="text-gray-600 hover:text-indigo-600">Contact</Link></li>
               </ul>
             </div>
             <div>
@@ -395,7 +395,7 @@ const LandingPage = () => {
                     Terms
                   </Link>
                 </li>
-                <li><a href="#" className="text-gray-600 hover:text-indigo-600">Security</a></li>
+                <li><Link to="/security" className="text-gray-600 hover:text-indigo-600">Security</Link></li>
               </ul>
             </div>
           </div>
@@ -419,14 +419,14 @@ const LandingPage = () => {
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                 </svg>
               </a>
-              <a href="#" className="text-gray-600 hover:text-indigo-600">
+              <button href="#" className="text-gray-600 hover:text-indigo-600">
                 <span className="sr-only">GitHub</span>
                 {/* Add GitHub icon */}
-              </a>
-              <a href="#" className="text-gray-600 hover:text-indigo-600">
+              </button>
+              <button className="text-gray-600 hover:text-indigo-600">
                 <span className="sr-only">LinkedIn</span>
                 {/* Add LinkedIn icon */}
-              </a>
+              </button>
             </div>
           </div>
         </div>
