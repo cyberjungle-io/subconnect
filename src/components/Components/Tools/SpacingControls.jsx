@@ -16,7 +16,7 @@ const MARGIN_PRESETS = {
 
 const UNITS = ["px", "em", "rem", "%", "vw", "vh"];
 
-const SpacingControls = ({ style, onStyleChange }) => {
+const SpacingControls = ({ style, onStyleChange, component }) => {
   const [paddingTop, setPaddingTop] = useState("0px");
   const [paddingRight, setPaddingRight] = useState("0px");
   const [paddingBottom, setPaddingBottom] = useState("0px");
@@ -101,7 +101,28 @@ const SpacingControls = ({ style, onStyleChange }) => {
       const isDeselecting = selectedPreset === presetName;
 
       setters.forEach((setter) => setter(isDeselecting ? "0px" : preset));
-      onStyleChange({ [property]: isDeselecting ? "0px" : preset });
+      
+      const styleUpdate = {
+        [property]: isDeselecting ? "0px" : preset,
+        top: 0,
+        left: 0
+      };
+      
+      onStyleChange(styleUpdate);
+      
+      if (component?.props?.style) {
+        onStyleChange({
+          props: {
+            ...component.props,
+            style: {
+              ...component.props.style,
+              top: 0,
+              left: 0
+            }
+          }
+        });
+      }
+      
       setSelectedPreset(isDeselecting ? null : presetName);
     };
 
