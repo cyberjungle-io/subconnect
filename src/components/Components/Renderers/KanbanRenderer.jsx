@@ -397,10 +397,12 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
             {Object.values(columns).map((column) => (
               <div
                 key={column.id}
-                className="flex-1 mx-2 first:ml-0 last:mr-0 bg-gray-100 rounded-lg flex flex-col min-w-[250px]"
+                className="flex-1 mx-2 first:ml-0 last:mr-0 bg-gray-100 rounded-lg flex flex-col min-w-[200px] max-w-[300px]"
                 style={{
                   ...columnBorderStyle,
                   padding: columnPadding,
+                  flex: '1 1 0%',
+                  width: '0',
                 }}
                 onDoubleClick={(e) => handleDoubleClick(e, column.id)}
               >
