@@ -343,6 +343,47 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     setIsModalOpen(false);
   }, [columns, selectedColumnId, onUpdate, component.id, component.props, component.type, dispatch, hasPermission, isAdminOrOwner]);
 
+  const handleDeleteTask = useCallback((taskToDelete) => {
+    // Skip permission check for admin/owner
+    if (!isAdminOrOwner()) {
+      // Check permissions for regular users
+      if (!hasPermission(KANBAN_UI_PERMISSIONS.MODIFY)) {
+        console.log('User does not have permission to delete tasks');
+        return;
+      }
+    }
+
+    const columnId = taskToDelete.columnId;
+    const updatedColumns = {
+      ...columns,
+      [columnId]: {
+        ...columns[columnId],
+        tasks: columns[columnId].tasks.filter(task => task.id !== taskToDelete.id)
+      }
+    };
+
+    setColumns(updatedColumns);
+
+    // Update component with new tasks
+    const allTasks = Object.values(updatedColumns).flatMap(column => column.tasks);
+    onUpdate(component.id, { props: { ...component.props, tasks: allTasks } });
+
+    const kanbanData = {
+      componentId: component.props.id,
+      name: component.props.name,
+      type: component.type,
+      tasks: allTasks
+    };
+
+    dispatch(createComponentData(kanbanData))
+      .unwrap()
+      .catch((error) => {
+        console.error('Failed to store kanban data:', error);
+      });
+
+    setIsModalOpen(false);
+  }, [columns, onUpdate, component.id, component.props, component.type, dispatch, hasPermission, isAdminOrOwner]);
+
   return (
     <div className="flex flex-col h-full">
       <div className="kanban-board flex-1 overflow-hidden">
@@ -433,6 +474,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleAddOrUpdateTask}
+          onDelete={handleDeleteTask}
           task={selectedTask}
           isReadOnly={selectedTask ? !hasPermission(KANBAN_UI_PERMISSIONS.MODIFY) : !hasPermission(KANBAN_UI_PERMISSIONS.ADD)}
         />

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import CommentsSection from './CommentsSection';
+import DeleteConfirmModal from './DeleteConfirmModal';
 
-const KanBanTaskModal = ({ isOpen, onClose, onSubmit, task, isReadOnly }) => {
+const KanBanTaskModal = ({ isOpen, onClose, onSubmit, onDelete, task, isReadOnly }) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [comments, setComments] = useState([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -39,6 +41,15 @@ const KanBanTaskModal = ({ isOpen, onClose, onSubmit, task, isReadOnly }) => {
       description,
       comments: updatedComments
     });
+  };
+
+  const handleDeleteClick = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    onDelete(task);
+    setIsDeleteModalOpen(false);
   };
 
   if (!isOpen) return null;
@@ -90,25 +101,45 @@ const KanBanTaskModal = ({ isOpen, onClose, onSubmit, task, isReadOnly }) => {
             />
           )}
 
-          <div className="flex justify-end gap-2 mt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800"
-            >
-              Close
-            </button>
-            {!isReadOnly && (
+          <div className="flex justify-between items-center gap-2 mt-4">
+            {task && !isReadOnly && (
               <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                type="button"
+                onClick={handleDeleteClick}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
               >
-                {task ? 'Update' : 'Create'}
+                Delete Task
               </button>
             )}
+            
+            <div className="flex gap-2 ml-auto">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+              >
+                Close
+              </button>
+              {!isReadOnly && (
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  {task ? 'Update' : 'Create'}
+                </button>
+              )}
+            </div>
           </div>
         </form>
       </div>
+
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onDelete={handleConfirmDelete}
+        title="Delete Task"
+        message={`Are you sure you want to delete "${title}"? This action cannot be undone.`}
+      />
     </div>
   );
 };
