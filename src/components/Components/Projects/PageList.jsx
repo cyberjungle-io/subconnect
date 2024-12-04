@@ -57,7 +57,9 @@ const PageList = ({
     <div className="page-list" style={{ 
       color: toolbarSettings.textColor,
       right: 0,
-      minWidth: '250px'
+      minWidth: '250px',
+      position: 'relative',
+      zIndex: 9999
     }}>
       <div className="flex justify-between items-center mb-2 px-3 pt-2">
         <h3 className="text-sm font-semibold">Pages</h3>

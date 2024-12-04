@@ -59,7 +59,7 @@ const ResizeHandle = ({ onResize, isHorizontal, currentSize, currentUnit }) => {
       ? { top: 0, right: '-4px', width: '8px', height: '100%' }
       : { bottom: '-4px', left: 0, height: '8px', width: '100%' }),
     transition: 'background-color 0.2s',
-    zIndex: 10,
+    zIndex: 0,
   };
 
   return (

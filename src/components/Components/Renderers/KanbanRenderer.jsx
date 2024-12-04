@@ -485,6 +485,8 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                   width: "0",
                   height: "100%",
                   overflow: "hidden",
+                  position: 'relative',
+                  zIndex: 1
                 }}
                 onDoubleClick={(e) => handleDoubleClick(e, column.id)}
               >
