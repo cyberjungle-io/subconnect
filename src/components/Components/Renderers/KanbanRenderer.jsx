@@ -409,12 +409,13 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                 onDoubleClick={(e) => handleDoubleClick(e, column.id)}
               >
                 <div 
-                  className="sticky top-0 bg-gray-100 z-10"
+                  className="sticky top-0 bg-gray-100"
                   style={{ 
                     padding: columnPadding,
                     margin: '-12px -12px 0',
                     borderTopLeftRadius: columnBorderStyle.borderRadius || '4px',
                     borderTopRightRadius: columnBorderStyle.borderRadius || '4px',
+                    zIndex: 10
                   }}
                 >
                   <h2 className="text-lg font-semibold mb-4">{column.title}</h2>

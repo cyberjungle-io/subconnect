@@ -184,6 +184,7 @@ const TodoRenderer = ({ component, isViewMode, onUpdate }) => {
       boxSizing: 'border-box',
       display: 'flex',
       flexDirection: 'column',
+      zIndex: 10
     }} className="todo-list">
       <div style={{
         padding: style.padding || '20px',

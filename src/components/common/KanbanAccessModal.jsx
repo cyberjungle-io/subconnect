@@ -1,82 +1,94 @@
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { grantUserAccess } from '../../features/userSlice';
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { grantUserAccess } from "../../features/userSlice";
 
 const KanbanAccessModal = ({ isOpen, onClose, kanbanId }) => {
-  const [selectedUserId, setSelectedUserId] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState("");
   const [permissions, setPermissions] = useState({
     add: true,
     modify: false,
-    move: false
+    move: false,
   });
   const dispatch = useDispatch();
-  
+
   // Get project users from currentProject
-  const currentProject = useSelector(state => state.w3s.currentProject.data);
+  const currentProject = useSelector((state) => state.w3s.currentProject.data);
   const projectUsers = currentProject?.access_records || [];
-  
-  console.log('KanbanAccessModal - Current Project:', {
+
+  console.log("KanbanAccessModal - Current Project:", {
     project_id: currentProject?.id,
     kanban_id: kanbanId,
-    access_records: projectUsers
+    access_records: projectUsers,
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const selectedUser = projectUsers.find(user => user.user_id === selectedUserId);
+
+    const selectedUser = projectUsers.find(
+      (user) => user.user_id === selectedUserId
+    );
     if (!selectedUser) {
-      console.error('KanbanAccessModal - Selected user not found');
+      console.error("KanbanAccessModal - Selected user not found");
       return;
     }
-    
+
     // Convert permissions to array
     const permissionArray = Object.entries(permissions)
       .filter(([_, isEnabled]) => isEnabled)
       .map(([permission]) => permission);
 
-    console.log('KanbanAccessModal - Selected User:', {
+    console.log("KanbanAccessModal - Selected User:", {
       user: selectedUser,
       backend_permissions: selectedUser.backend_permissions,
-      project_id: currentProject._id
+      project_id: currentProject._id,
     });
-    console.log('KanbanAccessModal - Selected Permissions:', permissionArray);
+    console.log("KanbanAccessModal - Selected Permissions:", permissionArray);
 
     // Create complete access record
     const accessRecord = {
       link_id: kanbanId,
       project_id: currentProject._id,
       user_id: selectedUser.user_id,
-      user_details: selectedUser.user_details,
+      user_details: selectedUser.user_details || {},
       ui_permissions: permissionArray,
       backend_permissions: selectedUser.backend_permissions,
-      status: 'active',
-      type: 'kanban',
+      status: "active",
+      type: "kanban",
       created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      updated_at: new Date().toISOString(),
     };
-    
-    console.log('KanbanAccessModal - Complete Access Record:', accessRecord);
+
+    console.log("KanbanAccessModal - Complete Access Record:", accessRecord);
 
     try {
       const result = await dispatch(grantUserAccess(accessRecord)).unwrap();
-      console.log('KanbanAccessModal - Grant access success:', result);
+      console.log("KanbanAccessModal - Grant access success:", result);
       onClose();
     } catch (error) {
-      console.error('KanbanAccessModal - Grant access failed:', {
+      console.error("KanbanAccessModal - Grant access failed:", {
         error_name: error.name,
         error_message: error.message,
         response_status: error.response?.status,
         response_data: error.response?.data,
-        stack: error.stack
+        stack: error.stack,
       });
     }
   };
 
   if (!isOpen) return null;
 
+  // Helper function to safely get user display text
+  const getUserDisplayText = (user) => {
+    const username =
+      user.user_details?.username || user.user_id || "Unknown User";
+    const email = user.user_details?.email
+      ? ` (${user.user_details.email})`
+      : "";
+    return `${username}${email}`;
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         <h2 className="text-2xl font-bold mb-4">Grant Kanban Access</h2>
         <form onSubmit={handleSubmit}>
@@ -91,9 +103,9 @@ const KanbanAccessModal = ({ isOpen, onClose, kanbanId }) => {
               required
             >
               <option value="">Select a user...</option>
-              {projectUsers.map(user => (
+              {projectUsers.map((user) => (
                 <option key={user.user_id} value={user.user_id}>
-                  {user.user_details.username} ({user.user_details.email})
+                  {getUserDisplayText(user)}
                 </option>
               ))}
             </select>
@@ -110,11 +122,11 @@ const KanbanAccessModal = ({ isOpen, onClose, kanbanId }) => {
                   checked={permissions.add}
                   onChange={(e) => {
                     const newValue = e.target.checked;
-                    console.log('KanbanAccessModal - Permission changed:', {
-                      permission: 'add',
-                      value: newValue
+                    console.log("KanbanAccessModal - Permission changed:", {
+                      permission: "add",
+                      value: newValue,
                     });
-                    setPermissions(prev => ({ ...prev, add: newValue }));
+                    setPermissions((prev) => ({ ...prev, add: newValue }));
                   }}
                   className="mr-2"
                 />
@@ -126,11 +138,11 @@ const KanbanAccessModal = ({ isOpen, onClose, kanbanId }) => {
                   checked={permissions.modify}
                   onChange={(e) => {
                     const newValue = e.target.checked;
-                    console.log('KanbanAccessModal - Permission changed:', {
-                      permission: 'modify',
-                      value: newValue
+                    console.log("KanbanAccessModal - Permission changed:", {
+                      permission: "modify",
+                      value: newValue,
                     });
-                    setPermissions(prev => ({ ...prev, modify: newValue }));
+                    setPermissions((prev) => ({ ...prev, modify: newValue }));
                   }}
                   className="mr-2"
                 />
@@ -142,11 +154,11 @@ const KanbanAccessModal = ({ isOpen, onClose, kanbanId }) => {
                   checked={permissions.move}
                   onChange={(e) => {
                     const newValue = e.target.checked;
-                    console.log('KanbanAccessModal - Permission changed:', {
-                      permission: 'move',
-                      value: newValue
+                    console.log("KanbanAccessModal - Permission changed:", {
+                      permission: "move",
+                      value: newValue,
                     });
-                    setPermissions(prev => ({ ...prev, move: newValue }));
+                    setPermissions((prev) => ({ ...prev, move: newValue }));
                   }}
                   className="mr-2"
                 />
@@ -157,13 +169,20 @@ const KanbanAccessModal = ({ isOpen, onClose, kanbanId }) => {
 
           {selectedUserId && (
             <div className="mb-4 p-3 bg-gray-100 rounded">
-              <h3 className="text-sm font-bold mb-2">Current Project Permissions</h3>
+              <h3 className="text-sm font-bold mb-2">
+                Current Project Permissions
+              </h3>
               <div className="text-sm">
-                {projectUsers.find(user => user.user_id === selectedUserId)?.backend_permissions.map(perm => (
-                  <span key={perm} className="inline-block bg-gray-200 rounded px-2 py-1 mr-2 mb-1">
-                    {perm}
-                  </span>
-                ))}
+                {projectUsers
+                  .find((user) => user.user_id === selectedUserId)
+                  ?.backend_permissions?.map((perm) => (
+                    <span
+                      key={perm}
+                      className="inline-block bg-gray-200 rounded px-2 py-1 mr-2 mb-1"
+                    >
+                      {perm}
+                    </span>
+                  ))}
               </div>
             </div>
           )}
@@ -190,4 +209,4 @@ const KanbanAccessModal = ({ isOpen, onClose, kanbanId }) => {
   );
 };
 
-export default KanbanAccessModal; 
+export default KanbanAccessModal;
