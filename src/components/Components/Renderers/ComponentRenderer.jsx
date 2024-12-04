@@ -585,8 +585,11 @@ const ComponentRenderer = React.memo(({
         {renderContent()}
         {!isViewMode && isThisComponentSelected && (
           <div 
-            className="absolute top-0 right-0 text-white text-xs px-1 z-10"
-            style={{ backgroundColor: highlightColor }}
+            className="absolute top-0 right-0 text-white text-xs px-1"
+            style={{ 
+              backgroundColor: highlightColor,
+              zIndex: 1
+            }}
           >
             {component.name || component.type}
           </div>
