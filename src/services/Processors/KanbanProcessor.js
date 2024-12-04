@@ -75,6 +75,54 @@ export class KanbanProcessor {
     );
     const lowercaseInput = input.toLowerCase();
 
+    // Enhanced column creation pattern
+    const columnPatterns = [
+      /(?:add|create)\s+(?:a\s+)?(?:new\s+)?column\s+(?:called|named|with\s+title|titled)?\s*["']?([^"']+)["']?/i,
+      /(?:add|create)\s+(?:a\s+)?(?:new\s+)?column\s*["']?([^"']+)["']?/i,
+      /new\s+column\s+(?:called|named|with\s+title|titled)?\s*["']?([^"']+)["']?/i
+    ];
+
+    // Check each column pattern
+    for (const pattern of columnPatterns) {
+      const columnMatch = input.match(pattern);
+      if (columnMatch) {
+        const columnTitle = columnMatch[1].trim();
+        
+        // Validate column title
+        if (!columnTitle || columnTitle.length < 1) {
+          console.log("Invalid column title");
+          return null;
+        }
+
+        // Check for duplicate column titles
+        const currentColumns = currentProps.columns || currentProps.props?.columns || [];
+        if (currentColumns.some(col => col.title.toLowerCase() === columnTitle.toLowerCase())) {
+          console.log("Column with this title already exists");
+          return null;
+        }
+
+        // Generate unique column ID using timestamp and random string
+        const timestamp = Date.now();
+        const randomString = Math.random().toString(36).substring(2, 8);
+        const columnId = `col_${timestamp}_${randomString}`;
+
+        const newColumn = {
+          id: columnId,
+          title: columnTitle,
+          backgroundColor: currentColumns[0]?.backgroundColor, // Inherit color from first column if exists
+          tasks: []
+        };
+
+        const updatedColumns = [...currentColumns, newColumn];
+
+        return {
+          props: this.updateNestedProps(currentProps, {
+            columns: updatedColumns
+          })
+        };
+      }
+    }
+
     // Handle column color changes
     const columnColorMatch = input.match(
       /(?:set|make|change)?\s*(?:the)?\s*column\s*(?:color|background)?\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|transparent|#[0-9a-fA-F]{3,6})/i
