@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave, FaClipboardList, FaTable, FaFillDrip, FaBars, FaListUl } from 'react-icons/fa';
+import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave, FaClipboardList, FaTable, FaFillDrip, FaBars, FaListUl, FaUserPlus } from 'react-icons/fa';
 import SizeControls from './SizeControls';
 import LayoutControls from './LayoutControls';
 import BorderControls from './BorderControls';
@@ -26,6 +26,7 @@ import { showToast } from '../../../features/toastSlice';
 import { saveSingleComponent } from '../../../features/savedComponentsSlice';
 import SaveComponentModal from '../../common/SaveComponentModal';
 import { usePageNavigation } from '../../../contexts/PageNavigationContext';
+import KanbanAccessControls from './KanbanAccessControls';
 
 const iconMap = {
   FLEX_CONTAINER: [
@@ -91,7 +92,8 @@ const iconMap = {
     { icon: FaArrowsAlt, tooltip: 'Spacing' },
     { icon: FaBorderStyle, tooltip: 'Border' },
     { icon: FaClipboardList, tooltip: 'Kanban Controls' },
-    { icon: FaFont, tooltip: 'Text Styling' }, // Changed from FaHeading to FaFont
+    { icon: FaFont, tooltip: 'Text Styling' },
+    { icon: FaUserPlus, tooltip: 'Manage Access' },
   ],
   TABLE: [
     { icon: FaExpand, tooltip: 'Size' },
@@ -386,6 +388,13 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         return <ToolbarControls {...sharedProps} />;
       case 'Todo Controls':
         return <TodoControls {...sharedProps} />;
+      case 'Manage Access':
+        return (
+          <KanbanAccessControls
+            props={props}
+            onClose={() => setActiveControl(null)}
+          />
+        );
       default:
         return null;
     }

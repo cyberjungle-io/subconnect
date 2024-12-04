@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import KanBanTaskModal from '../../common/KanBanTaskModal';
-import KanbanAccessModal from '../../common/KanbanAccessModal';
 import { v4 as uuidv4 } from 'uuid';
 import { useDispatch, useSelector } from 'react-redux';
 import { createComponentData } from '../../../w3s/w3sSlice';
@@ -45,7 +44,6 @@ const findTodoListById = (components, id) => {
 const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const [columns, setColumns] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
   const [selectedColumnId, setSelectedColumnId] = useState(null);
   const [selectedTask, setSelectedTask] = useState(null);
   const [columnBorderStyle, setColumnBorderStyle] = useState(component.props.columnBorderStyle || {});
@@ -60,15 +58,37 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   const currentUser = useSelector(state => state.user.currentUser);
   const currentProject = useSelector(state => state.w3s.currentProject.data);
 
+  // Add useEffect for checking access first
+  useEffect(() => {
+    const checkUserAccess = async () => {
+      if (!component.props.id || !currentUser?._id) {
+        console.log('Missing component ID or user ID:', {
+          componentId: component.props.id,
+          userId: currentUser?._id
+        });
+        return;
+      }
+
+      try {
+        const result = await w3sService.getUserAccess(component.props.id, currentUser._id);
+        console.log('Kanban access record loaded:', result);
+        setAccessRecord(result);
+      } catch (error) {
+        console.error('Error checking access:', error);
+        setAccessRecord(null);
+      }
+    };
+
+    checkUserAccess();
+  }, [component.props.id, currentUser?._id]);
+
   // Helper function to check if user has admin privileges
   const isAdminOrOwner = useCallback(() => {
-    // Check if user is the project creator
     if (currentProject?.createdBy === currentUser?._id) {
       console.log('User is project creator/owner');
       return true;
     }
     
-    // Check for admin permission in access record
     if (accessRecord?.backend_permissions) {
       const isAdmin = accessRecord.backend_permissions.includes('admin');
       console.log('User admin status:', isAdmin);
@@ -82,59 +102,17 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
   // Helper function to check if user has a specific UI permission
   const hasPermission = useCallback((permission) => {
     // Admins and owners have all permissions
-    const adminOwnerStatus = isAdminOrOwner();
-    console.log('Checking permission:', {
-      permission,
-      isAdminOrOwner: adminOwnerStatus,
-      uiPermissions: accessRecord?.ui_permissions,
-      projectCreator: currentProject?.createdBy,
-      currentUser: currentUser?._id
-    });
-
-    if (adminOwnerStatus) {
-      console.log('Granting permission due to admin/owner status');
+    if (isAdminOrOwner()) {
       return true;
     }
 
     // Otherwise check specific UI permissions
     if (!accessRecord || !accessRecord.ui_permissions) {
-      console.log('No access record or UI permissions found');
       return false;
     }
-    const hasUIPermission = accessRecord.ui_permissions.includes(permission);
-    console.log('UI permission check result:', hasUIPermission);
-    return hasUIPermission;
-  }, [accessRecord, isAdminOrOwner, currentProject?.createdBy, currentUser?._id]);
 
-  // Add useEffect for checking access
-  useEffect(() => {
-    const checkUserAccess = async () => {
-      if (!component.props.id || !currentUser?._id) {
-        console.log('Missing component ID or user ID:', {
-          componentId: component.props.id,
-          userId: currentUser?._id,
-          projectCreator: component.props.project?.createdBy
-        });
-        return;
-      }
-
-      try {
-        const result = await w3sService.getUserAccess(component.props.id, currentUser._id);
-        console.log('Kanban access record loaded:', {
-          result,
-          componentId: component.props.id,
-          userId: currentUser._id,
-          projectCreator: component.props.project?.createdBy
-        });
-        setAccessRecord(result);
-      } catch (error) {
-        console.error('Error checking access:', error);
-        setAccessRecord(null);
-      }
-    };
-
-    checkUserAccess();
-  }, [component.props.id, currentUser?._id, component.props.project?.createdBy]);
+    return accessRecord.ui_permissions.includes(permission);
+  }, [accessRecord, isAdminOrOwner]);
 
   const onDragStart = useCallback(() => {
     if (boardRef.current) {
@@ -367,31 +345,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex justify-between items-center mb-4">
-        {isAdminOrOwner() && (
-          <button
-            onClick={() => setIsAccessModalOpen(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center"
-          >
-            <svg 
-              className="w-4 h-4 mr-2" 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={2} 
-                d="M12 4v16m8-8H4" 
-              />
-            </svg>
-            Manage Access
-          </button>
-        )}
-      </div>
-
-      <div ref={boardRef} className="kanban-board flex-1 overflow-hidden">
+      <div className="kanban-board flex-1 overflow-hidden">
         <DragDropContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
           <div className="flex h-full p-4 w-full">
             {Object.values(columns).map((column) => (
@@ -481,14 +435,6 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
           onSubmit={handleAddOrUpdateTask}
           task={selectedTask}
           isReadOnly={selectedTask ? !hasPermission(KANBAN_UI_PERMISSIONS.MODIFY) : !hasPermission(KANBAN_UI_PERMISSIONS.ADD)}
-        />
-      )}
-
-      {isAccessModalOpen && (
-        <KanbanAccessModal
-          isOpen={isAccessModalOpen}
-          onClose={() => setIsAccessModalOpen(false)}
-          kanbanId={component.props.id}
         />
       )}
     </div>
