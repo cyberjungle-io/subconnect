@@ -75,6 +75,28 @@ export class KanbanProcessor {
     );
     const lowercaseInput = input.toLowerCase();
 
+    // Handle column color changes
+    const columnColorMatch = input.match(
+      /(?:set|make|change)?\s*(?:the)?\s*column\s*(?:color|background)?\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|transparent|#[0-9a-fA-F]{3,6})/i
+    );
+
+    if (columnColorMatch) {
+      const color = columnColorMatch[1].toLowerCase();
+      const currentColumns = currentProps.columns || currentProps.props?.columns || [];
+      
+      // Update all columns with the new background color
+      const updatedColumns = currentColumns.map(column => ({
+        ...column,
+        backgroundColor: color
+      }));
+
+      return {
+        props: this.updateNestedProps(currentProps, {
+          columns: updatedColumns
+        })
+      };
+    }
+
     // Handle column operations
     if (
       lowercaseInput.includes("add column") ||

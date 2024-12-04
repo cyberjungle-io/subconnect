@@ -194,6 +194,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
       setColumns(newColumns);
     };
 
+    dataFetchedRef.current = false;
     fetchComponentData();
   }, [component.props.id, component.props.tasks, component.props.columns]);
 
@@ -477,7 +478,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
             {Object.values(columns).map((column) => (
               <div
                 key={column.id}
-                className="flex-1 mx-2 first:ml-0 last:mr-0 bg-gray-100 rounded-lg flex flex-col min-w-[200px] max-w-[300px]"
+                className="flex-1 mx-2 first:ml-0 last:mr-0 rounded-lg flex flex-col min-w-[200px] max-w-[300px]"
                 style={{
                   ...columnBorderStyle,
                   padding: "12px",
@@ -486,7 +487,8 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                   height: "100%",
                   overflow: "hidden",
                   position: 'relative',
-                  zIndex: 1
+                  zIndex: 1,
+                  backgroundColor: column.backgroundColor || '#f3f4f6'
                 }}
                 onDoubleClick={(e) => handleDoubleClick(e, column.id)}
               >
