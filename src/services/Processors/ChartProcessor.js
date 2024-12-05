@@ -2,17 +2,18 @@ export class ChartProcessor {
   static chartPatterns = [
     /(?:change|switch|set|make|convert)\s+(?:the\s+)?(?:chart|graph)\s+(?:type\s+)?(?:to\s+)?(line|bar|area|pie)/i,
     /(?:add|set|update)\s+(?:the\s+)?data\s+keys?/i,
-    /(?:show|hide|toggle)\s+(?:the\s+)?(legend|grid|data\s+points|x\s*axis|y\s*axis)/i,
+    /(?:show|hide|toggle)\s+(?:the\s+)?(legend|grid|data\s*points|x\s*axis|y\s*axis)/i,
     /(?:set|change|update)\s+(?:the\s+)?(?:chart|graph)\s+(?:title|size|width|height)/i,
     /(?:set|change|update)\s+(?:the\s+)?(?:title|axis)\s+(?:color|font|size|alignment)/i,
     /(?:list|show|display|get)\s+(?:all\s+)?(?:available\s+)?queries/i,
     /(?:what|which)\s+queries\s+(?:are\s+)?(?:available|exist|do\s+i\s+have)/i,
     /(?:find|search|look\s+for)\s+(?:a\s+)?query\s+(?:called|named)?\s*["']?([^"']+)["']?/i,
     /(?:describe|explain|tell\s+me\s+about)\s+(?:the\s+)?query\s+(?:called|named)?\s*["']?([^"']+)["']?/i,
-    /(?:add|set|use)\s+(?:the\s+)?fields?\s+(?:called|named)?\s*["']?([^"']+)["']?\s*(?:(?:and|,)\s*["']?([^"']+)["']?)*/i,
+    /(?:add|set|use)\s+(?:the\s+)?fields?\s+(?:called|named)?\s*["']?([^"']+)["']?(?:\s+(?:and|,)\s*["']?([^"']+)["']?)*/i,
     /(?:set|use)\s+(?:the\s+)?(?:x-axis|x\s+axis)\s+(?:to|as)\s+["']?([^"']+)["']?(?:\s+(?:and|,)\s+(?:the\s+)?(?:y-axis|y\s+axis)\s+(?:to|as)\s+["']?([^"']+)["']?)?/i,
     /(?:set|use)\s+(?:the\s+)?(?:y-axis|y\s+axis)\s+(?:to|as)\s+["']?([^"']+)["']?(?:\s+(?:and|,)\s+(?:the\s+)?(?:x-axis|x\s+axis)\s+(?:to|as)\s+["']?([^"']+)["']?)?/i,
-    /(?:select|use|choose)\s+(?:the\s+)?query\s+(?:called|named)?\s*["']?([^"']+)["']?/i
+    /(?:select|use|choose)\s+(?:the\s+)?query\s+(?:called|named)?\s*["']?([^"']+)["']?/i,
+    /(?:show|list|display)\s+(?:available\s+)?(?:field|axis)\s+options/i
   ];
 
   static isChartCommand(input) {
@@ -72,12 +73,181 @@ export class ChartProcessor {
       details.push(`Fields: ${query.fields.map(f => f.name).join(', ')}`);
     }
     
-    return details.join('\n   ');
+    return {
+      text: details.join('\n   '),
+      clickable: true,
+      type: 'query',
+      value: query.name,
+      options: ['List available fields', 'Show query details', 'Select query']
+    };
+  }
+
+  static formatFieldOption(field) {
+    return {
+      text: field.name,
+      clickable: true,
+      type: 'field',
+      value: field.name,
+      options: ['Set as X-Axis', 'Set as Y-Axis', 'Add to Y-Axis', 'Show field details']
+    };
+  }
+
+  static processFieldOption(field, option, currentProps = {}) {
+    switch (option) {
+      case 'Set as X-Axis':
+        return {
+          props: {
+            ...currentProps,
+            nameKey: field,
+            key: Date.now()
+          },
+          message: `Set ${field} as X-Axis`
+        };
+      case 'Set as Y-Axis':
+        return {
+          props: {
+            ...currentProps,
+            dataKeys: [field],
+            key: Date.now()
+          },
+          message: `Set ${field} as Y-Axis`
+        };
+      case 'Add to Y-Axis':
+        const newDataKeys = [...(currentProps.dataKeys || [])];
+        if (!newDataKeys.includes(field)) {
+          newDataKeys.push(field);
+        }
+        return {
+          props: {
+            ...currentProps,
+            dataKeys: newDataKeys,
+            key: Date.now()
+          },
+          message: `Added ${field} to Y-Axis`
+        };
+      case 'Show field details':
+        return {
+          props: currentProps,
+          message: `Field: ${field}\nType: Numeric\nDescription: Numeric value field that can be used for plotting`
+        };
+      default:
+        return null;
+    }
+  }
+
+  static processQueryOption(queryName, option, currentProps = {}, state = null) {
+    const query = state?.w3s?.queries?.list?.find(q => q.name === queryName);
+    if (!query) {
+      return {
+        props: currentProps,
+        message: `Query "${queryName}" not found`
+      };
+    }
+
+    switch (option) {
+      case 'List available fields':
+        return {
+          props: currentProps,
+          message: `Available fields for ${queryName}:\n\n${query.fields.map(field => 
+            this.formatFieldOption(field).text
+          ).join('\n')}`,
+          options: query.fields.map(field => this.formatFieldOption(field))
+        };
+      case 'Show query details':
+        return {
+          props: currentProps,
+          message: this.formatQueryDetails(query).text
+        };
+      case 'Select query':
+        return {
+          props: {
+            ...currentProps,
+            selectedQueryId: query._id,
+            dataKeys: [],
+            nameKey: '',
+            data: [],
+            key: Date.now()
+          },
+          message: `Selected query "${query.name}". Choose from the following options:`,
+          options: ['List available fields', 'Show query details'].map(opt => ({
+            text: opt,
+            clickable: true,
+            type: 'queryOption',
+            value: opt,
+            queryName: query.name
+          }))
+        };
+      default:
+        return null;
+    }
   }
 
   static processCommand(input, currentProps = {}, state = null) {
     console.log("ChartProcessor received input:", input, "Current props:", currentProps);
     const lowercaseInput = input.toLowerCase();
+
+    // Handle field option selection
+    if (input.startsWith('__fieldOption__:')) {
+      const [field, option] = input.replace('__fieldOption__:', '').split('::');
+      return this.processFieldOption(field, option, currentProps);
+    }
+
+    // Handle query option selection
+    if (input.startsWith('__queryOption__:')) {
+      const [query, option] = input.replace('__queryOption__:', '').split('::');
+      return this.processQueryOption(query, option, currentProps, state);
+    }
+
+    // Process field options listing
+    const fieldOptionsPattern = /(?:show|list|display)\s+(?:available\s+)?(?:field|axis)\s+options/i;
+    if (fieldOptionsPattern.test(lowercaseInput)) {
+      if (!state?.w3s?.queries?.list || !currentProps.selectedQueryId) {
+        return {
+          props: currentProps,
+          message: "Please select a query first before viewing field options."
+        };
+      }
+
+      const query = state.w3s.queries.list.find(q => q._id === currentProps.selectedQueryId);
+      if (!query) {
+        return {
+          props: currentProps,
+          message: "Could not find the selected query. Please select a valid query first."
+        };
+      }
+
+      return {
+        props: currentProps,
+        message: `Available fields for ${query.name}:`,
+        options: query.fields.map(field => this.formatFieldOption(field))
+      };
+    }
+
+    // Process query listing commands with interactive options
+    const queryListPattern = /(?:list|show|display|get)\s+(?:all\s+)?(?:available\s+)?queries|(?:what|which)\s+queries\s+(?:are\s+)?(?:available|exist|do\s+i\s+have)/i;
+    
+    if (queryListPattern.test(lowercaseInput)) {
+      if (!state?.w3s?.queries?.list) {
+        return {
+          props: currentProps,
+          message: "I cannot access the saved queries at the moment. Please ensure you have loaded your queries in the Data Modal."
+        };
+      }
+
+      const queries = state.w3s.queries.list;
+      if (queries.length === 0) {
+        return {
+          props: currentProps,
+          message: "There are no saved queries available. You can create and save new queries using the Data Modal."
+        };
+      }
+
+      return {
+        props: currentProps,
+        message: "Available Queries:",
+        options: queries.map(query => this.formatQueryDetails(query))
+      };
+    }
 
     // Process query selection
     const querySelectionPattern = /(?:select|use|choose)\s+(?:the\s+)?query\s+(?:called|named)?\s*["']?([^"']+)["']?/i;
@@ -113,36 +283,8 @@ export class ChartProcessor {
           nameKey: '',
           data: []
         },
-        message: `Selected query "${query.name}". Available fields are: ${query.fields.map(f => f.name).join(', ')}`
-      };
-    }
-
-    // Process query listing commands
-    const queryListPattern = /(?:list|show|display|get)\s+(?:all\s+)?(?:available\s+)?queries|(?:what|which)\s+queries\s+(?:are\s+)?(?:available|exist|do\s+i\s+have)/i;
-    
-    if (queryListPattern.test(lowercaseInput)) {
-      if (!state?.w3s?.queries?.list) {
-        return {
-          props: currentProps,
-          message: "I cannot access the saved queries at the moment. Please ensure you have loaded your queries in the Data Modal."
-        };
-      }
-
-      const queries = state.w3s.queries.list;
-      if (queries.length === 0) {
-        return {
-          props: currentProps,
-          message: "There are no saved queries available. You can create and save new queries using the Data Modal."
-        };
-      }
-
-      const queryList = queries.map((query, index) => 
-        `${index + 1}. ${this.formatQueryDetails(query)}`
-      ).join('\n\n');
-
-      return {
-        props: currentProps,
-        message: `Available Queries:\n\n${queryList}\n\nYou can use these queries to populate your chart data. To get more details about a specific query, try "describe query [name]".`
+        message: `Selected query "${query.name}". Available fields are: ${query.fields.map(f => f.name).join(', ')}`,
+        options: query.fields.map(field => this.formatFieldOption(field))
       };
     }
 

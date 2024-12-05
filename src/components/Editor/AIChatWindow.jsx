@@ -15,24 +15,62 @@ const TypingIndicator = () => (
   </div>
 );
 
-const Message = ({ message, timestamp }) => (
-  <div className={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
-    <div className="flex flex-col gap-1">
-      <div
-        className={`inline-block p-3 rounded-lg max-w-[85%] ${
-          message.role === 'user'
-            ? 'bg-blue-500 text-white'
-            : 'bg-gray-100 text-gray-800'
-        }`}
-      >
-        {message.content}
+const Message = ({ message, timestamp, onOptionSelect }) => {
+  const renderOptions = (options) => {
+    if (!Array.isArray(options)) return null;
+    
+    return (
+      <div className="mt-2 flex flex-col gap-2">
+        {options.map((option, index) => (
+          <div key={index} className="flex flex-col gap-1">
+            <button
+              onClick={() => onOptionSelect(option)}
+              className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors"
+            >
+              {option.text}
+            </button>
+            {option.options && (
+              <div className="ml-4 flex flex-wrap gap-2">
+                {option.options.map((subOption, subIndex) => (
+                  <button
+                    key={subIndex}
+                    onClick={() => onOptionSelect({
+                      ...option,
+                      selectedOption: subOption
+                    })}
+                    className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors"
+                  >
+                    {subOption}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
       </div>
-      <span className="text-xs text-gray-500">
-        {format(timestamp || new Date(), 'h:mm a')}
-      </span>
+    );
+  };
+
+  return (
+    <div className={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+      <div className="flex flex-col gap-1">
+        <div
+          className={`inline-block p-3 rounded-lg max-w-[85%] ${
+            message.role === 'user'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 text-gray-800'
+          }`}
+        >
+          {message.content}
+          {message.options && renderOptions(message.options)}
+        </div>
+        <span className="text-xs text-gray-500">
+          {format(timestamp || new Date(), 'h:mm a')}
+        </span>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const isRecent = (timestamp) => {
   const now = new Date();
@@ -180,7 +218,8 @@ const AIChatWindow = ({ onClose }) => {
           timestamp: new Date(),
           status: commandResult.success ? 'success' : 'error',
           needsMoreInfo: commandResult.needsMoreInfo,
-          type: commandResult.type
+          type: commandResult.type,
+          options: commandResult.options // Add the options to the message
         }));
 
         // If we need more info, store the context for the next message
@@ -220,9 +259,77 @@ const AIChatWindow = ({ onClose }) => {
     ? `Please specify ${awaitingResponse.type}...`
     : (isLoading ? "Processing..." : "Ask me anything...");
 
+  const handleOptionSelect = async (option) => {
+    let input = '';
+    
+    if (option.selectedOption) {
+      // Handle field or query option selection
+      if (option.type === 'field') {
+        input = `__fieldOption__:${option.value}::${option.selectedOption}`;
+      } else if (option.type === 'query') {
+        input = `__queryOption__:${option.value}::${option.selectedOption}`;
+      } else if (option.type === 'queryOption') {
+        input = `__queryOption__:${option.queryName}::${option.value}`;
+      }
+    } else if (option.type === 'query' || option.type === 'field') {
+      // Don't process the text directly, show the options instead
+      dispatch(addMessage({
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Available options for ${option.value}:`,
+        timestamp: new Date(),
+        options: [{
+          ...option,
+          text: option.value,
+          options: option.options
+        }]
+      }));
+      return;
+    } else {
+      // Handle other clickable text selection
+      input = option.text;
+    }
+    
+    try {
+      const minimalState = {
+        w3s: {
+          queries: {
+            list: queries
+          }
+        }
+      };
+
+      const commandResult = await AICommandExecutor.processCommand(
+        input, 
+        dispatch,
+        selectedComponent,
+        minimalState
+      );
+      
+      if (commandResult) {
+        dispatch(addMessage({
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: commandResult.message,
+          timestamp: new Date(),
+          status: commandResult.success ? 'success' : 'error',
+          options: commandResult.options
+        }));
+      }
+    } catch (error) {
+      dispatch(addMessage({
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: 'Sorry, I encountered an error processing your selection.',
+        timestamp: new Date(),
+        status: 'error',
+      }));
+    }
+  };
+
   return (
     <div 
-      className="fixed w-80 bg-white border border-blue-200 rounded-lg shadow-xl z-[960] flex flex-col"
+      className="fixed w-80 bg-white border border-blue-200 rounded-lg shadow-xl z-[960] flex flex-col max-h-[80vh]"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -248,50 +355,54 @@ const AIChatWindow = ({ onClose }) => {
             <select
               value={currentProvider}
               onChange={handleProviderChange}
-              className="text-sm border border-blue-200 rounded px-1"
+              className="text-sm p-1 rounded border border-blue-200"
             >
-              <option value={LLMProviders.ANTHROPIC_HAIKU}>Haiku</option>
-              <option value={LLMProviders.ANTHROPIC_CLAUDE}>Claude</option>
+              {Object.values(LLMProviders).map(provider => (
+                <option key={provider} value={provider}>
+                  {provider}
+                </option>
+              ))}
             </select>
-            {isLoading && (
-              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-            )}
           </div>
         </div>
         <button
           onClick={onClose}
-          className="text-gray-500 hover:text-blue-600"
+          className="p-2 hover:bg-blue-100 rounded-full transition-colors"
         >
-          <FaTimes />
+          <FaTimes className="text-gray-500" />
         </button>
       </div>
-      
-      <div className="flex-grow overflow-y-auto p-4 max-h-[60vh]">
-        {messages.map((msg) => (
-          <Message key={msg.id} message={msg} timestamp={msg.timestamp} />
+
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px] max-h-[calc(80vh-200px)]">
+        {messages.map((message) => (
+          <Message
+            key={message.id}
+            message={message}
+            timestamp={message.timestamp}
+            onOptionSelect={handleOptionSelect}
+          />
         ))}
-        {isTyping && (
-          <div className="text-left">
-            <TypingIndicator />
-          </div>
-        )}
+        {isTyping && <TypingIndicator />}
         <div ref={messagesEndRef} />
       </div>
 
       <form onSubmit={handleSubmit} className="p-3 border-t border-blue-100">
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={inputPlaceholder}
-            className="flex-grow p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
-            disabled={isLoading}
+            className="flex-1 p-2 border border-blue-200 rounded-lg focus:outline-none focus:border-blue-400"
           />
           <button
             type="submit"
-            className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
-            disabled={isLoading || !input.trim()}
+            disabled={isLoading}
+            className={`p-2 rounded-lg ${
+              isLoading
+                ? 'bg-gray-200 cursor-not-allowed'
+                : 'bg-blue-500 hover:bg-blue-600'
+            } text-white transition-colors`}
           >
             <FaPaperPlane />
           </button>

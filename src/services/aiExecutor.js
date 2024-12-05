@@ -49,25 +49,90 @@ export class AICommandExecutor {
     console.log("Processing command:", input);
     console.log("Selected component:", selectedComponent);
 
-    // Add check for Chart commands first
+    // Check for special commands first
+    if (input.startsWith('__queryOption__:') || input.startsWith('__fieldOption__:')) {
+      if (selectedComponent?.type === "CHART") {
+        console.log("Processing Chart option command");
+        const result = ChartProcessor.processCommand(
+          input,
+          selectedComponent.props || {},
+          state
+        );
+
+        if (result) {
+          const response = {
+            success: true,
+            message: result.message
+          };
+
+          if (result.options) {
+            response.options = result.options;
+          }
+
+          if (result.props) {
+            try {
+              await dispatch(
+                updateComponent({
+                  id: selectedComponent.id,
+                  updates: { ...selectedComponent, props: result.props },
+                })
+              );
+            } catch (error) {
+              console.error("Chart update failed:", error);
+              response.success = false;
+              response.message = `Failed to update chart: ${error.message}`;
+            }
+          }
+
+          return response;
+        }
+      }
+      return null;
+    }
+
+    // Add check for Chart commands
     if (
       selectedComponent?.type === "CHART" &&
       ChartProcessor.isChartCommand(input)
     ) {
       console.log("Processing Chart-specific command");
+      console.log("State passed to ChartProcessor:", state);
       const result = ChartProcessor.processCommand(
         input,
-        selectedComponent.props,
+        selectedComponent.props || {},
         state
       );
 
       if (result) {
         // If it's just a query info command, return the message without updating the component
-        if (result.message && !result.props) {
-          return {
+        if (result.message) {
+          const response = {
             success: true,
             message: result.message
           };
+
+          // Add options to the response if they exist
+          if (result.options) {
+            response.options = result.options;
+          }
+
+          // Only update component if there are prop changes
+          if (result.props) {
+            try {
+              await dispatch(
+                updateComponent({
+                  id: selectedComponent.id,
+                  updates: { ...selectedComponent, props: result.props },
+                })
+              );
+            } catch (error) {
+              console.error("Chart update failed:", error);
+              response.success = false;
+              response.message = `Failed to update chart: ${error.message}`;
+            }
+          }
+
+          return response;
         }
 
         try {
