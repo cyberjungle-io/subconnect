@@ -19,19 +19,26 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
   const renderOptions = (options) => {
     if (!Array.isArray(options)) return null;
     
+    // Check if these are field options
+    const hasFieldOptions = options.some(option => 
+      option.options?.some(subOption => 
+        ['Set as X-Axis', 'Set as Y-Axis', 'Add to Y-Axis', 'Show field details'].includes(subOption)
+      )
+    );
+    
     return (
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="mt-2 flex flex-col gap-2 w-full">
         {options.map((option, index) => {
           // For initial query listing, only show the query names
           if (option.type === 'query' && !message.content.startsWith('Available options for')) {
             return (
-              <div key={index} className="flex flex-col min-w-[150px] max-w-[calc(50%-0.5rem)]">
+              <div key={index} className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]">
                 <button
                   onClick={() => onOptionSelect(option)}
-                  className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors overflow-hidden"
+                  className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
                   title={option.text}
                 >
-                  <div className="truncate">{option.text}</div>
+                  <div className="truncate min-w-0">{option.text}</div>
                 </button>
               </div>
             );
@@ -40,13 +47,13 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
           // For query options (after selection) and showing action buttons
           if (option.type === 'queryOption') {
             return (
-              <div key={index} className="flex flex-col min-w-[150px] max-w-[calc(50%-0.5rem)]">
+              <div key={index} className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]">
                 <button
                   onClick={() => onOptionSelect(option)}
-                  className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors"
+                  className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors w-full"
                   title={option.value}
                 >
-                  <span className="truncate max-w-[150px] inline-block">
+                  <span className="truncate block min-w-0">
                     {option.value}
                   </span>
                 </button>
@@ -56,16 +63,16 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
 
           // For field options, show field name with options underneath
           return (
-            <div key={index} className="flex flex-col min-w-[150px] max-w-[calc(50%-0.5rem)]">
+            <div key={index} className="flex flex-col w-full">
               <button
                 onClick={() => onOptionSelect(option)}
-                className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors overflow-hidden"
+                className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
                 title={option.text}
               >
-                <div className="truncate">{option.text}</div>
+                <div className="truncate min-w-0">{option.text}</div>
               </button>
               {option.options && (
-                <div className="mt-1 ml-2 flex flex-col gap-1">
+                <div className="mt-1 ml-2 flex flex-row flex-wrap gap-1">
                   {option.options.map((subOption, subIndex) => (
                     <button
                       key={subIndex}
@@ -73,12 +80,10 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
                         ...option,
                         selectedOption: subOption
                       })}
-                      className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left"
+                      className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left whitespace-nowrap"
                       title={`${option.text} - ${subOption}`}
                     >
-                      <span className="truncate max-w-[150px] inline-block">
-                        {subOption}
-                      </span>
+                      {subOption}
                     </button>
                   ))}
                 </div>
@@ -131,15 +136,21 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
     <div className={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
       <div className="flex flex-col gap-1">
         <div
-          className={`inline-block p-3 rounded-lg ${
+          className={`inline-block p-3 rounded-lg w-full ${
             message.role === 'user'
-              ? 'bg-blue-500 text-white max-w-[85%]'
-              : 'bg-gray-100 text-gray-800 max-w-[85%]'
+              ? 'bg-blue-500 text-white'
+              : 'bg-gray-100 text-gray-800'
           }`}
         >
-          <div className="break-words">
-            {message.content}
-          </div>
+          {(!message.options || !message.options.some(option => 
+            option.options?.some(subOption => 
+              ['Set as X-Axis', 'Set as Y-Axis', 'Add to Y-Axis', 'Show field details'].includes(subOption)
+            )
+          )) && (
+            <div className="break-words">
+              {message.content}
+            </div>
+          )}
           {message.options && renderOptions(message.options)}
         </div>
         <span className="text-xs text-gray-500">
