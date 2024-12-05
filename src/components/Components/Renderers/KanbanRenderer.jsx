@@ -487,7 +487,6 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                   height: "100%",
                   overflow: "hidden",
                   position: 'relative',
-                  zIndex: 1,
                   backgroundColor: column.backgroundColor || '#f3f4f6'
                 }}
                 onDoubleClick={(e) => handleDoubleClick(e, column.id)}
@@ -499,7 +498,6 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                     margin: "-12px -12px 0",
                     borderTopLeftRadius: columnBorderStyle.borderRadius || "4px",
                     borderTopRightRadius: columnBorderStyle.borderRadius || "4px",
-                    zIndex: 10,
                     backgroundColor: 'transparent'
                   }}
                 >
@@ -533,7 +531,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                             !hasPermission(KANBAN_UI_PERMISSIONS.MOVE)
                           }
                         >
-                          {(provided) => (
+                          {(provided, snapshot) => (
                             <div
                               ref={provided.innerRef}
                               {...provided.draggableProps}
@@ -542,6 +540,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                               style={{
                                 ...provided.draggableProps.style,
                                 borderRadius: taskCardBorderRadius,
+                                zIndex: snapshot.isDragging ? 9999 : 'auto'
                               }}
                               onDoubleClick={(e) =>
                                 handleDoubleClick(e, column.id, task)
