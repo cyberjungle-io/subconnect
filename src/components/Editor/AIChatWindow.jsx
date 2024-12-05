@@ -32,31 +32,39 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
   const renderOptions = (options) => {
     if (!Array.isArray(options)) return null;
 
-    // Check if these are field options
-    const hasFieldOptions = options.some((option) =>
-      option.options?.some((subOption) =>
-        [
-          "Set as X-Axis",
-          "Set as Y-Axis",
-          "Add to Y-Axis",
-          "Show field details",
-        ].includes(subOption)
-      )
-    );
-
     return (
       <div className="mt-2 flex flex-col gap-2 w-full">
         {options.map((option, index) => {
-          // For initial query listing, only show the query names
-          if (
-            option.type === "query" &&
-            !message.content.startsWith("Available options for")
-          ) {
+          // For category options (main video options)
+          if (option.type === "category") {
             return (
-              <div
+              <button
                 key={index}
-                className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]"
+                onClick={() => onOptionSelect(option)}
+                className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
               >
+                {option.text}
+              </button>
+            );
+          }
+
+          // For command options (specific video commands)
+          if (option.type === "command") {
+            return (
+              <button
+                key={index}
+                onClick={() => onOptionSelect(option)}
+                className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors w-full text-left"
+              >
+                {option.text}
+              </button>
+            );
+          }
+
+          // For query options (existing functionality)
+          if (option.type === "query" && !message.content.startsWith("Available options for")) {
+            return (
+              <div key={index} className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]">
                 <button
                   onClick={() => onOptionSelect(option)}
                   className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
@@ -68,55 +76,70 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
             );
           }
 
-          // For query options (after selection) and showing action buttons
+          // For query options (after selection)
           if (option.type === "queryOption") {
             return (
-              <div
-                key={index}
-                className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]"
-              >
+              <div key={index} className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]">
                 <button
                   onClick={() => onOptionSelect(option)}
                   className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors w-full"
                   title={option.value}
                 >
-                  <span className="truncate block min-w-0">{option.value}</span>
+                  <span className="truncate block min-w-0">
+                    {option.value}
+                  </span>
                 </button>
               </div>
             );
           }
 
-          // For field options, show field name with options underneath
-          return (
-            <div key={index} className="flex flex-col w-full">
-              <button
-                onClick={() => onOptionSelect(option)}
-                className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
-                title={option.text}
+          // For field options
+          if (option.type === "field") {
+            return (
+              <div key={index} className="flex flex-col w-full">
+                <button
+                  onClick={() => onOptionSelect(option)}
+                  className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
+                  title={option.text}
+                >
+                  <div className="truncate min-w-0">{option.text}</div>
+                </button>
+                {option.options && (
+                  <div className="mt-1 ml-2 flex flex-row flex-wrap gap-1">
+                    {option.options.map((subOption, subIndex) => (
+                      <button
+                        key={subIndex}
+                        onClick={() =>
+                          onOptionSelect({
+                            ...option,
+                            selectedOption: subOption,
+                          })
+                        }
+                        className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left whitespace-nowrap"
+                        title={`${option.text} - ${subOption}`}
+                      >
+                        {subOption}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          // For info type options (examples/instructions)
+          if (option.type === "info") {
+            return (
+              <div
+                key={index}
+                className="text-sm px-3 py-2 bg-gray-50 rounded text-gray-600 italic"
               >
-                <div className="truncate min-w-0">{option.text}</div>
-              </button>
-              {option.options && (
-                <div className="mt-1 ml-2 flex flex-row flex-wrap gap-1">
-                  {option.options.map((subOption, subIndex) => (
-                    <button
-                      key={subIndex}
-                      onClick={() =>
-                        onOptionSelect({
-                          ...option,
-                          selectedOption: subOption,
-                        })
-                      }
-                      className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left whitespace-nowrap"
-                      title={`${option.text} - ${subOption}`}
-                    >
-                      {subOption}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
+                {option.text}
+              </div>
+            );
+          }
+
+          return null;
         })}
       </div>
     );
@@ -172,17 +195,7 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
               : "bg-gray-100 text-gray-800"
           }`}
         >
-          {(!message.options ||
-            !message.options.some((option) =>
-              option.options?.some((subOption) =>
-                [
-                  "Set as X-Axis",
-                  "Set as Y-Axis",
-                  "Add to Y-Axis",
-                  "Show field details",
-                ].includes(subOption)
-              )
-            )) && <div className="break-words">{message.content}</div>}
+          <div className="break-words">{message.content}</div>
           {message.options && renderOptions(message.options)}
         </div>
         <span className="text-xs text-gray-500">
@@ -306,8 +319,18 @@ const AIChatWindow = ({ onClose }) => {
     const currentInput = input;
     setInput("");
 
-    // If we have an awaiting response, combine it with the current input
-    const processedInput = awaitingResponse
+    // Check if we're awaiting a video URL paste
+    const lastMessage = messages[messages.length - 1];
+    const isAwaitingVideoUrl = lastMessage?.content === 'Paste video URL:';
+    
+    // If we're awaiting a video URL and the input looks like a YouTube URL
+    const isYoutubeUrl = currentInput.includes('youtube.com/watch?v=') || 
+                        currentInput.includes('youtu.be/');
+    
+    // Modify the input if we're awaiting a video URL
+    const processedInput = isAwaitingVideoUrl && isYoutubeUrl
+      ? `set video url to ${currentInput}`
+      : awaitingResponse
       ? `${awaitingResponse.originalCommand} (${awaitingResponse.type}: ${currentInput})`
       : currentInput;
 
@@ -336,7 +359,7 @@ const AIChatWindow = ({ onClose }) => {
         processedInput,
         dispatch,
         selectedComponent,
-        minimalState // Pass the minimal state object
+        minimalState
       );
 
       if (commandResult) {
@@ -399,42 +422,84 @@ const AIChatWindow = ({ onClose }) => {
     return [
       {
         text: "Set video URL",
-        type: "suggestion",
+        type: "category",
         options: [
-          "set video url to https://youtube.com/...",
-          "load video from https://youtube.com/...",
-          "change video source to https://youtube.com/...",
-        ],
+          {
+            text: "set video url to https://youtube.com/...",
+            type: "command"
+          },
+          {
+            text: "load video from https://youtube.com/...",
+            type: "command"
+          },
+          {
+            text: "change video source to https://youtube.com/...",
+            type: "command"
+          }
+        ]
       },
       {
         text: "Video Controls",
-        type: "suggestion",
+        type: "category",
         options: [
-          "show video controls",
-          "hide video controls",
-          "toggle video controls",
-        ],
+          {
+            text: "show video controls",
+            type: "command"
+          },
+          {
+            text: "hide video controls",
+            type: "command"
+          },
+          {
+            text: "toggle video controls",
+            type: "command"
+          }
+        ]
       },
       {
         text: "Playback Options",
-        type: "suggestion",
+        type: "category",
         options: [
-          "enable autoplay",
-          "disable autoplay",
-          "make video loop",
-          "stop video loop",
-        ],
+          {
+            text: "enable autoplay",
+            type: "command"
+          },
+          {
+            text: "disable autoplay",
+            type: "command"
+          },
+          {
+            text: "make video loop",
+            type: "command"
+          },
+          {
+            text: "stop video loop",
+            type: "command"
+          }
+        ]
       },
       {
         text: "Audio Settings",
-        type: "suggestion",
+        type: "category",
         options: [
-          "mute video",
-          "unmute video",
-          "turn sound on",
-          "turn sound off",
-        ],
-      },
+          {
+            text: "mute video",
+            type: "command"
+          },
+          {
+            text: "unmute video",
+            type: "command"
+          },
+          {
+            text: "turn sound on",
+            type: "command"
+          },
+          {
+            text: "turn sound off",
+            type: "command"
+          }
+        ]
+      }
     ];
   };
 
@@ -454,10 +519,10 @@ const AIChatWindow = ({ onClose }) => {
     }
   }, [selectedComponent?.id]); // Only run when selected component changes
 
-  // Modify the handleOptionSelect function to handle video suggestions
+  // Modify the handleOptionSelect function to handle video categories
   const handleOptionSelect = async (option) => {
-    let input = "";
-
+    let input = '';
+    
     if (option.selectedOption) {
       // Handle field or query option selection
       if (option.type === "field") {
@@ -467,24 +532,52 @@ const AIChatWindow = ({ onClose }) => {
       } else if (option.type === "queryOption") {
         input = `__queryOption__:${option.queryName}::${option.value}`;
       }
-    } else if (option.type === "suggestion" && option.options) {
-      // Show the specific options for this suggestion
-      dispatch(
-        addMessage({
+    } else if (option.type === "category") {
+      // Special handling for video URL category
+      if (option.text === "Set video URL") {
+        dispatch(addMessage({
           id: Date.now().toString(),
-          role: "assistant",
-          content: `Try these commands for ${option.text.toLowerCase()}:`,
+          role: 'assistant',
+          content: 'Paste video URL:',
           timestamp: new Date(),
-          options: option.options.map((opt) => ({
-            text: opt,
-            type: "command",
-          })),
-        })
-      );
+          options: [
+            {
+              text: "Format: https://youtube.com/watch?v=...",
+              type: "info"
+            }
+          ]
+        }));
+        return;
+      }
+      
+      // Show options for other categories
+      dispatch(addMessage({
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `${option.text} options:`,
+        timestamp: new Date(),
+        options: option.options
+      }));
       return;
     } else if (option.type === "command") {
       // Execute the command directly
       input = option.text;
+    } else if (option.type === "info") {
+      // Don't do anything for info type options
+      return;
+    } else if (option.type === "suggestion" && option.options) {
+      // Show the specific options for this suggestion
+      dispatch(addMessage({
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Try these commands for ${option.text.toLowerCase()}:`,
+        timestamp: new Date(),
+        options: option.options.map(opt => ({
+          text: opt,
+          type: 'command'
+        }))
+      }));
+      return;
     } else if (option.type === "query" || option.type === "field") {
       // Don't process the text directly, show the options instead
       dispatch(
@@ -504,10 +597,9 @@ const AIChatWindow = ({ onClose }) => {
       );
       return;
     } else {
-      // Handle other clickable text selection
       input = option.text;
     }
-
+    
     try {
       const minimalState = {
         w3s: {

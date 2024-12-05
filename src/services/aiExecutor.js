@@ -45,12 +45,20 @@ export class AICommandExecutor {
     ].filter(Boolean); // Remove null values
   }
 
-  static async processCommand(input, dispatch, selectedComponent = null, state = null) {
+  static async processCommand(
+    input,
+    dispatch,
+    selectedComponent = null,
+    state = null
+  ) {
     console.log("Processing command:", input);
     console.log("Selected component:", selectedComponent);
 
     // Check for special commands first
-    if (input.startsWith('__queryOption__:') || input.startsWith('__fieldOption__:')) {
+    if (
+      input.startsWith("__queryOption__:") ||
+      input.startsWith("__fieldOption__:")
+    ) {
       if (selectedComponent?.type === "CHART") {
         console.log("Processing Chart option command");
         const result = ChartProcessor.processCommand(
@@ -62,7 +70,7 @@ export class AICommandExecutor {
         if (result) {
           const response = {
             success: true,
-            message: result.message
+            message: result.message,
           };
 
           if (result.options) {
@@ -108,7 +116,7 @@ export class AICommandExecutor {
         if (result.message) {
           const response = {
             success: true,
-            message: result.message
+            message: result.message,
           };
 
           // Add options to the response if they exist

@@ -31,7 +31,7 @@ export class VideoProcessor {
 
   static getPropertyNames() {
     return {
-      src: 'video URL',
+      youtubeUrl: 'video URL',
       autoplay: 'autoplay',
       controls: 'video controls',
       loop: 'video loop',
@@ -50,7 +50,9 @@ export class VideoProcessor {
         const url = match[1];
         if (url.includes('youtube.com') || url.includes('youtu.be')) {
           return {
-            style: { src: url }
+            props: {
+              youtubeUrl: url
+            }
           };
         }
       }
@@ -67,7 +69,6 @@ export class VideoProcessor {
     for (const [property, propertyPatterns] of Object.entries(booleanProperties)) {
       for (const pattern of propertyPatterns) {
         if (pattern.test(lowercaseInput)) {
-          // Determine the new value based on the command
           let newValue = true;
           if (lowercaseInput.includes('disable') || 
               lowercaseInput.includes('hide') || 
@@ -76,12 +77,13 @@ export class VideoProcessor {
               lowercaseInput.includes('unmute')) {
             newValue = false;
           }
-          // For toggle commands, invert the current value
           if (lowercaseInput.includes('toggle')) {
             newValue = !currentStyle[property];
           }
           return {
-            style: { [property]: newValue }
+            props: {
+              [property]: newValue
+            }
           };
         }
       }
@@ -89,4 +91,4 @@ export class VideoProcessor {
 
     return null;
   }
-} 
+}
