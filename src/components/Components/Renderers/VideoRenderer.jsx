@@ -1,6 +1,10 @@
 import React from "react";
 
 const VideoRenderer = ({ component, globalSettings }) => {
+  if (!component.type) {
+    component.type = "VIDEO";
+  }
+
   const { youtubeUrl, autoplay, controls, loop, mute } = component.props;
 
   const getYouTubeEmbedUrl = (url) => {

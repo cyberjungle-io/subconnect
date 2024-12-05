@@ -394,6 +394,67 @@ const AIChatWindow = ({ onClose }) => {
     ? "Processing..."
     : "Ask me anything...";
 
+  // Add this function to generate video suggestions
+  const getVideoSuggestions = () => {
+    return [
+      {
+        text: "Set video URL",
+        type: "suggestion",
+        options: [
+          "set video url to https://youtube.com/...",
+          "load video from https://youtube.com/...",
+          "change video source to https://youtube.com/...",
+        ],
+      },
+      {
+        text: "Video Controls",
+        type: "suggestion",
+        options: [
+          "show video controls",
+          "hide video controls",
+          "toggle video controls",
+        ],
+      },
+      {
+        text: "Playback Options",
+        type: "suggestion",
+        options: [
+          "enable autoplay",
+          "disable autoplay",
+          "make video loop",
+          "stop video loop",
+        ],
+      },
+      {
+        text: "Audio Settings",
+        type: "suggestion",
+        options: [
+          "mute video",
+          "unmute video",
+          "turn sound on",
+          "turn sound off",
+        ],
+      },
+    ];
+  };
+
+  // Add this effect to show video suggestions when a video component is selected
+  useEffect(() => {
+    if (selectedComponent?.type === "VIDEO") {
+      const suggestions = getVideoSuggestions();
+      dispatch(
+        addMessage({
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "Here are some things you can do with the video:",
+          timestamp: new Date(),
+          options: suggestions,
+        })
+      );
+    }
+  }, [selectedComponent?.id]); // Only run when selected component changes
+
+  // Modify the handleOptionSelect function to handle video suggestions
   const handleOptionSelect = async (option) => {
     let input = "";
 
@@ -406,6 +467,24 @@ const AIChatWindow = ({ onClose }) => {
       } else if (option.type === "queryOption") {
         input = `__queryOption__:${option.queryName}::${option.value}`;
       }
+    } else if (option.type === "suggestion" && option.options) {
+      // Show the specific options for this suggestion
+      dispatch(
+        addMessage({
+          id: Date.now().toString(),
+          role: "assistant",
+          content: `Try these commands for ${option.text.toLowerCase()}:`,
+          timestamp: new Date(),
+          options: option.options.map((opt) => ({
+            text: opt,
+            type: "command",
+          })),
+        })
+      );
+      return;
+    } else if (option.type === "command") {
+      // Execute the command directly
+      input = option.text;
     } else if (option.type === "query" || option.type === "field") {
       // Don't process the text directly, show the options instead
       dispatch(
