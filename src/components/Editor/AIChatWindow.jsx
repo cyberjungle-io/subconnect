@@ -25,9 +25,9 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
           <div key={index} className="flex flex-col gap-1">
             <button
               onClick={() => onOptionSelect(option)}
-              className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors"
+              className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors overflow-hidden"
             >
-              {option.text}
+              <div className="truncate">{option.text}</div>
             </button>
             {option.options && (
               <div className="ml-4 flex flex-wrap gap-2">
@@ -59,12 +59,28 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
 
   if (isCommandExecution) {
     return (
-      <div className="flex items-center justify-center my-2 text-xs text-gray-500">
+      <div className="flex flex-col items-center my-2 text-xs text-gray-500">
         <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-          <span className="italic">{message.content}</span>
-          <span className="text-gray-400 text-[10px]">{format(timestamp || new Date(), 'h:mm a')}</span>
+          <svg 
+            className="w-3.5 h-3.5 text-green-500" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor"
+          >
+            <path 
+              strokeLinecap="round" 
+              strokeLinejoin="round" 
+              strokeWidth={2} 
+              d="M5 13l4 4L19 7" 
+            />
+          </svg>
+          <span className="italic max-w-[250px] truncate" title={message.content}>
+            {message.content}
+          </span>
         </div>
+        <span className="text-gray-400 text-[10px] mt-0.5">
+          {format(timestamp || new Date(), 'h:mm a')}
+        </span>
       </div>
     );
   }
@@ -73,13 +89,15 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
     <div className={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
       <div className="flex flex-col gap-1">
         <div
-          className={`inline-block p-3 rounded-lg max-w-[85%] ${
+          className={`inline-block p-3 rounded-lg ${
             message.role === 'user'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-100 text-gray-800'
+              ? 'bg-blue-500 text-white max-w-[85%]'
+              : 'bg-gray-100 text-gray-800 max-w-[85%]'
           }`}
         >
-          {message.content}
+          <div className="break-words">
+            {message.content}
+          </div>
           {message.options && renderOptions(message.options)}
         </div>
         <span className="text-xs text-gray-500">
