@@ -6,6 +6,7 @@ import { ShadowProcessor } from "./Processors/ShadowProcessor";
 import { LayoutProcessor } from "./Processors/LayoutProcessor";
 import { ButtonProcessor } from "./Processors/ButtonProcessor";
 import { TextProcessor } from "./Processors/TextProcessor";
+import { VideoProcessor } from "./Processors/VideoProcessor";
 
 export class StyleCommandProcessor {
   static lastModifiedProperty = null;
@@ -42,7 +43,8 @@ export class StyleCommandProcessor {
           SizeProcessor,
           ShadowProcessor,
           ButtonProcessor,
-          BackgroundProcessor, // Move to end for text commands
+          BackgroundProcessor,
+          VideoProcessor,
         ]
       : [
           BorderProcessor,
@@ -53,6 +55,7 @@ export class StyleCommandProcessor {
           ShadowProcessor,
           ButtonProcessor,
           TextProcessor,
+          VideoProcessor,
         ];
 
     // Check if this is a contextual command (like "make it darker")
@@ -120,6 +123,7 @@ export class StyleCommandProcessor {
       ...ShadowProcessor.getPropertyNames(),
       ...ButtonProcessor.getPropertyNames(),
       ...TextProcessor.getPropertyNames(),
+      ...VideoProcessor.getPropertyNames(),
     };
   }
 
@@ -133,6 +137,7 @@ export class StyleCommandProcessor {
       ...ShadowProcessor.getStylePatterns(),
       ...ButtonProcessor.getStylePatterns(),
       ...TextProcessor.getStylePatterns(),
+      ...VideoProcessor.getStylePatterns(),
     };
   }
 }

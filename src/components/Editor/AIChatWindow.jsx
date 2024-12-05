@@ -1,38 +1,62 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { sendMessage, addMessage, changeProvider } from '../../features/aiChatSlice';
-import { FaTimes, FaPaperPlane } from 'react-icons/fa';
-import { LLMProviders } from '../../services/llm/llmService';
-import { aiAddComponent } from '../../features/editorSlice';
-import { AICommandExecutor } from '../../services/aiExecutor';
-import { format } from 'date-fns';
+import React, { useState, useRef, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  sendMessage,
+  addMessage,
+  changeProvider,
+} from "../../features/aiChatSlice";
+import { FaTimes, FaPaperPlane } from "react-icons/fa";
+import { LLMProviders } from "../../services/llm/llmService";
+import { aiAddComponent } from "../../features/editorSlice";
+import { AICommandExecutor } from "../../services/aiExecutor";
+import { format } from "date-fns";
 
 const TypingIndicator = () => (
   <div className="flex space-x-2 p-3 bg-gray-100 rounded-lg w-16">
-    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+    <div
+      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+      style={{ animationDelay: "0ms" }}
+    />
+    <div
+      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+      style={{ animationDelay: "150ms" }}
+    />
+    <div
+      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+      style={{ animationDelay: "300ms" }}
+    />
   </div>
 );
 
 const Message = ({ message, timestamp, onOptionSelect }) => {
   const renderOptions = (options) => {
     if (!Array.isArray(options)) return null;
-    
+
     // Check if these are field options
-    const hasFieldOptions = options.some(option => 
-      option.options?.some(subOption => 
-        ['Set as X-Axis', 'Set as Y-Axis', 'Add to Y-Axis', 'Show field details'].includes(subOption)
+    const hasFieldOptions = options.some((option) =>
+      option.options?.some((subOption) =>
+        [
+          "Set as X-Axis",
+          "Set as Y-Axis",
+          "Add to Y-Axis",
+          "Show field details",
+        ].includes(subOption)
       )
     );
-    
+
     return (
       <div className="mt-2 flex flex-col gap-2 w-full">
         {options.map((option, index) => {
           // For initial query listing, only show the query names
-          if (option.type === 'query' && !message.content.startsWith('Available options for')) {
+          if (
+            option.type === "query" &&
+            !message.content.startsWith("Available options for")
+          ) {
             return (
-              <div key={index} className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]">
+              <div
+                key={index}
+                className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]"
+              >
                 <button
                   onClick={() => onOptionSelect(option)}
                   className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
@@ -45,17 +69,18 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
           }
 
           // For query options (after selection) and showing action buttons
-          if (option.type === 'queryOption') {
+          if (option.type === "queryOption") {
             return (
-              <div key={index} className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]">
+              <div
+                key={index}
+                className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]"
+              >
                 <button
                   onClick={() => onOptionSelect(option)}
                   className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors w-full"
                   title={option.value}
                 >
-                  <span className="truncate block min-w-0">
-                    {option.value}
-                  </span>
+                  <span className="truncate block min-w-0">{option.value}</span>
                 </button>
               </div>
             );
@@ -76,10 +101,12 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
                   {option.options.map((subOption, subIndex) => (
                     <button
                       key={subIndex}
-                      onClick={() => onOptionSelect({
-                        ...option,
-                        selectedOption: subOption
-                      })}
+                      onClick={() =>
+                        onOptionSelect({
+                          ...option,
+                          selectedOption: subOption,
+                        })
+                      }
                       className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left whitespace-nowrap"
                       title={`${option.text} - ${subOption}`}
                     >
@@ -96,65 +123,70 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
   };
 
   // Check if this is a command execution message
-  const isCommandExecution = message.content?.startsWith('Set ') || 
-                           message.content?.startsWith('Added ') ||
-                           message.content?.startsWith('Updated ') ||
-                           message.content?.startsWith('Selected ');
+  const isCommandExecution =
+    message.content?.startsWith("Set ") ||
+    message.content?.startsWith("Added ") ||
+    message.content?.startsWith("Updated ") ||
+    message.content?.startsWith("Selected ");
 
   if (isCommandExecution) {
     return (
       <div className="flex flex-col items-center my-2 text-xs text-gray-500">
         <div className="flex items-center gap-2">
-          <svg 
-            className="w-3.5 h-3.5 text-green-500 flex-shrink-0" 
-            fill="none" 
-            viewBox="0 0 24 24" 
+          <svg
+            className="w-3.5 h-3.5 text-green-500 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M5 13l4 4L19 7" 
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
             />
           </svg>
-          <span 
-            className="italic max-w-[250px] truncate" 
+          <span
+            className="italic max-w-[250px] truncate"
             title={message.content}
           >
             {message.content}
           </span>
         </div>
         <span className="text-gray-400 text-[10px] mt-0.5">
-          {format(timestamp || new Date(), 'h:mm a')}
+          {format(timestamp || new Date(), "h:mm a")}
         </span>
       </div>
     );
   }
 
   return (
-    <div className={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+    <div
+      className={`mb-4 ${message.role === "user" ? "text-right" : "text-left"}`}
+    >
       <div className="flex flex-col gap-1">
         <div
           className={`inline-block p-3 rounded-lg w-full ${
-            message.role === 'user'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-100 text-gray-800'
+            message.role === "user"
+              ? "bg-blue-500 text-white"
+              : "bg-gray-100 text-gray-800"
           }`}
         >
-          {(!message.options || !message.options.some(option => 
-            option.options?.some(subOption => 
-              ['Set as X-Axis', 'Set as Y-Axis', 'Add to Y-Axis', 'Show field details'].includes(subOption)
-            )
-          )) && (
-            <div className="break-words">
-              {message.content}
-            </div>
-          )}
+          {(!message.options ||
+            !message.options.some((option) =>
+              option.options?.some((subOption) =>
+                [
+                  "Set as X-Axis",
+                  "Set as Y-Axis",
+                  "Add to Y-Axis",
+                  "Show field details",
+                ].includes(subOption)
+              )
+            )) && <div className="break-words">{message.content}</div>}
           {message.options && renderOptions(message.options)}
         </div>
         <span className="text-xs text-gray-500">
-          {format(timestamp || new Date(), 'h:mm a')}
+          {format(timestamp || new Date(), "h:mm a")}
         </span>
       </div>
     </div>
@@ -169,15 +201,17 @@ const isRecent = (timestamp) => {
 
 const AIChatWindow = ({ onClose }) => {
   const dispatch = useDispatch();
-  const queries = useSelector(state => state.w3s?.queries?.list);
-  const [input, setInput] = useState('');
-  const { messages, isLoading, provider } = useSelector(state => state.aiChat);
-  const selectedIds = useSelector(state => state.editor.selectedIds);
-  const components = useSelector(state => state.editor.components);
-  
+  const queries = useSelector((state) => state.w3s?.queries?.list);
+  const [input, setInput] = useState("");
+  const { messages, isLoading, provider } = useSelector(
+    (state) => state.aiChat
+  );
+  const selectedIds = useSelector((state) => state.editor.selectedIds);
+  const components = useSelector((state) => state.editor.components);
+
   // Add the awaitingResponse state
   const [awaitingResponse, setAwaitingResponse] = useState(null);
-  
+
   // Enhanced function to find selected component, including nested children
   const findSelectedComponent = (components, selectedId) => {
     for (const component of components) {
@@ -190,7 +224,7 @@ const AIChatWindow = ({ onClose }) => {
           // Add parent reference to help with context
           return {
             ...found,
-            parent: component
+            parent: component,
           };
         }
       }
@@ -199,19 +233,23 @@ const AIChatWindow = ({ onClose }) => {
   };
 
   // Get the selected component details, including nested components
-  const selectedComponent = selectedIds.length === 1 
-    ? findSelectedComponent(components, selectedIds[0])
-    : null;
+  const selectedComponent =
+    selectedIds.length === 1
+      ? findSelectedComponent(components, selectedIds[0])
+      : null;
 
   const messagesEndRef = useRef(null);
-  const currentProvider = useSelector(state => state.aiChat.provider);
-  
-  const [position, setPosition] = useState({ x: window.innerWidth - 350, y: window.innerHeight / 2 - 300 });
+  const currentProvider = useSelector((state) => state.aiChat.provider);
+
+  const [position, setPosition] = useState({
+    x: window.innerWidth - 350,
+    y: window.innerHeight / 2 - 300,
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [messageStates, setMessageStates] = useState({});
   const [isTyping, setIsTyping] = useState(false);
-  
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -235,13 +273,13 @@ const AIChatWindow = ({ onClose }) => {
     };
 
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDragging, dragOffset]);
 
@@ -254,9 +292,9 @@ const AIChatWindow = ({ onClose }) => {
   };
 
   const updateMessageState = (messageId, state) => {
-    setMessageStates(prev => ({
+    setMessageStates((prev) => ({
       ...prev,
-      [messageId]: state
+      [messageId]: state,
     }));
   };
 
@@ -266,56 +304,60 @@ const AIChatWindow = ({ onClose }) => {
 
     const messageId = Date.now().toString();
     const currentInput = input;
-    setInput('');
-    
+    setInput("");
+
     // If we have an awaiting response, combine it with the current input
-    const processedInput = awaitingResponse 
+    const processedInput = awaitingResponse
       ? `${awaitingResponse.originalCommand} (${awaitingResponse.type}: ${currentInput})`
       : currentInput;
-    
-    dispatch(addMessage({
-      id: messageId,
-      role: 'user',
-      content: currentInput,
-      timestamp: new Date(),
-    }));
+
+    dispatch(
+      addMessage({
+        id: messageId,
+        role: "user",
+        content: currentInput,
+        timestamp: new Date(),
+      })
+    );
 
     setIsTyping(true);
-    
+
     try {
       // Create a minimal state object with just what we need
       const minimalState = {
         w3s: {
           queries: {
-            list: queries
-          }
-        }
+            list: queries,
+          },
+        },
       };
 
       const commandResult = await AICommandExecutor.processCommand(
-        processedInput, 
+        processedInput,
         dispatch,
         selectedComponent,
-        minimalState  // Pass the minimal state object
+        minimalState // Pass the minimal state object
       );
-      
+
       if (commandResult) {
-        dispatch(addMessage({
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: commandResult.message,
-          timestamp: new Date(),
-          status: commandResult.success ? 'success' : 'error',
-          needsMoreInfo: commandResult.needsMoreInfo,
-          type: commandResult.type,
-          options: commandResult.options // Add the options to the message
-        }));
+        dispatch(
+          addMessage({
+            id: Date.now().toString(),
+            role: "assistant",
+            content: commandResult.message,
+            timestamp: new Date(),
+            status: commandResult.success ? "success" : "error",
+            needsMoreInfo: commandResult.needsMoreInfo,
+            type: commandResult.type,
+            options: commandResult.options, // Add the options to the message
+          })
+        );
 
         // If we need more info, store the context for the next message
         if (commandResult.needsMoreInfo) {
           setAwaitingResponse({
             type: commandResult.type,
-            originalCommand: currentInput
+            originalCommand: currentInput,
           });
         } else {
           // Clear awaiting response if we don't need more info
@@ -327,13 +369,15 @@ const AIChatWindow = ({ onClose }) => {
       }
     } catch (error) {
       setAwaitingResponse(null); // Clear awaiting response on error
-      dispatch(addMessage({
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: 'Sorry, I encountered an error processing your request.',
-        timestamp: new Date(),
-        status: 'error',
-      }));
+      dispatch(
+        addMessage({
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "Sorry, I encountered an error processing your request.",
+          timestamp: new Date(),
+          status: "error",
+        })
+      );
     } finally {
       setIsTyping(false);
     }
@@ -344,87 +388,97 @@ const AIChatWindow = ({ onClose }) => {
   };
 
   // Optional: Add visual indicator when awaiting response
-  const inputPlaceholder = awaitingResponse 
+  const inputPlaceholder = awaitingResponse
     ? `Please specify ${awaitingResponse.type}...`
-    : (isLoading ? "Processing..." : "Ask me anything...");
+    : isLoading
+    ? "Processing..."
+    : "Ask me anything...";
 
   const handleOptionSelect = async (option) => {
-    let input = '';
-    
+    let input = "";
+
     if (option.selectedOption) {
       // Handle field or query option selection
-      if (option.type === 'field') {
+      if (option.type === "field") {
         input = `__fieldOption__:${option.value}::${option.selectedOption}`;
-      } else if (option.type === 'query') {
+      } else if (option.type === "query") {
         input = `__queryOption__:${option.value}::${option.selectedOption}`;
-      } else if (option.type === 'queryOption') {
+      } else if (option.type === "queryOption") {
         input = `__queryOption__:${option.queryName}::${option.value}`;
       }
-    } else if (option.type === 'query' || option.type === 'field') {
+    } else if (option.type === "query" || option.type === "field") {
       // Don't process the text directly, show the options instead
-      dispatch(addMessage({
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: `Available options for ${option.value}:`,
-        timestamp: new Date(),
-        options: [{
-          ...option,
-          text: option.value,
-          options: option.options
-        }]
-      }));
+      dispatch(
+        addMessage({
+          id: Date.now().toString(),
+          role: "assistant",
+          content: `Available options for ${option.value}:`,
+          timestamp: new Date(),
+          options: [
+            {
+              ...option,
+              text: option.value,
+              options: option.options,
+            },
+          ],
+        })
+      );
       return;
     } else {
       // Handle other clickable text selection
       input = option.text;
     }
-    
+
     try {
       const minimalState = {
         w3s: {
           queries: {
-            list: queries
-          }
-        }
+            list: queries,
+          },
+        },
       };
 
       const commandResult = await AICommandExecutor.processCommand(
-        input, 
+        input,
         dispatch,
         selectedComponent,
         minimalState
       );
-      
+
       if (commandResult) {
-        dispatch(addMessage({
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: commandResult.message,
-          timestamp: new Date(),
-          status: commandResult.success ? 'success' : 'error',
-          options: commandResult.options
-        }));
+        dispatch(
+          addMessage({
+            id: Date.now().toString(),
+            role: "assistant",
+            content: commandResult.message,
+            timestamp: new Date(),
+            status: commandResult.success ? "success" : "error",
+            options: commandResult.options,
+          })
+        );
       }
     } catch (error) {
-      dispatch(addMessage({
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: 'Sorry, I encountered an error processing your selection.',
-        timestamp: new Date(),
-        status: 'error',
-      }));
+      dispatch(
+        addMessage({
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "Sorry, I encountered an error processing your selection.",
+          timestamp: new Date(),
+          status: "error",
+        })
+      );
     }
   };
 
   return (
-    <div 
+    <div
       className="fixed w-80 bg-white border border-blue-200 rounded-lg shadow-xl z-[960] flex flex-col max-h-[80vh]"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
       }}
     >
-      <div 
+      <div
         className="flex justify-between items-center p-3 border-b border-blue-100 bg-[#e6f3ff] cursor-move"
         onMouseDown={handleMouseDown}
       >
@@ -432,10 +486,12 @@ const AIChatWindow = ({ onClose }) => {
           <h3 className="text-lg font-semibold text-gray-700">AI Assistant</h3>
           {selectedComponent && (
             <span className="text-sm text-blue-600">
-              Selected: {selectedComponent.props?.name || selectedComponent.type}
+              Selected:{" "}
+              {selectedComponent.props?.name || selectedComponent.type}
               {selectedComponent.parent && (
                 <span className="text-xs text-gray-500">
-                  {' '}(nested in {selectedComponent.parent.type})
+                  {" "}
+                  (nested in {selectedComponent.parent.type})
                 </span>
               )}
             </span>
@@ -446,7 +502,7 @@ const AIChatWindow = ({ onClose }) => {
               onChange={handleProviderChange}
               className="text-sm p-1 rounded border border-blue-200"
             >
-              {Object.values(LLMProviders).map(provider => (
+              {Object.values(LLMProviders).map((provider) => (
                 <option key={provider} value={provider}>
                   {provider}
                 </option>
@@ -489,8 +545,8 @@ const AIChatWindow = ({ onClose }) => {
             disabled={isLoading}
             className={`p-2 rounded-lg ${
               isLoading
-                ? 'bg-gray-200 cursor-not-allowed'
-                : 'bg-blue-500 hover:bg-blue-600'
+                ? "bg-gray-200 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600"
             } text-white transition-colors`}
           >
             <FaPaperPlane />
@@ -501,4 +557,4 @@ const AIChatWindow = ({ onClose }) => {
   );
 };
 
-export default AIChatWindow; 
+export default AIChatWindow;
