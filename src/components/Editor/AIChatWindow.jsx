@@ -42,6 +42,7 @@ const isRecent = (timestamp) => {
 
 const AIChatWindow = ({ onClose }) => {
   const dispatch = useDispatch();
+  const queries = useSelector(state => state.w3s?.queries?.list);
   const [input, setInput] = useState('');
   const { messages, isLoading, provider } = useSelector(state => state.aiChat);
   const selectedIds = useSelector(state => state.editor.selectedIds);
@@ -155,10 +156,20 @@ const AIChatWindow = ({ onClose }) => {
     setIsTyping(true);
     
     try {
+      // Create a minimal state object with just what we need
+      const minimalState = {
+        w3s: {
+          queries: {
+            list: queries
+          }
+        }
+      };
+
       const commandResult = await AICommandExecutor.processCommand(
         processedInput, 
         dispatch,
-        selectedComponent
+        selectedComponent,
+        minimalState  // Pass the minimal state object
       );
       
       if (commandResult) {

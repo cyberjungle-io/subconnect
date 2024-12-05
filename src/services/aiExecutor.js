@@ -45,7 +45,7 @@ export class AICommandExecutor {
     ].filter(Boolean); // Remove null values
   }
 
-  static async processCommand(input, dispatch, selectedComponent = null) {
+  static async processCommand(input, dispatch, selectedComponent = null, state = null) {
     console.log("Processing command:", input);
     console.log("Selected component:", selectedComponent);
 
@@ -57,10 +57,19 @@ export class AICommandExecutor {
       console.log("Processing Chart-specific command");
       const result = ChartProcessor.processCommand(
         input,
-        selectedComponent.props
+        selectedComponent.props,
+        state
       );
 
       if (result) {
+        // If it's just a query info command, return the message without updating the component
+        if (result.message && !result.props) {
+          return {
+            success: true,
+            message: result.message
+          };
+        }
+
         try {
           await dispatch(
             updateComponent({
@@ -70,7 +79,7 @@ export class AICommandExecutor {
           );
           return {
             success: true,
-            message: `Updated chart successfully`,
+            message: result.message || `Updated chart successfully`,
           };
         } catch (error) {
           console.error("Chart update failed:", error);
