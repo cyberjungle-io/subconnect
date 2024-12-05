@@ -51,6 +51,24 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
     );
   };
 
+  // Check if this is a command execution message
+  const isCommandExecution = message.content?.startsWith('Set ') || 
+                           message.content?.startsWith('Added ') ||
+                           message.content?.startsWith('Updated ') ||
+                           message.content?.startsWith('Selected ');
+
+  if (isCommandExecution) {
+    return (
+      <div className="flex items-center justify-center my-2 text-xs text-gray-500">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+          <span className="italic">{message.content}</span>
+          <span className="text-gray-400 text-[10px]">{format(timestamp || new Date(), 'h:mm a')}</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`mb-4 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
       <div className="flex flex-col gap-1">
