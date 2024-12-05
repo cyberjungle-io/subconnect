@@ -3,7 +3,7 @@ import { aiAddComponent, updateComponent } from "../features/editorSlice";
 import { StyleCommandProcessor } from "./styleCommandProcessor";
 import LLMService from "./llm/llmService";
 import { KanbanProcessor } from "./Processors/KanbanProcessor";
-import { ChartProcessor } from './Processors/ChartProcessor';
+import { ChartProcessor } from "./Processors/ChartProcessor";
 
 export class AICommandExecutor {
   // Define actionWords as a static class property
@@ -50,9 +50,15 @@ export class AICommandExecutor {
     console.log("Selected component:", selectedComponent);
 
     // Add check for Chart commands first
-    if (selectedComponent?.type === "CHART" && ChartProcessor.isChartCommand(input)) {
+    if (
+      selectedComponent?.type === "CHART" &&
+      ChartProcessor.isChartCommand(input)
+    ) {
       console.log("Processing Chart-specific command");
-      const result = ChartProcessor.processCommand(input, selectedComponent.props);
+      const result = ChartProcessor.processCommand(
+        input,
+        selectedComponent.props
+      );
 
       if (result) {
         try {
