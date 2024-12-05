@@ -8,7 +8,11 @@ export class ChartProcessor {
     /(?:list|show|display|get)\s+(?:all\s+)?(?:available\s+)?queries/i,
     /(?:what|which)\s+queries\s+(?:are\s+)?(?:available|exist|do\s+i\s+have)/i,
     /(?:find|search|look\s+for)\s+(?:a\s+)?query\s+(?:called|named)?\s*["']?([^"']+)["']?/i,
-    /(?:describe|explain|tell\s+me\s+about)\s+(?:the\s+)?query\s+(?:called|named)?\s*["']?([^"']+)["']?/i
+    /(?:describe|explain|tell\s+me\s+about)\s+(?:the\s+)?query\s+(?:called|named)?\s*["']?([^"']+)["']?/i,
+    /(?:add|set|use)\s+(?:the\s+)?fields?\s+(?:called|named)?\s*["']?([^"']+)["']?\s*(?:(?:and|,)\s*["']?([^"']+)["']?)*/i,
+    /(?:set|use)\s+(?:the\s+)?(?:x-axis|x\s+axis)\s+(?:to|as)\s+["']?([^"']+)["']?(?:\s+(?:and|,)\s+(?:the\s+)?(?:y-axis|y\s+axis)\s+(?:to|as)\s+["']?([^"']+)["']?)?/i,
+    /(?:set|use)\s+(?:the\s+)?(?:y-axis|y\s+axis)\s+(?:to|as)\s+["']?([^"']+)["']?(?:\s+(?:and|,)\s+(?:the\s+)?(?:x-axis|x\s+axis)\s+(?:to|as)\s+["']?([^"']+)["']?)?/i,
+    /(?:select|use|choose)\s+(?:the\s+)?query\s+(?:called|named)?\s*["']?([^"']+)["']?/i
   ];
 
   static isChartCommand(input) {
@@ -74,6 +78,44 @@ export class ChartProcessor {
   static processCommand(input, currentProps = {}, state = null) {
     console.log("ChartProcessor received input:", input, "Current props:", currentProps);
     const lowercaseInput = input.toLowerCase();
+
+    // Process query selection
+    const querySelectionPattern = /(?:select|use|choose)\s+(?:the\s+)?query\s+(?:called|named)?\s*["']?([^"']+)["']?/i;
+    const querySelectionMatch = input.match(querySelectionPattern);
+    
+    if (querySelectionMatch) {
+      if (!state?.w3s?.queries?.list) {
+        return {
+          props: currentProps,
+          message: "I cannot access the queries at the moment. Please ensure you have loaded your queries in the Data Modal."
+        };
+      }
+
+      const queryName = querySelectionMatch[1];
+      const query = state.w3s.queries.list.find(q => 
+        q.name.toLowerCase() === queryName.toLowerCase()
+      );
+
+      if (!query) {
+        const availableQueries = state.w3s.queries.list.map(q => q.name).join(', ');
+        return {
+          props: currentProps,
+          message: `No query found with the name "${queryName}". Available queries are: ${availableQueries}`
+        };
+      }
+
+      return {
+        props: {
+          ...currentProps,
+          selectedQueryId: query._id,
+          // Reset data-related props when changing query
+          dataKeys: [],
+          nameKey: '',
+          data: []
+        },
+        message: `Selected query "${query.name}". Available fields are: ${query.fields.map(f => f.name).join(', ')}`
+      };
+    }
 
     // Process query listing commands
     const queryListPattern = /(?:list|show|display|get)\s+(?:all\s+)?(?:available\s+)?queries|(?:what|which)\s+queries\s+(?:are\s+)?(?:available|exist|do\s+i\s+have)/i;
@@ -166,6 +208,123 @@ export class ChartProcessor {
       return {
         props: currentProps,
         message: `Query Details:\n\n${this.formatQueryDetails(query)}\n\nQuery Content:\n${query.query || 'No query content available'}`
+      };
+    }
+
+    // Process field addition commands
+    const fieldPattern = /(?:add|set|use)\s+(?:the\s+)?fields?\s+(?:called|named)?\s*["']?([^"']+)["']?\s*(?:(?:and|,)\s*["']?([^"']+)["']?)*/i;
+    const fieldMatch = input.match(fieldPattern);
+    
+    if (fieldMatch) {
+      if (!state?.w3s?.queries?.list || !currentProps.selectedQueryId) {
+        return {
+          props: currentProps,
+          message: "Please select a query first using the Data Modal before adding fields."
+        };
+      }
+
+      const query = state.w3s.queries.list.find(q => q._id === currentProps.selectedQueryId);
+      if (!query) {
+        return {
+          props: currentProps,
+          message: "Could not find the selected query. Please select a valid query first."
+        };
+      }
+
+      // Extract all fields from the command
+      const fields = input.match(/["']([^"']+)["']/g)?.map(f => f.replace(/["']/g, '')) || [];
+      if (fields.length === 0) {
+        return {
+          props: currentProps,
+          message: "Please specify the field names you want to add. For example: add fields 'revenue' and 'profit'"
+        };
+      }
+
+      // Validate fields exist in the query
+      const validFields = fields.filter(field => 
+        query.fields.some(f => f.name.toLowerCase() === field.toLowerCase())
+      );
+      
+      const invalidFields = fields.filter(field => 
+        !query.fields.some(f => f.name.toLowerCase() === field.toLowerCase())
+      );
+
+      if (invalidFields.length > 0) {
+        return {
+          props: currentProps,
+          message: `The following fields are not available in the query: ${invalidFields.join(', ')}. Available fields are: ${query.fields.map(f => f.name).join(', ')}`
+        };
+      }
+
+      return {
+        props: {
+          ...currentProps,
+          dataKeys: validFields
+        },
+        message: `Added the following fields to the chart: ${validFields.join(', ')}`
+      };
+    }
+
+    // Process combined x-axis and y-axis setting
+    const xAxisFirstPattern = /(?:set|use)\s+(?:the\s+)?(?:x-axis|x\s+axis)\s+(?:to|as)\s+["']?([^"']+)["']?(?:\s+(?:and|,)\s+(?:the\s+)?(?:y-axis|y\s+axis)\s+(?:to|as)\s+["']?([^"']+)["']?)?/i;
+    const yAxisFirstPattern = /(?:set|use)\s+(?:the\s+)?(?:y-axis|y\s+axis)\s+(?:to|as)\s+["']?([^"']+)["']?(?:\s+(?:and|,)\s+(?:the\s+)?(?:x-axis|x\s+axis)\s+(?:to|as)\s+["']?([^"']+)["']?)?/i;
+    
+    const xAxisFirstMatch = input.match(xAxisFirstPattern);
+    const yAxisFirstMatch = input.match(yAxisFirstPattern);
+    
+    if (xAxisFirstMatch || yAxisFirstMatch) {
+      if (!state?.w3s?.queries?.list || !currentProps.selectedQueryId) {
+        return {
+          props: currentProps,
+          message: "Please select a query first using the Data Modal before setting axis fields."
+        };
+      }
+
+      const query = state.w3s.queries.list.find(q => q._id === currentProps.selectedQueryId);
+      if (!query) {
+        return {
+          props: currentProps,
+          message: "Could not find the selected query. Please select a valid query first."
+        };
+      }
+
+      let xAxisField = xAxisFirstMatch ? xAxisFirstMatch[1] : (yAxisFirstMatch ? yAxisFirstMatch[2] : null);
+      let yAxisField = xAxisFirstMatch ? xAxisFirstMatch[2] : (yAxisFirstMatch ? yAxisFirstMatch[1] : null);
+      
+      const updates = { ...currentProps };
+      let messages = [];
+
+      if (xAxisField) {
+        if (!query.fields.some(f => f.name.toLowerCase() === xAxisField.toLowerCase())) {
+          return {
+            props: currentProps,
+            message: `The field '${xAxisField}' is not available in the query. Available fields are: ${query.fields.map(f => f.name).join(', ')}`
+          };
+        }
+        updates.nameKey = xAxisField;
+        messages.push(`Set x-axis to '${xAxisField}'`);
+      }
+
+      if (yAxisField) {
+        if (!query.fields.some(f => f.name.toLowerCase() === yAxisField.toLowerCase())) {
+          return {
+            props: currentProps,
+            message: `The field '${yAxisField}' is not available in the query. Available fields are: ${query.fields.map(f => f.name).join(', ')}`
+          };
+        }
+        updates.dataKeys = [yAxisField];
+        messages.push(`Set y-axis to '${yAxisField}'`);
+      }
+
+      // Add a key to force re-render and trigger query execution
+      updates.key = Date.now();
+      
+      // Reset data to trigger a fresh query
+      updates.data = [];
+
+      return {
+        props: updates,
+        message: messages.join(' and ')
       };
     }
 
