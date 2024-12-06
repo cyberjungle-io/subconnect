@@ -200,7 +200,9 @@ export class ChartProcessor {
                 showDataPoints: action,
                 key: Date.now()
             },
-            message: `${action ? 'Showing' : 'Hiding'} data points`
+            success: true,
+            message: 'Updated chart successfully',
+            details: `${action ? 'Showing' : 'Hiding'} data points`
         };
     }
 
