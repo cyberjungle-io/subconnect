@@ -2,7 +2,7 @@ export class ChartProcessor {
   static chartPatterns = [
     /(?:change|switch|set|make|convert)\s+(?:the\s+)?(?:chart|graph)\s+(?:type\s+)?(?:to\s+)?(line|bar|area|pie)/i,
     /(?:add|set|update)\s+(?:the\s+)?data\s+keys?/i,
-    /(?:show|hide|toggle)\s+(?:the\s+)?(legend|grid|data\s*points|x\s*axis|y\s*axis)/i,
+    /(?:show|hide|toggle)\s+(?:the\s+)?(legend|grid|data\s*points|x[\s-]*axis|y[\s-]*axis)/i,
     /(?:set|change|update)\s+(?:the\s+)?(?:chart|graph)\s+(?:title|size|width|height)/i,
     /(?:set|change|update)\s+(?:the\s+)?(?:title|axis)\s+(?:color|font|size|alignment)/i,
     /(?:list|show|display|get)\s+(?:all\s+)?(?:available\s+)?queries/i,
@@ -483,9 +483,9 @@ export class ChartProcessor {
     }
 
     // Process visibility toggles
-    const visibilityMatch = lowercaseInput.match(/(?:show|hide|toggle)\s+(?:the\s+)?(legend|grid|data\s*points|x\s*axis|y\s*axis)/i);
+    const visibilityMatch = lowercaseInput.match(/(?:show|hide|toggle)\s+(?:the\s+)?(legend|grid|data\s*points|x[\s-]*axis|y[\s-]*axis)/i);
     if (visibilityMatch) {
-      const element = visibilityMatch[1].toLowerCase().replace(/\s+/g, '');
+      const element = visibilityMatch[1].toLowerCase().replace(/[\s-]+/g, '');
       const isHiding = lowercaseInput.includes('hide');
       const propMap = {
         'legend': 'showLegend',
@@ -497,11 +497,15 @@ export class ChartProcessor {
       
       const propName = propMap[element];
       if (propName) {
+        const displayElement = element.replace('axis', ' axis');
         return {
           props: {
             ...currentProps,
             [propName]: !isHiding
-          }
+          },
+          success: true,
+          message: `Updated chart successfully`,
+          details: `${isHiding ? 'Hidden' : 'Showing'} the ${displayElement}`
         };
       }
     }

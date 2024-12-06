@@ -67,8 +67,10 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
             !message.content.startsWith("Available options for")
           ) {
             // Extract just the name from the text (remove "Name: " prefix)
-            const queryName = option.text.replace(/^Name:\s*/, '').split('\n')[0];
-            
+            const queryName = option.text
+              .replace(/^Name:\s*/, "")
+              .split("\n")[0];
+
             return (
               <div key={index} className="w-full">
                 <button
@@ -76,7 +78,9 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
                   className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
                   title={option.text} // Keep full details in tooltip
                 >
-                  <div className="truncate text-sm font-medium">{queryName}</div>
+                  <div className="truncate text-sm font-medium">
+                    {queryName}
+                  </div>
                 </button>
               </div>
             );
@@ -529,7 +533,7 @@ const AIChatWindow = ({ onClose }) => {
   const getChartSuggestions = () => {
     // Check if a query is selected
     const hasSelectedQuery = selectedComponent?.props?.selectedQueryId;
-    
+
     // Get current states from the component props
     const showLegend = selectedComponent?.props?.showLegend !== false;
     const showGrid = selectedComponent?.props?.showGrid !== false;
@@ -564,44 +568,44 @@ const AIChatWindow = ({ onClose }) => {
         text: "Chart Styles",
         type: "category",
         options: [
-          showLegend ? 
-            {
-              text: "hide the legend",
-              type: "command",
-            } :
-            {
-              text: "show the legend",
-              type: "command",
-            },
-          showGrid ?
-            {
-              text: "hide the grid",
-              type: "command",
-            } :
-            {
-              text: "show the grid",
-              type: "command",
-            },
-          showDataPoints ?
-            {
-              text: "hide the data points",
-              type: "command",
-            } :
-            {
-              text: "show the data points",
-              type: "command",
-            },
+          showLegend
+            ? {
+                text: "hide the legend",
+                type: "command",
+              }
+            : {
+                text: "show the legend",
+                type: "command",
+              },
+          showGrid
+            ? {
+                text: "hide the grid",
+                type: "command",
+              }
+            : {
+                text: "show the grid",
+                type: "command",
+              },
+          showDataPoints
+            ? {
+                text: "hide the data points",
+                type: "command",
+              }
+            : {
+                text: "show the data points",
+                type: "command",
+              },
         ],
       },
       {
         text: "Data Management",
         type: "category",
-        options: hasSelectedQuery 
+        options: hasSelectedQuery
           ? [
               {
                 text: "show field options",
                 type: "command",
-              }
+              },
             ]
           : [
               {
@@ -611,31 +615,31 @@ const AIChatWindow = ({ onClose }) => {
               {
                 text: "Please select a query to see field options",
                 type: "info",
-              }
+              },
             ],
       },
       {
         text: "Axis Controls",
         type: "category",
         options: [
-          showXAxis ?
-            {
-              text: "hide x axis",
-              type: "command",
-            } :
-            {
-              text: "show x axis",
-              type: "command",
-            },
-          showYAxis ?
-            {
-              text: "hide y axis",
-              type: "command",
-            } :
-            {
-              text: "show y axis",
-              type: "command",
-            },
+          showXAxis
+            ? {
+                text: "hide x axis",
+                type: "command",
+              }
+            : {
+                text: "show x axis",
+                type: "command",
+              },
+          showYAxis
+            ? {
+                text: "hide y axis",
+                type: "command",
+              }
+            : {
+                text: "show y axis",
+                type: "command",
+              },
         ],
       },
     ];
@@ -644,8 +648,9 @@ const AIChatWindow = ({ onClose }) => {
   // Modify the useEffect hook that handles component selection
   useEffect(() => {
     if (selectedComponent?.type === "VIDEO") {
-      const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
-      
+      const lastMessage =
+        messages.length > 0 ? messages[messages.length - 1] : null;
+
       if (!lastMessage || !isVideoSuggestionsMessage(lastMessage)) {
         const suggestions = getVideoSuggestions();
         dispatch(
@@ -659,8 +664,9 @@ const AIChatWindow = ({ onClose }) => {
         );
       }
     } else if (selectedComponent?.type === "CHART") {
-      const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
-      
+      const lastMessage =
+        messages.length > 0 ? messages[messages.length - 1] : null;
+
       if (!lastMessage || !isChartSuggestionsMessage(lastMessage)) {
         const suggestions = getChartSuggestions();
         dispatch(
@@ -722,17 +728,25 @@ const AIChatWindow = ({ onClose }) => {
       return;
     } else if (option.type === "command") {
       // Special handling for chart style commands
-      if (selectedComponent?.type === "CHART" && 
-          (option.text.includes("show") || option.text.includes("hide"))) {
+      if (
+        selectedComponent?.type === "CHART" &&
+        (option.text.includes("show") || option.text.includes("hide"))
+      ) {
         const words = option.text.split(" ");
         const action = words[0]; // "show" or "hide"
-        const element = words[words.length - 1]; // Get the last word ("legend", "grid", etc.)
-        
-        // Convert to the format expected by ChartProcessor
-        const formattedCommand = `${action} ${element}`;
-        input = formattedCommand;
+        const element = words[words.length - 1]; // Get the last word ("axis")
+        const axis = words[words.length - 2]; // Get "x" or "y"
+
+        // Handle axis commands specially
+        if (element === "axis") {
+          const formattedCommand = `${action} ${axis}-axis`;
+          input = formattedCommand;
+        } else {
+          // For other elements (legend, grid, data points)
+          const formattedCommand = `${action} ${element}`;
+          input = formattedCommand;
+        }
       } else {
-        // For other commands, use the text directly
         input = option.text;
       }
     } else if (option.type === "info") {
@@ -755,8 +769,8 @@ const AIChatWindow = ({ onClose }) => {
       return;
     } else if (option.type === "query") {
       // Find the selected query from the queries list
-      const selectedQuery = queries.find(q => q.name === option.value);
-      
+      const selectedQuery = queries.find((q) => q.name === option.value);
+
       if (selectedQuery && selectedQuery.fields) {
         // Show the fields as options
         dispatch(
@@ -765,12 +779,12 @@ const AIChatWindow = ({ onClose }) => {
             role: "assistant",
             content: `Available fields for ${selectedQuery.name}:`,
             timestamp: new Date(),
-            options: selectedQuery.fields.map(field => ({
+            options: selectedQuery.fields.map((field) => ({
               type: "field",
               text: field.name,
               value: field.name,
-              options: ["Set as X-Axis", "Set as Y-Axis", "Add to Y-Axis"]
-            }))
+              options: ["Set as X-Axis", "Set as Y-Axis", "Add to Y-Axis"],
+            })),
           })
         );
         return;
