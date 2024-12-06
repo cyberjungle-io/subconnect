@@ -503,21 +503,34 @@ const AIChatWindow = ({ onClose }) => {
     ];
   };
 
-  // Add this effect to show video suggestions when a video component is selected
+  // Add this helper function at the top of the component
+  const isVideoSuggestionsMessage = (message) => {
+    return (
+      message.role === "assistant" &&
+      message.content === "Here are some things you can do with the video:" &&
+      message.options?.some(opt => opt.text === "Set video URL")
+    );
+  };
+
+  // Modify the useEffect for video suggestions
   useEffect(() => {
-    if (selectedComponent?.type === "VIDEO") {
-      const suggestions = getVideoSuggestions();
-      dispatch(
-        addMessage({
-          id: Date.now().toString(),
-          role: "assistant",
-          content: "Here are some things you can do with the video:",
-          timestamp: new Date(),
-          options: suggestions,
-        })
-      );
+    if (selectedComponent?.type === "VIDEO" && messages.length > 0) {
+      // Check if the last message is already showing video suggestions
+      const lastMessage = messages[messages.length - 1];
+      if (!isVideoSuggestionsMessage(lastMessage)) {
+        const suggestions = getVideoSuggestions();
+        dispatch(
+          addMessage({
+            id: Date.now().toString(),
+            role: "assistant",
+            content: "Here are some things you can do with the video:",
+            timestamp: new Date(),
+            options: suggestions,
+          })
+        );
+      }
     }
-  }, [selectedComponent?.id]); // Only run when selected component changes
+  }, [selectedComponent?.id]); // Keep the same dependency
 
   // Modify the handleOptionSelect function to handle video categories
   const handleOptionSelect = async (option) => {

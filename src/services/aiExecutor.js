@@ -4,6 +4,7 @@ import { StyleCommandProcessor } from "./styleCommandProcessor";
 import LLMService from "./llm/llmService";
 import { KanbanProcessor } from "./Processors/KanbanProcessor";
 import { ChartProcessor } from "./Processors/ChartProcessor";
+import { VideoProcessor } from "./Processors/VideoProcessor";
 
 export class AICommandExecutor {
   // Define actionWords as a static class property
@@ -53,6 +54,51 @@ export class AICommandExecutor {
   ) {
     console.log("Processing command:", input);
     console.log("Selected component:", selectedComponent);
+
+    // Clean the input - remove any JSON, explanatory text, and stray backslashes
+    const cleanInput = input.replace(/\{[\s\S]*\}/g, "").replace(/\\$/, "").trim();
+    console.log("Cleaned input:", cleanInput);
+
+    // If we have a VIDEO component, try processing with VideoProcessor first
+    if (selectedComponent?.type === "VIDEO") {
+      console.log("Processing VIDEO command");
+      const videoResult = VideoProcessor.processCommand(cleanInput, selectedComponent.props || {});
+      if (videoResult) {
+        try {
+          // Flatten nested props structure
+          const updatedProps = {
+            ...selectedComponent.props,
+            ...videoResult.props,
+            props: undefined // Remove nested props
+          };
+
+          const updatedComponent = {
+            ...selectedComponent,
+            props: updatedProps
+          };
+
+          console.log("Updating video component:", updatedComponent);
+
+          await dispatch(
+            updateComponent({
+              id: selectedComponent.id,
+              updates: updatedComponent
+            })
+          );
+
+          return {
+            success: true,
+            message: `Updated video settings successfully`,
+          };
+        } catch (error) {
+          console.error("Video update failed:", error);
+          return {
+            success: false,
+            message: `Failed to update video: ${error.message}`,
+          };
+        }
+      }
+    }
 
     // Check for special commands first
     if (
@@ -470,6 +516,38 @@ export class AICommandExecutor {
         needsMoreInfo: true,
         type: "color",
       };
+    }
+
+    // If we have a selected component, try processing with VideoProcessor first for video commands
+    if (selectedComponent?.type === "VIDEO") {
+      const videoResult = VideoProcessor.processCommand(input, selectedComponent.props || {});
+      if (videoResult) {
+        try {
+          await dispatch(
+            updateComponent({
+              id: selectedComponent.id,
+              updates: {
+                ...selectedComponent,
+                props: {
+                  ...selectedComponent.props,
+                  ...videoResult.props
+                }
+              },
+            })
+          );
+
+          return {
+            success: true,
+            message: `Updated video settings successfully`,
+          };
+        } catch (error) {
+          console.error("Video update failed:", error);
+          return {
+            success: false,
+            message: `Failed to update video: ${error.message}`,
+          };
+        }
+      }
     }
 
     // Check for size-related commands without specific values
