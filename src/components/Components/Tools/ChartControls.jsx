@@ -148,14 +148,20 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const activeButtonClass = `${buttonClass} bg-[#cce7ff] text-blue-700 border-blue-300`;
   const inactiveButtonClass = `${buttonClass} bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]`;
 
-  const renderToggle = (label, name) => (
-    <button
-      onClick={() => handleChange({ target: { name, type: 'checkbox', checked: !props[name] } })}
-      className={props[name] !== false ? activeButtonClass : inactiveButtonClass}
-    >
-      {label}
-    </button>
-  );
+  const renderToggle = (label, name) => {
+    const buttonLabel = name === "showDataPoints" 
+      ? (props[name] !== false ? "Hide Data Points" : "Show Data Points")
+      : label;
+
+    return (
+      <button
+        onClick={() => handleChange({ target: { name, type: 'checkbox', checked: !props[name] } })}
+        className={props[name] !== false ? activeButtonClass : inactiveButtonClass}
+      >
+        {buttonLabel}
+      </button>
+    );
+  };
 
   const getContrastColor = (hexColor) => {
     // Add a check for undefined or invalid hexColor
