@@ -148,10 +148,10 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
   const activeButtonClass = `${buttonClass} bg-[#cce7ff] text-blue-700 border-blue-300`;
   const inactiveButtonClass = `${buttonClass} bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]`;
 
-  const renderToggle = (label, name) => (
+  const renderToggle = (label, name, defaultValue = true) => (
     <button
       onClick={() => handleChange({ target: { name, type: 'checkbox', checked: !props[name] } })}
-      className={props[name] !== false ? activeButtonClass : inactiveButtonClass}
+      className={props[name] === true ? activeButtonClass : inactiveButtonClass}
     >
       {label}
     </button>
@@ -179,7 +179,7 @@ const ChartControls = ({ style, props, onStyleChange, onPropsChange }) => {
     <div className="space-y-12">
       <div>
         <div className="flex flex-wrap gap-2 mb-2">
-          {renderToggle("Data Points", "showDataPoints")}
+          {renderToggle("Data Points", "showDataPoints", false)}
           {renderToggle("Grid", "showGrid")}
           {renderToggle("Legend", "showLegend")}
         </div>

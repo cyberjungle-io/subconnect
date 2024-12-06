@@ -96,7 +96,7 @@ const ChartRenderer = ({ component }) => {
       yAxisDataType: component.props.yAxisDataType || 'number',
       dateFormat: component.props.dateFormat || 'MM/dd/yyyy',
       numberFormat: component.props.numberFormat || '0,0.[00]',
-      showDataPoints: component.props.showDataPoints !== false, // Add this line
+      showDataPoints: component.props.showDataPoints || false,
       showXAxis: component.props.showXAxis !== false,
       showYAxis: component.props.showYAxis !== false,
       showGrid: component.props.showGrid !== false, // Add this line
