@@ -10,6 +10,7 @@ import { LLMProviders } from "../../services/llm/llmService";
 import { aiAddComponent } from "../../features/editorSlice";
 import { AICommandExecutor } from "../../services/aiExecutor";
 import { format } from "date-fns";
+import { TableProcessor } from "../../services/Processors/TableProcessor";
 
 const TypingIndicator = () => (
   <div className="flex space-x-2 p-3 bg-gray-100 rounded-lg w-16">
@@ -233,6 +234,14 @@ const isChartSuggestionsMessage = (message) => {
     message.role === "assistant" &&
     message.content === "Here are some things you can do with the chart:" &&
     message.options?.some((opt) => opt.text === "Chart Type")
+  );
+};
+
+const isTableSuggestionsMessage = (message) => {
+  return (
+    message.role === "assistant" &&
+    message.content === "Here are some things you can do with the table:" &&
+    message.options?.some((opt) => opt.text === "Table Visibility")
   );
 };
 
@@ -674,6 +683,21 @@ const AIChatWindow = ({ onClose }) => {
             id: Date.now().toString(),
             role: "assistant",
             content: "Here are some things you can do with the chart:",
+            timestamp: new Date(),
+            options: suggestions,
+          })
+        );
+      }
+    } else if (selectedComponent?.type === "TABLE") {
+      const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+
+      if (!lastMessage || !isTableSuggestionsMessage(lastMessage)) {
+        const suggestions = TableProcessor.getSuggestions();
+        dispatch(
+          addMessage({
+            id: Date.now().toString(),
+            role: "assistant",
+            content: "Here are some things you can do with the table:",
             timestamp: new Date(),
             options: suggestions,
           })

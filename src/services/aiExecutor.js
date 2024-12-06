@@ -5,6 +5,7 @@ import LLMService from "./llm/llmService";
 import { KanbanProcessor } from "./Processors/KanbanProcessor";
 import { ChartProcessor } from "./Processors/ChartProcessor";
 import { VideoProcessor } from "./Processors/VideoProcessor";
+import { TableProcessor } from "./Processors/TableProcessor";
 
 export class AICommandExecutor {
   // Define actionWords as a static class property
@@ -490,7 +491,8 @@ export class AICommandExecutor {
       return await this.processTraditionalCommand(
         input,
         dispatch,
-        selectedComponent
+        selectedComponent,
+        state
       );
     } catch (error) {
       console.error("Error processing command with LLM:", error);
@@ -498,12 +500,13 @@ export class AICommandExecutor {
       return await this.processTraditionalCommand(
         input,
         dispatch,
-        selectedComponent
+        selectedComponent,
+        state
       );
     }
   }
 
-  static async processTraditionalCommand(input, dispatch, selectedComponent) {
+  static async processTraditionalCommand(input, dispatch, selectedComponent, state = null) {
     const lowercaseInput = input.toLowerCase();
 
     // Check for ambiguous commands that need clarification
@@ -784,6 +787,37 @@ export class AICommandExecutor {
           return {
             success: false,
             message: `Sorry, I couldn't add the ${config.name}: ${error.message}`,
+          };
+        }
+      }
+    }
+
+    // Add check for Table commands
+    if (selectedComponent?.type === "TABLE" && TableProcessor.isTableCommand(input)) {
+      console.log("Processing Table-specific command");
+      const result = TableProcessor.processCommand(
+        input,
+        selectedComponent.props || {},
+        state
+      );
+
+      if (result) {
+        try {
+          await dispatch(
+            updateComponent({
+              id: selectedComponent.id,
+              updates: { ...selectedComponent, props: result.props },
+            })
+          );
+          return {
+            success: true,
+            message: result.message || `Updated table successfully`,
+          };
+        } catch (error) {
+          console.error("Table update failed:", error);
+          return {
+            success: false,
+            message: `Failed to update table: ${error.message}`,
           };
         }
       }
