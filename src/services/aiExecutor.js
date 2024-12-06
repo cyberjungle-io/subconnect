@@ -6,6 +6,7 @@ import { KanbanProcessor } from "./Processors/KanbanProcessor";
 import { ChartProcessor } from "./Processors/ChartProcessor";
 import { VideoProcessor } from "./Processors/VideoProcessor";
 import { TableProcessor } from "./Processors/TableProcessor";
+import { WhiteboardProcessor } from "./Processors/WhiteboardProcessor";
 
 export class AICommandExecutor {
   // Define actionWords as a static class property

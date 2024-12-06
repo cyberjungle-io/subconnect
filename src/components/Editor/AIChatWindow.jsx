@@ -11,6 +11,7 @@ import { aiAddComponent } from "../../features/editorSlice";
 import { AICommandExecutor } from "../../services/aiExecutor";
 import { format } from "date-fns";
 import { TableProcessor } from "../../services/Processors/TableProcessor";
+import { WhiteboardProcessor } from "../../services/Processors/WhiteboardProcessor";
 
 const TypingIndicator = () => (
   <div className="flex space-x-2 p-3 bg-gray-100 rounded-lg w-16">
@@ -242,6 +243,14 @@ const isTableSuggestionsMessage = (message) => {
     message.role === "assistant" &&
     message.content === "Here are some things you can do with the table:" &&
     message.options?.some((opt) => opt.text === "Table Visibility")
+  );
+};
+
+const isWhiteboardSuggestionsMessage = (message) => {
+  return (
+    message.role === "assistant" &&
+    message.content === "Here are some things you can do with the whiteboard:" &&
+    message.options?.some((opt) => opt.text === "Drawing Settings")
   );
 };
 
@@ -707,6 +716,21 @@ const AIChatWindow = ({ onClose }) => {
             id: Date.now().toString(),
             role: "assistant",
             content: "Here are some things you can do with the table:",
+            timestamp: new Date(),
+            options: suggestions,
+          })
+        );
+      }
+    } else if (selectedComponent?.type === "WHITEBOARD") {
+      const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+
+      if (!lastMessage || !isWhiteboardSuggestionsMessage(lastMessage)) {
+        const suggestions = WhiteboardProcessor.getSuggestions();
+        dispatch(
+          addMessage({
+            id: Date.now().toString(),
+            role: "assistant",
+            content: "Here are some things you can do with the whiteboard:",
             timestamp: new Date(),
             options: suggestions,
           })
