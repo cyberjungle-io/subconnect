@@ -66,17 +66,17 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
             option.type === "query" &&
             !message.content.startsWith("Available options for")
           ) {
+            // Extract just the name from the text (remove "Name: " prefix)
+            const queryName = option.text.replace(/^Name:\s*/, '').split('\n')[0];
+            
             return (
-              <div
-                key={index}
-                className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]"
-              >
+              <div key={index} className="w-full">
                 <button
                   onClick={() => onOptionSelect(option)}
                   className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
-                  title={option.text}
+                  title={option.text} // Keep full details in tooltip
                 >
-                  <div className="truncate min-w-0">{option.text}</div>
+                  <div className="truncate text-sm font-medium">{queryName}</div>
                 </button>
               </div>
             );
@@ -85,16 +85,13 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
           // For query options (after selection)
           if (option.type === "queryOption") {
             return (
-              <div
-                key={index}
-                className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]"
-              >
+              <div key={index} className="w-full">
                 <button
                   onClick={() => onOptionSelect(option)}
-                  className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors w-full"
+                  className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors w-full text-left"
                   title={option.value}
                 >
-                  <span className="truncate block min-w-0">{option.value}</span>
+                  <span className="block truncate">{option.value}</span>
                 </button>
               </div>
             );
@@ -732,24 +729,30 @@ const AIChatWindow = ({ onClose }) => {
         })
       );
       return;
-    } else if (option.type === "query" || option.type === "field") {
-      // Don't process the text directly, show the options instead
-      dispatch(
-        addMessage({
-          id: Date.now().toString(),
-          role: "assistant",
-          content: `Available options for ${option.value}:`,
-          timestamp: new Date(),
-          options: [
-            {
-              ...option,
-              text: option.value,
-              options: option.options,
-            },
-          ],
-        })
-      );
-      return;
+    } else if (option.type === "query") {
+      // Find the selected query from the queries list
+      const selectedQuery = queries.find(q => q.name === option.value);
+      
+      if (selectedQuery && selectedQuery.fields) {
+        // Show the fields as options
+        dispatch(
+          addMessage({
+            id: Date.now().toString(),
+            role: "assistant",
+            content: `Available fields for ${selectedQuery.name}:`,
+            timestamp: new Date(),
+            options: selectedQuery.fields.map(field => ({
+              type: "field",
+              text: field.name,
+              value: field.name,
+              options: ["Set as X-Axis", "Set as Y-Axis", "Add to Y-Axis"]
+            }))
+          })
+        );
+        return;
+      }
+    } else if (option.type === "queryOption") {
+      input = `__queryOption__:${option.queryName}::${option.value}`;
     } else {
       input = option.text;
     }
