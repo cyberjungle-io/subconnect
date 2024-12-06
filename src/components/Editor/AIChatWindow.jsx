@@ -529,6 +529,13 @@ const AIChatWindow = ({ onClose }) => {
   const getChartSuggestions = () => {
     // Check if a query is selected
     const hasSelectedQuery = selectedComponent?.props?.selectedQueryId;
+    
+    // Get current states from the component props
+    const showLegend = selectedComponent?.props?.showLegend !== false;
+    const showGrid = selectedComponent?.props?.showGrid !== false;
+    const showDataPoints = selectedComponent?.props?.showDataPoints !== false;
+    const showXAxis = selectedComponent?.props?.showXAxis !== false;
+    const showYAxis = selectedComponent?.props?.showYAxis !== false;
 
     return [
       {
@@ -557,30 +564,33 @@ const AIChatWindow = ({ onClose }) => {
         text: "Chart Styles",
         type: "category",
         options: [
-          {
-            text: "show legend",
-            type: "command",
-          },
-          {
-            text: "hide legend",
-            type: "command",
-          },
-          {
-            text: "show grid",
-            type: "command",
-          },
-          {
-            text: "hide grid",
-            type: "command",
-          },
-          {
-            text: "show data points",
-            type: "command",
-          },
-          {
-            text: "hide data points",
-            type: "command",
-          },
+          showLegend ? 
+            {
+              text: "hide the legend",
+              type: "command",
+            } :
+            {
+              text: "show the legend",
+              type: "command",
+            },
+          showGrid ?
+            {
+              text: "hide the grid",
+              type: "command",
+            } :
+            {
+              text: "show the grid",
+              type: "command",
+            },
+          showDataPoints ?
+            {
+              text: "hide the data points",
+              type: "command",
+            } :
+            {
+              text: "show the data points",
+              type: "command",
+            },
         ],
       },
       {
@@ -608,22 +618,24 @@ const AIChatWindow = ({ onClose }) => {
         text: "Axis Controls",
         type: "category",
         options: [
-          {
-            text: "show x axis",
-            type: "command",
-          },
-          {
-            text: "hide x axis",
-            type: "command",
-          },
-          {
-            text: "show y axis",
-            type: "command",
-          },
-          {
-            text: "hide y axis",
-            type: "command",
-          },
+          showXAxis ?
+            {
+              text: "hide x axis",
+              type: "command",
+            } :
+            {
+              text: "show x axis",
+              type: "command",
+            },
+          showYAxis ?
+            {
+              text: "hide y axis",
+              type: "command",
+            } :
+            {
+              text: "show y axis",
+              type: "command",
+            },
         ],
       },
     ];
@@ -709,8 +721,20 @@ const AIChatWindow = ({ onClose }) => {
       );
       return;
     } else if (option.type === "command") {
-      // Execute the command directly
-      input = option.text;
+      // Special handling for chart style commands
+      if (selectedComponent?.type === "CHART" && 
+          (option.text.includes("show") || option.text.includes("hide"))) {
+        const words = option.text.split(" ");
+        const action = words[0]; // "show" or "hide"
+        const element = words[words.length - 1]; // Get the last word ("legend", "grid", etc.)
+        
+        // Convert to the format expected by ChartProcessor
+        const formattedCommand = `${action} ${element}`;
+        input = formattedCommand;
+      } else {
+        // For other commands, use the text directly
+        input = option.text;
+      }
     } else if (option.type === "info") {
       // Don't do anything for info type options
       return;
