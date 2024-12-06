@@ -2,7 +2,7 @@ export class ChartProcessor {
   static chartPatterns = [
     /(?:change|switch|set|make|convert)\s+(?:the\s+)?(?:chart|graph)\s+(?:type\s+)?(?:to\s+)?(line|bar|area|pie)/i,
     /(?:add|set|update)\s+(?:the\s+)?data\s+keys?/i,
-    /(?:show|hide|toggle)\s+(?:the\s+)?(legend|grid|data\s*points|x[\s-]*axis|y[\s-]*axis)/i,
+    /(?:show|hide|toggle)\s+(?:the\s+)?(legend|grid|data\s*points?|points?|x[\s-]*axis|y[\s-]*axis)/i,
     /(?:set|change|update)\s+(?:the\s+)?(?:chart|graph)\s+(?:title|size|width|height)/i,
     /(?:set|change|update)\s+(?:the\s+)?(?:title|axis)\s+(?:color|font|size|alignment)/i,
     /(?:list|show|display|get)\s+(?:all\s+)?(?:available\s+)?queries/i,
@@ -183,8 +183,26 @@ export class ChartProcessor {
   }
 
   static processCommand(input, currentProps = {}, state = null) {
-    console.log("ChartProcessor received input:", input, "Current props:", currentProps);
+    console.log("ChartProcessor received input:", input);
+    console.log("Current props:", currentProps);
     const lowercaseInput = input.toLowerCase();
+
+    // Handle data points visibility
+    const dataPointsMatch = lowercaseInput.match(/(?:show|hide|toggle)\s+(?:the\s+)?(?:data\s*points?|points?)/i);
+    if (dataPointsMatch) {
+        const action = dataPointsMatch[0].startsWith('show') ? true : 
+                      dataPointsMatch[0].startsWith('hide') ? false :
+                      !(currentProps.showDataPoints ?? true); // Toggle if not show/hide
+
+        return {
+            props: {
+                ...currentProps,
+                showDataPoints: action,
+                key: Date.now()
+            },
+            message: `${action ? 'Showing' : 'Hiding'} data points`
+        };
+    }
 
     // Handle field option selection
     if (input.startsWith('__fieldOption__:')) {
