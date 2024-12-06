@@ -39,32 +39,19 @@ export class VideoProcessor {
     };
   }
 
-  static processCommand(input, currentProps = {}) {
+  static processCommand(input, currentStyle = {}) {
     const patterns = this.getStylePatterns();
-    const lowercaseInput = input.toLowerCase().replace(/\\$/, "");
+    const lowercaseInput = input.toLowerCase();
 
     // Process URL changes
     for (const pattern of patterns.src) {
       const match = input.match(pattern);
       if (match && match[1]) {
-        const url = match[1].trim();
+        const url = match[1];
         if (url.includes('youtube.com') || url.includes('youtu.be')) {
-          const existingProps = {
-            ...currentProps,
-            ...(currentProps.props || {})
-          };
-
           return {
             props: {
-              youtubeUrl: url,
-              autoplay: existingProps.autoplay || false,
-              controls: existingProps.controls !== false,
-              loop: existingProps.loop || false,
-              muted: existingProps.muted || false,
-              startTime: existingProps.startTime || 0,
-              endTime: existingProps.endTime || 0,
-              borderRadius: existingProps.borderRadius || "4px",
-              name: existingProps.name || "Video"
+              youtubeUrl: url
             }
           };
         }
@@ -91,7 +78,7 @@ export class VideoProcessor {
             newValue = false;
           }
           if (lowercaseInput.includes('toggle')) {
-            newValue = !currentProps[property];
+            newValue = !currentStyle[property];
           }
           return {
             props: {

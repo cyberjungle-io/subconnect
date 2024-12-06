@@ -88,7 +88,7 @@ export class AICommandExecutor {
 
           return {
             success: true,
-            message: `Updated video settings successfully`,
+            message: videoResult.message || "Updated video settings successfully",
           };
         } catch (error) {
           console.error("Video update failed:", error);

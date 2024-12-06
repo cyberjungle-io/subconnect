@@ -62,9 +62,15 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
           }
 
           // For query options (existing functionality)
-          if (option.type === "query" && !message.content.startsWith("Available options for")) {
+          if (
+            option.type === "query" &&
+            !message.content.startsWith("Available options for")
+          ) {
             return (
-              <div key={index} className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]">
+              <div
+                key={index}
+                className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]"
+              >
                 <button
                   onClick={() => onOptionSelect(option)}
                   className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
@@ -79,15 +85,16 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
           // For query options (after selection)
           if (option.type === "queryOption") {
             return (
-              <div key={index} className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]">
+              <div
+                key={index}
+                className="flex flex-col w-full sm:w-[calc(50%-0.25rem)]"
+              >
                 <button
                   onClick={() => onOptionSelect(option)}
                   className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors w-full"
                   title={option.value}
                 >
-                  <span className="truncate block min-w-0">
-                    {option.value}
-                  </span>
+                  <span className="truncate block min-w-0">{option.value}</span>
                 </button>
               </div>
             );
@@ -321,18 +328,20 @@ const AIChatWindow = ({ onClose }) => {
 
     // Check if we're awaiting a video URL paste
     const lastMessage = messages[messages.length - 1];
-    const isAwaitingVideoUrl = lastMessage?.content === 'Paste video URL:';
-    
+    const isAwaitingVideoUrl = lastMessage?.content === "Paste video URL:";
+
     // If we're awaiting a video URL and the input looks like a YouTube URL
-    const isYoutubeUrl = currentInput.includes('youtube.com/watch?v=') || 
-                        currentInput.includes('youtu.be/');
-    
+    const isYoutubeUrl =
+      currentInput.includes("youtube.com/watch?v=") ||
+      currentInput.includes("youtu.be/");
+
     // Modify the input if we're awaiting a video URL
-    const processedInput = isAwaitingVideoUrl && isYoutubeUrl
-      ? `set video url to ${currentInput}`
-      : awaitingResponse
-      ? `${awaitingResponse.originalCommand} (${awaitingResponse.type}: ${currentInput})`
-      : currentInput;
+    const processedInput =
+      isAwaitingVideoUrl && isYoutubeUrl
+        ? `set video url to ${currentInput}`
+        : awaitingResponse
+        ? `${awaitingResponse.originalCommand} (${awaitingResponse.type}: ${currentInput})`
+        : currentInput;
 
     dispatch(
       addMessage({
@@ -426,17 +435,17 @@ const AIChatWindow = ({ onClose }) => {
         options: [
           {
             text: "set video url to https://youtube.com/...",
-            type: "command"
+            type: "command",
           },
           {
             text: "load video from https://youtube.com/...",
-            type: "command"
+            type: "command",
           },
           {
             text: "change video source to https://youtube.com/...",
-            type: "command"
-          }
-        ]
+            type: "command",
+          },
+        ],
       },
       {
         text: "Video Controls",
@@ -444,17 +453,17 @@ const AIChatWindow = ({ onClose }) => {
         options: [
           {
             text: "show video controls",
-            type: "command"
+            type: "command",
           },
           {
             text: "hide video controls",
-            type: "command"
+            type: "command",
           },
           {
             text: "toggle video controls",
-            type: "command"
-          }
-        ]
+            type: "command",
+          },
+        ],
       },
       {
         text: "Playback Options",
@@ -462,21 +471,21 @@ const AIChatWindow = ({ onClose }) => {
         options: [
           {
             text: "enable autoplay",
-            type: "command"
+            type: "command",
           },
           {
             text: "disable autoplay",
-            type: "command"
+            type: "command",
           },
           {
             text: "make video loop",
-            type: "command"
+            type: "command",
           },
           {
             text: "stop video loop",
-            type: "command"
-          }
-        ]
+            type: "command",
+          },
+        ],
       },
       {
         text: "Audio Settings",
@@ -484,58 +493,45 @@ const AIChatWindow = ({ onClose }) => {
         options: [
           {
             text: "mute video",
-            type: "command"
+            type: "command",
           },
           {
             text: "unmute video",
-            type: "command"
+            type: "command",
           },
           {
             text: "turn sound on",
-            type: "command"
+            type: "command",
           },
           {
             text: "turn sound off",
-            type: "command"
-          }
-        ]
-      }
+            type: "command",
+          },
+        ],
+      },
     ];
   };
 
-  // Add this helper function at the top of the component
-  const isVideoSuggestionsMessage = (message) => {
-    return (
-      message.role === "assistant" &&
-      message.content === "Here are some things you can do with the video:" &&
-      message.options?.some(opt => opt.text === "Set video URL")
-    );
-  };
-
-  // Modify the useEffect for video suggestions
+  // Add this effect to show video suggestions when a video component is selected
   useEffect(() => {
-    if (selectedComponent?.type === "VIDEO" && messages.length > 0) {
-      // Check if the last message is already showing video suggestions
-      const lastMessage = messages[messages.length - 1];
-      if (!isVideoSuggestionsMessage(lastMessage)) {
-        const suggestions = getVideoSuggestions();
-        dispatch(
-          addMessage({
-            id: Date.now().toString(),
-            role: "assistant",
-            content: "Here are some things you can do with the video:",
-            timestamp: new Date(),
-            options: suggestions,
-          })
-        );
-      }
+    if (selectedComponent?.type === "VIDEO") {
+      const suggestions = getVideoSuggestions();
+      dispatch(
+        addMessage({
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "Here are some things you can do with the video:",
+          timestamp: new Date(),
+          options: suggestions,
+        })
+      );
     }
-  }, [selectedComponent?.id]); // Keep the same dependency
+  }, [selectedComponent?.id]); // Only run when selected component changes
 
   // Modify the handleOptionSelect function to handle video categories
   const handleOptionSelect = async (option) => {
-    let input = '';
-    
+    let input = "";
+
     if (option.selectedOption) {
       // Handle field or query option selection
       if (option.type === "field") {
@@ -548,29 +544,33 @@ const AIChatWindow = ({ onClose }) => {
     } else if (option.type === "category") {
       // Special handling for video URL category
       if (option.text === "Set video URL") {
-        dispatch(addMessage({
-          id: Date.now().toString(),
-          role: 'assistant',
-          content: 'Paste video URL:',
-          timestamp: new Date(),
-          options: [
-            {
-              text: "Format: https://youtube.com/watch?v=...",
-              type: "info"
-            }
-          ]
-        }));
+        dispatch(
+          addMessage({
+            id: Date.now().toString(),
+            role: "assistant",
+            content: "Paste video URL:",
+            timestamp: new Date(),
+            options: [
+              {
+                text: "Format: https://youtube.com/watch?v=...",
+                type: "info",
+              },
+            ],
+          })
+        );
         return;
       }
-      
+
       // Show options for other categories
-      dispatch(addMessage({
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: `${option.text} options:`,
-        timestamp: new Date(),
-        options: option.options
-      }));
+      dispatch(
+        addMessage({
+          id: Date.now().toString(),
+          role: "assistant",
+          content: `${option.text} options:`,
+          timestamp: new Date(),
+          options: option.options,
+        })
+      );
       return;
     } else if (option.type === "command") {
       // Execute the command directly
@@ -580,16 +580,18 @@ const AIChatWindow = ({ onClose }) => {
       return;
     } else if (option.type === "suggestion" && option.options) {
       // Show the specific options for this suggestion
-      dispatch(addMessage({
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: `Try these commands for ${option.text.toLowerCase()}:`,
-        timestamp: new Date(),
-        options: option.options.map(opt => ({
-          text: opt,
-          type: 'command'
-        }))
-      }));
+      dispatch(
+        addMessage({
+          id: Date.now().toString(),
+          role: "assistant",
+          content: `Try these commands for ${option.text.toLowerCase()}:`,
+          timestamp: new Date(),
+          options: option.options.map((opt) => ({
+            text: opt,
+            type: "command",
+          })),
+        })
+      );
       return;
     } else if (option.type === "query" || option.type === "field") {
       // Don't process the text directly, show the options instead
@@ -612,7 +614,7 @@ const AIChatWindow = ({ onClose }) => {
     } else {
       input = option.text;
     }
-    
+
     try {
       const minimalState = {
         w3s: {
