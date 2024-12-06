@@ -227,6 +227,14 @@ const isVideoSuggestionsMessage = (message) => {
   );
 };
 
+const isChartSuggestionsMessage = (message) => {
+  return (
+    message.role === "assistant" &&
+    message.content === "Here are some things you can do with the chart:" &&
+    message.options?.some((opt) => opt.text === "Chart Type")
+  );
+};
+
 const AIChatWindow = ({ onClose }) => {
   const dispatch = useDispatch();
   const queries = useSelector((state) => state.w3s?.queries?.list);
@@ -520,15 +528,115 @@ const AIChatWindow = ({ onClose }) => {
     ];
   };
 
-  // Modified useEffect for video suggestions
+  // Modify the getChartSuggestions function
+  const getChartSuggestions = () => {
+    // Check if a query is selected
+    const hasSelectedQuery = selectedComponent?.props?.selectedQueryId;
+
+    return [
+      {
+        text: "Chart Type",
+        type: "category",
+        options: [
+          {
+            text: "change chart type to line",
+            type: "command",
+          },
+          {
+            text: "change chart type to bar",
+            type: "command",
+          },
+          {
+            text: "change chart type to area",
+            type: "command",
+          },
+          {
+            text: "change chart type to pie",
+            type: "command",
+          },
+        ],
+      },
+      {
+        text: "Chart Styles",
+        type: "category",
+        options: [
+          {
+            text: "show legend",
+            type: "command",
+          },
+          {
+            text: "hide legend",
+            type: "command",
+          },
+          {
+            text: "show grid",
+            type: "command",
+          },
+          {
+            text: "hide grid",
+            type: "command",
+          },
+          {
+            text: "show data points",
+            type: "command",
+          },
+          {
+            text: "hide data points",
+            type: "command",
+          },
+        ],
+      },
+      {
+        text: "Data Management",
+        type: "category",
+        options: hasSelectedQuery 
+          ? [
+              {
+                text: "show field options",
+                type: "command",
+              }
+            ]
+          : [
+              {
+                text: "list available queries",
+                type: "command",
+              },
+              {
+                text: "Please select a query to see field options",
+                type: "info",
+              }
+            ],
+      },
+      {
+        text: "Axis Controls",
+        type: "category",
+        options: [
+          {
+            text: "show x axis",
+            type: "command",
+          },
+          {
+            text: "hide x axis",
+            type: "command",
+          },
+          {
+            text: "show y axis",
+            type: "command",
+          },
+          {
+            text: "hide y axis",
+            type: "command",
+          },
+        ],
+      },
+    ];
+  };
+
+  // Modify the useEffect hook that handles component selection
   useEffect(() => {
     if (selectedComponent?.type === "VIDEO") {
-      // Get the last message if there are any messages
       const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
       
-      // Show suggestions if either:
-      // 1. There are no messages yet
-      // 2. The last message isn't already showing video suggestions
       if (!lastMessage || !isVideoSuggestionsMessage(lastMessage)) {
         const suggestions = getVideoSuggestions();
         dispatch(
@@ -541,8 +649,23 @@ const AIChatWindow = ({ onClose }) => {
           })
         );
       }
+    } else if (selectedComponent?.type === "CHART") {
+      const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+      
+      if (!lastMessage || !isChartSuggestionsMessage(lastMessage)) {
+        const suggestions = getChartSuggestions();
+        dispatch(
+          addMessage({
+            id: Date.now().toString(),
+            role: "assistant",
+            content: "Here are some things you can do with the chart:",
+            timestamp: new Date(),
+            options: suggestions,
+          })
+        );
+      }
     }
-  }, [selectedComponent?.id]); // Keep the same dependency
+  }, [selectedComponent?.id]);
 
   // Modify the handleOptionSelect function to handle video categories
   const handleOptionSelect = async (option) => {
