@@ -56,25 +56,31 @@ export class AICommandExecutor {
     console.log("Selected component:", selectedComponent);
 
     // Clean the input - remove any JSON, explanatory text, and stray backslashes
-    const cleanInput = input.replace(/\{[\s\S]*\}/g, "").replace(/\\$/, "").trim();
+    const cleanInput = input
+      .replace(/\{[\s\S]*\}/g, "")
+      .replace(/\\$/, "")
+      .trim();
     console.log("Cleaned input:", cleanInput);
 
     // If we have a VIDEO component, try processing with VideoProcessor first
     if (selectedComponent?.type === "VIDEO") {
       console.log("Processing VIDEO command");
-      const videoResult = VideoProcessor.processCommand(cleanInput, selectedComponent.props || {});
+      const videoResult = VideoProcessor.processCommand(
+        cleanInput,
+        selectedComponent.props || {}
+      );
       if (videoResult) {
         try {
           // Flatten nested props structure
           const updatedProps = {
             ...selectedComponent.props,
             ...videoResult.props,
-            props: undefined // Remove nested props
+            props: undefined, // Remove nested props
           };
 
           const updatedComponent = {
             ...selectedComponent,
-            props: updatedProps
+            props: updatedProps,
           };
 
           console.log("Updating video component:", updatedComponent);
@@ -82,13 +88,13 @@ export class AICommandExecutor {
           await dispatch(
             updateComponent({
               id: selectedComponent.id,
-              updates: updatedComponent
+              updates: updatedComponent,
             })
           );
 
           return {
             success: true,
-            message: videoResult.message || "Updated video settings successfully",
+            message: `Updated video settings successfully`,
           };
         } catch (error) {
           console.error("Video update failed:", error);
@@ -520,7 +526,10 @@ export class AICommandExecutor {
 
     // If we have a selected component, try processing with VideoProcessor first for video commands
     if (selectedComponent?.type === "VIDEO") {
-      const videoResult = VideoProcessor.processCommand(input, selectedComponent.props || {});
+      const videoResult = VideoProcessor.processCommand(
+        input,
+        selectedComponent.props || {}
+      );
       if (videoResult) {
         try {
           await dispatch(
@@ -530,8 +539,8 @@ export class AICommandExecutor {
                 ...selectedComponent,
                 props: {
                   ...selectedComponent.props,
-                  ...videoResult.props
-                }
+                  ...videoResult.props,
+                },
               },
             })
           );

@@ -219,6 +219,14 @@ const isRecent = (timestamp) => {
   return now.getTime() - messageTime.getTime() < 60000; // Less than 1 minute ago
 };
 
+const isVideoSuggestionsMessage = (message) => {
+  return (
+    message.role === "assistant" &&
+    message.content === "Here are some things you can do with the video:" &&
+    message.options?.some((opt) => opt.text === "Set video URL")
+  );
+};
+
 const AIChatWindow = ({ onClose }) => {
   const dispatch = useDispatch();
   const queries = useSelector((state) => state.w3s?.queries?.list);
@@ -512,21 +520,29 @@ const AIChatWindow = ({ onClose }) => {
     ];
   };
 
-  // Add this effect to show video suggestions when a video component is selected
+  // Modified useEffect for video suggestions
   useEffect(() => {
     if (selectedComponent?.type === "VIDEO") {
-      const suggestions = getVideoSuggestions();
-      dispatch(
-        addMessage({
-          id: Date.now().toString(),
-          role: "assistant",
-          content: "Here are some things you can do with the video:",
-          timestamp: new Date(),
-          options: suggestions,
-        })
-      );
+      // Get the last message if there are any messages
+      const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+      
+      // Show suggestions if either:
+      // 1. There are no messages yet
+      // 2. The last message isn't already showing video suggestions
+      if (!lastMessage || !isVideoSuggestionsMessage(lastMessage)) {
+        const suggestions = getVideoSuggestions();
+        dispatch(
+          addMessage({
+            id: Date.now().toString(),
+            role: "assistant",
+            content: "Here are some things you can do with the video:",
+            timestamp: new Date(),
+            options: suggestions,
+          })
+        );
+      }
     }
-  }, [selectedComponent?.id]); // Only run when selected component changes
+  }, [selectedComponent?.id]); // Keep the same dependency
 
   // Modify the handleOptionSelect function to handle video categories
   const handleOptionSelect = async (option) => {
