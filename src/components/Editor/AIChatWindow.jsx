@@ -692,7 +692,16 @@ const AIChatWindow = ({ onClose }) => {
       const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
 
       if (!lastMessage || !isTableSuggestionsMessage(lastMessage)) {
-        const suggestions = TableProcessor.getSuggestions();
+        // Create minimal state object with just what we need
+        const minimalState = {
+          w3s: {
+            queries: {
+              list: queries
+            }
+          }
+        };
+        
+        const suggestions = TableProcessor.getSuggestionsWithState(minimalState);
         dispatch(
           addMessage({
             id: Date.now().toString(),
