@@ -52,6 +52,17 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
 
           // For command options (specific video commands)
           if (option.type === "command") {
+            if (option.needsInput) {
+              return (
+                <button
+                  key={index}
+                  onClick={() => onOptionSelect(option)}
+                  className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors w-full text-left"
+                >
+                  {option.text}
+                </button>
+              );
+            }
             return (
               <button
                 key={index}
@@ -741,6 +752,28 @@ const AIChatWindow = ({ onClose }) => {
 
   // Modify the handleOptionSelect function to handle video categories
   const handleOptionSelect = async (option) => {
+    if (option.needsInput) {
+      dispatch(
+        addMessage({
+          id: Date.now().toString(),
+          role: "assistant",
+          content: option.prompt,
+          timestamp: new Date(),
+          options: option.inputType === "color" ? [
+            {
+              text: "You can use color names (e.g., blue, red) or hex codes (#FF0000)",
+              type: "info"
+            }
+          ] : undefined
+        })
+      );
+      setAwaitingResponse({
+        type: option.inputType,
+        originalCommand: `set stroke color to`
+      });
+      return;
+    }
+
     let input = "";
 
     if (option.selectedOption) {

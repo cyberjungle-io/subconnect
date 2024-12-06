@@ -19,9 +19,16 @@ export class WhiteboardProcessor {
         text: "Drawing Settings",
         type: "category",
         options: [
-          { text: "change stroke color to black", type: "command" },
-          { text: "set stroke color to #FF0000", type: "command" },
-          { text: "make stroke color blue", type: "command" }
+          { 
+            text: "Change default stroke color", 
+            type: "command",
+            needsInput: true,
+            inputType: "color",
+            prompt: "Enter a color name or hex code (e.g., blue, #FF0000):"
+          },
+          { text: "make it bigger", type: "command" },
+          { text: "set width to 800px", type: "command" },
+          { text: "change height to 600px", type: "command" }
         ]
       },
       {
