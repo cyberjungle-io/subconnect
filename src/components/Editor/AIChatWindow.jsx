@@ -260,7 +260,8 @@ const isTableSuggestionsMessage = (message) => {
 const isWhiteboardSuggestionsMessage = (message) => {
   return (
     message.role === "assistant" &&
-    message.content === "Here are some things you can do with the whiteboard:" &&
+    message.content ===
+      "Here are some things you can do with the whiteboard:" &&
     message.options?.some((opt) => opt.text === "Drawing Settings")
   );
 };
@@ -709,19 +710,21 @@ const AIChatWindow = ({ onClose }) => {
         );
       }
     } else if (selectedComponent?.type === "TABLE") {
-      const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+      const lastMessage =
+        messages.length > 0 ? messages[messages.length - 1] : null;
 
       if (!lastMessage || !isTableSuggestionsMessage(lastMessage)) {
         // Create minimal state object with just what we need
         const minimalState = {
           w3s: {
             queries: {
-              list: queries
-            }
-          }
+              list: queries,
+            },
+          },
         };
-        
-        const suggestions = TableProcessor.getSuggestionsWithState(minimalState);
+
+        const suggestions =
+          TableProcessor.getSuggestionsWithState(minimalState);
         dispatch(
           addMessage({
             id: Date.now().toString(),
@@ -733,7 +736,8 @@ const AIChatWindow = ({ onClose }) => {
         );
       }
     } else if (selectedComponent?.type === "WHITEBOARD") {
-      const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+      const lastMessage =
+        messages.length > 0 ? messages[messages.length - 1] : null;
 
       if (!lastMessage || !isWhiteboardSuggestionsMessage(lastMessage)) {
         const suggestions = WhiteboardProcessor.getSuggestions();
@@ -759,17 +763,20 @@ const AIChatWindow = ({ onClose }) => {
           role: "assistant",
           content: option.prompt,
           timestamp: new Date(),
-          options: option.inputType === "color" ? [
-            {
-              text: "You can use color names (e.g., blue, red) or hex codes (#FF0000)",
-              type: "info"
-            }
-          ] : undefined
+          options:
+            option.inputType === "color"
+              ? [
+                  {
+                    text: "You can use color names (e.g., blue, red) or hex codes (#FF0000)",
+                    type: "info",
+                  },
+                ]
+              : undefined,
         })
       );
       setAwaitingResponse({
         type: option.inputType,
-        originalCommand: `set stroke color to`
+        originalCommand: `set stroke color to`,
       });
       return;
     }

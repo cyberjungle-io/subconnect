@@ -1,5 +1,5 @@
 import { componentConfig } from "../components/Components/componentConfig";
-import { aiAddComponent, updateComponent } from "../features/editorSlice";
+import { aiAddComponent, updateComponent, updateColorTheme } from "../features/editorSlice";
 import { StyleCommandProcessor } from "./styleCommandProcessor";
 import LLMService from "./llm/llmService";
 import { KanbanProcessor } from "./Processors/KanbanProcessor";
@@ -7,6 +7,7 @@ import { ChartProcessor } from "./Processors/ChartProcessor";
 import { VideoProcessor } from "./Processors/VideoProcessor";
 import { TableProcessor } from "./Processors/TableProcessor";
 import { WhiteboardProcessor } from "./Processors/WhiteboardProcessor";
+import { ColorThemeProcessor } from "./Processors/ColorThemeProcessor";
 
 export class AICommandExecutor {
   // Define actionWords as a static class property
@@ -63,6 +64,54 @@ export class AICommandExecutor {
       .replace(/\\$/, "")
       .trim();
     console.log("Cleaned input:", cleanInput);
+
+    // Check for color theme commands first
+    if (ColorThemeProcessor.isColorThemeCommand(cleanInput)) {
+      console.log("Processing color theme command");
+      const currentTheme = state?.editor?.colorTheme || [
+        { value: '#FF0000', name: 'Color 1' },
+        { value: '#00FF00', name: 'Color 2' },
+        { value: '#0000FF', name: 'Color 3' },
+        { value: '#FFFF00', name: 'Color 4' },
+        { value: '#FF00FF', name: 'Color 5' },
+        { value: '#00FFFF', name: 'Color 6' }
+      ];
+      console.log("Current theme from state:", currentTheme);
+      
+      const result = ColorThemeProcessor.processCommand(cleanInput, currentTheme);
+
+      if (result) {
+        if (result.type === 'UPDATE_THEME') {
+          try {
+            await dispatch(updateColorTheme(result.theme));
+          } catch (error) {
+            console.error("Color theme update failed:", error);
+            return {
+              success: false,
+              message: `Failed to update color theme: ${error.message}`
+            };
+          }
+        }
+
+        // Handle prompts for color value changes and renames
+        if (result.type === 'PROMPT') {
+          return {
+            success: true,
+            message: result.message,
+            needsMoreInfo: true,
+            followUp: result.followUp
+          };
+        }
+
+        // Return options and actions for interactive UI
+        return {
+          success: true,
+          message: result.message,
+          options: result.options,
+          actions: result.actions
+        };
+      }
+    }
 
     // If we have a VIDEO component, try processing with VideoProcessor first
     if (selectedComponent?.type === "VIDEO") {
