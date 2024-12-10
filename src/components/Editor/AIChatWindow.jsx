@@ -41,7 +41,13 @@ const TypingIndicator = () => (
   </div>
 );
 
-const Message = ({ message, timestamp, onOptionSelect, openComponentChat, selectedComponent }) => {
+const Message = ({
+  message,
+  timestamp,
+  onOptionSelect,
+  openComponentChat,
+  selectedComponent,
+}) => {
   const renderOptions = (options) => {
     if (!Array.isArray(options)) return null;
 
@@ -221,8 +227,9 @@ const Message = ({ message, timestamp, onOptionSelect, openComponentChat, select
     message.content?.startsWith("Selected ");
 
   // Check if this is a component-specific suggestions message
-  const isComponentSuggestions = message.role === 'assistant' && 
-    message.content.startsWith('Here are some things you can do with');
+  const isComponentSuggestions =
+    message.role === "assistant" &&
+    message.content.startsWith("Here are some things you can do with");
 
   if (isCommandExecution) {
     return (
@@ -256,7 +263,9 @@ const Message = ({ message, timestamp, onOptionSelect, openComponentChat, select
   }
 
   return (
-    <div className={`mb-4 ${message.role === "user" ? "text-right" : "text-left"}`}>
+    <div
+      className={`mb-4 ${message.role === "user" ? "text-right" : "text-left"}`}
+    >
       <div className="flex flex-col gap-1">
         <div className="relative group">
           {isComponentSuggestions && selectedComponent && (
@@ -409,7 +418,7 @@ const getInitialSuggestions = () => {
   ];
 };
 
-const ChatTab = ({ label, isActive, onSelect, onClose }) => (
+const ChatTab = ({ label, isActive, onSelect, onClose, chatId }) => (
   <div
     className={`flex items-center gap-2 px-3 py-2 cursor-pointer border-b-2 text-sm
       ${
@@ -424,7 +433,7 @@ const ChatTab = ({ label, isActive, onSelect, onClose }) => (
       <button
         onClick={(e) => {
           e.stopPropagation();
-          onClose();
+          onClose(chatId);
         }}
         className="p-1 hover:bg-gray-200 rounded-full"
       >
@@ -438,7 +447,7 @@ const AIChatWindow = ({ onClose }) => {
   const dispatch = useDispatch();
   const queries = useSelector((state) => state.w3s?.queries?.list);
   const [input, setInput] = useState("");
-  const { messages, isLoading, provider } = useSelector(
+  const { messages, isLoading, provider, isVisible } = useSelector(
     (state) => state.aiChat
   );
   const selectedIds = useSelector((state) => state.editor.selectedIds);
@@ -489,6 +498,10 @@ const AIChatWindow = ({ onClose }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [componentChats, setComponentChats] = useState([]);
   const [activeChat, setActiveChat] = useState("main");
+
+  // Add these refs near the top of the component with other state declarations
+  const initializationRef = useRef(false);
+  const componentMessageRef = useRef(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -554,18 +567,20 @@ const AIChatWindow = ({ onClose }) => {
     };
 
     // Add message to the appropriate chat
-    if (activeChat === 'main') {
+    if (activeChat === "main") {
       dispatch(addMessage(newMessage));
     } else {
-      setComponentChats(prev => prev.map(chat => {
-        if (chat.id === activeChat) {
-          return {
-            ...chat,
-            messages: [...chat.messages, newMessage]
-          };
-        }
-        return chat;
-      }));
+      setComponentChats((prev) =>
+        prev.map((chat) => {
+          if (chat.id === activeChat) {
+            return {
+              ...chat,
+              messages: [...chat.messages, newMessage],
+            };
+          }
+          return chat;
+        })
+      );
     }
 
     setIsTyping(true);
@@ -575,32 +590,36 @@ const AIChatWindow = ({ onClose }) => {
       const commandResult = await AICommandExecutor.processCommand(
         currentInput,
         dispatch,
-        activeChat !== 'main' ? selectedComponent : null,
+        activeChat !== "main" ? selectedComponent : null,
         { w3s: { queries: { list: queries } } }
       );
 
       const responseMessage = {
         id: Date.now().toString(),
         role: "assistant",
-        content: commandResult ? commandResult.message : "I'll help you with that.",
+        content: commandResult
+          ? commandResult.message
+          : "I'll help you with that.",
         timestamp: new Date(),
         status: commandResult?.success ? "success" : undefined,
         options: commandResult?.options,
       };
 
       // Add response to the appropriate chat
-      if (activeChat === 'main') {
+      if (activeChat === "main") {
         dispatch(addMessage(responseMessage));
       } else {
-        setComponentChats(prev => prev.map(chat => {
-          if (chat.id === activeChat) {
-            return {
-              ...chat,
-              messages: [...chat.messages, responseMessage]
-            };
-          }
-          return chat;
-        }));
+        setComponentChats((prev) =>
+          prev.map((chat) => {
+            if (chat.id === activeChat) {
+              return {
+                ...chat,
+                messages: [...chat.messages, responseMessage],
+              };
+            }
+            return chat;
+          })
+        );
       }
     } catch (error) {
       const errorMessage = {
@@ -611,18 +630,20 @@ const AIChatWindow = ({ onClose }) => {
         status: "error",
       };
 
-      if (activeChat === 'main') {
+      if (activeChat === "main") {
         dispatch(addMessage(errorMessage));
       } else {
-        setComponentChats(prev => prev.map(chat => {
-          if (chat.id === activeChat) {
-            return {
-              ...chat,
-              messages: [...chat.messages, errorMessage]
-            };
-          }
-          return chat;
-        }));
+        setComponentChats((prev) =>
+          prev.map((chat) => {
+            if (chat.id === activeChat) {
+              return {
+                ...chat,
+                messages: [...chat.messages, errorMessage],
+              };
+            }
+            return chat;
+          })
+        );
       }
     } finally {
       setIsTyping(false);
@@ -842,133 +863,16 @@ const AIChatWindow = ({ onClose }) => {
     ];
   };
 
-  // Modify the useEffect hook that handles component selection
-  useEffect(() => {
-    if (selectedComponent?.type === "VIDEO") {
-      const lastMessage =
-        messages.length > 0 ? messages[messages.length - 1] : null;
-
-      if (!lastMessage || !isVideoSuggestionsMessage(lastMessage)) {
-        const suggestions = getVideoSuggestions();
-        dispatch(
-          addMessage({
-            id: Date.now().toString(),
-            role: "assistant",
-            content: "Here are some things you can do with the video:",
-            timestamp: new Date(),
-            options: suggestions,
-          })
-        );
-      }
-    } else if (selectedComponent?.type === "CHART") {
-      const lastMessage =
-        messages.length > 0 ? messages[messages.length - 1] : null;
-
-      if (!lastMessage || !isChartSuggestionsMessage(lastMessage)) {
-        const suggestions = getChartSuggestions();
-        dispatch(
-          addMessage({
-            id: Date.now().toString(),
-            role: "assistant",
-            content: "Here are some things you can do with the chart:",
-            timestamp: new Date(),
-            options: suggestions,
-          })
-        );
-      }
-    } else if (selectedComponent?.type === "TABLE") {
-      const lastMessage =
-        messages.length > 0 ? messages[messages.length - 1] : null;
-
-      if (!lastMessage || !isTableSuggestionsMessage(lastMessage)) {
-        // Create minimal state object with just what we need
-        const minimalState = {
-          w3s: {
-            queries: {
-              list: queries,
-            },
-          },
-        };
-
-        const suggestions =
-          TableProcessor.getSuggestionsWithState(minimalState);
-        dispatch(
-          addMessage({
-            id: Date.now().toString(),
-            role: "assistant",
-            content: "Here are some things you can do with the table:",
-            timestamp: new Date(),
-            options: suggestions,
-          })
-        );
-      }
-    } else if (selectedComponent?.type === "WHITEBOARD") {
-      const lastMessage =
-        messages.length > 0 ? messages[messages.length - 1] : null;
-
-      if (!lastMessage || !isWhiteboardSuggestionsMessage(lastMessage)) {
-        const suggestions = WhiteboardProcessor.getSuggestions();
-        dispatch(
-          addMessage({
-            id: Date.now().toString(),
-            role: "assistant",
-            content: "Here are some things you can do with the whiteboard:",
-            timestamp: new Date(),
-            options: suggestions,
-          })
-        );
-      }
-    } else if (selectedComponent?.type === "IMAGE") {
-      const lastMessage =
-        messages.length > 0 ? messages[messages.length - 1] : null;
-      const isImageSuggestionsMessage = (msg) =>
-        msg.role === "assistant" &&
-        msg.content === "Here are some things you can do with the image:";
-
-      if (!lastMessage || !isImageSuggestionsMessage(lastMessage)) {
-        const suggestions = ImageProcessor.getSuggestions();
-        dispatch(
-          addMessage({
-            id: Date.now().toString(),
-            role: "assistant",
-            content: "Here are some things you can do with the image:",
-            timestamp: new Date(),
-            options: suggestions,
-          })
-        );
-      }
-    }
-  }, [selectedComponent?.id]);
-
-  // Add this near the other state declarations
-  const initialMessageShown = useRef(false);
-
-  // Replace the existing welcome message useEffect with this:
-  useEffect(() => {
-    // Only show welcome message if it hasn't been shown and there are no messages
-    if (!initialMessageShown.current && messages.length === 0) {
-      initialMessageShown.current = true;
-      dispatch(
-        addMessage({
-          id: Date.now().toString(),
-          role: "assistant",
-          content: "👋 Welcome! Here are some things I can help you with:",
-          timestamp: new Date(),
-          options: getInitialSuggestions(),
-        })
-      );
-    }
-  }, []); // Empty dependency array means this runs once when component mounts
-
-  // Find the handleOptionSelect function and update it to handle loading states
+  // Add this before createOrOpenComponentChat
   const handleOptionSelect = async (option) => {
     // Get the component context based on active chat
-    const componentContext = activeChat !== 'main' 
-      ? componentChats.find(chat => chat.id === activeChat)
-      : null;
-    
-    const targetComponent = componentContext 
-      ? components.find(c => c.id === componentContext.id) 
+    const componentContext =
+      activeChat !== "main"
+        ? componentChats.find((chat) => chat.id === activeChat)
+        : null;
+
+    const targetComponent = componentContext
+      ? components.find((c) => c.id === componentContext.componentId)
       : selectedComponent;
 
     if (option.needsInput) {
@@ -977,27 +881,32 @@ const AIChatWindow = ({ onClose }) => {
         role: "assistant",
         content: option.prompt,
         timestamp: new Date(),
-        options: option.inputType === "color"
-          ? [{
-              text: "You can use color names (e.g., blue, red) or hex codes (#FF0000)",
-              type: "info",
-            }]
-          : undefined,
+        options:
+          option.inputType === "color"
+            ? [
+                {
+                  text: "You can use color names (e.g., blue, red) or hex codes (#FF0000)",
+                  type: "info",
+                },
+              ]
+            : undefined,
       };
 
       // Add message to appropriate chat
-      if (activeChat === 'main') {
+      if (activeChat === "main") {
         dispatch(addMessage(message));
       } else {
-        setComponentChats(prev => prev.map(chat => {
-          if (chat.id === activeChat) {
-            return {
-              ...chat,
-              messages: [...chat.messages, message]
-            };
-          }
-          return chat;
-        }));
+        setComponentChats((prev) =>
+          prev.map((chat) => {
+            if (chat.id === activeChat) {
+              return {
+                ...chat,
+                messages: [...chat.messages, message],
+              };
+            }
+            return chat;
+          })
+        );
       }
 
       setAwaitingResponse({
@@ -1010,8 +919,11 @@ const AIChatWindow = ({ onClose }) => {
     let input = "";
 
     // Add loading state for component creation commands
-    const isComponentCreation = option.type === "command" && 
-      option.text.match(/^(Container|Text|Image|Chart|Table|Video|Whiteboard|Value|Kanban|List)$/);
+    const isComponentCreation =
+      option.type === "command" &&
+      option.text.match(
+        /^(Container|Text|Image|Chart|Table|Video|Whiteboard|Value|Kanban|List)$/
+      );
 
     if (isComponentCreation) {
       setIsAddingComponent(true);
@@ -1026,7 +938,10 @@ const AIChatWindow = ({ onClose }) => {
         } else if (option.type === "queryOption") {
           input = `__queryOption__:${option.queryName}::${option.value}`;
         }
-      } else if (option.type === "command" && option.value?.startsWith("__colorOption__")) {
+      } else if (
+        option.type === "command" &&
+        option.value?.startsWith("__colorOption__")
+      ) {
         input = option.value;
       } else if (option.type === "category") {
         const message = {
@@ -1038,18 +953,20 @@ const AIChatWindow = ({ onClose }) => {
         };
 
         // Add message to appropriate chat
-        if (activeChat === 'main') {
+        if (activeChat === "main") {
           dispatch(addMessage(message));
         } else {
-          setComponentChats(prev => prev.map(chat => {
-            if (chat.id === activeChat) {
-              return {
-                ...chat,
-                messages: [...chat.messages, message]
-              };
-            }
-            return chat;
-          }));
+          setComponentChats((prev) =>
+            prev.map((chat) => {
+              if (chat.id === activeChat) {
+                return {
+                  ...chat,
+                  messages: [...chat.messages, message],
+                };
+              }
+              return chat;
+            })
+          );
         }
         return;
       } else {
@@ -1082,18 +999,20 @@ const AIChatWindow = ({ onClose }) => {
         };
 
         // Add response to appropriate chat
-        if (activeChat === 'main') {
+        if (activeChat === "main") {
           dispatch(addMessage(responseMessage));
         } else {
-          setComponentChats(prev => prev.map(chat => {
-            if (chat.id === activeChat) {
-              return {
-                ...chat,
-                messages: [...chat.messages, responseMessage]
-              };
-            }
-            return chat;
-          }));
+          setComponentChats((prev) =>
+            prev.map((chat) => {
+              if (chat.id === activeChat) {
+                return {
+                  ...chat,
+                  messages: [...chat.messages, responseMessage],
+                };
+              }
+              return chat;
+            })
+          );
         }
       }
     } catch (error) {
@@ -1105,18 +1024,20 @@ const AIChatWindow = ({ onClose }) => {
         status: "error",
       };
 
-      if (activeChat === 'main') {
+      if (activeChat === "main") {
         dispatch(addMessage(errorMessage));
       } else {
-        setComponentChats(prev => prev.map(chat => {
-          if (chat.id === activeChat) {
-            return {
-              ...chat,
-              messages: [...chat.messages, errorMessage]
-            };
-          }
-          return chat;
-        }));
+        setComponentChats((prev) =>
+          prev.map((chat) => {
+            if (chat.id === activeChat) {
+              return {
+                ...chat,
+                messages: [...chat.messages, errorMessage],
+              };
+            }
+            return chat;
+          })
+        );
       }
     } finally {
       if (isComponentCreation) {
@@ -1125,37 +1046,116 @@ const AIChatWindow = ({ onClose }) => {
     }
   };
 
-  const openComponentChat = () => {
-    if (!selectedComponent) return;
+  // Replace the existing useEffect
+  useEffect(() => {
+    if (!isVisible) {
+      // Reset initialization flags when chat is closed
+      initializationRef.current = false;
+      componentMessageRef.current = false;
+      return;
+    }
 
-    const chatId = selectedComponent.id;
-    if (!componentChats.find((chat) => chat.id === chatId)) {
-      // Create initial message for the component chat
+    // Handle initial messages only once
+    if (!initializationRef.current && messages.length === 0) {
+      initializationRef.current = true;
+      
       const initialMessage = {
         id: Date.now().toString(),
-        role: 'assistant',
+        role: "assistant",
+        content: "How can I help you today?",
+        timestamp: new Date(),
+        options: getInitialSuggestions(),
+      };
+      dispatch(addMessage(initialMessage));
+
+      // Add component message if component is selected during initialization
+      if (selectedComponent && !componentMessageRef.current) {
+        componentMessageRef.current = true;
+        const componentMessage = {
+          id: Date.now().toString() + 1,
+          role: "assistant",
+          content: `Here are some things you can do with the ${selectedComponent.type.toLowerCase()}:`,
+          timestamp: new Date(),
+          options: getComponentSpecificOptions(selectedComponent),
+        };
+        dispatch(addMessage(componentMessage));
+      }
+      return;
+    }
+
+    // Handle component selection changes after initialization
+    if (initializationRef.current && selectedComponent && !componentMessageRef.current) {
+      componentMessageRef.current = true;
+      const componentMessage = {
+        id: Date.now().toString(),
+        role: "assistant",
         content: `Here are some things you can do with the ${selectedComponent.type.toLowerCase()}:`,
         timestamp: new Date(),
-        options: getComponentSpecificOptions(selectedComponent)
+        options: getComponentSpecificOptions(selectedComponent),
       };
-
-      setComponentChats((prev) => [
-        ...prev,
-        {
-          id: chatId,
-          type: selectedComponent.type,
-          name: selectedComponent.props?.name || selectedComponent.type,
-          messages: [initialMessage]
-        },
-      ]);
+      dispatch(addMessage(componentMessage));
     }
+
+    // Reset component message flag when component changes
+    if (!selectedComponent) {
+      componentMessageRef.current = false;
+    }
+
+    // Cleanup function
+    return () => {
+      if (!isVisible) {
+        initializationRef.current = false;
+        componentMessageRef.current = false;
+      }
+    };
+  }, [isVisible, selectedComponent?.id, messages.length]);
+
+  // Keep the createOrOpenComponentChat function unchanged for manual switching
+  const createOrOpenComponentChat = (component) => {
+    if (!component) return;
+    
+    const chatId = `${component.type}_${component.id}`;
+    const existingChat = componentChats.find(chat => 
+      chat.id === chatId || chat.componentId === component.id
+    );
+    
+    if (existingChat) {
+      setActiveChat(existingChat.id);
+      return;
+    }
+    
+    const initialMessage = {
+      id: Date.now().toString(),
+      role: "assistant",
+      content: `Here are some things you can do with the ${component.type.toLowerCase()}:`,
+      timestamp: new Date(),
+      options: getComponentSpecificOptions(component),
+    };
+
+    setComponentChats((prev) => [
+      ...prev,
+      {
+        id: chatId,
+        componentId: component.id,
+        type: component.type,
+        name: component.type,
+        messages: [initialMessage],
+      },
+    ]);
     setActiveChat(chatId);
+  };
+
+  // Add back the openComponentChat function for the Message component
+  const openComponentChat = () => {
+    if (selectedComponent) {
+      createOrOpenComponentChat(selectedComponent);
+    }
   };
 
   // Add this helper function to get component-specific options
   const getComponentSpecificOptions = (component) => {
     switch (component.type) {
-      case 'CHART':
+      case "CHART":
         return [
           {
             text: "Chart Type",
@@ -1238,13 +1238,15 @@ const AIChatWindow = ({ onClose }) => {
             ],
           },
         ];
-      case 'TABLE':
-        return new TableProcessor().getSuggestionsWithState({ w3s: { queries: { list: queries } } });
-      case 'VIDEO':
+      case "TABLE":
+        return new TableProcessor().getSuggestionsWithState({
+          w3s: { queries: { list: queries } },
+        });
+      case "VIDEO":
         return getVideoSuggestions();
-      case 'WHITEBOARD':
+      case "WHITEBOARD":
         return new WhiteboardProcessor().getSuggestions();
-      case 'IMAGE':
+      case "IMAGE":
         return new ImageProcessor().getSuggestions();
       default:
         return [];
@@ -1313,13 +1315,12 @@ const AIChatWindow = ({ onClose }) => {
           {componentChats.map((chat) => (
             <ChatTab
               key={chat.id}
+              chatId={chat.id}
               label={chat.name}
               isActive={activeChat === chat.id}
               onSelect={() => setActiveChat(chat.id)}
-              onClose={() => {
-                setComponentChats((prev) =>
-                  prev.filter((c) => c.id !== chat.id)
-                );
+              onClose={(chatId) => {
+                setComponentChats((prev) => prev.filter((c) => c.id !== chatId));
                 setActiveChat("main");
               }}
             />
@@ -1328,23 +1329,9 @@ const AIChatWindow = ({ onClose }) => {
       </div>
 
       <div className="flex-1 overflow-y-auto pt-4 px-4 space-y-4 min-h-[300px] max-h-[calc(80vh-200px)] relative">
-        {activeChat === 'main' ? (
-          // Render main chat messages from Redux
-          messages.map((message) => (
-            <Message
-              key={message.id}
-              message={message}
-              timestamp={message.timestamp}
-              onOptionSelect={handleOptionSelect}
-              openComponentChat={openComponentChat}
-              selectedComponent={selectedComponent}
-            />
-          ))
-        ) : (
-          // Render component-specific chat messages from local state
-          componentChats
-            .find(chat => chat.id === activeChat)
-            ?.messages.map((message) => (
+        {activeChat === "main"
+          ? // Render main chat messages from Redux
+            messages.map((message) => (
               <Message
                 key={message.id}
                 message={message}
@@ -1354,7 +1341,19 @@ const AIChatWindow = ({ onClose }) => {
                 selectedComponent={selectedComponent}
               />
             ))
-        )}
+          : // Render component-specific chat messages from local state
+            componentChats
+              .find((chat) => chat.id === activeChat)
+              ?.messages.map((message) => (
+                <Message
+                  key={message.id}
+                  message={message}
+                  timestamp={message.timestamp}
+                  onOptionSelect={handleOptionSelect}
+                  openComponentChat={openComponentChat}
+                  selectedComponent={selectedComponent}
+                />
+              ))}
         {isAddingComponent && <TypingIndicator />}
         <div ref={messagesEndRef} />
       </div>
