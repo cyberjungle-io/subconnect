@@ -825,6 +825,9 @@ const AIChatWindow = ({ onClose }) => {
       } else if (option.type === "queryOption") {
         input = `__queryOption__:${option.queryName}::${option.value}`;
       }
+    } else if (option.type === "command" && option.value?.startsWith("__colorOption__")) {
+      // Handle color theme options
+      input = option.value; // Use the formatted value directly
     } else if (option.type === "category") {
       // Special handling for video URL category
       if (option.text === "Set video URL") {
@@ -921,6 +924,18 @@ const AIChatWindow = ({ onClose }) => {
       }
     } else if (option.type === "queryOption") {
       input = `__queryOption__:${option.queryName}::${option.value}`;
+    } else if (option.type === "color") {
+      // Handle color option clicks
+      dispatch(
+        addMessage({
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "Select an option for this color:",
+          timestamp: new Date(),
+          options: option.options
+        })
+      );
+      return;
     } else {
       input = option.text;
     }
