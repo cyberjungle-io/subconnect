@@ -9,6 +9,7 @@ import { TableProcessor } from "./Processors/TableProcessor";
 import { WhiteboardProcessor } from "./Processors/WhiteboardProcessor";
 import { ColorThemeProcessor } from "./Processors/ColorThemeProcessor";
 import { ImageProcessor } from "./Processors/ImageProcessor";
+import { QueryValueProcessor } from "./Processors/QueryValueProcessor";
 
 export class AICommandExecutor {
   // Define actionWords as a static class property
@@ -97,6 +98,35 @@ export class AICommandExecutor {
           return {
             success: false,
             message: `Failed to update image: ${error.message}`
+          };
+        }
+      }
+    }
+
+    // Add check for Query Value commands
+    if (selectedComponent?.type === "QUERY_VALUE" && QueryValueProcessor.isQueryValueCommand(cleanInput)) {
+      console.log("Processing Query Value-specific command");
+      const result = QueryValueProcessor.processCommand(
+        cleanInput,
+        selectedComponent.props || {},
+        state
+      );
+
+      if (result) {
+        try {
+          await dispatch(updateComponent({
+            id: selectedComponent.id,
+            updates: { ...selectedComponent, props: result.props }
+          }));
+          return {
+            success: true,
+            message: result.message
+          };
+        } catch (error) {
+          console.error("Query Value update failed:", error);
+          return {
+            success: false,
+            message: `Failed to update Query Value: ${error.message}`
           };
         }
       }
