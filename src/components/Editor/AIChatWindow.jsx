@@ -39,7 +39,7 @@ const TypingIndicator = () => (
   </div>
 );
 
-const Message = ({ message, timestamp, onOptionSelect }) => {
+const Message = ({ message, timestamp, onOptionSelect, openComponentChat, selectedComponent }) => {
   const renderOptions = (options) => {
     if (!Array.isArray(options)) return null;
 
@@ -218,6 +218,10 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
     message.content?.startsWith("Updated ") ||
     message.content?.startsWith("Selected ");
 
+  // Check if this is a component-specific suggestions message
+  const isComponentSuggestions = message.role === 'assistant' && 
+    message.content.startsWith('Here are some things you can do with');
+
   if (isCommandExecution) {
     return (
       <div className="flex flex-col items-center my-2 text-xs text-gray-500">
@@ -250,19 +254,30 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
   }
 
   return (
-    <div
-      className={`mb-4 ${message.role === "user" ? "text-right" : "text-left"}`}
-    >
+    <div className={`mb-4 ${message.role === "user" ? "text-right" : "text-left"}`}>
       <div className="flex flex-col gap-1">
-        <div
-          className={`inline-block p-3 rounded-lg w-full ${
-            message.role === "user"
-              ? "bg-blue-500 text-white"
-              : "bg-gray-100 text-gray-800"
-          }`}
-        >
-          <div className="break-words">{message.content}</div>
-          {message.options && renderOptions(message.options)}
+        <div className="relative group">
+          {isComponentSuggestions && selectedComponent && (
+            <button
+              onClick={openComponentChat}
+              className="absolute -top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity 
+                       p-1.5 bg-blue-500 hover:bg-blue-600 
+                       text-white rounded-full shadow-sm"
+              title="Open chat"
+            >
+              <FaExternalLinkAlt size={10} />
+            </button>
+          )}
+          <div
+            className={`inline-block p-3 rounded-lg w-full ${
+              message.role === "user"
+                ? "bg-blue-500 text-white"
+                : "bg-gray-100 text-gray-800"
+            }`}
+          >
+            <div className="break-words">{message.content}</div>
+            {message.options && renderOptions(message.options)}
+          </div>
         </div>
         <span className="text-xs text-gray-500">
           {format(timestamp || new Date(), "h:mm a")}
@@ -470,6 +485,8 @@ const AIChatWindow = ({ onClose }) => {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [messageStates, setMessageStates] = useState({});
   const [isTyping, setIsTyping] = useState(false);
+  const [componentChats, setComponentChats] = useState([]);
+  const [activeChat, setActiveChat] = useState("main");
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1150,9 +1167,6 @@ const AIChatWindow = ({ onClose }) => {
     }
   };
 
-  const [componentChats, setComponentChats] = useState([]);
-  const [activeChat, setActiveChat] = useState("main");
-
   const openComponentChat = () => {
     if (!selectedComponent) return;
 
@@ -1215,15 +1229,6 @@ const AIChatWindow = ({ onClose }) => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {selectedComponent && (
-              <button
-                onClick={openComponentChat}
-                className="p-2 hover:bg-blue-100 rounded-full transition-colors"
-                title="Open component chat"
-              >
-                <FaExternalLinkAlt className="text-gray-500" />
-              </button>
-            )}
             <button
               onClick={onClose}
               className="p-2 hover:bg-blue-100 rounded-full transition-colors"
@@ -1263,6 +1268,8 @@ const AIChatWindow = ({ onClose }) => {
             message={message}
             timestamp={message.timestamp}
             onOptionSelect={handleOptionSelect}
+            openComponentChat={openComponentChat}
+            selectedComponent={selectedComponent}
           />
         ))}
         {isAddingComponent && <TypingIndicator />}
