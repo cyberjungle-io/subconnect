@@ -55,7 +55,21 @@ export class ColorThemeProcessor {
       case 'Change Color Value':
         return {
           type: 'PROMPT',
-          message: `Enter the new color value for "${colorName}" (e.g., #FF0000 or red):`,
+          message: `Enter the new color value for "${colorName}":`,
+          options: [
+            {
+              text: 'You can use:',
+              type: 'info'
+            },
+            {
+              text: '- Color names (e.g., red, blue, green)',
+              type: 'info'
+            },
+            {
+              text: '- Hex codes (e.g., #FF0000, #00FF00)',
+              type: 'info'
+            }
+          ],
           followUp: {
             type: 'COLOR_VALUE_CHANGE',
             colorName
@@ -86,13 +100,53 @@ export class ColorThemeProcessor {
   }
 
   static processCommand(input, currentTheme = []) {
-    const lowercaseInput = input.toLowerCase();
+    // Handle follow-up color value changes
+    const lastMessage = input.toLowerCase();
+    if (lastMessage.match(/^(#[0-9a-fA-F]{6}|[a-zA-Z]+)$/)) {
+      // Find the color marked for change in the theme
+      const pendingChange = currentTheme.find(c => c.pendingColorChange);
+      if (pendingChange) {
+        const updatedTheme = currentTheme.map(color => {
+          if (color.name === pendingChange.name) {
+            // Remove the pending flag and update the value
+            const { pendingColorChange, ...rest } = color;
+            return { ...rest, value: lastMessage };
+          }
+          return color;
+        });
+        return {
+          type: 'UPDATE_THEME',
+          theme: updatedTheme,
+          message: `Updated color "${pendingChange.name}" to ${lastMessage}`
+        };
+      }
+    }
 
     // Handle color option selection
     const optionMatch = input.match(/^__colorOption__:(.+)::(.+)$/i);
     if (optionMatch) {
       const [_, colorName, option] = optionMatch;
-      return this.processColorOption(colorName, option, currentTheme);
+      const result = this.processColorOption(colorName, option, currentTheme);
+      
+      // If this is a color value change request, mark the color in the theme
+      if (result?.followUp?.type === 'COLOR_VALUE_CHANGE') {
+        const updatedTheme = currentTheme.map(color => {
+          // Clear any existing pending changes
+          const { pendingColorChange, ...rest } = color;
+          // Set pending flag only for the selected color
+          if (color.name === colorName) {
+            return { ...rest, pendingColorChange: true };
+          }
+          return rest;
+        });
+
+        return {
+          ...result,
+          type: 'UPDATE_THEME',
+          theme: updatedTheme
+        };
+      }
+      return result;
     }
 
     // Show current theme

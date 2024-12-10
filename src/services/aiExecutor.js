@@ -65,8 +65,10 @@ export class AICommandExecutor {
       .trim();
     console.log("Cleaned input:", cleanInput);
 
-    // Check for color theme commands first
-    if (ColorThemeProcessor.isColorThemeCommand(cleanInput)) {
+    // Check for color theme commands first - including __colorOption__ commands and follow-ups
+    if (ColorThemeProcessor.isColorThemeCommand(cleanInput) || 
+        cleanInput.startsWith('__colorOption__:') ||
+        cleanInput.match(/^(#[0-9a-fA-F]{6}|[a-zA-Z]+)$/)) {  // Add check for color values
       console.log("Processing color theme command");
       const currentTheme = state?.editor?.colorTheme || [
         { value: '#FF0000', name: 'Color 1' },
@@ -100,9 +102,16 @@ export class AICommandExecutor {
           actions: result.actions
         };
       }
+      // If ColorThemeProcessor returns null for a color value, don't continue processing
+      if (cleanInput.match(/^(#[0-9a-fA-F]{6}|[a-zA-Z]+)$/)) {
+        return {
+          success: false,
+          message: "No color change is currently pending. Please select a color to change first."
+        };
+      }
     }
 
-    // If no component is selected and command seems to be a style modification
+    // If no selected component and command seems to be a style modification
     if (!selectedComponent) {
       const stylePatterns = [
         /(?:make|set|change|update|modify|adjust)/i,
