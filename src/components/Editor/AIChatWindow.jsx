@@ -39,7 +39,7 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
       <div className="mt-2 flex flex-col gap-2 w-full">
         {options.map((option, index) => {
           // Add specific handling for color type options
-          if (option.type === 'color') {
+          if (option.type === "color") {
             return (
               <div key={index} className="w-full">
                 <button
@@ -47,8 +47,8 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
                   className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors w-full flex items-center gap-2"
                   title={`${option.text} - Click to modify`}
                 >
-                  <div 
-                    className="w-4 h-4 rounded-full border border-gray-300" 
+                  <div
+                    className="w-4 h-4 rounded-full border border-gray-300"
                     style={{ backgroundColor: option.color }}
                   />
                   <span className="flex-1">{option.text}</span>
@@ -298,6 +298,91 @@ const isWhiteboardSuggestionsMessage = (message) => {
       "Here are some things you can do with the whiteboard:" &&
     message.options?.some((opt) => opt.text === "Drawing Settings")
   );
+};
+
+const getInitialSuggestions = () => {
+  return [
+    {
+      text: "Create a Component",
+      type: "category",
+      options: [
+        {
+          text: "Add a Chart",
+          type: "command",
+        },
+        {
+          text: "Add a Table",
+          type: "command",
+        },
+        {
+          text: "Add a Video",
+          type: "command",
+        },
+        {
+          text: "Add a Kanban Board",
+          type: "command",
+        },
+        {
+          text: "Add an Image",
+          type: "command",
+        },
+      ],
+    },
+    {
+      text: "Styling",
+      type: "category",
+      options: [
+        {
+          text: "Change background color",
+          type: "command",
+        },
+        {
+          text: "Add shadow",
+          type: "command",
+        },
+        {
+          text: "Adjust size",
+          type: "command",
+        },
+        {
+          text: "Modify borders",
+          type: "command",
+        },
+      ],
+    },
+    {
+      text: "Theme Management",
+      type: "category",
+      options: [
+        {
+          text: "Change color theme",
+          type: "command",
+        },
+        {
+          text: "Customize toolbar",
+          type: "command",
+        },
+      ],
+    },
+    {
+      text: "Tips",
+      type: "category",
+      options: [
+        {
+          text: "Select a component to see specific options",
+          type: "info",
+        },
+        {
+          text: "You can ask me to modify any component's properties",
+          type: "info",
+        },
+        {
+          text: "Try natural language commands like 'make it bigger' or 'change the color to blue'",
+          type: "info",
+        },
+      ],
+    },
+  ];
 };
 
 const AIChatWindow = ({ onClose }) => {
@@ -786,23 +871,46 @@ const AIChatWindow = ({ onClose }) => {
         );
       }
     } else if (selectedComponent?.type === "IMAGE") {
-      const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
-      const isImageSuggestionsMessage = (msg) => 
-        msg.role === "assistant" && 
+      const lastMessage =
+        messages.length > 0 ? messages[messages.length - 1] : null;
+      const isImageSuggestionsMessage = (msg) =>
+        msg.role === "assistant" &&
         msg.content === "Here are some things you can do with the image:";
 
       if (!lastMessage || !isImageSuggestionsMessage(lastMessage)) {
         const suggestions = ImageProcessor.getSuggestions();
-        dispatch(addMessage({
-          id: Date.now().toString(),
-          role: "assistant",
-          content: "Here are some things you can do with the image:",
-          timestamp: new Date(),
-          options: suggestions
-        }));
+        dispatch(
+          addMessage({
+            id: Date.now().toString(),
+            role: "assistant",
+            content: "Here are some things you can do with the image:",
+            timestamp: new Date(),
+            options: suggestions,
+          })
+        );
       }
     }
   }, [selectedComponent?.id]);
+
+  // Add this near the other state declarations
+  const initialMessageShown = useRef(false);
+
+  // Replace the existing welcome message useEffect with this:
+  useEffect(() => {
+    // Only show welcome message if it hasn't been shown and there are no messages
+    if (!initialMessageShown.current && messages.length === 0) {
+      initialMessageShown.current = true;
+      dispatch(
+        addMessage({
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "👋 Welcome! Here are some things I can help you with:",
+          timestamp: new Date(),
+          options: getInitialSuggestions(),
+        })
+      );
+    }
+  }, []); // Empty dependency array means this runs once when component mounts
 
   // Modify the handleOptionSelect function to handle video categories
   const handleOptionSelect = async (option) => {
@@ -842,7 +950,10 @@ const AIChatWindow = ({ onClose }) => {
       } else if (option.type === "queryOption") {
         input = `__queryOption__:${option.queryName}::${option.value}`;
       }
-    } else if (option.type === "command" && option.value?.startsWith("__colorOption__")) {
+    } else if (
+      option.type === "command" &&
+      option.value?.startsWith("__colorOption__")
+    ) {
       // Handle color theme options
       input = option.value; // Use the formatted value directly
     } else if (option.type === "category") {
@@ -949,13 +1060,15 @@ const AIChatWindow = ({ onClose }) => {
           role: "assistant",
           content: "Select an option for this color:",
           timestamp: new Date(),
-          options: option.options
+          options: option.options,
         })
       );
       return;
     } else if (option.type === "command" && option.action === "triggerUpload") {
       // Find and click the file input for the selected component
-      const fileInput = document.querySelector(`input[type="file"][accept="image/*"]`);
+      const fileInput = document.querySelector(
+        `input[type="file"][accept="image/*"]`
+      );
       if (fileInput) {
         fileInput.click();
         return;
