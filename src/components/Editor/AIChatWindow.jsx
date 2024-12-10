@@ -5,7 +5,7 @@ import {
   addMessage,
   changeProvider,
 } from "../../features/aiChatSlice";
-import { FaTimes, FaPaperPlane } from "react-icons/fa";
+import { FaTimes, FaPaperPlane, FaExternalLinkAlt } from "react-icons/fa";
 import { LLMProviders } from "../../services/llm/llmService";
 import { aiAddComponent } from "../../features/editorSlice";
 import { AICommandExecutor } from "../../services/aiExecutor";
@@ -20,9 +20,18 @@ const TypingIndicator = () => (
     <div className="flex flex-col text-xs text-gray-500 p-2">
       <div className="flex items-center gap-2">
         <div className="flex space-x-1">
-          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+          <div
+            className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"
+            style={{ animationDelay: "0ms" }}
+          />
+          <div
+            className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"
+            style={{ animationDelay: "150ms" }}
+          />
+          <div
+            className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"
+            style={{ animationDelay: "300ms" }}
+          />
         </div>
         <span className="italic">Adding component...</span>
       </div>
@@ -98,7 +107,7 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
             const isComponent = option.text.match(
               /^(Container|Text|Image|Chart|Table|Video|Whiteboard|Value|Kanban|List)$/
             );
-            
+
             return (
               <button
                 key={index}
@@ -382,6 +391,31 @@ const getInitialSuggestions = () => {
     },
   ];
 };
+
+const ChatTab = ({ label, isActive, onSelect, onClose }) => (
+  <div
+    className={`flex items-center gap-2 px-3 py-2 cursor-pointer border-b-2 text-sm
+      ${
+        isActive
+          ? "border-blue-500 bg-blue-50 text-blue-700"
+          : "border-transparent hover:bg-gray-50 text-gray-600"
+      }`}
+    onClick={onSelect}
+  >
+    <span className="truncate max-w-[120px]">{label}</span>
+    {label !== "Main Chat" && (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
+        className="p-1 hover:bg-gray-200 rounded-full"
+      >
+        <FaTimes size={12} />
+      </button>
+    )}
+  </div>
+);
 
 const AIChatWindow = ({ onClose }) => {
   const dispatch = useDispatch();
@@ -943,8 +977,11 @@ const AIChatWindow = ({ onClose }) => {
     let input = "";
 
     // Add loading state for component creation commands
-    const isComponentCreation = option.type === "command" && 
-      option.text.match(/^(Container|Text|Image|Chart|Table|Video|Whiteboard|Value|Kanban|List)$/);
+    const isComponentCreation =
+      option.type === "command" &&
+      option.text.match(
+        /^(Container|Text|Image|Chart|Table|Video|Whiteboard|Value|Kanban|List)$/
+      );
 
     if (isComponentCreation) {
       setIsAddingComponent(true);
@@ -1053,7 +1090,10 @@ const AIChatWindow = ({ onClose }) => {
           })
         );
         return;
-      } else if (option.type === "command" && option.action === "triggerUpload") {
+      } else if (
+        option.type === "command" &&
+        option.action === "triggerUpload"
+      ) {
         // Find and click the file input for the selected component
         const fileInput = document.querySelector(
           `input[type="file"][accept="image/*"]`
@@ -1110,6 +1150,27 @@ const AIChatWindow = ({ onClose }) => {
     }
   };
 
+  const [componentChats, setComponentChats] = useState([]);
+  const [activeChat, setActiveChat] = useState("main");
+
+  const openComponentChat = () => {
+    if (!selectedComponent) return;
+
+    const chatId = selectedComponent.id;
+    if (!componentChats.find((chat) => chat.id === chatId)) {
+      setComponentChats((prev) => [
+        ...prev,
+        {
+          id: chatId,
+          type: selectedComponent.type,
+          name: selectedComponent.props?.name || selectedComponent.type,
+          messages: [],
+        },
+      ]);
+    }
+    setActiveChat(chatId);
+  };
+
   return (
     <div
       className="fixed w-80 bg-white border border-blue-200 rounded-lg shadow-xl z-[960] flex flex-col max-h-[80vh]"
@@ -1118,44 +1179,81 @@ const AIChatWindow = ({ onClose }) => {
         top: `${position.y}px`,
       }}
     >
-      <div
-        className="flex justify-between items-center p-3 border-b border-blue-100 bg-[#e6f3ff] cursor-move"
-        onMouseDown={handleMouseDown}
-      >
-        <div className="flex flex-col">
-          <h3 className="text-lg font-semibold text-gray-700">AI Assistant</h3>
-          {selectedComponent && (
-            <span className="text-sm text-blue-600">
-              Selected:{" "}
-              {selectedComponent.props?.name || selectedComponent.type}
-              {selectedComponent.parent && (
-                <span className="text-xs text-gray-500">
-                  {" "}
-                  (nested in {selectedComponent.parent.type})
-                </span>
-              )}
-            </span>
-          )}
+      <div className="flex flex-col">
+        <div
+          className="flex justify-between items-center p-3 border-b border-blue-100 bg-[#e6f3ff] cursor-move"
+          onMouseDown={handleMouseDown}
+        >
+          <div className="flex flex-col">
+            <h3 className="text-lg font-semibold text-gray-700">
+              AI Assistant
+            </h3>
+            {selectedComponent && (
+              <span className="text-sm text-blue-600">
+                Selected:{" "}
+                {selectedComponent.props?.name || selectedComponent.type}
+                {selectedComponent.parent && (
+                  <span className="text-xs text-gray-500">
+                    {" "}
+                    (nested in {selectedComponent.parent.type})
+                  </span>
+                )}
+              </span>
+            )}
+            <div className="flex items-center gap-2">
+              <select
+                value={currentProvider}
+                onChange={handleProviderChange}
+                className="text-sm p-1 rounded border border-blue-200"
+              >
+                {Object.values(LLMProviders).map((provider) => (
+                  <option key={provider} value={provider}>
+                    {provider}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
-            <select
-              value={currentProvider}
-              onChange={handleProviderChange}
-              className="text-sm p-1 rounded border border-blue-200"
+            {selectedComponent && (
+              <button
+                onClick={openComponentChat}
+                className="p-2 hover:bg-blue-100 rounded-full transition-colors"
+                title="Open component chat"
+              >
+                <FaExternalLinkAlt className="text-gray-500" />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-blue-100 rounded-full transition-colors"
             >
-              {Object.values(LLMProviders).map((provider) => (
-                <option key={provider} value={provider}>
-                  {provider}
-                </option>
-              ))}
-            </select>
+              <FaTimes className="text-gray-500" />
+            </button>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="p-2 hover:bg-blue-100 rounded-full transition-colors"
-        >
-          <FaTimes className="text-gray-500" />
-        </button>
+
+        <div className="flex border-b border-gray-200">
+          <ChatTab
+            label="Main Chat"
+            isActive={activeChat === "main"}
+            onSelect={() => setActiveChat("main")}
+          />
+          {componentChats.map((chat) => (
+            <ChatTab
+              key={chat.id}
+              label={chat.name}
+              isActive={activeChat === chat.id}
+              onSelect={() => setActiveChat(chat.id)}
+              onClose={() => {
+                setComponentChats((prev) =>
+                  prev.filter((c) => c.id !== chat.id)
+                );
+                setActiveChat("main");
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto pt-4 px-4 space-y-4 min-h-[300px] max-h-[calc(80vh-200px)] relative">
