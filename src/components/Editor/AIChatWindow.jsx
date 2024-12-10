@@ -13,21 +13,18 @@ import { format } from "date-fns";
 import { TableProcessor } from "../../services/Processors/TableProcessor";
 import { WhiteboardProcessor } from "../../services/Processors/WhiteboardProcessor";
 import { ImageProcessor } from "../../services/Processors/ImageProcessor";
+import { componentConfig } from "../../components/Components/componentConfig";
 
 const TypingIndicator = () => (
-  <div className="flex space-x-2 p-3 bg-gray-100 rounded-lg w-16">
-    <div
-      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-      style={{ animationDelay: "0ms" }}
-    />
-    <div
-      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-      style={{ animationDelay: "150ms" }}
-    />
-    <div
-      className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-      style={{ animationDelay: "300ms" }}
-    />
+  <div className="flex flex-col my-2 text-xs text-gray-500">
+    <div className="flex items-center gap-2">
+      <div className="flex space-x-1">
+        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+      </div>
+      <span className="italic">Adding component...</span>
+    </div>
   </div>
 );
 
@@ -36,12 +33,18 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
     if (!Array.isArray(options)) return null;
 
     // Check if these are component creation options
-    const isComponentList = options.every(opt => 
-      opt.text.match(/^(Chart|Table|Video|Kanban Board|Image)$/)
+    const isComponentList = options.every((opt) =>
+      opt.text.match(
+        /^(Container|Text|Image|Chart|Table|Video|Whiteboard|Value|Kanban|List)$/
+      )
     );
 
     return (
-      <div className={`mt-2 flex gap-2 ${isComponentList ? 'flex-row flex-wrap' : 'flex-col'} w-full`}>
+      <div
+        className={`mt-2 flex gap-2 ${
+          isComponentList ? "flex-row flex-wrap" : "flex-col"
+        } w-full`}
+      >
         {options.map((option, index) => {
           // Add specific handling for color type options
           if (option.type === "color") {
@@ -90,12 +93,16 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
 
           // For command options (specific commands)
           if (option.type === "command") {
+            const isComponent = option.text.match(
+              /^(Container|Text|Image|Chart|Table|Video|Whiteboard|Value|Kanban|List)$/
+            );
+            
             return (
               <button
                 key={index}
                 onClick={() => onOptionSelect(option)}
                 className={`text-sm px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left ${
-                  isComponentList ? 'flex-shrink-0' : 'w-full'
+                  isComponentList ? "flex-shrink-0" : "w-full"
                 }`}
               >
                 {option.text}
@@ -294,37 +301,28 @@ const isWhiteboardSuggestionsMessage = (message) => {
 };
 
 const getInitialSuggestions = () => {
+  // Name mapping for specific components
+  const nameMapping = {
+    "Todo List": "List",
+    "Kanban Board": "Kanban",
+    "Query Value": "Value",
+    "Flex Container": "Container",
+  };
+
+  // Generate component options dynamically from componentConfig, excluding SAVED_COMPONENT
+  const componentOptions = Object.entries(componentConfig)
+    .filter(([type]) => type !== "SAVED_COMPONENT")
+    .map(([type, config]) => ({
+      text: nameMapping[config.name] || config.name,
+      command: `Add a ${config.name}`,
+      type: "command",
+    }));
+
   return [
     {
-      text: "Create a Component",
+      text: "Component",
       type: "category",
-      options: [
-        {
-          text: "Chart",
-          command: "Add a Chart",
-          type: "command",
-        },
-        {
-          text: "Table",
-          command: "Add a Table",
-          type: "command",
-        },
-        {
-          text: "Video",
-          command: "Add a Video",
-          type: "command",
-        },
-        {
-          text: "Kanban Board",
-          command: "Add a Kanban Board",
-          type: "command",
-        },
-        {
-          text: "Image",
-          command: "Add an Image",
-          type: "command",
-        },
-      ],
+      options: componentOptions,
     },
     {
       text: "Styling",
@@ -349,7 +347,7 @@ const getInitialSuggestions = () => {
       ],
     },
     {
-      text: "Theme Management",
+      text: "Theme",
       type: "category",
       options: [
         {
@@ -395,6 +393,9 @@ const AIChatWindow = ({ onClose }) => {
 
   // Add the awaitingResponse state
   const [awaitingResponse, setAwaitingResponse] = useState(null);
+
+  // Add this near the other state declarations at the top of the AIChatWindow component
+  const [isAddingComponent, setIsAddingComponent] = useState(false);
 
   // Enhanced function to find selected component, including nested children
   const findSelectedComponent = (components, selectedId) => {
@@ -910,7 +911,7 @@ const AIChatWindow = ({ onClose }) => {
     }
   }, []); // Empty dependency array means this runs once when component mounts
 
-  // Modify the handleOptionSelect function to handle video categories
+  // Find the handleOptionSelect function and update it to handle loading states
   const handleOptionSelect = async (option) => {
     if (option.needsInput) {
       dispatch(
@@ -939,122 +940,130 @@ const AIChatWindow = ({ onClose }) => {
 
     let input = "";
 
-    if (option.selectedOption) {
-      // Handle field or query option selection
-      if (option.type === "field") {
-        input = `__fieldOption__:${option.value}::${option.selectedOption}`;
-      } else if (option.type === "query") {
-        input = `__queryOption__:${option.value}::${option.selectedOption}`;
-      } else if (option.type === "queryOption") {
-        input = `__queryOption__:${option.queryName}::${option.value}`;
-      }
-    } else if (
-      option.type === "command" &&
-      option.value?.startsWith("__colorOption__")
-    ) {
-      // Handle color theme options
-      input = option.value; // Use the formatted value directly
-    } else if (option.type === "category") {
-      // Special handling for video URL category
-      if (option.text === "Set video URL") {
+    // Add loading state for component creation commands
+    const isComponentCreation = option.type === "command" && 
+      option.text.match(/^(Container|Text|Image|Chart|Table|Video|Whiteboard|Value|Kanban|List)$/);
+
+    if (isComponentCreation) {
+      setIsAddingComponent(true);
+    }
+
+    try {
+      if (option.selectedOption) {
+        // Handle field or query option selection
+        if (option.type === "field") {
+          input = `__fieldOption__:${option.value}::${option.selectedOption}`;
+        } else if (option.type === "query") {
+          input = `__queryOption__:${option.value}::${option.selectedOption}`;
+        } else if (option.type === "queryOption") {
+          input = `__queryOption__:${option.queryName}::${option.value}`;
+        }
+      } else if (
+        option.type === "command" &&
+        option.value?.startsWith("__colorOption__")
+      ) {
+        // Handle color theme options
+        input = option.value; // Use the formatted value directly
+      } else if (option.type === "category") {
+        // Special handling for video URL category
+        if (option.text === "Set video URL") {
+          dispatch(
+            addMessage({
+              id: Date.now().toString(),
+              role: "assistant",
+              content: "Paste video URL:",
+              timestamp: new Date(),
+              options: [
+                {
+                  text: "Format: https://youtube.com/watch?v=...",
+                  type: "info",
+                },
+              ],
+            })
+          );
+          return;
+        }
+
+        // Show options for other categories
         dispatch(
           addMessage({
             id: Date.now().toString(),
             role: "assistant",
-            content: "Paste video URL:",
+            content: `${option.text} options:`,
             timestamp: new Date(),
-            options: [
-              {
-                text: "Format: https://youtube.com/watch?v=...",
-                type: "info",
-              },
-            ],
+            options: option.options,
           })
         );
         return;
-      }
-
-      // Show options for other categories
-      dispatch(
-        addMessage({
-          id: Date.now().toString(),
-          role: "assistant",
-          content: `${option.text} options:`,
-          timestamp: new Date(),
-          options: option.options,
-        })
-      );
-      return;
-    } else if (option.type === "command") {
-      input = option.command || option.text; // Use command if available, fallback to text
-    } else if (option.type === "info") {
-      // Don't do anything for info type options
-      return;
-    } else if (option.type === "suggestion" && option.options) {
-      // Show the specific options for this suggestion
-      dispatch(
-        addMessage({
-          id: Date.now().toString(),
-          role: "assistant",
-          content: `Try these commands for ${option.text.toLowerCase()}:`,
-          timestamp: new Date(),
-          options: option.options.map((opt) => ({
-            text: opt,
-            type: "command",
-          })),
-        })
-      );
-      return;
-    } else if (option.type === "query") {
-      // Find the selected query from the queries list
-      const selectedQuery = queries.find((q) => q.name === option.value);
-
-      if (selectedQuery && selectedQuery.fields) {
-        // Show the fields as options
+      } else if (option.type === "command") {
+        input = option.command || option.text; // Use command if available, fallback to text
+      } else if (option.type === "info") {
+        // Don't do anything for info type options
+        return;
+      } else if (option.type === "suggestion" && option.options) {
+        // Show the specific options for this suggestion
         dispatch(
           addMessage({
             id: Date.now().toString(),
             role: "assistant",
-            content: `Available fields for ${selectedQuery.name}:`,
+            content: `Try these commands for ${option.text.toLowerCase()}:`,
             timestamp: new Date(),
-            options: selectedQuery.fields.map((field) => ({
-              type: "field",
-              text: field.name,
-              value: field.name,
-              options: ["Set as X-Axis", "Set as Y-Axis", "Add to Y-Axis"],
+            options: option.options.map((opt) => ({
+              text: opt,
+              type: "command",
             })),
           })
         );
         return;
-      }
-    } else if (option.type === "queryOption") {
-      input = `__queryOption__:${option.queryName}::${option.value}`;
-    } else if (option.type === "color") {
-      // Handle color option clicks
-      dispatch(
-        addMessage({
-          id: Date.now().toString(),
-          role: "assistant",
-          content: "Select an option for this color:",
-          timestamp: new Date(),
-          options: option.options,
-        })
-      );
-      return;
-    } else if (option.type === "command" && option.action === "triggerUpload") {
-      // Find and click the file input for the selected component
-      const fileInput = document.querySelector(
-        `input[type="file"][accept="image/*"]`
-      );
-      if (fileInput) {
-        fileInput.click();
-        return;
-      }
-    } else {
-      input = option.text;
-    }
+      } else if (option.type === "query") {
+        // Find the selected query from the queries list
+        const selectedQuery = queries.find((q) => q.name === option.value);
 
-    try {
+        if (selectedQuery && selectedQuery.fields) {
+          // Show the fields as options
+          dispatch(
+            addMessage({
+              id: Date.now().toString(),
+              role: "assistant",
+              content: `Available fields for ${selectedQuery.name}:`,
+              timestamp: new Date(),
+              options: selectedQuery.fields.map((field) => ({
+                type: "field",
+                text: field.name,
+                value: field.name,
+                options: ["Set as X-Axis", "Set as Y-Axis", "Add to Y-Axis"],
+              })),
+            })
+          );
+          return;
+        }
+      } else if (option.type === "queryOption") {
+        input = `__queryOption__:${option.queryName}::${option.value}`;
+      } else if (option.type === "color") {
+        // Handle color option clicks
+        dispatch(
+          addMessage({
+            id: Date.now().toString(),
+            role: "assistant",
+            content: "Select an option for this color:",
+            timestamp: new Date(),
+            options: option.options,
+          })
+        );
+        return;
+      } else if (option.type === "command" && option.action === "triggerUpload") {
+        // Find and click the file input for the selected component
+        const fileInput = document.querySelector(
+          `input[type="file"][accept="image/*"]`
+        );
+        if (fileInput) {
+          fileInput.click();
+          return;
+        }
+      } else {
+        input = option.text;
+      }
+
       const minimalState = {
         w3s: {
           queries: {
@@ -1092,6 +1101,10 @@ const AIChatWindow = ({ onClose }) => {
           status: "error",
         })
       );
+    } finally {
+      if (isComponentCreation) {
+        setIsAddingComponent(false);
+      }
     }
   };
 
@@ -1152,7 +1165,7 @@ const AIChatWindow = ({ onClose }) => {
             onOptionSelect={handleOptionSelect}
           />
         ))}
-        {isTyping && <TypingIndicator />}
+        {isAddingComponent && <TypingIndicator />}
         <div ref={messagesEndRef} />
       </div>
 
