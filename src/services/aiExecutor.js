@@ -8,6 +8,7 @@ import { VideoProcessor } from "./Processors/VideoProcessor";
 import { TableProcessor } from "./Processors/TableProcessor";
 import { WhiteboardProcessor } from "./Processors/WhiteboardProcessor";
 import { ColorThemeProcessor } from "./Processors/ColorThemeProcessor";
+import { ImageProcessor } from "./Processors/ImageProcessor";
 
 export class AICommandExecutor {
   // Define actionWords as a static class property
@@ -64,6 +65,42 @@ export class AICommandExecutor {
       .replace(/\\$/, "")
       .trim();
     console.log("Cleaned input:", cleanInput);
+
+    // Add this check at the beginning
+    if (selectedComponent?.type === "IMAGE" && ImageProcessor.isImageCommand(cleanInput)) {
+      console.log("Processing Image-specific command");
+      const result = ImageProcessor.processCommand(cleanInput, selectedComponent.props || {});
+
+      if (result) {
+        if (result.needsInput) {
+          return {
+            success: true,
+            message: result.message,
+            needsMoreInfo: true,
+            type: result.inputType,
+            options: result.options
+          };
+        }
+
+        try {
+          await dispatch(updateComponent({
+            id: selectedComponent.id,
+            updates: { ...selectedComponent, props: { ...selectedComponent.props, ...result.props } }
+          }));
+          return {
+            success: true,
+            message: result.message,
+            options: result.options
+          };
+        } catch (error) {
+          console.error("Image update failed:", error);
+          return {
+            success: false,
+            message: `Failed to update image: ${error.message}`
+          };
+        }
+      }
+    }
 
     // Check for color theme commands first - including __colorOption__ commands and follow-ups
     if (ColorThemeProcessor.isColorThemeCommand(cleanInput) || 

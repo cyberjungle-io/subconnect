@@ -12,6 +12,7 @@ import { AICommandExecutor } from "../../services/aiExecutor";
 import { format } from "date-fns";
 import { TableProcessor } from "../../services/Processors/TableProcessor";
 import { WhiteboardProcessor } from "../../services/Processors/WhiteboardProcessor";
+import { ImageProcessor } from "../../services/Processors/ImageProcessor";
 
 const TypingIndicator = () => (
   <div className="flex space-x-2 p-3 bg-gray-100 rounded-lg w-16">
@@ -784,6 +785,22 @@ const AIChatWindow = ({ onClose }) => {
           })
         );
       }
+    } else if (selectedComponent?.type === "IMAGE") {
+      const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+      const isImageSuggestionsMessage = (msg) => 
+        msg.role === "assistant" && 
+        msg.content === "Here are some things you can do with the image:";
+
+      if (!lastMessage || !isImageSuggestionsMessage(lastMessage)) {
+        const suggestions = ImageProcessor.getSuggestions();
+        dispatch(addMessage({
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "Here are some things you can do with the image:",
+          timestamp: new Date(),
+          options: suggestions
+        }));
+      }
     }
   }, [selectedComponent?.id]);
 
@@ -936,6 +953,13 @@ const AIChatWindow = ({ onClose }) => {
         })
       );
       return;
+    } else if (option.type === "command" && option.action === "triggerUpload") {
+      // Find and click the file input for the selected component
+      const fileInput = document.querySelector(`input[type="file"][accept="image/*"]`);
+      if (fileInput) {
+        fileInput.click();
+        return;
+      }
     } else {
       input = option.text;
     }
