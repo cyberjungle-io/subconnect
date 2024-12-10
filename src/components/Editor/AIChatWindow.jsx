@@ -35,8 +35,13 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
   const renderOptions = (options) => {
     if (!Array.isArray(options)) return null;
 
+    // Check if these are component creation options
+    const isComponentList = options.every(opt => 
+      opt.text.match(/^(Chart|Table|Video|Kanban Board|Image)$/)
+    );
+
     return (
-      <div className="mt-2 flex flex-col gap-2 w-full">
+      <div className={`mt-2 flex gap-2 ${isComponentList ? 'flex-row flex-wrap' : 'flex-col'} w-full`}>
         {options.map((option, index) => {
           // Add specific handling for color type options
           if (option.type === "color") {
@@ -89,7 +94,9 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
               <button
                 key={index}
                 onClick={() => onOptionSelect(option)}
-                className="text-sm px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left flex-grow basis-[calc(50%-0.25rem)] min-w-[120px]"
+                className={`text-sm px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left ${
+                  isComponentList ? 'flex-shrink-0' : 'w-full'
+                }`}
               >
                 {option.text}
               </button>
