@@ -16,14 +16,16 @@ import { ImageProcessor } from "../../services/Processors/ImageProcessor";
 import { componentConfig } from "../../components/Components/componentConfig";
 
 const TypingIndicator = () => (
-  <div className="flex flex-col my-2 text-xs text-gray-500">
-    <div className="flex items-center gap-2">
-      <div className="flex space-x-1">
-        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-        <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+  <div className="sticky bottom-0 bg-white border-t border-gray-100">
+    <div className="flex flex-col text-xs text-gray-500 p-2">
+      <div className="flex items-center gap-2">
+        <div className="flex space-x-1">
+          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+        </div>
+        <span className="italic">Adding component...</span>
       </div>
-      <span className="italic">Adding component...</span>
     </div>
   </div>
 );
@@ -1156,7 +1158,7 @@ const AIChatWindow = ({ onClose }) => {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[300px] max-h-[calc(80vh-200px)]">
+      <div className="flex-1 overflow-y-auto pt-4 px-4 space-y-4 min-h-[300px] max-h-[calc(80vh-200px)] relative">
         {messages.map((message) => (
           <Message
             key={message.id}
