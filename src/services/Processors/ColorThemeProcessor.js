@@ -55,18 +55,10 @@ export class ColorThemeProcessor {
       case 'Change Color Value':
         return {
           type: 'PROMPT',
-          message: `Enter the new color value for "${colorName}":`,
+          message: `Enter new value for "${colorName}":`,
           options: [
             {
-              text: 'You can use:',
-              type: 'info'
-            },
-            {
-              text: '- Color names (e.g., red, blue, green)',
-              type: 'info'
-            },
-            {
-              text: '- Hex codes (e.g., #FF0000, #00FF00)',
+              text: 'Formats: color names (red), hex (#FF0000), RGB (rgb(255,0,0)), or HSL (hsl(0,100%,50%))',
               type: 'info'
             }
           ],
