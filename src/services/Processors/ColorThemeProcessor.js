@@ -85,7 +85,7 @@ export class ColorThemeProcessor {
       return {
         type: 'SHOW_THEME',
         message: 'Current Color Theme:',
-        options: currentTheme.map((color, index) => this.formatColorDetails(color, index)),
+        options: Array.isArray(currentTheme) ? currentTheme.map((color, index) => this.formatColorDetails(color, index)) : [],
         actions: [{
           text: 'Add New Color',
           value: 'ADD_NEW_COLOR'
@@ -163,10 +163,15 @@ export class ColorThemeProcessor {
 
     // General color theme management command
     if (/(?:work\s+on|edit|modify|manage)\s+(?:the\s+)?color\s+theme/i.test(input)) {
+      // Ensure currentTheme is an array and has items
+      const formattedColors = Array.isArray(currentTheme) 
+        ? currentTheme.map((color, index) => this.formatColorDetails(color, index))
+        : [];
+
       return {
         type: 'SHOW_THEME',
         message: 'Here are the current colors in your theme:',
-        options: currentTheme.map((color, index) => this.formatColorDetails(color, index)),
+        options: formattedColors,
         actions: [{
           text: 'Add New Color',
           value: 'ADD_NEW_COLOR'

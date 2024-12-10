@@ -37,6 +37,25 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
     return (
       <div className="mt-2 flex flex-col gap-2 w-full">
         {options.map((option, index) => {
+          // Add specific handling for color type options
+          if (option.type === 'color') {
+            return (
+              <div key={index} className="w-full">
+                <button
+                  onClick={() => onOptionSelect(option)}
+                  className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors w-full flex items-center gap-2"
+                  title={`${option.text} - Click to modify`}
+                >
+                  <div 
+                    className="w-4 h-4 rounded-full border border-gray-300" 
+                    style={{ backgroundColor: option.color }}
+                  />
+                  <span className="flex-1">{option.text}</span>
+                </button>
+              </div>
+            );
+          }
+
           // For category options (main video options)
           if (option.type === "category") {
             return (
