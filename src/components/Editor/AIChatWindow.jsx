@@ -52,6 +52,20 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
                   />
                   <span className="flex-1">{option.text}</span>
                 </button>
+                {/* Add sub-options rendering */}
+                {option.options && (
+                  <div className="ml-6 mt-1 flex flex-col gap-1">
+                    {option.options.map((subOption, subIndex) => (
+                      <button
+                        key={subIndex}
+                        onClick={() => onOptionSelect(subOption)}
+                        className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left"
+                      >
+                        {subOption.text}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           }

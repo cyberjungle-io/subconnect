@@ -20,9 +20,24 @@ export class ColorThemeProcessor {
       value: color.name,
       color: color.value,
       options: [
-        'Change Color Value',
-        'Rename Color',
-        'Delete Color'
+        {
+          text: 'Change Color Value',
+          type: 'command',
+          clickable: true,
+          value: `__colorOption__:${color.name}::Change Color Value`
+        },
+        {
+          text: 'Rename Color',
+          type: 'command',
+          clickable: true,
+          value: `__colorOption__:${color.name}::Rename Color`
+        },
+        {
+          text: 'Delete Color',
+          type: 'command',
+          clickable: true,
+          value: `__colorOption__:${color.name}::Delete Color`
+        }
       ]
     };
   }
