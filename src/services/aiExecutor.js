@@ -1,5 +1,5 @@
 import { componentConfig } from "../components/Components/componentConfig";
-import { aiAddComponent, updateComponent, updateColorTheme } from "../features/editorSlice";
+import { aiAddComponent, updateComponent, updateColorTheme, updateToolbarSettings } from "../features/editorSlice";
 import { StyleCommandProcessor } from "./styleCommandProcessor";
 import LLMService from "./llm/llmService";
 import { KanbanProcessor } from "./Processors/KanbanProcessor";
@@ -10,6 +10,7 @@ import { WhiteboardProcessor } from "./Processors/WhiteboardProcessor";
 import { ColorThemeProcessor } from "./Processors/ColorThemeProcessor";
 import { ImageProcessor } from "./Processors/ImageProcessor";
 import { QueryValueProcessor } from "./Processors/QueryValueProcessor";
+import { ToolbarProcessor } from "./Processors/ToolbarProcessor";
 
 export class AICommandExecutor {
   // Define actionWords as a static class property
@@ -170,6 +171,45 @@ export class AICommandExecutor {
         };
       }
       // If ColorThemeProcessor returns null for a color value, don't continue processing
+      if (cleanInput.match(/^(#[0-9a-fA-F]{6}|[a-zA-Z]+)$/)) {
+        return {
+          success: false,
+          message: "No color change is currently pending. Please select a color to change first."
+        };
+      }
+    }
+
+    // Check for toolbar commands
+    if (ToolbarProcessor.isToolbarCommand(cleanInput)) {
+      console.log("Processing toolbar command");
+      const currentSettings = state?.editor?.toolbarSettings || {
+        backgroundColor: '#e8e8e8',
+        textColor: '#333333',
+        buttonHoverColor: '#d0d0d0'
+      };
+      
+      const result = ToolbarProcessor.processCommand(cleanInput, currentSettings);
+
+      if (result) {
+        if (result.type === 'UPDATE_TOOLBAR') {
+          try {
+            await dispatch(updateToolbarSettings(result.settings));
+          } catch (error) {
+            console.error("Toolbar settings update failed:", error);
+            return {
+              success: false,
+              message: `Failed to update toolbar settings: ${error.message}`
+            };
+          }
+        }
+
+        return {
+          success: true,
+          message: result.message,
+          options: result.options
+        };
+      }
+      // If ToolbarProcessor returns null for a color value, don't continue processing
       if (cleanInput.match(/^(#[0-9a-fA-F]{6}|[a-zA-Z]+)$/)) {
         return {
           success: false,
