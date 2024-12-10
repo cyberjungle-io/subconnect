@@ -53,9 +53,8 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
                   />
                   <span className="flex-1">{option.text}</span>
                 </button>
-                {/* Add sub-options rendering */}
                 {option.options && (
-                  <div className="ml-6 mt-1 flex flex-col gap-1">
+                  <div className="ml-6 mt-1 flex flex-wrap gap-1">
                     {option.options.map((subOption, subIndex) => (
                       <button
                         key={subIndex}
@@ -71,7 +70,7 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
             );
           }
 
-          // For category options (main video options)
+          // For category options (main options)
           if (option.type === "category") {
             return (
               <button
@@ -84,24 +83,13 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
             );
           }
 
-          // For command options (specific video commands)
+          // For command options (specific commands)
           if (option.type === "command") {
-            if (option.needsInput) {
-              return (
-                <button
-                  key={index}
-                  onClick={() => onOptionSelect(option)}
-                  className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors w-full text-left"
-                >
-                  {option.text}
-                </button>
-              );
-            }
             return (
               <button
                 key={index}
                 onClick={() => onOptionSelect(option)}
-                className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors w-full text-left"
+                className="text-sm px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left flex-grow basis-[calc(50%-0.25rem)] min-w-[120px]"
               >
                 {option.text}
               </button>
@@ -113,7 +101,6 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
             option.type === "query" &&
             !message.content.startsWith("Available options for")
           ) {
-            // Extract just the name from the text (remove "Name: " prefix)
             const queryName = option.text
               .replace(/^Name:\s*/, "")
               .split("\n")[0];
@@ -123,7 +110,7 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
                 <button
                   onClick={() => onOptionSelect(option)}
                   className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
-                  title={option.text} // Keep full details in tooltip
+                  title={option.text}
                 >
                   <div className="truncate text-sm font-medium">
                     {queryName}
@@ -136,15 +123,14 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
           // For query options (after selection)
           if (option.type === "queryOption") {
             return (
-              <div key={index} className="w-full">
-                <button
-                  onClick={() => onOptionSelect(option)}
-                  className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors w-full text-left"
-                  title={option.value}
-                >
-                  <span className="block truncate">{option.value}</span>
-                </button>
-              </div>
+              <button
+                key={index}
+                onClick={() => onOptionSelect(option)}
+                className="text-sm px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left flex-grow basis-[calc(50%-0.25rem)] min-w-[120px]"
+                title={option.value}
+              >
+                <span className="block truncate">{option.value}</span>
+              </button>
             );
           }
 
@@ -160,7 +146,7 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
                   <div className="truncate min-w-0">{option.text}</div>
                 </button>
                 {option.options && (
-                  <div className="mt-1 ml-2 flex flex-row flex-wrap gap-1">
+                  <div className="mt-1 ml-2 flex flex-wrap gap-1">
                     {option.options.map((subOption, subIndex) => (
                       <button
                         key={subIndex}
@@ -182,12 +168,12 @@ const Message = ({ message, timestamp, onOptionSelect }) => {
             );
           }
 
-          // For info type options (examples/instructions)
+          // For info type options
           if (option.type === "info") {
             return (
               <div
                 key={index}
-                className="text-sm px-3 py-2 bg-gray-50 rounded text-gray-600 italic"
+                className="text-sm px-3 py-2 bg-gray-50 rounded text-gray-600 italic flex-grow basis-[calc(50%-0.25rem)]"
               >
                 {option.text}
               </div>
@@ -307,23 +293,28 @@ const getInitialSuggestions = () => {
       type: "category",
       options: [
         {
-          text: "Add a Chart",
+          text: "Chart",
+          command: "Add a Chart",
           type: "command",
         },
         {
-          text: "Add a Table",
+          text: "Table",
+          command: "Add a Table",
           type: "command",
         },
         {
-          text: "Add a Video",
+          text: "Video",
+          command: "Add a Video",
           type: "command",
         },
         {
-          text: "Add a Kanban Board",
+          text: "Kanban Board",
+          command: "Add a Kanban Board",
           type: "command",
         },
         {
-          text: "Add an Image",
+          text: "Image",
+          command: "Add an Image",
           type: "command",
         },
       ],
@@ -988,28 +979,7 @@ const AIChatWindow = ({ onClose }) => {
       );
       return;
     } else if (option.type === "command") {
-      // Special handling for chart style commands
-      if (
-        selectedComponent?.type === "CHART" &&
-        (option.text.includes("show") || option.text.includes("hide"))
-      ) {
-        const words = option.text.split(" ");
-        const action = words[0]; // "show" or "hide"
-        const element = words[words.length - 1]; // Get the last word ("axis")
-        const axis = words[words.length - 2]; // Get "x" or "y"
-
-        // Handle axis commands specially
-        if (element === "axis") {
-          const formattedCommand = `${action} ${axis}-axis`;
-          input = formattedCommand;
-        } else {
-          // For other elements (legend, grid, data points)
-          const formattedCommand = `${action} ${element}`;
-          input = formattedCommand;
-        }
-      } else {
-        input = option.text;
-      }
+      input = option.command || option.text; // Use command if available, fallback to text
     } else if (option.type === "info") {
       // Don't do anything for info type options
       return;
