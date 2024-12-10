@@ -14,6 +14,8 @@ import { TableProcessor } from "../../services/Processors/TableProcessor";
 import { WhiteboardProcessor } from "../../services/Processors/WhiteboardProcessor";
 import { ImageProcessor } from "../../services/Processors/ImageProcessor";
 import { componentConfig } from "../../components/Components/componentConfig";
+import { ChartProcessor } from "../../services/Processors/ChartProcessor";
+import { VideoProcessor } from "../../services/Processors/VideoProcessor";
 
 const TypingIndicator = () => (
   <div className="sticky bottom-0 bg-white border-t border-gray-100">
@@ -544,90 +546,84 @@ const AIChatWindow = ({ onClose }) => {
     const currentInput = input;
     setInput("");
 
-    // Check if we're awaiting a video URL paste
-    const lastMessage = messages[messages.length - 1];
-    const isAwaitingVideoUrl = lastMessage?.content === "Paste video URL:";
+    const newMessage = {
+      id: messageId,
+      role: "user",
+      content: currentInput,
+      timestamp: new Date(),
+    };
 
-    // If we're awaiting a video URL and the input looks like a YouTube URL
-    const isYoutubeUrl =
-      currentInput.includes("youtube.com/watch?v=") ||
-      currentInput.includes("youtu.be/");
-
-    // Modify the input if we're awaiting a video URL
-    const processedInput =
-      isAwaitingVideoUrl && isYoutubeUrl
-        ? `set video url to ${currentInput}`
-        : awaitingResponse
-        ? `${awaitingResponse.originalCommand} (${awaitingResponse.type}: ${currentInput})`
-        : currentInput;
-
-    dispatch(
-      addMessage({
-        id: messageId,
-        role: "user",
-        content: currentInput,
-        timestamp: new Date(),
-      })
-    );
+    // Add message to the appropriate chat
+    if (activeChat === 'main') {
+      dispatch(addMessage(newMessage));
+    } else {
+      setComponentChats(prev => prev.map(chat => {
+        if (chat.id === activeChat) {
+          return {
+            ...chat,
+            messages: [...chat.messages, newMessage]
+          };
+        }
+        return chat;
+      }));
+    }
 
     setIsTyping(true);
 
     try {
-      // Create a minimal state object with just what we need
-      const minimalState = {
-        w3s: {
-          queries: {
-            list: queries,
-          },
-        },
+      // Process command with the appropriate context
+      const commandResult = await AICommandExecutor.processCommand(
+        currentInput,
+        dispatch,
+        activeChat !== 'main' ? selectedComponent : null,
+        { w3s: { queries: { list: queries } } }
+      );
+
+      const responseMessage = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: commandResult ? commandResult.message : "I'll help you with that.",
+        timestamp: new Date(),
+        status: commandResult?.success ? "success" : undefined,
+        options: commandResult?.options,
       };
 
-      const commandResult = await AICommandExecutor.processCommand(
-        processedInput,
-        dispatch,
-        selectedComponent,
-        minimalState
-      );
-
-      if (commandResult) {
-        dispatch(
-          addMessage({
-            id: Date.now().toString(),
-            role: "assistant",
-            content: commandResult.message,
-            timestamp: new Date(),
-            status: commandResult.success ? "success" : "error",
-            needsMoreInfo: commandResult.needsMoreInfo,
-            type: commandResult.type,
-            options: commandResult.options, // Add the options to the message
-          })
-        );
-
-        // If we need more info, store the context for the next message
-        if (commandResult.needsMoreInfo) {
-          setAwaitingResponse({
-            type: commandResult.type,
-            originalCommand: currentInput,
-          });
-        } else {
-          // Clear awaiting response if we don't need more info
-          setAwaitingResponse(null);
-        }
+      // Add response to the appropriate chat
+      if (activeChat === 'main') {
+        dispatch(addMessage(responseMessage));
       } else {
-        setAwaitingResponse(null); // Clear awaiting response
-        await dispatch(sendMessage(currentInput));
+        setComponentChats(prev => prev.map(chat => {
+          if (chat.id === activeChat) {
+            return {
+              ...chat,
+              messages: [...chat.messages, responseMessage]
+            };
+          }
+          return chat;
+        }));
       }
     } catch (error) {
-      setAwaitingResponse(null); // Clear awaiting response on error
-      dispatch(
-        addMessage({
-          id: Date.now().toString(),
-          role: "assistant",
-          content: "Sorry, I encountered an error processing your request.",
-          timestamp: new Date(),
-          status: "error",
-        })
-      );
+      const errorMessage = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: "Sorry, I encountered an error processing your request.",
+        timestamp: new Date(),
+        status: "error",
+      };
+
+      if (activeChat === 'main') {
+        dispatch(addMessage(errorMessage));
+      } else {
+        setComponentChats(prev => prev.map(chat => {
+          if (chat.id === activeChat) {
+            return {
+              ...chat,
+              messages: [...chat.messages, errorMessage]
+            };
+          }
+          return chat;
+        }));
+      }
     } finally {
       setIsTyping(false);
     }
@@ -966,24 +962,44 @@ const AIChatWindow = ({ onClose }) => {
 
   // Find the handleOptionSelect function and update it to handle loading states
   const handleOptionSelect = async (option) => {
+    // Get the component context based on active chat
+    const componentContext = activeChat !== 'main' 
+      ? componentChats.find(chat => chat.id === activeChat)
+      : null;
+    
+    const targetComponent = componentContext 
+      ? components.find(c => c.id === componentContext.id) 
+      : selectedComponent;
+
     if (option.needsInput) {
-      dispatch(
-        addMessage({
-          id: Date.now().toString(),
-          role: "assistant",
-          content: option.prompt,
-          timestamp: new Date(),
-          options:
-            option.inputType === "color"
-              ? [
-                  {
-                    text: "You can use color names (e.g., blue, red) or hex codes (#FF0000)",
-                    type: "info",
-                  },
-                ]
-              : undefined,
-        })
-      );
+      const message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: option.prompt,
+        timestamp: new Date(),
+        options: option.inputType === "color"
+          ? [{
+              text: "You can use color names (e.g., blue, red) or hex codes (#FF0000)",
+              type: "info",
+            }]
+          : undefined,
+      };
+
+      // Add message to appropriate chat
+      if (activeChat === 'main') {
+        dispatch(addMessage(message));
+      } else {
+        setComponentChats(prev => prev.map(chat => {
+          if (chat.id === activeChat) {
+            return {
+              ...chat,
+              messages: [...chat.messages, message]
+            };
+          }
+          return chat;
+        }));
+      }
+
       setAwaitingResponse({
         type: option.inputType,
         originalCommand: `set stroke color to`,
@@ -994,11 +1010,8 @@ const AIChatWindow = ({ onClose }) => {
     let input = "";
 
     // Add loading state for component creation commands
-    const isComponentCreation =
-      option.type === "command" &&
-      option.text.match(
-        /^(Container|Text|Image|Chart|Table|Video|Whiteboard|Value|Kanban|List)$/
-      );
+    const isComponentCreation = option.type === "command" && 
+      option.text.match(/^(Container|Text|Image|Chart|Table|Video|Whiteboard|Value|Kanban|List)$/);
 
     if (isComponentCreation) {
       setIsAddingComponent(true);
@@ -1006,7 +1019,6 @@ const AIChatWindow = ({ onClose }) => {
 
     try {
       if (option.selectedOption) {
-        // Handle field or query option selection
         if (option.type === "field") {
           input = `__fieldOption__:${option.value}::${option.selectedOption}`;
         } else if (option.type === "query") {
@@ -1014,111 +1026,32 @@ const AIChatWindow = ({ onClose }) => {
         } else if (option.type === "queryOption") {
           input = `__queryOption__:${option.queryName}::${option.value}`;
         }
-      } else if (
-        option.type === "command" &&
-        option.value?.startsWith("__colorOption__")
-      ) {
-        // Handle color theme options
-        input = option.value; // Use the formatted value directly
+      } else if (option.type === "command" && option.value?.startsWith("__colorOption__")) {
+        input = option.value;
       } else if (option.type === "category") {
-        // Special handling for video URL category
-        if (option.text === "Set video URL") {
-          dispatch(
-            addMessage({
-              id: Date.now().toString(),
-              role: "assistant",
-              content: "Paste video URL:",
-              timestamp: new Date(),
-              options: [
-                {
-                  text: "Format: https://youtube.com/watch?v=...",
-                  type: "info",
-                },
-              ],
-            })
-          );
-          return;
-        }
+        const message = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: `${option.text} options:`,
+          timestamp: new Date(),
+          options: option.options,
+        };
 
-        // Show options for other categories
-        dispatch(
-          addMessage({
-            id: Date.now().toString(),
-            role: "assistant",
-            content: `${option.text} options:`,
-            timestamp: new Date(),
-            options: option.options,
-          })
-        );
-        return;
-      } else if (option.type === "command") {
-        input = option.command || option.text; // Use command if available, fallback to text
-      } else if (option.type === "info") {
-        // Don't do anything for info type options
-        return;
-      } else if (option.type === "suggestion" && option.options) {
-        // Show the specific options for this suggestion
-        dispatch(
-          addMessage({
-            id: Date.now().toString(),
-            role: "assistant",
-            content: `Try these commands for ${option.text.toLowerCase()}:`,
-            timestamp: new Date(),
-            options: option.options.map((opt) => ({
-              text: opt,
-              type: "command",
-            })),
-          })
-        );
-        return;
-      } else if (option.type === "query") {
-        // Find the selected query from the queries list
-        const selectedQuery = queries.find((q) => q.name === option.value);
-
-        if (selectedQuery && selectedQuery.fields) {
-          // Show the fields as options
-          dispatch(
-            addMessage({
-              id: Date.now().toString(),
-              role: "assistant",
-              content: `Available fields for ${selectedQuery.name}:`,
-              timestamp: new Date(),
-              options: selectedQuery.fields.map((field) => ({
-                type: "field",
-                text: field.name,
-                value: field.name,
-                options: ["Set as X-Axis", "Set as Y-Axis", "Add to Y-Axis"],
-              })),
-            })
-          );
-          return;
+        // Add message to appropriate chat
+        if (activeChat === 'main') {
+          dispatch(addMessage(message));
+        } else {
+          setComponentChats(prev => prev.map(chat => {
+            if (chat.id === activeChat) {
+              return {
+                ...chat,
+                messages: [...chat.messages, message]
+              };
+            }
+            return chat;
+          }));
         }
-      } else if (option.type === "queryOption") {
-        input = `__queryOption__:${option.queryName}::${option.value}`;
-      } else if (option.type === "color") {
-        // Handle color option clicks
-        dispatch(
-          addMessage({
-            id: Date.now().toString(),
-            role: "assistant",
-            content: "Select an option for this color:",
-            timestamp: new Date(),
-            options: option.options,
-          })
-        );
         return;
-      } else if (
-        option.type === "command" &&
-        option.action === "triggerUpload"
-      ) {
-        // Find and click the file input for the selected component
-        const fileInput = document.querySelector(
-          `input[type="file"][accept="image/*"]`
-        );
-        if (fileInput) {
-          fileInput.click();
-          return;
-        }
       } else {
         input = option.text;
       }
@@ -1134,32 +1067,57 @@ const AIChatWindow = ({ onClose }) => {
       const commandResult = await AICommandExecutor.processCommand(
         input,
         dispatch,
-        selectedComponent,
+        targetComponent,
         minimalState
       );
 
       if (commandResult) {
-        dispatch(
-          addMessage({
-            id: Date.now().toString(),
-            role: "assistant",
-            content: commandResult.message,
-            timestamp: new Date(),
-            status: commandResult.success ? "success" : "error",
-            options: commandResult.options,
-          })
-        );
-      }
-    } catch (error) {
-      dispatch(
-        addMessage({
+        const responseMessage = {
           id: Date.now().toString(),
           role: "assistant",
-          content: "Sorry, I encountered an error processing your selection.",
+          content: commandResult.message,
           timestamp: new Date(),
-          status: "error",
-        })
-      );
+          status: commandResult.success ? "success" : "error",
+          options: commandResult.options,
+        };
+
+        // Add response to appropriate chat
+        if (activeChat === 'main') {
+          dispatch(addMessage(responseMessage));
+        } else {
+          setComponentChats(prev => prev.map(chat => {
+            if (chat.id === activeChat) {
+              return {
+                ...chat,
+                messages: [...chat.messages, responseMessage]
+              };
+            }
+            return chat;
+          }));
+        }
+      }
+    } catch (error) {
+      const errorMessage = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: "Sorry, I encountered an error processing your selection.",
+        timestamp: new Date(),
+        status: "error",
+      };
+
+      if (activeChat === 'main') {
+        dispatch(addMessage(errorMessage));
+      } else {
+        setComponentChats(prev => prev.map(chat => {
+          if (chat.id === activeChat) {
+            return {
+              ...chat,
+              messages: [...chat.messages, errorMessage]
+            };
+          }
+          return chat;
+        }));
+      }
     } finally {
       if (isComponentCreation) {
         setIsAddingComponent(false);
@@ -1172,17 +1130,125 @@ const AIChatWindow = ({ onClose }) => {
 
     const chatId = selectedComponent.id;
     if (!componentChats.find((chat) => chat.id === chatId)) {
+      // Create initial message for the component chat
+      const initialMessage = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Here are some things you can do with the ${selectedComponent.type.toLowerCase()}:`,
+        timestamp: new Date(),
+        options: getComponentSpecificOptions(selectedComponent)
+      };
+
       setComponentChats((prev) => [
         ...prev,
         {
           id: chatId,
           type: selectedComponent.type,
           name: selectedComponent.props?.name || selectedComponent.type,
-          messages: [],
+          messages: [initialMessage]
         },
       ]);
     }
     setActiveChat(chatId);
+  };
+
+  // Add this helper function to get component-specific options
+  const getComponentSpecificOptions = (component) => {
+    switch (component.type) {
+      case 'CHART':
+        return [
+          {
+            text: "Chart Type",
+            type: "category",
+            options: [
+              {
+                text: "change chart type to line",
+                type: "command",
+              },
+              {
+                text: "change chart type to bar",
+                type: "command",
+              },
+              {
+                text: "change chart type to area",
+                type: "command",
+              },
+              {
+                text: "change chart type to pie",
+                type: "command",
+              },
+            ],
+          },
+          {
+            text: "Chart Styles",
+            type: "category",
+            options: [
+              {
+                text: "show the legend",
+                type: "command",
+              },
+              {
+                text: "hide the legend",
+                type: "command",
+              },
+              {
+                text: "show the grid",
+                type: "command",
+              },
+              {
+                text: "hide the grid",
+                type: "command",
+              },
+            ],
+          },
+          {
+            text: "Data Management",
+            type: "category",
+            options: [
+              {
+                text: "show field options",
+                type: "command",
+              },
+              {
+                text: "list available queries",
+                type: "command",
+              },
+            ],
+          },
+          {
+            text: "Axis Controls",
+            type: "category",
+            options: [
+              {
+                text: "show x axis",
+                type: "command",
+              },
+              {
+                text: "hide x axis",
+                type: "command",
+              },
+              {
+                text: "show y axis",
+                type: "command",
+              },
+              {
+                text: "hide y axis",
+                type: "command",
+              },
+            ],
+          },
+        ];
+      case 'TABLE':
+        return new TableProcessor().getSuggestionsWithState({ w3s: { queries: { list: queries } } });
+      case 'VIDEO':
+        return getVideoSuggestions();
+      case 'WHITEBOARD':
+        return new WhiteboardProcessor().getSuggestions();
+      case 'IMAGE':
+        return new ImageProcessor().getSuggestions();
+      default:
+        return [];
+    }
   };
 
   return (
@@ -1262,16 +1328,33 @@ const AIChatWindow = ({ onClose }) => {
       </div>
 
       <div className="flex-1 overflow-y-auto pt-4 px-4 space-y-4 min-h-[300px] max-h-[calc(80vh-200px)] relative">
-        {messages.map((message) => (
-          <Message
-            key={message.id}
-            message={message}
-            timestamp={message.timestamp}
-            onOptionSelect={handleOptionSelect}
-            openComponentChat={openComponentChat}
-            selectedComponent={selectedComponent}
-          />
-        ))}
+        {activeChat === 'main' ? (
+          // Render main chat messages from Redux
+          messages.map((message) => (
+            <Message
+              key={message.id}
+              message={message}
+              timestamp={message.timestamp}
+              onOptionSelect={handleOptionSelect}
+              openComponentChat={openComponentChat}
+              selectedComponent={selectedComponent}
+            />
+          ))
+        ) : (
+          // Render component-specific chat messages from local state
+          componentChats
+            .find(chat => chat.id === activeChat)
+            ?.messages.map((message) => (
+              <Message
+                key={message.id}
+                message={message}
+                timestamp={message.timestamp}
+                onOptionSelect={handleOptionSelect}
+                openComponentChat={openComponentChat}
+                selectedComponent={selectedComponent}
+              />
+            ))
+        )}
         {isAddingComponent && <TypingIndicator />}
         <div ref={messagesEndRef} />
       </div>
