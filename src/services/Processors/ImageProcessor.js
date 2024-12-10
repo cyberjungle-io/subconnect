@@ -1,3 +1,5 @@
+import { SvgProcessor } from './SvgProcessor';
+
 export class ImageProcessor {
   static imagePatterns = [
     /(?:zoom|scale)\s+(?:in|out|to)\s*(\d*\.?\d+)?/i,
@@ -11,11 +13,14 @@ export class ImageProcessor {
   ];
 
   static isImageCommand(input) {
+    if (SvgProcessor.isSvgCommand(input)) {
+      return true;
+    }
     return this.imagePatterns.some(pattern => pattern.test(input.toLowerCase()));
   }
 
   static getSuggestions() {
-    return [
+    const suggestions = [
       {
         text: "Image Zoom",
         type: "category",
@@ -54,9 +59,22 @@ export class ImageProcessor {
         ]
       }
     ];
+
+    if (this.component?.props?.isSvg || (this.component?.content && typeof this.component.content === 'string' && this.component.content.includes('<svg'))) {
+      suggestions.push(...SvgProcessor.getSuggestions());
+    }
+
+    return suggestions;
   }
 
   static processCommand(input, currentProps = {}) {
+    if (currentProps.isSvg || (currentProps.content && typeof currentProps.content === 'string' && currentProps.content.includes('<svg'))) {
+      const svgResult = SvgProcessor.processCommand(input, currentProps);
+      if (svgResult) {
+        return svgResult;
+      }
+    }
+
     const lowercaseInput = input.toLowerCase();
 
     // Handle upload/SVG commands
