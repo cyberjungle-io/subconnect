@@ -93,22 +93,33 @@ export class AICommandExecutor {
           }
         }
 
-        // Handle prompts for color value changes and renames
-        if (result.type === 'PROMPT') {
-          return {
-            success: true,
-            message: result.message,
-            needsMoreInfo: true,
-            followUp: result.followUp
-          };
-        }
-
-        // Return options and actions for interactive UI
         return {
           success: true,
           message: result.message,
           options: result.options,
           actions: result.actions
+        };
+      }
+    }
+
+    // If no component is selected and command seems to be a style modification
+    if (!selectedComponent) {
+      const stylePatterns = [
+        /(?:make|set|change|update|modify|adjust)/i,
+        /(?:color|background|border|shadow|radius|size|width|height|margin|padding)/i,
+        /(?:bigger|smaller|larger|shorter|taller|wider|narrower)/i,
+        /(?:align|center|position|move|place)/i,
+      ];
+
+      // Add exclusion for color theme commands
+      if (stylePatterns.some((pattern) => pattern.test(input)) && 
+          !ColorThemeProcessor.isColorThemeCommand(input)) {
+        return {
+          success: true,
+          message:
+            "Where would you like to apply this change?\n- The canvas\n- A specific component (please select one first)",
+          needsMoreInfo: true,
+          type: "target",
         };
       }
     }
@@ -379,26 +390,6 @@ export class AICommandExecutor {
         needsMoreInfo: true,
         type: "shadow",
       };
-    }
-
-    // If no component is selected and command seems to be a style modification
-    if (!selectedComponent) {
-      const stylePatterns = [
-        /(?:make|set|change|update|modify|adjust)/i,
-        /(?:color|background|border|shadow|radius|size|width|height|margin|padding)/i,
-        /(?:bigger|smaller|larger|shorter|taller|wider|narrower)/i,
-        /(?:align|center|position|move|place)/i,
-      ];
-
-      if (stylePatterns.some((pattern) => pattern.test(input))) {
-        return {
-          success: true,
-          message:
-            "Where would you like to apply this change?\n- The canvas\n- A specific component (please select one first)",
-          needsMoreInfo: true,
-          type: "target",
-        };
-      }
     }
 
     // Continue with existing logic for processing the command

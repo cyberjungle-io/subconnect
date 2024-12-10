@@ -4,7 +4,7 @@ export class ColorThemeProcessor {
     /(?:change|update|set)\s+(?:the\s+)?color\s+(?:named|called)?\s*["']?([^"']+)["']?\s*(?:to|=|:)\s*(#[0-9a-fA-F]{6}|[a-zA-Z]+)/i,
     /(?:rename|change\s+name\s+of)\s+(?:the\s+)?color\s+(?:named|called)?\s*["']?([^"']+)["']?\s*(?:to|=|:)\s*["']?([^"']+)["']?/i,
     /(?:add|create)\s+(?:a\s+)?new\s+color\s+(?:named|called)?\s*["']?([^"']+)["']?\s*(?:with\s+value)?\s*(#[0-9a-fA-F]{6}|[a-zA-Z]+)/i,
-    /(?:work\s+on|edit|modify|manage)\s+(?:the\s+)?color\s+theme/i,
+    /(?:work\s+on|edit|modify|manage)\s+(?:the\s+)?(?:color\s+theme|color\s+scheme|colors|theme\s+colors)/i,
     /^__colorOption__:(.+)::(.+)$/i
   ];
 
@@ -177,7 +177,7 @@ export class ColorThemeProcessor {
     }
 
     // General color theme management command
-    if (/(?:work\s+on|edit|modify|manage)\s+(?:the\s+)?color\s+theme/i.test(input)) {
+    if (/(?:work\s+on|edit|modify|manage)\s+(?:the\s+)?(?:color\s+theme|color\s+scheme|colors|theme\s+colors)/i.test(input)) {
       // Ensure currentTheme is an array and has items
       const formattedColors = Array.isArray(currentTheme) 
         ? currentTheme.map((color, index) => this.formatColorDetails(color, index))
