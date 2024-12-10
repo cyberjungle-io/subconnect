@@ -47,7 +47,12 @@ const Message = ({
   onOptionSelect,
   openComponentChat,
   selectedComponent,
+  replacedMessageIds,
 }) => {
+  if (replacedMessageIds.has(message.id)) {
+    return null; // Don't render replaced messages
+  }
+
   const renderOptions = (options) => {
     if (!Array.isArray(options)) return null;
 
@@ -224,7 +229,8 @@ const Message = ({
     message.content?.startsWith("Set ") ||
     message.content?.startsWith("Added ") ||
     message.content?.startsWith("Updated ") ||
-    message.content?.startsWith("Selected ");
+    message.content?.startsWith("Selected ") ||
+    message.content?.startsWith("Created ");
 
   // Check if this is a component-specific suggestions message
   const isComponentSuggestions =
@@ -458,6 +464,9 @@ const AIChatWindow = ({ onClose }) => {
 
   // Add this near the other state declarations at the top of the AIChatWindow component
   const [isAddingComponent, setIsAddingComponent] = useState(false);
+
+  // Add this near other state declarations at the top of the component
+  const [replacedMessageIds, setReplacedMessageIds] = useState(new Set());
 
   // Enhanced function to find selected component, including nested children
   const findSelectedComponent = (components, selectedId) => {
@@ -1058,7 +1067,7 @@ const AIChatWindow = ({ onClose }) => {
     // Handle initial messages only once
     if (!initializationRef.current && messages.length === 0) {
       initializationRef.current = true;
-      
+
       const initialMessage = {
         id: Date.now().toString(),
         role: "assistant",
@@ -1084,7 +1093,11 @@ const AIChatWindow = ({ onClose }) => {
     }
 
     // Handle component selection changes after initialization
-    if (initializationRef.current && selectedComponent && !componentMessageRef.current) {
+    if (
+      initializationRef.current &&
+      selectedComponent &&
+      !componentMessageRef.current
+    ) {
       componentMessageRef.current = true;
       const componentMessage = {
         id: Date.now().toString(),
@@ -1113,17 +1126,17 @@ const AIChatWindow = ({ onClose }) => {
   // Keep the createOrOpenComponentChat function unchanged for manual switching
   const createOrOpenComponentChat = (component) => {
     if (!component) return;
-    
+
     const chatId = `${component.type}_${component.id}`;
-    const existingChat = componentChats.find(chat => 
-      chat.id === chatId || chat.componentId === component.id
+    const existingChat = componentChats.find(
+      (chat) => chat.id === chatId || chat.componentId === component.id
     );
-    
+
     if (existingChat) {
       setActiveChat(existingChat.id);
       return;
     }
-    
+
     const initialMessage = {
       id: Date.now().toString(),
       role: "assistant",
@@ -1145,9 +1158,36 @@ const AIChatWindow = ({ onClose }) => {
     setActiveChat(chatId);
   };
 
-  // Add back the openComponentChat function for the Message component
+  // Replace the openComponentChat function
   const openComponentChat = () => {
     if (selectedComponent) {
+      // Create a confirmation message with our new "Created" pattern
+      const confirmationMessage = {
+        id: Date.now().toString(),
+        role: 'assistant',
+        content: `Created new ${selectedComponent.type} chat`,  // Added "new" to the message
+        timestamp: new Date(),
+        status: 'success'
+      };
+
+      // If we're in the main chat, replace the component message
+      if (activeChat === 'main') {
+        // Find the last component-specific message
+        const lastComponentMessage = [...messages].reverse().find(msg => 
+          msg.role === 'assistant' && 
+          msg.content.startsWith(`Here are some things you can do with the ${selectedComponent.type.toLowerCase()}`)
+        );
+
+        if (lastComponentMessage && !replacedMessageIds.has(lastComponentMessage.id)) {
+          // Add the message ID to our set of replaced messages
+          setReplacedMessageIds(prev => new Set([...prev, lastComponentMessage.id]));
+          
+          // Dispatch the confirmation message to replace the component message
+          dispatch(addMessage(confirmationMessage));
+        }
+      }
+
+      // Create or open the component chat as before
       createOrOpenComponentChat(selectedComponent);
     }
   };
@@ -1320,7 +1360,9 @@ const AIChatWindow = ({ onClose }) => {
               isActive={activeChat === chat.id}
               onSelect={() => setActiveChat(chat.id)}
               onClose={(chatId) => {
-                setComponentChats((prev) => prev.filter((c) => c.id !== chatId));
+                setComponentChats((prev) =>
+                  prev.filter((c) => c.id !== chatId)
+                );
                 setActiveChat("main");
               }}
             />
@@ -1339,6 +1381,7 @@ const AIChatWindow = ({ onClose }) => {
                 onOptionSelect={handleOptionSelect}
                 openComponentChat={openComponentChat}
                 selectedComponent={selectedComponent}
+                replacedMessageIds={replacedMessageIds}
               />
             ))
           : // Render component-specific chat messages from local state
@@ -1352,6 +1395,7 @@ const AIChatWindow = ({ onClose }) => {
                   onOptionSelect={handleOptionSelect}
                   openComponentChat={openComponentChat}
                   selectedComponent={selectedComponent}
+                  replacedMessageIds={replacedMessageIds}
                 />
               ))}
         {isAddingComponent && <TypingIndicator />}
