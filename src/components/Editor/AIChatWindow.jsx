@@ -1508,7 +1508,11 @@ const AIChatWindow = ({ onClose }) => {
             <ChatTab
               label="Main Chat"
               isActive={activeChat === "main"}
-              onSelect={() => setActiveChat("main")}
+              onSelect={() => {
+                setActiveChat("main");
+                // Deselect all components when switching to main chat
+                dispatch(setSelectedIds([]));
+              }}
               mode={mode}
             />
             {componentChats.map((chat) => (
