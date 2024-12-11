@@ -14,6 +14,7 @@ import ChatInput from "./ChatInput";
 import ChatMessageService from "../chatMessageService";
 import { useComponentSelection } from "../../hooks/useComponentSelection";
 import useChatState from "../../hooks/useChatState";
+import { FlexContainerProcessor } from '../Processors/FlexContainerProcessor';
 
 const getInitialSuggestions = () => {
   // Name mapping for specific components
@@ -858,6 +859,8 @@ const AIChatWindow = ({ onClose }) => {
         return WhiteboardProcessor.getSuggestions();
       case "IMAGE":
         return ImageProcessor.getSuggestions();
+      case "FLEX_CONTAINER":
+        return FlexContainerProcessor.getSuggestions();
       default:
         return [];
     }

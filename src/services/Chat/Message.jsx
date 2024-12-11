@@ -29,84 +29,51 @@ const Message = ({
   const renderOptions = (options) => {
     if (!Array.isArray(options)) return null;
 
-    const isComponentList = options.every((opt) =>
-      opt.text.match(
-        /^(Container|Text|Image|Chart|Table|Video|Whiteboard|Value|Kanban|List)$/
-      )
-    );
-
     return (
-      <div
-        className={`mt-2 flex gap-2 ${
-          isComponentList ? "flex-row flex-wrap" : "flex-col"
-        } w-full`}
-      >
+      <div className={`mt-2 flex gap-2 flex-wrap w-full`}>
         {options.map((option, index) => {
-          if (option.type === "color") {
-            return (
-              <div key={index} className="w-full">
-                <button
-                  onClick={() => onOptionSelect(option)}
-                  className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors w-full flex items-center gap-2"
-                  title={`${option.text} - Click to modify`}
-                >
-                  <div
-                    className="w-4 h-4 rounded-full border border-gray-300"
-                    style={{ backgroundColor: option.color }}
-                  />
-                  <span className="flex-1">{option.text}</span>
-                </button>
-                {option.options && (
-                  <div className="ml-6 mt-1 flex flex-wrap gap-1">
-                    {option.options.map((subOption, subIndex) => (
-                      <button
-                        key={subIndex}
-                        onClick={() => onOptionSelect(subOption)}
-                        className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left"
-                      >
-                        {subOption.text}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          }
-
           if (option.type === "category") {
+            const Icon = option.icon;
             return (
               <button
                 key={index}
                 onClick={() => onOptionSelect(option)}
-                className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
+                className="text-left px-3 py-2 bg-blue-50/80 hover:bg-blue-100/80 rounded-lg text-blue-600 
+                transition-all duration-150 flex-shrink-0 flex items-center gap-2 shadow-sm border border-blue-200 
+                hover:border-blue-300"
               >
-                {option.text}
-              </button>
-            );
-          }
-
-          if (option.type === "command") {
-            return (
-              <button
-                key={index}
-                onClick={() => onOptionSelect(option)}
-                className={`text-sm px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left ${
-                  isComponentList ? "flex-shrink-0" : "w-full"
-                }`}
-              >
+                {Icon && <Icon className="text-sm" />}
                 {option.text}
               </button>
             );
           }
 
           if (option.type === "info") {
+            const Icon = option.icon;
             return (
               <div
                 key={index}
-                className="text-sm px-3 py-2 bg-gray-50 rounded text-gray-600 italic flex-grow basis-[calc(50%-0.25rem)]"
+                className="w-full text-sm font-semibold text-gray-600 mt-3 mb-1 border-b border-gray-200 pb-1 flex items-center gap-2"
               >
+                {Icon && <Icon className="text-sm" />}
                 {option.text}
               </div>
+            );
+          }
+
+          if (option.type === "command") {
+            const Icon = option.icon;
+            return (
+              <button
+                key={index}
+                onClick={() => onOptionSelect(option)}
+                className="text-sm px-2.5 py-1 bg-white hover:bg-gray-50 rounded-md text-gray-700 
+                transition-all duration-150 text-left flex-shrink-0 border border-gray-200 
+                hover:border-gray-300 hover:text-gray-900 flex items-center gap-2"
+              >
+                {Icon && <Icon className="text-sm text-gray-500" />}
+                {option.text}
+              </button>
             );
           }
 
