@@ -1,5 +1,5 @@
 export class LayoutProcessor {
-  // Add natural language mappings
+  // Update natural language mappings to include simpler terms
   static naturalLanguageMap = {
     // Direction mappings
     "left to right": "row",
@@ -33,6 +33,13 @@ export class LayoutProcessor {
     "at the end": "flex-end",
     "push to start": "flex-start",
     "push to end": "flex-end",
+    // Add direct mappings for simple terms
+    start: "flex-start",
+    end: "flex-end",
+    center: "center",
+    between: "space-between",
+    around: "space-around",
+    evenly: "space-evenly",
 
     // Align items mappings
     "stretch to fit": "stretch",
@@ -45,6 +52,39 @@ export class LayoutProcessor {
     middle: "center",
     "line up": "baseline",
     "align text": "baseline",
+    // Add direct mappings
+    stretch: "stretch",
+    baseline: "baseline",
+    top: "flex-start",
+    bottom: "flex-end",
+
+    // Enhance stretch mappings
+    "stretch": "stretch",
+    "stretch items": "stretch",
+    "fill container": "stretch",
+    "expand items": "stretch",
+    "fill width": "stretch",
+    "fill height": "stretch",
+    "stretch to fill": "stretch",
+    "fill space": "stretch",
+    "expand to fill": "stretch",
+    "make items fill": "stretch",
+    "stretch all": "stretch",
+    "fill all": "stretch",
+    "expand all": "stretch",
+
+    // Update stretch mappings with more precise descriptions
+    "stretch": "stretch",
+    "stretch items": "stretch",
+    "auto height": "stretch",
+    "auto width": "stretch",
+    "fit container": "stretch",
+    "remove fixed height": "stretch",
+    "remove fixed width": "stretch",
+    "auto size": "stretch",
+    "stretch to container": "stretch",
+    "fit parent": "stretch",
+    "fill available space": "stretch",
   };
 
   static getStylePatterns() {
@@ -95,6 +135,12 @@ export class LayoutProcessor {
         /(?:i want|i need|i'd like|could you|can you|please)?\s*(?:make|set|have)\s*(?:it|everything|the items|the elements)?\s*(?:stretch to fit|fill space|full height|same height|at the top|at the bottom|in the center|middle|line up|align text)/i,
         /(?:can you|could you|please)?\s*(?:align|position|put)\s*(?:everything|items|elements)?\s*(?:at the top|at the bottom|in the center|middle|baseline)/i,
         /(?:make|set)\s*(?:all)?\s*(?:items|elements)\s*(?:the same|equal)\s*(?:height|size)/i,
+        /(?:make|set|have)?\s*(?:items|elements)?\s*(?:stretch|expand|fill)\s*(?:the)?\s*(?:container|space|width|height)?/i,
+        /(?:stretch|expand|fill)\s*(?:items|elements)?\s*(?:to)?\s*(?:fill|fit|match)?\s*(?:container|parent|space)?/i,
+        /(?:make|set|have)?\s*(?:everything|all items|all elements)\s*(?:stretch|expand|fill)\s*(?:completely|fully|entirely)?/i,
+        /(?:make|set|allow)?\s*(?:items|elements)?\s*(?:to)?\s*(?:auto|automatic)\s*(?:height|width|size)/i,
+        /(?:remove|clear)\s*(?:fixed|set|explicit)\s*(?:height|width|size)/i,
+        /(?:let|make)\s*(?:items|elements)?\s*(?:fit|adjust)\s*(?:to)?\s*(?:container|parent|available space)/i,
       ],
       alignContent: [
         /(?:set|make|change)?\s*(?:the)?\s*align\s*content\s*(?:to)?\s*(flex-start|flex-end|center|stretch|space-between|space-around)/i,
@@ -111,67 +157,51 @@ export class LayoutProcessor {
 
   static processCommand(input) {
     console.log("LayoutProcessor received input:", input);
-    const lowercaseInput = input.toLowerCase();
+    const lowercaseInput = input.toLowerCase().trim();
 
-    // First, try to match natural language patterns
-    for (const [naturalPhrase, value] of Object.entries(
-      this.naturalLanguageMap
-    )) {
-      if (lowercaseInput.includes(naturalPhrase.toLowerCase())) {
-        // Determine which property to set based on the value
-        let property;
-        if (
-          ["row", "column", "row-reverse", "column-reverse"].includes(value)
-        ) {
-          property = "flexDirection";
-        } else if (
-          [
-            "flex-start",
-            "flex-end",
-            "center",
-            "space-between",
-            "space-around",
-            "space-evenly",
-          ].includes(value)
-        ) {
-          property = lowercaseInput.includes("vertical")
-            ? "alignItems"
-            : "justifyContent";
-        } else if (["stretch", "baseline"].includes(value)) {
-          property = "alignItems";
-        }
+    // First check for direct matches in natural language map
+    if (this.naturalLanguageMap[lowercaseInput]) {
+      const value = this.naturalLanguageMap[lowercaseInput];
+      
+      // Determine the appropriate property based on the value
+      let property;
+      if (["row", "column", "row-reverse", "column-reverse"].includes(value)) {
+        property = "flexDirection";
+      } else if (["flex-start", "flex-end", "center", "space-between", "space-around", "space-evenly"].includes(value)) {
+        // Check input context for vertical alignment
+        const isVerticalAlign = lowercaseInput.includes("vertical") || 
+                              lowercaseInput.includes("height") ||
+                              lowercaseInput.includes("top") ||
+                              lowercaseInput.includes("bottom");
+        property = isVerticalAlign ? "alignItems" : "justifyContent";
+      } else if (["stretch", "baseline"].includes(value)) {
+        property = "alignItems";
+      }
 
-        if (property) {
-          console.log(
-            `Matched natural language: "${naturalPhrase}" -> ${property}: ${value}`
-          );
-          return {
-            style: {
-              [property]: value,
-            },
-          };
-        }
+      if (property) {
+        console.log(`Matched layout command: ${property}: ${value}`);
+        return {
+          style: {
+            [property]: value
+          }
+        };
       }
     }
 
-    // If no natural language match, try the regular patterns
-    const stylePatterns = this.getStylePatterns();
-    for (const [property, patterns] of Object.entries(stylePatterns)) {
-      for (const pattern of patterns) {
+    // If no direct match, try the patterns
+    const patterns = this.getStylePatterns();
+    for (const [property, propertyPatterns] of Object.entries(patterns)) {
+      for (const pattern of propertyPatterns) {
         const match = lowercaseInput.match(pattern);
         if (match) {
           let value = match[1]?.toLowerCase();
-
-          // Convert natural language to valid values
           if (this.naturalLanguageMap[value]) {
             value = this.naturalLanguageMap[value];
           }
-
-          console.log(`Matched pattern for ${property}:`, value);
           return {
             style: {
-              [property]: value,
-            },
+              [property]: value
+            }
           };
         }
       }
@@ -188,5 +218,21 @@ export class LayoutProcessor {
       alignItems: "align items",
       alignContent: "align content",
     };
+  }
+
+  static getStretchSuggestions(flexDirection) {
+    if (flexDirection === 'row') {
+      return [
+        "Note: Items must not have fixed height to stretch vertically",
+        "Try: 'remove fixed height' or 'auto height' to allow stretching",
+        "Items with explicit height values won't stretch"
+      ];
+    } else {
+      return [
+        "Note: Items must not have fixed width to stretch horizontally",
+        "Try: 'remove fixed width' or 'auto width' to allow stretching",
+        "Items with explicit width values won't stretch"
+      ];
+    }
   }
 }
