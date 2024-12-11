@@ -1,11 +1,13 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addMessage } from '../features/aiChatSlice';
 import { AICommandExecutor } from '../services/aiExecutor';
 import ChatMessageService from '../services/chatMessageService';
+import { useComponentSelection } from './useComponentSelection';
 
 function useChatState() {
   const dispatch = useDispatch();
+  const { selectedComponent } = useComponentSelection();
   const [input, setInput] = useState('');
   const [isAddingComponent, setIsAddingComponent] = useState(false);
   const [componentChats, setComponentChats] = useState([]);
@@ -31,7 +33,7 @@ function useChatState() {
           if (chat.id === activeChat) {
             return {
               ...chat,
-              messages: [...chat.messages, userMessage]
+              messages: [...(chat.messages || []), userMessage]
             };
           }
           return chat;
@@ -46,7 +48,9 @@ function useChatState() {
       const commandResult = await AICommandExecutor.processCommand(
         input,
         dispatch,
-        null,
+        activeChat !== 'main' && !componentChats.find(c => c.id === activeChat)?.type === 'general' 
+          ? selectedComponent 
+          : null,
         { w3s: { queries: { list: queries } } }
       );
 
@@ -64,7 +68,7 @@ function useChatState() {
             if (chat.id === activeChat) {
               return {
                 ...chat,
-                messages: [...chat.messages, responseMessage]
+                messages: [...(chat.messages || []), responseMessage]
               };
             }
             return chat;
@@ -86,7 +90,7 @@ function useChatState() {
             if (chat.id === activeChat) {
               return {
                 ...chat,
-                messages: [...chat.messages, errorMessage]
+                messages: [...(chat.messages || []), errorMessage]
               };
             }
             return chat;
@@ -97,6 +101,20 @@ function useChatState() {
       setIsAddingComponent(false);
     }
   };
+
+  const createNewGeneralChat = useCallback(() => {
+    const chatNumber = componentChats.filter(chat => chat.type === 'general').length + 1;
+    const newChatId = `general-${Date.now()}`;
+    const newChat = {
+      id: newChatId,
+      name: `Chat ${chatNumber}`,
+      type: 'general',
+      messages: []
+    };
+    
+    setComponentChats(prev => [...prev, newChat]);
+    setTimeout(() => setActiveChat(newChatId), 0);
+  }, [componentChats]);
 
   return {
     input,
@@ -112,6 +130,7 @@ function useChatState() {
     isLoading,
     isVisible,
     handleSubmit,
+    createNewGeneralChat,
   };
 }
 

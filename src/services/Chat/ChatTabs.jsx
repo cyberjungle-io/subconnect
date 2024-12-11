@@ -1,6 +1,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { setSelectedIds } from '../../features/editorSlice';
+import { FaHome } from 'react-icons/fa';
 
 const ChatTab = ({ 
   chatId, 
@@ -9,7 +10,9 @@ const ChatTab = ({
   componentId, 
   mode, 
   onSelect, 
-  onClose 
+  onClose,
+  icon,
+  isGeneral
 }) => (
   <div
     className={`flex items-center gap-2 px-3 py-1 text-sm cursor-pointer transition-colors ${
@@ -17,7 +20,7 @@ const ChatTab = ({
     }`}
     onClick={() => onSelect(componentId)}
   >
-    <span className="truncate">{label}</span>
+    {icon ? icon : <span className="truncate">{label}</span>}
     {chatId !== 'main' && (
       <button
         onClick={(e) => {
@@ -41,9 +44,18 @@ const ChatTabs = ({
   dispatch
 }) => {
   const handleTabSelect = (componentId, chatId) => {
+    // Ensure the chat exists before switching
+    const chatExists = chatId === 'main' || componentChats.some(chat => chat.id === chatId);
+    if (!chatExists) return;
+    
     setActiveChat(chatId);
-    // Only select component if we're in edit mode
-    if (mode === 'edit' && componentId) {
+    
+    // If switching to main chat, clear component selection
+    if (chatId === "main") {
+      dispatch(setSelectedIds([]));
+    }
+    // Otherwise only select component if we're in edit mode
+    else if (mode === 'edit' && componentId) {
       dispatch(setSelectedIds([componentId]));
     }
   };
@@ -62,6 +74,7 @@ const ChatTabs = ({
           isActive={activeChat === "main"}
           onSelect={() => handleTabSelect(null, "main")}
           mode={mode}
+          icon={<FaHome className="text-base" />}
         />
         {componentChats.map((chat) => (
           <ChatTab
@@ -69,10 +82,11 @@ const ChatTabs = ({
             chatId={chat.id}
             label={chat.name}
             isActive={activeChat === chat.id}
-            componentId={chat.componentId}
+            componentId={chat.type === 'general' ? null : chat.componentId}
             mode={mode}
             onSelect={(componentId) => handleTabSelect(componentId, chat.id)}
             onClose={handleTabClose}
+            isGeneral={chat.type === 'general'}
           />
         ))}
       </div>

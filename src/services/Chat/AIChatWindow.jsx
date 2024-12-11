@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addMessage, changeProvider } from "../../features/aiChatSlice";
-import { FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaTimes, FaChevronLeft, FaChevronRight, FaCog, FaPlus } from "react-icons/fa";
 import { LLMProviders } from "../llm/llmService";
 import { AICommandExecutor } from "../aiExecutor";
 import { TableProcessor } from "../Processors/TableProcessor";
@@ -226,6 +226,7 @@ const AIChatWindow = ({ onClose }) => {
     isLoading,
     isVisible,
     handleSubmit,
+    createNewGeneralChat,
   } = useChatState();
 
   const selectedIds = useSelector((state) => state.editor.selectedIds);
@@ -904,6 +905,8 @@ const AIChatWindow = ({ onClose }) => {
     };
   }, [isVisible, selectedComponent?.id, dispatch, componentChats, activeChat]);
 
+  const [showSettings, setShowSettings] = useState(false);
+
   return (
     <div
       className="fixed w-80 bg-white border border-blue-200 rounded-lg shadow-xl z-[960] flex flex-col max-h-[80vh]"
@@ -917,45 +920,56 @@ const AIChatWindow = ({ onClose }) => {
           className="flex justify-between items-center p-3 border-b border-blue-100 bg-[#e6f3ff] cursor-move"
           onMouseDown={handleMouseDown}
         >
-          <div className="flex flex-col">
+          <div className="flex items-center justify-between w-full">
             <h3 className="text-lg font-semibold text-gray-700">
               AI Assistant
             </h3>
-            {selectedComponent && (
-              <span className="text-sm text-blue-600">
-                Selected:{" "}
-                {selectedComponent.props?.name || selectedComponent.type}
-                {selectedComponent.parent && (
-                  <span className="text-xs text-gray-500">
-                    {" "}
-                    (nested in {selectedComponent.parent.type})
-                  </span>
-                )}
-              </span>
-            )}
             <div className="flex items-center gap-2">
-              <select
-                value={currentProvider}
-                onChange={handleProviderChange}
-                className="text-sm p-1 rounded border border-blue-200"
+              <button
+                onClick={() => createNewGeneralChat()}
+                className="p-2 hover:bg-blue-100 rounded-full transition-colors"
+                title="New Chat"
               >
-                {Object.values(LLMProviders).map((provider) => (
-                  <option key={provider} value={provider}>
-                    {provider}
-                  </option>
-                ))}
-              </select>
+                <FaPlus className="text-gray-500" />
+              </button>
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className="p-2 hover:bg-blue-100 rounded-full transition-colors"
+                title="Settings"
+              >
+                <FaCog className="text-gray-500" />
+              </button>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-blue-100 rounded-full transition-colors"
+              >
+                <FaTimes className="text-gray-500" />
+              </button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-blue-100 rounded-full transition-colors"
-            >
-              <FaTimes className="text-gray-500" />
-            </button>
-          </div>
         </div>
+
+        {showSettings && (
+          <div className="p-4 border-b border-blue-100 bg-white">
+            <h4 className="text-sm font-semibold text-gray-700 mb-3">Settings</h4>
+            <div className="space-y-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-gray-600">AI Provider</label>
+                <select
+                  value={currentProvider}
+                  onChange={handleProviderChange}
+                  className="text-sm p-2 rounded border border-blue-200 w-full"
+                >
+                  {Object.values(LLMProviders).map((provider) => (
+                    <option key={provider} value={provider}>
+                      {provider}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+        )}
 
         <ChatTabs
           activeChat={activeChat}

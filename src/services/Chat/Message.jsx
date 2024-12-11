@@ -8,9 +8,11 @@ const Message = ({
   onOptionSelect,
   openComponentChat,
   selectedComponent,
-  replacedMessageIds,
+  replacedMessageIds = new Set(),
 }) => {
-  if (replacedMessageIds.has(message.id)) {
+  const isReplaced = replacedMessageIds.has(message.id) || false;
+
+  if (isReplaced) {
     return null;
   }
 

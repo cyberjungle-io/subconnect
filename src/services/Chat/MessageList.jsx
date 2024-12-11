@@ -10,7 +10,7 @@ const MessageList = ({
   handleOptionSelect,
   openComponentChat,
   selectedComponent,
-  replacedMessageIds
+  replacedMessageIds = new Set()
 }) => {
   const messagesEndRef = useRef(null);
 
@@ -23,15 +23,15 @@ const MessageList = ({
   }, [messages]);
 
   const renderMessages = () => {
-    const messageList = activeChat === "main"
-      ? messages
-      : componentChats.find((chat) => chat.id === activeChat)?.messages || [];
+    const currentMessages = activeChat === 'main' 
+      ? messages 
+      : componentChats.find(chat => chat.id === activeChat)?.messages || [];
 
-    return messageList.map((message) => (
+    return currentMessages.map((message) => (
       <Message
         key={message.id}
         message={message}
-        timestamp={message.timestamp}
+        isAddingComponent={isAddingComponent}
         onOptionSelect={handleOptionSelect}
         openComponentChat={openComponentChat}
         selectedComponent={selectedComponent}
@@ -41,7 +41,7 @@ const MessageList = ({
   };
 
   return (
-    <div className="flex-1 overflow-y-auto pt-4 px-4 space-y-4 min-h-[300px] max-h-[calc(80vh-200px)] relative">
+    <div className="flex-1 overflow-y-auto p-3">
       {renderMessages()}
       {isAddingComponent && <TypingIndicator />}
       <div ref={messagesEndRef} />
