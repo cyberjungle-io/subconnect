@@ -21,141 +21,171 @@ import {
 
 export class FlexContainerProcessor {
   static getSuggestions() {
+    const buttonClass = "text-xs px-2 py-1"; // Smaller text and padding
+    const headerClass = "text-xs font-medium text-gray-600"; // Smaller header text
+
     return [
       {
         text: "Layout",
         type: "category",
         icon: FaLayerGroup,
+        className: headerClass,
         options: [
           {
             text: "Direction",
             type: "info",
-            icon: FaArrowRight
+            icon: FaArrowRight,
+            className: headerClass
           },
           {
             text: "row",
             type: "command",
-            icon: FaArrowsAltH
+            icon: FaArrowsAltH,
+            className: buttonClass
           },
           {
             text: "column",
             type: "command",
-            icon: FaArrowsAltV
+            icon: FaArrowsAltV,
+            className: buttonClass
           },
           {
             text: "Wrap",
             type: "info",
-            icon: FaArrowsAlt
+            icon: FaArrowsAlt,
+            className: headerClass
           },
           {
             text: "wrap",
             type: "command",
-            icon: FaArrowsAltH
+            icon: FaArrowsAltH,
+            className: buttonClass
           },
           {
             text: "no wrap",
             type: "command",
-            icon: FaGripLines
+            icon: FaGripLines,
+            className: buttonClass
           },
           {
             text: "Justify Content",
             type: "info",
-            icon: FaWrench
+            icon: FaWrench,
+            className: headerClass
           },
           {
             text: "start",
             type: "command",
-            icon: FaAlignLeft
+            icon: FaAlignLeft,
+            className: buttonClass
           },
           {
             text: "center",
             type: "command",
-            icon: FaAlignCenter
+            icon: FaAlignCenter,
+            className: buttonClass
           },
           {
             text: "end",
             type: "command",
-            icon: FaAlignRight
+            icon: FaAlignRight,
+            className: buttonClass
           },
           {
             text: "between",
             type: "command",
-            icon: FaGripLines
+            icon: FaGripLines,
+            className: buttonClass
           },
           {
             text: "around",
             type: "command",
-            icon: FaColumns
+            icon: FaColumns,
+            className: buttonClass
           },
           {
             text: "evenly",
             type: "command",
-            icon: FaGripLinesVertical
+            icon: FaGripLinesVertical,
+            className: buttonClass
           },
           {
             text: "Align Items",
             type: "info",
-            icon: FaWrench
+            icon: FaWrench,
+            className: headerClass
           },
           {
             text: "start",
             type: "command",
-            icon: FaAlignLeft
+            icon: FaAlignLeft,
+            className: buttonClass
           },
           {
             text: "center",
             type: "command",
-            icon: FaAlignCenter
+            icon: FaAlignCenter,
+            className: buttonClass
           },
           {
             text: "end",
             type: "command",
-            icon: FaAlignRight
+            icon: FaAlignRight,
+            className: buttonClass
           },
           {
             text: "stretch",
             type: "command",
-            icon: FaExpandAlt
+            icon: FaExpandAlt,
+            className: buttonClass
           },
           {
             text: "baseline",
             type: "command",
-            icon: FaGripLines
+            icon: FaGripLines,
+            className: buttonClass
           },
           {
             text: "Align Content",
             type: "info",
-            icon: FaWrench
+            icon: FaWrench,
+            className: headerClass
           },
           {
             text: "start",
             type: "command",
-            icon: FaAlignLeft
+            icon: FaAlignLeft,
+            className: buttonClass
           },
           {
             text: "center",
             type: "command",
-            icon: FaAlignCenter
+            icon: FaAlignCenter,
+            className: buttonClass
           },
           {
             text: "end",
             type: "command",
-            icon: FaAlignRight
+            icon: FaAlignRight,
+            className: buttonClass
           },
           {
             text: "stretch",
             type: "command",
-            icon: FaExpandAlt
+            icon: FaExpandAlt,
+            className: buttonClass
           },
           {
             text: "between",
             type: "command",
-            icon: FaGripLines
+            icon: FaGripLines,
+            className: buttonClass
           },
           {
             text: "around",
             type: "command",
-            icon: FaColumns
+            icon: FaColumns,
+            className: buttonClass
           }
         ]
       },
