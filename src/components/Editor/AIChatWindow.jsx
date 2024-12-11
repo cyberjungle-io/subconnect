@@ -1076,41 +1076,36 @@ const AIChatWindow = ({ onClose }) => {
         options: getInitialSuggestions(),
       };
       dispatch(addMessage(initialMessage));
+    }
 
-      // Add component message if component is selected during initialization
-      if (selectedComponent && !componentMessageRef.current) {
-        componentMessageRef.current = true;
-        const componentMessage = {
-          id: Date.now().toString() + 1,
-          role: "assistant",
-          content: `Here are some things you can do with the ${selectedComponent.type.toLowerCase()}:`,
-          timestamp: new Date(),
-          options: getComponentSpecificOptions(selectedComponent),
-        };
-        dispatch(addMessage(componentMessage));
+    // Handle component selection changes
+    if (selectedComponent) {
+      // Check if there's an existing chat for this component
+      const existingChat = componentChats.find(chat => chat.componentId === selectedComponent.id);
+      
+      if (existingChat) {
+        // If there's an existing chat, switch to it
+        setActiveChat(existingChat.id);
+        componentMessageRef.current = true; // Prevent duplicate messages
+      } else {
+        // If no existing chat, switch to main chat and show component message
+        setActiveChat('main');
+        
+        // Only show the message if we haven't shown one for this component
+        if (!componentMessageRef.current) {
+          componentMessageRef.current = true;
+          const componentMessage = {
+            id: Date.now().toString(),
+            role: "assistant",
+            content: `Here are some things you can do with the ${selectedComponent.type.toLowerCase()}:`,
+            timestamp: new Date(),
+            options: getComponentSpecificOptions(selectedComponent),
+          };
+          dispatch(addMessage(componentMessage));
+        }
       }
-      return;
-    }
-
-    // Handle component selection changes after initialization
-    if (
-      initializationRef.current &&
-      selectedComponent &&
-      !componentMessageRef.current
-    ) {
-      componentMessageRef.current = true;
-      const componentMessage = {
-        id: Date.now().toString(),
-        role: "assistant",
-        content: `Here are some things you can do with the ${selectedComponent.type.toLowerCase()}:`,
-        timestamp: new Date(),
-        options: getComponentSpecificOptions(selectedComponent),
-      };
-      dispatch(addMessage(componentMessage));
-    }
-
-    // Reset component message flag when component changes
-    if (!selectedComponent) {
+    } else {
+      // Reset component message flag when no component is selected
       componentMessageRef.current = false;
     }
 
@@ -1121,7 +1116,7 @@ const AIChatWindow = ({ onClose }) => {
         componentMessageRef.current = false;
       }
     };
-  }, [isVisible, selectedComponent?.id, messages.length]);
+  }, [isVisible, selectedComponent?.id, messages.length, componentChats, dispatch]);
 
   // Keep the createOrOpenComponentChat function unchanged for manual switching
   const createOrOpenComponentChat = (component) => {
