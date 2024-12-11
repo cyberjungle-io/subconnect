@@ -226,12 +226,9 @@ const Message = ({
   };
 
   // Check if this is a command execution message
-  const isCommandExecution =
-    message.content?.startsWith("Set ") ||
-    message.content?.startsWith("Added ") ||
-    message.content?.startsWith("Updated ") ||
-    message.content?.startsWith("Selected ") ||
-    message.content?.startsWith("Created ");
+  const isCommandExecution = message.content?.match(
+    /^(Set |Added |Updated |Selected |Created |Opened )/
+  );
 
   // Check if this is a component-specific suggestions message
   const isComponentSuggestions =
