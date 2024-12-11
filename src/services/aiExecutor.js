@@ -11,6 +11,7 @@ import { ColorThemeProcessor } from "./Processors/ColorThemeProcessor";
 import { ImageProcessor } from "./Processors/ImageProcessor";
 import { QueryValueProcessor } from "./Processors/QueryValueProcessor";
 import { ToolbarProcessor } from "./Processors/ToolbarProcessor";
+import { LLMProcessor } from "./Processors/LLMProcessor";
 
 export class AICommandExecutor {
   // Define actionWords as a static class property
@@ -52,614 +53,128 @@ export class AICommandExecutor {
     ].filter(Boolean); // Remove null values
   }
 
-  static async processCommand(
-    input,
-    dispatch,
-    selectedComponent = null,
-    state = null
-  ) {
-    console.log("Processing command:", input);
-    console.log("Selected component:", selectedComponent);
-
-    // Clean the input - remove any JSON, explanatory text, and stray backslashes
-    const cleanInput = input
-      .replace(/\{[\s\S]*\}/g, "")
-      .replace(/\\$/, "")
-      .trim();
-    console.log("Cleaned input:", cleanInput);
-
-    // Add this check at the beginning
-    if (selectedComponent?.type === "IMAGE" && ImageProcessor.isImageCommand(cleanInput)) {
-      console.log("Processing Image-specific command");
-      const result = ImageProcessor.processCommand(cleanInput, selectedComponent.props || {});
-
-      if (result) {
-        if (result.needsInput) {
-          return {
-            success: true,
-            message: result.message,
-            needsMoreInfo: true,
-            type: result.inputType,
-            options: result.options
-          };
-        }
-
-        try {
-          await dispatch(updateComponent({
-            id: selectedComponent.id,
-            updates: { ...selectedComponent, props: { ...selectedComponent.props, ...result.props } }
-          }));
-          return {
-            success: true,
-            message: result.message,
-            options: result.options
-          };
-        } catch (error) {
-          console.error("Image update failed:", error);
-          return {
-            success: false,
-            message: `Failed to update image: ${error.message}`
-          };
-        }
-      }
-    }
-
-    // Add check for Query Value commands
-    if (selectedComponent?.type === "QUERY_VALUE" && QueryValueProcessor.isQueryValueCommand(cleanInput)) {
-      console.log("Processing Query Value-specific command");
-      const result = QueryValueProcessor.processCommand(
-        cleanInput,
-        selectedComponent.props || {},
-        state
-      );
-
-      if (result) {
-        try {
-          await dispatch(updateComponent({
-            id: selectedComponent.id,
-            updates: { ...selectedComponent, props: result.props }
-          }));
-          return {
-            success: true,
-            message: result.message
-          };
-        } catch (error) {
-          console.error("Query Value update failed:", error);
-          return {
-            success: false,
-            message: `Failed to update Query Value: ${error.message}`
-          };
-        }
-      }
-    }
-
-    // Check for color theme commands first - including __colorOption__ commands and follow-ups
-    if (ColorThemeProcessor.isColorThemeCommand(cleanInput) || 
-        cleanInput.startsWith('__colorOption__:') ||
-        cleanInput.match(/^(#[0-9a-fA-F]{6}|[a-zA-Z]+)$/)) {  // Add check for color values
-      console.log("Processing color theme command");
-      const currentTheme = state?.editor?.colorTheme || [
-        { value: '#FF0000', name: 'Color 1' },
-        { value: '#00FF00', name: 'Color 2' },
-        { value: '#0000FF', name: 'Color 3' },
-        { value: '#FFFF00', name: 'Color 4' },
-        { value: '#FF00FF', name: 'Color 5' },
-        { value: '#00FFFF', name: 'Color 6' }
-      ];
-      console.log("Current theme from state:", currentTheme);
-      
-      const result = ColorThemeProcessor.processCommand(cleanInput, currentTheme);
-
-      if (result) {
-        if (result.type === 'UPDATE_THEME') {
-          try {
-            await dispatch(updateColorTheme(result.theme));
-          } catch (error) {
-            console.error("Color theme update failed:", error);
-            return {
-              success: false,
-              message: `Failed to update color theme: ${error.message}`
-            };
-          }
-        }
-
-        return {
-          success: true,
-          message: result.message,
-          options: result.options,
-          actions: result.actions
-        };
-      }
-      // If ColorThemeProcessor returns null for a color value, don't continue processing
-      if (cleanInput.match(/^(#[0-9a-fA-F]{6}|[a-zA-Z]+)$/)) {
-        return {
-          success: false,
-          message: "No color change is currently pending. Please select a color to change first."
-        };
-      }
-    }
-
-    // Check for toolbar commands
-    if (ToolbarProcessor.isToolbarCommand(cleanInput)) {
-      console.log("Processing toolbar command");
-      const currentSettings = state?.editor?.toolbarSettings || {
-        backgroundColor: '#e8e8e8',
-        textColor: '#333333',
-        buttonHoverColor: '#d0d0d0'
-      };
-      
-      const result = ToolbarProcessor.processCommand(cleanInput, currentSettings);
-
-      if (result) {
-        if (result.type === 'UPDATE_TOOLBAR') {
-          try {
-            await dispatch(updateToolbarSettings(result.settings));
-          } catch (error) {
-            console.error("Toolbar settings update failed:", error);
-            return {
-              success: false,
-              message: `Failed to update toolbar settings: ${error.message}`
-            };
-          }
-        }
-
-        return {
-          success: true,
-          message: result.message,
-          options: result.options
-        };
-      }
-      // If ToolbarProcessor returns null for a color value, don't continue processing
-      if (cleanInput.match(/^(#[0-9a-fA-F]{6}|[a-zA-Z]+)$/)) {
-        return {
-          success: false,
-          message: "No color change is currently pending. Please select a color to change first."
-        };
-      }
-    }
-
-    // If no selected component and command seems to be a style modification
-    if (!selectedComponent) {
-      const stylePatterns = [
-        /(?:make|set|change|update|modify|adjust)/i,
-        /(?:color|background|border|shadow|radius|size|width|height|margin|padding)/i,
-        /(?:bigger|smaller|larger|shorter|taller|wider|narrower)/i,
-        /(?:align|center|position|move|place)/i,
-      ];
-
-      // Add exclusion for color theme commands
-      if (stylePatterns.some((pattern) => pattern.test(input)) && 
-          !ColorThemeProcessor.isColorThemeCommand(input)) {
-        return {
-          success: true,
-          message:
-            "Where would you like to apply this change?\n- The canvas\n- A specific component (please select one first)",
-          needsMoreInfo: true,
-          type: "target",
-        };
-      }
-    }
-
-    // If we have a VIDEO component, try processing with VideoProcessor first
-    if (selectedComponent?.type === "VIDEO") {
-      console.log("Processing VIDEO command");
-      const videoResult = VideoProcessor.processCommand(
-        cleanInput,
-        selectedComponent.props || {}
-      );
-      if (videoResult) {
-        try {
-          // Flatten nested props structure
-          const updatedProps = {
-            ...selectedComponent.props,
-            ...videoResult.props,
-            props: undefined, // Remove nested props
-          };
-
-          const updatedComponent = {
-            ...selectedComponent,
-            props: updatedProps,
-          };
-
-          console.log("Updating video component:", updatedComponent);
-
-          await dispatch(
-            updateComponent({
-              id: selectedComponent.id,
-              updates: updatedComponent,
-            })
-          );
-
-          return {
-            success: true,
-            message: `Updated video settings successfully`,
-          };
-        } catch (error) {
-          console.error("Video update failed:", error);
-          return {
-            success: false,
-            message: `Failed to update video: ${error.message}`,
-          };
-        }
-      }
-    }
-
-    // Check for special commands first
-    if (
-      input.startsWith("__queryOption__:") ||
-      input.startsWith("__fieldOption__:")
-    ) {
-      if (selectedComponent?.type === "CHART") {
-        console.log("Processing Chart option command");
-        const result = ChartProcessor.processCommand(
-          input,
-          selectedComponent.props || {},
-          state
-        );
-
-        if (result) {
-          const response = {
-            success: true,
-            message: result.message,
-          };
-
-          if (result.options) {
-            response.options = result.options;
-          }
-
-          if (result.props) {
-            try {
-              await dispatch(
-                updateComponent({
-                  id: selectedComponent.id,
-                  updates: { ...selectedComponent, props: result.props },
-                })
-              );
-            } catch (error) {
-              console.error("Chart update failed:", error);
-              response.success = false;
-              response.message = `Failed to update chart: ${error.message}`;
-            }
-          }
-
-          return response;
-        }
-      }
-      return null;
-    }
-
-    // Add check for Chart commands
-    if (
-      selectedComponent?.type === "CHART" &&
-      ChartProcessor.isChartCommand(input)
-    ) {
-      console.log("Processing Chart-specific command");
-      console.log("State passed to ChartProcessor:", state);
-      const result = ChartProcessor.processCommand(
-        input,
-        selectedComponent.props || {},
-        state
-      );
-
-      if (result) {
-        // If it's just a query info command, return the message without updating the component
-        if (result.message) {
-          const response = {
-            success: true,
-            message: result.message,
-          };
-
-          // Add options to the response if they exist
-          if (result.options) {
-            response.options = result.options;
-          }
-
-          // Only update component if there are prop changes
-          if (result.props) {
-            try {
-              await dispatch(
-                updateComponent({
-                  id: selectedComponent.id,
-                  updates: { ...selectedComponent, props: result.props },
-                })
-              );
-            } catch (error) {
-              console.error("Chart update failed:", error);
-              response.success = false;
-              response.message = `Failed to update chart: ${error.message}`;
-            }
-          }
-
-          return response;
-        }
-
-        try {
-          await dispatch(
-            updateComponent({
-              id: selectedComponent.id,
-              updates: { ...selectedComponent, props: result.props },
-            })
-          );
-          return {
-            success: true,
-            message: result.message || `Updated chart successfully`,
-          };
-        } catch (error) {
-          console.error("Chart update failed:", error);
-          return {
-            success: false,
-            message: `Failed to update chart: ${error.message}`,
-          };
-        }
-      }
-    }
-
-    // Check if this is a Kanban-specific command for a selected Kanban component
-    if (
-      selectedComponent?.type === "KANBAN" &&
-      KanbanProcessor.isKanbanCommand(input)
-    ) {
-      console.log("Processing Kanban-specific command");
-      const result = KanbanProcessor.processCommand(
-        input,
-        selectedComponent.props
-      );
-
-      if (result) {
-        try {
-          await dispatch(
-            updateComponent({
-              id: selectedComponent.id,
-              updates: { ...selectedComponent, props: result.props },
-            })
-          );
-          return {
-            success: true,
-            message: `Updated Kanban board successfully`,
-          };
-        } catch (error) {
-          console.error("Kanban update failed:", error);
-          return {
-            success: false,
-            message: `Failed to update Kanban board: ${error.message}`,
-          };
-        }
-      }
-    }
-
-    // Check if this is a follow-up response
-    const followUpMatch = input.match(/\(([\w]+):\s*(.+)\)$/);
-    if (followUpMatch) {
-      const [_, type, value] = followUpMatch;
-      console.log("Processing follow-up response:", type, value);
-
-      // Handle shadow follow-up
-      if (type === "shadow") {
-        const shadowType = value.toLowerCase();
-        const newInput = `add ${shadowType} shadow`;
-        console.log("Converted to shadow command:", newInput);
-
-        if (!selectedComponent) {
-          return {
-            success: true,
-            message:
-              "Where would you like to apply this shadow?\n- The canvas\n- A specific component (please select one first)",
-            needsMoreInfo: true,
-            type: "target",
-          };
-        }
-
-        // Process the shadow command
-        const styleResult = StyleCommandProcessor.processStyleCommand(
-          newInput,
-          selectedComponent
-        );
-        if (styleResult && styleResult.style) {
-          try {
-            const updatedComponent = {
-              ...selectedComponent,
-              style: {
-                ...selectedComponent.style,
-                ...styleResult.style,
-              },
-            };
-
-            await dispatch(
-              updateComponent({
-                id: selectedComponent.id,
-                updates: updatedComponent,
-              })
-            );
-
-            return {
-              success: true,
-              message: `Added ${shadowType} shadow successfully`,
-            };
-          } catch (error) {
-            return {
-              success: false,
-              message: `Failed to add shadow: ${error.message}`,
-            };
-          }
-        }
-      }
-
-      // Handle target follow-up
-      if (type === "target" && value.toLowerCase() === "canvas") {
-        // Process the original command for the canvas
-        const originalCommand = input.split("(")[0].trim();
-        return await this.processCommand(originalCommand, dispatch, null);
-      }
-    }
-
-    // Check if it's a shadow command without specifying inner/outer
-    const shadowPattern =
-      /(?:add|make|create|give|set|apply)\s*(?:a|an|the)?\s*shadow/i;
-    if (
-      input.match(shadowPattern) &&
-      !input.match(/(?:inner|outer)\s*shadow/i)
-    ) {
-      return {
-        success: true,
-        message:
-          "What kind of shadow would you like? You can specify:\n- Inner shadow\n- Outer shadow",
-        needsMoreInfo: true,
-        type: "shadow",
-      };
-    }
-
-    // Continue with existing logic for processing the command
-    if (selectedComponent) {
-      // Clean the input - remove any JSON or explanatory text
+  static async processCommand(input, dispatch, selectedComponent = null, state = null) {
+    try {
+      // Clean the input first
       const cleanInput = input.replace(/\{[\s\S]*\}/g, "").trim();
       console.log("Cleaned input:", cleanInput);
 
-      // Try processing style commands directly first
-      const styleResult = StyleCommandProcessor.processStyleCommand(
-        cleanInput,
-        selectedComponent
-      );
-      console.log("Style processing result:", styleResult);
-
-      if (styleResult && styleResult.style) {
-        try {
-          const updatedComponent = {
-            ...selectedComponent,
-            style: {
-              ...selectedComponent.style,
-              ...styleResult.style,
-            },
-          };
-
-          console.log("Dispatching component update:", updatedComponent);
-
-          // Ensure we're actually dispatching the update
-          await dispatch(
-            updateComponent({
-              id: selectedComponent.id,
-              updates: updatedComponent,
-            })
-          );
-
-          return {
-            success: true,
-            message: `Updated style successfully`,
-          };
-        } catch (error) {
-          console.error("Style update failed:", error);
-          return {
-            success: false,
-            message: `Failed to update style: ${error.message}`,
-          };
-        }
+      // Check for shadow pattern early
+      const shadowPattern = /shadow/i;
+      if (input.match(shadowPattern) && !input.match(/(?:inner|outer)\s*shadow/i)) {
+        return {
+          success: true,
+          message: "What kind of shadow would you like? You can specify:\n- Inner shadow\n- Outer shadow",
+          needsMoreInfo: true,
+          type: "shadow",
+        };
       }
+
+      // Handle Query Value commands
+      if (selectedComponent?.type === "QUERY_VALUE") {
+        const queryResult = await this.processQueryValueCommand(cleanInput, selectedComponent, dispatch, state);
+        if (queryResult) return queryResult;
+      }
+
+      // Try direct style processing first
+      if (selectedComponent) {
+        const styleResult = await this.processStyleCommand(cleanInput, selectedComponent, dispatch);
+        if (styleResult) return styleResult;
+      }
+
+      // If direct processing didn't work, try LLM interpretation
+      const llmResult = await this.processWithLLM(cleanInput, selectedComponent, dispatch);
+      if (llmResult) return llmResult;
+
+      // Fallback to traditional processing
+      return await this.processTraditionalCommand(input, dispatch, selectedComponent, state);
+
+    } catch (error) {
+      console.error("Error in processCommand:", error);
+      return {
+        success: false,
+        message: `Failed to process command: ${error.message}`
+      };
     }
+  }
 
-    // Only proceed to LLM if style processing didn't work
-    const llmService = new LLMService();
+  static async processQueryValueCommand(input, component, dispatch, state) {
+    if (!QueryValueProcessor.isQueryValueCommand(input)) return null;
 
-    // If direct style processing didn't work, try LLM interpretation
-    const intentPrompt = `
-      Analyze the following user input and match it to one of these command types:
-      1. Add Component: User wants to add/create a new component
-      2. Style Update: User wants to modify the style of an existing component
-      3. Unknown: Command doesn't match known patterns
+    console.log("Processing Query Value-specific command");
+    const result = QueryValueProcessor.processCommand(input, component.props || {}, state);
 
-      Consider these style patterns:
-      ${JSON.stringify(StyleCommandProcessor.getPropertyNames(), null, 2)}
-
-      User input: "${input}"
-      
-      Respond in JSON format:
-      {
-        "type": "ADD_COMPONENT | STYLE_UPDATE | UNKNOWN",
-        "targetProperty": "style property name if applicable",
-        "value": "suggested value if applicable",
-        "confidence": "number between 0 and 1"
-      }
-    `;
+    if (!result) return null;
 
     try {
-      const intentResponse = await llmService.sendMessage(intentPrompt);
-      const intent = JSON.parse(intentResponse.content);
+      await dispatch(updateComponent({
+        id: component.id,
+        updates: { ...component, props: result.props }
+      }));
+
+      return {
+        success: true,
+        message: result.message
+      };
+    } catch (error) {
+      console.error("Query Value update failed:", error);
+      return {
+        success: false,
+        message: `Failed to update Query Value: ${error.message}`
+      };
+    }
+  }
+
+  static async processStyleCommand(input, component, dispatch) {
+    const styleResult = StyleCommandProcessor.processStyleCommand(input, component);
+    if (!styleResult?.style) return null;
+
+    try {
+      const updatedComponent = {
+        ...component,
+        style: {
+          ...component.style,
+          ...styleResult.style,
+        },
+      };
+
+      console.log("Dispatching component update:", updatedComponent);
+      await dispatch(updateComponent({
+        id: component.id,
+        updates: updatedComponent,
+      }));
+
+      return {
+        success: true,
+        message: `Updated style successfully`
+      };
+    } catch (error) {
+      console.error("Style update failed:", error);
+      return {
+        success: false,
+        message: `Failed to update style: ${error.message}`
+      };
+    }
+  }
+
+  static async processWithLLM(input, selectedComponent, dispatch) {
+    try {
+      const intent = await LLMProcessor.detectIntent(input);
       console.log("Detected intent:", intent);
 
       if (intent.type === "STYLE_UPDATE" && selectedComponent) {
-        // If it's a style update, construct a more precise command
-        const stylePrompt = `
-          Convert this natural language request into a specific style command.
-          Original request: "${input}"
-          Target property: "${intent.targetProperty}"
-          
-          Available patterns:
-          ${JSON.stringify(StyleCommandProcessor.getStylePatterns(), null, 2)}
-          
-          Respond with the most appropriate command that matches the patterns.
-        `;
-
-        const styleResponse = await llmService.sendMessage(stylePrompt);
-        const processedCommand = styleResponse.content.trim();
-
-        // Try processing the constructed command
-        const styleResult = StyleCommandProcessor.processStyleCommand(
-          processedCommand,
-          selectedComponent
-        );
-        if (styleResult) {
-          try {
-            const updatedComponent = {
-              ...selectedComponent,
-              style: {
-                ...selectedComponent.style,
-                ...styleResult.style,
-              },
-            };
-
-            console.log("Final component update:", updatedComponent);
-
-            // Update the component, whether it's nested or not
-            dispatch(
-              updateComponent({
-                id: selectedComponent.id,
-                updates: updatedComponent,
-              })
-            );
-
-            // Generate appropriate success message
-            const updatedProperty = Object.keys(styleResult.style)[0];
-            const updatedValue = styleResult.style[updatedProperty];
-            const propertyNames = StyleCommandProcessor.getPropertyNames();
-
-            return {
-              success: true,
-              message: `Updated ${intent.targetProperty} to ${intent.value}`,
-            };
-          } catch (error) {
-            console.error("Update failed:", error);
-            return {
-              success: false,
-              message: `Failed to update component: ${error.message}`,
-            };
-          }
-        }
+        return await LLMProcessor.processStyleUpdate(input, intent, selectedComponent, dispatch);
+      } else if (intent.type === "ADD_COMPONENT") {
+        return await LLMProcessor.processAddComponent(intent, dispatch);
       }
 
-      // If it's an add component request or the style update failed, continue with existing logic
-      return await this.processTraditionalCommand(
-        input,
-        dispatch,
-        selectedComponent,
-        state
-      );
+      return null;
     } catch (error) {
-      console.error("Error processing command with LLM:", error);
-      // Fallback to traditional processing
-      return await this.processTraditionalCommand(
-        input,
-        dispatch,
-        selectedComponent,
-        state
-      );
+      console.error("Error processing with LLM:", error);
+      return {
+        success: false,
+        message: `Failed to process with LLM: ${error.message}`
+      };
     }
   }
 
