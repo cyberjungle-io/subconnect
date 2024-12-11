@@ -1350,98 +1350,17 @@ const AIChatWindow = ({ onClose }) => {
   const getComponentSpecificOptions = (component) => {
     switch (component.type) {
       case "CHART":
-        return [
-          {
-            text: "Chart Type",
-            type: "category",
-            options: [
-              {
-                text: "change chart type to line",
-                type: "command",
-              },
-              {
-                text: "change chart type to bar",
-                type: "command",
-              },
-              {
-                text: "change chart type to area",
-                type: "command",
-              },
-              {
-                text: "change chart type to pie",
-                type: "command",
-              },
-            ],
-          },
-          {
-            text: "Chart Styles",
-            type: "category",
-            options: [
-              {
-                text: "show the legend",
-                type: "command",
-              },
-              {
-                text: "hide the legend",
-                type: "command",
-              },
-              {
-                text: "show the grid",
-                type: "command",
-              },
-              {
-                text: "hide the grid",
-                type: "command",
-              },
-            ],
-          },
-          {
-            text: "Data Management",
-            type: "category",
-            options: [
-              {
-                text: "show field options",
-                type: "command",
-              },
-              {
-                text: "list available queries",
-                type: "command",
-              },
-            ],
-          },
-          {
-            text: "Axis Controls",
-            type: "category",
-            options: [
-              {
-                text: "show x axis",
-                type: "command",
-              },
-              {
-                text: "hide x axis",
-                type: "command",
-              },
-              {
-                text: "show y axis",
-                type: "command",
-              },
-              {
-                text: "hide y axis",
-                type: "command",
-              },
-            ],
-          },
-        ];
+        return getChartSuggestions();
       case "TABLE":
-        return new TableProcessor().getSuggestionsWithState({
+        return TableProcessor.getSuggestionsWithState({
           w3s: { queries: { list: queries } },
         });
       case "VIDEO":
         return getVideoSuggestions();
       case "WHITEBOARD":
-        return new WhiteboardProcessor().getSuggestions();
+        return WhiteboardProcessor.getSuggestions();
       case "IMAGE":
-        return new ImageProcessor().getSuggestions();
+        return ImageProcessor.getSuggestions();
       default:
         return [];
     }
