@@ -33,17 +33,67 @@ export class FlexContainerProcessor {
             icon: FaArrowRight
           },
           {
-            text: "horizontal",
+            text: "row",
             type: "command",
             icon: FaArrowsAltH
           },
           {
-            text: "vertical",
+            text: "column",
             type: "command",
             icon: FaArrowsAltV
           },
           {
-            text: "Align",
+            text: "Wrap",
+            type: "info",
+            icon: FaArrowsAlt
+          },
+          {
+            text: "wrap",
+            type: "command",
+            icon: FaArrowsAltH
+          },
+          {
+            text: "no wrap",
+            type: "command",
+            icon: FaGripLines
+          },
+          {
+            text: "Justify Content",
+            type: "info",
+            icon: FaWrench
+          },
+          {
+            text: "start",
+            type: "command",
+            icon: FaAlignLeft
+          },
+          {
+            text: "center",
+            type: "command",
+            icon: FaAlignCenter
+          },
+          {
+            text: "end",
+            type: "command",
+            icon: FaAlignRight
+          },
+          {
+            text: "between",
+            type: "command",
+            icon: FaGripLines
+          },
+          {
+            text: "around",
+            type: "command",
+            icon: FaColumns
+          },
+          {
+            text: "evenly",
+            type: "command",
+            icon: FaGripLinesVertical
+          },
+          {
+            text: "Align Items",
             type: "info",
             icon: FaWrench
           },
@@ -68,39 +118,44 @@ export class FlexContainerProcessor {
             icon: FaExpandAlt
           },
           {
-            text: "Distribute",
-            type: "info",
-            icon: FaGripHorizontal
-          },
-          {
-            text: "space between",
+            text: "baseline",
             type: "command",
             icon: FaGripLines
           },
           {
-            text: "space around",
+            text: "Align Content",
+            type: "info",
+            icon: FaWrench
+          },
+          {
+            text: "start",
+            type: "command",
+            icon: FaAlignLeft
+          },
+          {
+            text: "center",
+            type: "command",
+            icon: FaAlignCenter
+          },
+          {
+            text: "end",
+            type: "command",
+            icon: FaAlignRight
+          },
+          {
+            text: "stretch",
+            type: "command",
+            icon: FaExpandAlt
+          },
+          {
+            text: "between",
+            type: "command",
+            icon: FaGripLines
+          },
+          {
+            text: "around",
             type: "command",
             icon: FaColumns
-          },
-          {
-            text: "space evenly",
-            type: "command",
-            icon: FaGripLinesVertical
-          },
-          {
-            text: "Wrap",
-            type: "info",
-            icon: FaArrowsAlt
-          },
-          {
-            text: "wrap",
-            type: "command",
-            icon: FaArrowsAltH
-          },
-          {
-            text: "no wrap",
-            type: "command",
-            icon: FaGripLines
           }
         ]
       },

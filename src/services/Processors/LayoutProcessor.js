@@ -3,9 +3,7 @@ export class LayoutProcessor {
   static naturalLanguageMap = {
     // Direction mappings
     "left to right": "row",
-    "right to left": "row-reverse",
     "top to bottom": "column",
-    "bottom to top": "column-reverse",
     horizontal: "row",
     vertical: "column",
     sideways: "row",
@@ -20,12 +18,9 @@ export class LayoutProcessor {
     column: "column",
 
     // Justify content mappings
-    "spread out": "space-between",
-    "spaced evenly": "space-evenly",
-    "spaced equally": "space-evenly",
-    "equal gaps": "space-evenly",
-    "equal spacing": "space-evenly",
-    "spread apart": "space-around",
+    between: "space-between",
+    around: "space-around",
+    evenly: "space-evenly",
     centered: "center",
     "in the middle": "center",
     "at the start": "flex-start",
@@ -33,13 +28,9 @@ export class LayoutProcessor {
     "at the end": "flex-end",
     "push to start": "flex-start",
     "push to end": "flex-end",
-    // Add direct mappings for simple terms
     start: "flex-start",
     end: "flex-end",
     center: "center",
-    between: "space-between",
-    around: "space-around",
-    evenly: "space-evenly",
 
     // Align items mappings
     "stretch to fit": "stretch",
@@ -59,7 +50,7 @@ export class LayoutProcessor {
     bottom: "flex-end",
 
     // Enhance stretch mappings
-    "stretch": "stretch",
+    stretch: "stretch",
     "stretch items": "stretch",
     "fill container": "stretch",
     "expand items": "stretch",
@@ -74,7 +65,7 @@ export class LayoutProcessor {
     "expand all": "stretch",
 
     // Update stretch mappings with more precise descriptions
-    "stretch": "stretch",
+    stretch: "stretch",
     "stretch items": "stretch",
     "auto height": "stretch",
     "auto width": "stretch",
@@ -85,6 +76,22 @@ export class LayoutProcessor {
     "stretch to container": "stretch",
     "fit parent": "stretch",
     "fill available space": "stretch",
+
+    // Add wrap mappings
+    wrap: "wrap",
+    nowrap: "nowrap",
+    "wrap-reverse": "wrap-reverse",
+    "no wrap": "nowrap",
+    "don't wrap": "nowrap",
+    "enable wrap": "wrap",
+    "disable wrap": "nowrap",
+    "allow wrap": "wrap",
+    "prevent wrap": "nowrap",
+    "wrap items": "wrap",
+    "wrap content": "wrap",
+    "single line": "nowrap",
+    "multiple lines": "wrap",
+    "reverse wrap": "wrap-reverse",
   };
 
   static getStylePatterns() {
@@ -162,17 +169,29 @@ export class LayoutProcessor {
     // First check for direct matches in natural language map
     if (this.naturalLanguageMap[lowercaseInput]) {
       const value = this.naturalLanguageMap[lowercaseInput];
-      
+
       // Determine the appropriate property based on the value
       let property;
-      if (["row", "column", "row-reverse", "column-reverse"].includes(value)) {
+      if (["row", "column"].includes(value)) {
         property = "flexDirection";
-      } else if (["flex-start", "flex-end", "center", "space-between", "space-around", "space-evenly"].includes(value)) {
+      } else if (["wrap", "nowrap"].includes(value)) {
+        property = "flexWrap";
+      } else if (
+        [
+          "flex-start",
+          "flex-end",
+          "center",
+          "space-between",
+          "space-around",
+          "space-evenly",
+        ].includes(value)
+      ) {
         // Check input context for vertical alignment
-        const isVerticalAlign = lowercaseInput.includes("vertical") || 
-                              lowercaseInput.includes("height") ||
-                              lowercaseInput.includes("top") ||
-                              lowercaseInput.includes("bottom");
+        const isVerticalAlign =
+          lowercaseInput.includes("vertical") ||
+          lowercaseInput.includes("height") ||
+          lowercaseInput.includes("top") ||
+          lowercaseInput.includes("bottom");
         property = isVerticalAlign ? "alignItems" : "justifyContent";
       } else if (["stretch", "baseline"].includes(value)) {
         property = "alignItems";
@@ -182,8 +201,8 @@ export class LayoutProcessor {
         console.log(`Matched layout command: ${property}: ${value}`);
         return {
           style: {
-            [property]: value
-          }
+            [property]: value,
+          },
         };
       }
     }
@@ -200,8 +219,8 @@ export class LayoutProcessor {
           }
           return {
             style: {
-              [property]: value
-            }
+              [property]: value,
+            },
           };
         }
       }
@@ -221,17 +240,17 @@ export class LayoutProcessor {
   }
 
   static getStretchSuggestions(flexDirection) {
-    if (flexDirection === 'row') {
+    if (flexDirection === "row") {
       return [
         "Note: Items must not have fixed height to stretch vertically",
         "Try: 'remove fixed height' or 'auto height' to allow stretching",
-        "Items with explicit height values won't stretch"
+        "Items with explicit height values won't stretch",
       ];
     } else {
       return [
         "Note: Items must not have fixed width to stretch horizontally",
         "Try: 'remove fixed width' or 'auto width' to allow stretching",
-        "Items with explicit width values won't stretch"
+        "Items with explicit width values won't stretch",
       ];
     }
   }
