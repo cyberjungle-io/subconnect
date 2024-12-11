@@ -6,7 +6,7 @@ import ComponentTree from './ComponentTree';
 import ComponentPalette from '../Components/ComponentPalette';
 import FloatingGlobalSettings from './FloatingGlobalSettings';
 import FloatingToolbar from '../Components/Tools/FloatingToolbar';
-import AIChatWindow from './AIChatWindow';
+import AIChatWindow from '../../services/Chat/AIChatWindow';
 import { 
   setSelectedIds, 
   updateCanvasSettings, 

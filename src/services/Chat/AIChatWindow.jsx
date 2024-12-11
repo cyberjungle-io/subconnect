@@ -1,345 +1,19 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  sendMessage,
-  addMessage,
-  changeProvider,
-} from "../../features/aiChatSlice";
-import { setSelectedIds } from "../../features/editorSlice";
-import { FaTimes, FaPaperPlane, FaExternalLinkAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { LLMProviders } from "../../services/llm/llmService";
-import { aiAddComponent } from "../../features/editorSlice";
-import { AICommandExecutor } from "../../services/aiExecutor";
-import { format } from "date-fns";
-import { TableProcessor } from "../../services/Processors/TableProcessor";
-import { WhiteboardProcessor } from "../../services/Processors/WhiteboardProcessor";
-import { ImageProcessor } from "../../services/Processors/ImageProcessor";
+import { addMessage, changeProvider } from "../../features/aiChatSlice";
+import { FaTimes, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { LLMProviders } from "../llm/llmService";
+import { AICommandExecutor } from "../aiExecutor";
+import { TableProcessor } from "../Processors/TableProcessor";
+import { WhiteboardProcessor } from "../Processors/WhiteboardProcessor";
+import { ImageProcessor } from "../Processors/ImageProcessor";
 import { componentConfig } from "../../components/Components/componentConfig";
-import { ChartProcessor } from "../../services/Processors/ChartProcessor";
-import { VideoProcessor } from "../../services/Processors/VideoProcessor";
-
-const TypingIndicator = () => (
-  <div className="sticky bottom-0 bg-white border-t border-gray-100">
-    <div className="flex flex-col text-xs text-gray-500 p-2">
-      <div className="flex items-center gap-2">
-        <div className="flex space-x-1">
-          <div
-            className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"
-            style={{ animationDelay: "0ms" }}
-          />
-          <div
-            className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"
-            style={{ animationDelay: "150ms" }}
-          />
-          <div
-            className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"
-            style={{ animationDelay: "300ms" }}
-          />
-        </div>
-        <span className="italic">Adding component...</span>
-      </div>
-    </div>
-  </div>
-);
-
-const Message = ({
-  message,
-  timestamp,
-  onOptionSelect,
-  openComponentChat,
-  selectedComponent,
-  replacedMessageIds,
-}) => {
-  if (replacedMessageIds.has(message.id)) {
-    return null; // Don't render replaced messages
-  }
-
-  const renderOptions = (options) => {
-    if (!Array.isArray(options)) return null;
-
-    // Check if these are component creation options
-    const isComponentList = options.every((opt) =>
-      opt.text.match(
-        /^(Container|Text|Image|Chart|Table|Video|Whiteboard|Value|Kanban|List)$/
-      )
-    );
-
-    return (
-      <div
-        className={`mt-2 flex gap-2 ${
-          isComponentList ? "flex-row flex-wrap" : "flex-col"
-        } w-full`}
-      >
-        {options.map((option, index) => {
-          // Add specific handling for color type options
-          if (option.type === "color") {
-            return (
-              <div key={index} className="w-full">
-                <button
-                  onClick={() => onOptionSelect(option)}
-                  className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors w-full flex items-center gap-2"
-                  title={`${option.text} - Click to modify`}
-                >
-                  <div
-                    className="w-4 h-4 rounded-full border border-gray-300"
-                    style={{ backgroundColor: option.color }}
-                  />
-                  <span className="flex-1">{option.text}</span>
-                </button>
-                {option.options && (
-                  <div className="ml-6 mt-1 flex flex-wrap gap-1">
-                    {option.options.map((subOption, subIndex) => (
-                      <button
-                        key={subIndex}
-                        onClick={() => onOptionSelect(subOption)}
-                        className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left"
-                      >
-                        {subOption.text}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          }
-
-          // For category options (main options)
-          if (option.type === "category") {
-            return (
-              <button
-                key={index}
-                onClick={() => onOptionSelect(option)}
-                className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
-              >
-                {option.text}
-              </button>
-            );
-          }
-
-          // For command options (specific commands)
-          if (option.type === "command") {
-            const isComponent = option.text.match(
-              /^(Container|Text|Image|Chart|Table|Video|Whiteboard|Value|Kanban|List)$/
-            );
-
-            return (
-              <button
-                key={index}
-                onClick={() => onOptionSelect(option)}
-                className={`text-sm px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left ${
-                  isComponentList ? "flex-shrink-0" : "w-full"
-                }`}
-              >
-                {option.text}
-              </button>
-            );
-          }
-
-          // For query options (existing functionality)
-          if (
-            option.type === "query" &&
-            !message.content.startsWith("Available options for")
-          ) {
-            const queryName = option.text
-              .replace(/^Name:\s*/, "")
-              .split("\n")[0];
-
-            return (
-              <div key={index} className="w-full">
-                <button
-                  onClick={() => onOptionSelect(option)}
-                  className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
-                  title={option.text}
-                >
-                  <div className="truncate text-sm font-medium">
-                    {queryName}
-                  </div>
-                </button>
-              </div>
-            );
-          }
-
-          // For query options (after selection)
-          if (option.type === "queryOption") {
-            return (
-              <button
-                key={index}
-                onClick={() => onOptionSelect(option)}
-                className="text-sm px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left flex-grow basis-[calc(50%-0.25rem)] min-w-[120px]"
-                title={option.value}
-              >
-                <span className="block truncate">{option.value}</span>
-              </button>
-            );
-          }
-
-          // For field options
-          if (option.type === "field") {
-            return (
-              <div key={index} className="flex flex-col w-full">
-                <button
-                  onClick={() => onOptionSelect(option)}
-                  className="text-left px-3 py-2 bg-blue-50 hover:bg-blue-100 rounded-lg text-blue-600 transition-colors w-full"
-                  title={option.text}
-                >
-                  <div className="truncate min-w-0">{option.text}</div>
-                </button>
-                {option.options && (
-                  <div className="mt-1 ml-2 flex flex-wrap gap-1">
-                    {option.options.map((subOption, subIndex) => (
-                      <button
-                        key={subIndex}
-                        onClick={() =>
-                          onOptionSelect({
-                            ...option,
-                            selectedOption: subOption,
-                          })
-                        }
-                        className="text-sm px-2 py-1 bg-gray-50 hover:bg-gray-100 rounded text-gray-600 transition-colors text-left whitespace-nowrap"
-                        title={`${option.text} - ${subOption}`}
-                      >
-                        {subOption}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          }
-
-          // For info type options
-          if (option.type === "info") {
-            return (
-              <div
-                key={index}
-                className="text-sm px-3 py-2 bg-gray-50 rounded text-gray-600 italic flex-grow basis-[calc(50%-0.25rem)]"
-              >
-                {option.text}
-              </div>
-            );
-          }
-
-          return null;
-        })}
-      </div>
-    );
-  };
-
-  // Check if this is a command execution message
-  const isCommandExecution = message.content?.match(
-    /^(Set |Added |Updated |Selected |Created |Opened )/
-  );
-
-  // Check if this is a component-specific suggestions message
-  const isComponentSuggestions =
-    message.role === "assistant" &&
-    message.content.startsWith("Here are some things you can do with");
-
-  if (isCommandExecution) {
-    return (
-      <div className="flex flex-col items-center my-2 text-xs text-gray-500">
-        <div className="flex items-center gap-2">
-          <svg
-            className="w-3.5 h-3.5 text-green-500 flex-shrink-0"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          <span
-            className="italic max-w-[250px] truncate"
-            title={message.content}
-          >
-            {message.content}
-          </span>
-        </div>
-        <span className="text-gray-400 text-[10px] mt-0.5">
-          {format(timestamp || new Date(), "h:mm a")}
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={`mb-4 ${message.role === "user" ? "text-right" : "text-left"}`}
-    >
-      <div className="flex flex-col gap-1">
-        <div className="relative group">
-          {isComponentSuggestions && selectedComponent && (
-            <button
-              onClick={openComponentChat}
-              className="absolute -top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity 
-                       p-1.5 bg-blue-500 hover:bg-blue-600 
-                       text-white rounded-full shadow-sm"
-              title="Open chat"
-            >
-              <FaExternalLinkAlt size={10} />
-            </button>
-          )}
-          <div
-            className={`inline-block p-3 rounded-lg w-full ${
-              message.role === "user"
-                ? "bg-blue-500 text-white"
-                : "bg-gray-100 text-gray-800"
-            }`}
-          >
-            <div className="break-words">{message.content}</div>
-            {message.options && renderOptions(message.options)}
-          </div>
-        </div>
-        <span className="text-xs text-gray-500">
-          {format(timestamp || new Date(), "h:mm a")}
-        </span>
-      </div>
-    </div>
-  );
-};
-
-const isRecent = (timestamp) => {
-  const now = new Date();
-  const messageTime = new Date(timestamp);
-  return now.getTime() - messageTime.getTime() < 60000; // Less than 1 minute ago
-};
-
-const isVideoSuggestionsMessage = (message) => {
-  return (
-    message.role === "assistant" &&
-    message.content === "Here are some things you can do with the video:" &&
-    message.options?.some((opt) => opt.text === "Set video URL")
-  );
-};
-
-const isChartSuggestionsMessage = (message) => {
-  return (
-    message.role === "assistant" &&
-    message.content === "Here are some things you can do with the chart:" &&
-    message.options?.some((opt) => opt.text === "Chart Type")
-  );
-};
-
-const isTableSuggestionsMessage = (message) => {
-  return (
-    message.role === "assistant" &&
-    message.content === "Here are some things you can do with the table:" &&
-    message.options?.some((opt) => opt.text === "Table Visibility")
-  );
-};
-
-const isWhiteboardSuggestionsMessage = (message) => {
-  return (
-    message.role === "assistant" &&
-    message.content ===
-      "Here are some things you can do with the whiteboard:" &&
-    message.options?.some((opt) => opt.text === "Drawing Settings")
-  );
-};
+import ChatTabs from "./ChatTabs";
+import MessageList from "./MessageList";
+import ChatInput from "./ChatInput";
+import ChatMessageService from "../chatMessageService";
+import { useComponentSelection } from "../../hooks/useComponentSelection";
+import useChatState from "../../hooks/useChatState";
 
 const getInitialSuggestions = () => {
   // Name mapping for specific components
@@ -438,24 +112,24 @@ const ScrollableTabList = ({ children }) => {
 
   useEffect(() => {
     const timeoutId = setTimeout(checkScroll, 0);
-    
+
     const handleResize = () => {
       clearTimeout(timeoutId);
       setTimeout(checkScroll, 100);
     };
-    
-    window.addEventListener('resize', handleResize);
-    
+
+    window.addEventListener("resize", handleResize);
+
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       clearTimeout(timeoutId);
     };
   }, [checkScroll, children]);
 
   const scroll = (direction) => {
     if (tabsRef.current) {
-      const scrollAmount = direction === 'left' ? -200 : 200;
-      tabsRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      const scrollAmount = direction === "left" ? -200 : 200;
+      tabsRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
       setTimeout(checkScroll, 300);
     }
   };
@@ -465,15 +139,15 @@ const ScrollableTabList = ({ children }) => {
       // Prevent both default behavior and propagation
       e.preventDefault();
       e.stopPropagation();
-      
+
       // Calculate scroll amount based on deltaY (vertical scroll)
       // or deltaX (horizontal scroll) with a multiplier for smoother scrolling
       const scrollMultiplier = 2;
       const scrollAmount = (e.deltaY || e.deltaX) * scrollMultiplier;
-      
+
       // Apply the scroll
       tabsRef.current.scrollLeft += scrollAmount;
-      
+
       // Check scroll position
       requestAnimationFrame(checkScroll);
     }
@@ -481,53 +155,51 @@ const ScrollableTabList = ({ children }) => {
 
   useEffect(() => {
     if (!tabsRef.current) return;
-    
+
     const observer = new MutationObserver(checkScroll);
-    observer.observe(tabsRef.current, { 
-      childList: true, 
+    observer.observe(tabsRef.current, {
+      childList: true,
       subtree: true,
-      characterData: true 
+      characterData: true,
     });
-    
+
     // Add wheel event listener to the tabs container
     const tabsElement = tabsRef.current;
-    tabsElement.addEventListener('wheel', handleWheel, { passive: false });
-    
+    tabsElement.addEventListener("wheel", handleWheel, { passive: false });
+
     return () => {
       observer.disconnect();
-      tabsElement.removeEventListener('wheel', handleWheel);
+      tabsElement.removeEventListener("wheel", handleWheel);
     };
   }, [checkScroll]);
 
   return (
-    <div 
+    <div
       className="relative flex items-center w-full"
       onMouseEnter={() => setShowArrows(true)}
       onMouseLeave={() => setShowArrows(false)}
     >
       {showArrows && canScrollLeft && (
         <button
-          onClick={() => scroll('left')}
+          onClick={() => scroll("left")}
           className="absolute left-0 z-10 h-full px-1 bg-gradient-to-r from-white to-transparent hover:bg-gradient-to-r hover:from-gray-50 hover:to-transparent transition-all"
         >
           <FaChevronLeft className="text-gray-500" />
         </button>
       )}
-      
+
       <div
         ref={tabsRef}
         className="flex overflow-x-auto scrollbar-hide w-full"
-        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         onScroll={checkScroll}
       >
-        <div className="flex min-w-min">
-          {children}
-        </div>
+        <div className="flex min-w-min">{children}</div>
       </div>
 
       {showArrows && canScrollRight && (
         <button
-          onClick={() => scroll('right')}
+          onClick={() => scroll("right")}
           className="absolute right-0 z-10 h-full px-1 bg-gradient-to-l from-white to-transparent hover:bg-gradient-to-l hover:from-gray-50 hover:to-transparent transition-all"
         >
           <FaChevronRight className="text-gray-500" />
@@ -537,38 +209,25 @@ const ScrollableTabList = ({ children }) => {
   );
 };
 
-const ChatTab = ({ label, isActive, onSelect, onClose, chatId, componentId, mode }) => (
-  <div
-    className={`flex items-center gap-2 px-3 py-2 cursor-pointer border-b-2 text-sm flex-shrink-0
-      ${
-        isActive
-          ? "border-blue-500 bg-blue-50 text-blue-700"
-          : "border-transparent hover:bg-gray-50 text-gray-600"
-      }`}
-    onClick={() => onSelect(componentId)}
-  >
-    <span className="truncate max-w-[120px]">{label}</span>
-    {label !== "Main Chat" && (
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          onClose(chatId);
-        }}
-        className="p-1 hover:bg-gray-200 rounded-full"
-      >
-        <FaTimes size={12} />
-      </button>
-    )}
-  </div>
-);
-
 const AIChatWindow = ({ onClose }) => {
   const dispatch = useDispatch();
   const queries = useSelector((state) => state.w3s?.queries?.list);
-  const [input, setInput] = useState("");
-  const { messages, isLoading, provider, isVisible } = useSelector(
-    (state) => state.aiChat
-  );
+  const {
+    input,
+    setInput,
+    isAddingComponent,
+    setIsAddingComponent,
+    componentChats,
+    setComponentChats,
+    activeChat,
+    setActiveChat,
+    replacedMessageIds,
+    messages,
+    isLoading,
+    isVisible,
+    handleSubmit,
+  } = useChatState();
+
   const selectedIds = useSelector((state) => state.editor.selectedIds);
   const components = useSelector((state) => state.editor.components);
   const mode = useSelector((state) => state.editor.mode);
@@ -576,62 +235,8 @@ const AIChatWindow = ({ onClose }) => {
   // Add the awaitingResponse state
   const [awaitingResponse, setAwaitingResponse] = useState(null);
 
-  // Add this near the other state declarations at the top of the AIChatWindow component
-  const [isAddingComponent, setIsAddingComponent] = useState(false);
-
-  // Add this near other state declarations at the top of the component
-  const [replacedMessageIds, setReplacedMessageIds] = useState(new Set());
-
-  // Enhanced function to find selected component, including nested children
-  const findSelectedComponent = (components, selectedId) => {
-    let deepestMatch = null;
-    let maxDepth = -1;
-
-    const searchComponent = (component, depth = 0) => {
-      if (component.id === selectedId && depth > maxDepth) {
-        deepestMatch = component;
-        maxDepth = depth;
-      }
-      
-      if (component.children && component.children.length > 0) {
-        component.children.forEach(child => {
-          searchComponent(child, depth + 1);
-        });
-      }
-    };
-
-    components.forEach(component => searchComponent(component));
-    
-    if (deepestMatch) {
-      // Find and attach immediate parent if it exists
-      const findParent = (components, targetId, parent = null) => {
-        for (const comp of components) {
-          if (comp.id === targetId) return parent;
-          if (comp.children) {
-            const found = findParent(comp.children, targetId, comp);
-            if (found) return found;
-          }
-        }
-        return null;
-      };
-      
-      const parent = findParent(components, deepestMatch.id);
-      if (parent) {
-        return {
-          ...deepestMatch,
-          parent
-        };
-      }
-    }
-    
-    return deepestMatch;
-  };
-
-  // Get the selected component details, including nested components
-  const selectedComponent =
-    selectedIds.length === 1
-      ? findSelectedComponent(components, selectedIds[0])
-      : null;
+  // Keep useComponentSelection for component-specific logic
+  const { selectedComponent, hasSelection } = useComponentSelection();
 
   const messagesEndRef = useRef(null);
   const currentProvider = useSelector((state) => state.aiChat.provider);
@@ -644,8 +249,6 @@ const AIChatWindow = ({ onClose }) => {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [messageStates, setMessageStates] = useState({});
   const [isTyping, setIsTyping] = useState(false);
-  const [componentChats, setComponentChats] = useState([]);
-  const [activeChat, setActiveChat] = useState("main");
 
   // Add these refs near the top of the component with other state declarations
   const initializationRef = useRef(false);
@@ -700,105 +303,6 @@ const AIChatWindow = ({ onClose }) => {
       ...prev,
       [messageId]: state,
     }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
-
-    const messageId = Date.now().toString();
-    const currentInput = input;
-    setInput("");
-
-    const newMessage = {
-      id: messageId,
-      role: "user",
-      content: currentInput,
-      timestamp: new Date(),
-    };
-
-    // Add message to the appropriate chat
-    if (activeChat === "main") {
-      dispatch(addMessage(newMessage));
-    } else {
-      setComponentChats((prev) =>
-        prev.map((chat) => {
-          if (chat.id === activeChat) {
-            return {
-              ...chat,
-              messages: [...chat.messages, newMessage],
-            };
-          }
-          return chat;
-        })
-      );
-    }
-
-    setIsTyping(true);
-
-    try {
-      // Process command with the appropriate context
-      const commandResult = await AICommandExecutor.processCommand(
-        currentInput,
-        dispatch,
-        activeChat !== "main" ? selectedComponent : null,
-        { w3s: { queries: { list: queries } } }
-      );
-
-      const responseMessage = {
-        id: Date.now().toString(),
-        role: "assistant",
-        content: commandResult
-          ? commandResult.message
-          : "I'll help you with that.",
-        timestamp: new Date(),
-        status: commandResult?.success ? "success" : undefined,
-        options: commandResult?.options,
-      };
-
-      // Add response to the appropriate chat
-      if (activeChat === "main") {
-        dispatch(addMessage(responseMessage));
-      } else {
-        setComponentChats((prev) =>
-          prev.map((chat) => {
-            if (chat.id === activeChat) {
-              return {
-                ...chat,
-                messages: [...chat.messages, responseMessage],
-              };
-            }
-            return chat;
-          })
-        );
-      }
-    } catch (error) {
-      const errorMessage = {
-        id: Date.now().toString(),
-        role: "assistant",
-        content: "Sorry, I encountered an error processing your request.",
-        timestamp: new Date(),
-        status: "error",
-      };
-
-      if (activeChat === "main") {
-        dispatch(addMessage(errorMessage));
-      } else {
-        setComponentChats((prev) =>
-          prev.map((chat) => {
-            if (chat.id === activeChat) {
-              return {
-                ...chat,
-                messages: [...chat.messages, errorMessage],
-              };
-            }
-            return chat;
-          })
-        );
-      }
-    } finally {
-      setIsTyping(false);
-    }
   };
 
   const handleProviderChange = (e) => {
@@ -1221,10 +725,12 @@ const AIChatWindow = ({ onClose }) => {
     // Handle component selection
     if (selectedComponent) {
       const chatId = `${selectedComponent.type}_${selectedComponent.id}`;
-      
+
       // Check if we already have a chat for this component
-      const existingChat = componentChats.find(chat => chat.componentId === selectedComponent.id);
-      
+      const existingChat = componentChats.find(
+        (chat) => chat.componentId === selectedComponent.id
+      );
+
       if (existingChat) {
         // Switch to existing chat
         if (activeChat !== existingChat.id) {
@@ -1240,7 +746,7 @@ const AIChatWindow = ({ onClose }) => {
           options: getComponentSpecificOptions(selectedComponent),
         };
 
-        setComponentChats(prev => [
+        setComponentChats((prev) => [
           ...prev,
           {
             id: chatId,
@@ -1255,17 +761,17 @@ const AIChatWindow = ({ onClose }) => {
         // Add a subtle confirmation in main chat
         const confirmationMessage = {
           id: Date.now().toString(),
-          role: 'assistant',
+          role: "assistant",
           content: `Opened ${selectedComponent.type} chat`,
           timestamp: new Date(),
-          status: 'success'
+          status: "success",
         };
         dispatch(addMessage(confirmationMessage));
       }
     } else {
       // No component selected, switch back to main chat
-      if (activeChat !== 'main') {
-        setActiveChat('main');
+      if (activeChat !== "main") {
+        setActiveChat("main");
       }
     }
 
@@ -1312,39 +818,29 @@ const AIChatWindow = ({ onClose }) => {
     setActiveChat(chatId);
   };
 
-  // Replace the openComponentChat function
-  const openComponentChat = () => {
+  // Remove the duplicate openComponentChat declaration and use this one
+  const openComponentChat = useCallback(() => {
     if (selectedComponent) {
-      // Create a confirmation message with our new "Created" pattern
-      const confirmationMessage = {
-        id: Date.now().toString(),
-        role: 'assistant',
-        content: `Created new ${selectedComponent.type} chat`,  // Added "new" to the message
-        timestamp: new Date(),
-        status: 'success'
-      };
+      const existingChat = componentChats.find(
+        (chat) => chat.componentId === selectedComponent.id
+      );
 
-      // If we're in the main chat, replace the component message
-      if (activeChat === 'main') {
-        // Find the last component-specific message
-        const lastComponentMessage = [...messages].reverse().find(msg => 
-          msg.role === 'assistant' && 
-          msg.content.startsWith(`Here are some things you can do with the ${selectedComponent.type.toLowerCase()}`)
-        );
-
-        if (lastComponentMessage && !replacedMessageIds.has(lastComponentMessage.id)) {
-          // Add the message ID to our set of replaced messages
-          setReplacedMessageIds(prev => new Set([...prev, lastComponentMessage.id]));
-          
-          // Dispatch the confirmation message to replace the component message
-          dispatch(addMessage(confirmationMessage));
-        }
+      if (existingChat) {
+        setActiveChat(existingChat.id);
+        return;
       }
 
-      // Create or open the component chat as before
-      createOrOpenComponentChat(selectedComponent);
+      const newChat = {
+        id: `component-${selectedComponent.id}`,
+        componentId: selectedComponent.id,
+        name: selectedComponent.type,
+        messages: [],
+      };
+
+      setComponentChats((prev) => [...prev, newChat]);
+      setActiveChat(newChat.id);
     }
-  };
+  }, [selectedComponent, componentChats, setActiveChat, setComponentChats]);
 
   // Add this helper function to get component-specific options
   const getComponentSpecificOptions = (component) => {
@@ -1365,6 +861,48 @@ const AIChatWindow = ({ onClose }) => {
         return [];
     }
   };
+
+  // Update the useEffect for component selection
+  useEffect(() => {
+    if (selectedComponent && !componentMessageRef.current) {
+      ChatMessageService.addNotification(
+        `Component selected: ${selectedComponent.type}`
+      );
+    }
+  }, [selectedComponent]);
+
+  // Update the useEffect that depends on isVisible
+  useEffect(() => {
+    // Only run the effect if the chat window is visible
+    if (!isVisible) {
+      initializationRef.current = false;
+      return;
+    }
+
+    if (selectedComponent && !componentMessageRef.current) {
+      // Create initial message for component selection
+      const message = ChatMessageService.createMessage(
+        `Component selected: ${selectedComponent.type}`,
+        "assistant",
+        true
+      );
+      dispatch(addMessage(message));
+      componentMessageRef.current = true;
+    }
+
+    // Reset the ref when component changes
+    if (selectedComponent?.id !== lastHandledComponentRef.current) {
+      componentMessageRef.current = false;
+      lastHandledComponentRef.current = selectedComponent?.id;
+    }
+
+    // Cleanup function
+    return () => {
+      if (!isVisible) {
+        initializationRef.current = false;
+      }
+    };
+  }, [isVisible, selectedComponent?.id, dispatch, componentChats, activeChat]);
 
   return (
     <div
@@ -1419,99 +957,34 @@ const AIChatWindow = ({ onClose }) => {
           </div>
         </div>
 
-        <div className="flex border-b border-gray-200 w-full">
-          <ScrollableTabList>
-            <ChatTab
-              label="Main Chat"
-              isActive={activeChat === "main"}
-              onSelect={() => {
-                setActiveChat("main");
-                // Deselect all components when switching to main chat
-                dispatch(setSelectedIds([]));
-              }}
-              mode={mode}
-            />
-            {componentChats.map((chat) => (
-              <ChatTab
-                key={chat.id}
-                chatId={chat.id}
-                label={chat.name}
-                isActive={activeChat === chat.id}
-                componentId={chat.componentId}
-                mode={mode}
-                onSelect={(componentId) => {
-                  setActiveChat(chat.id);
-                  // Only select component if we're in edit mode
-                  if (mode === 'edit' && componentId) {
-                    dispatch(setSelectedIds([componentId]));
-                  }
-                }}
-                onClose={(chatId) => {
-                  setComponentChats((prev) =>
-                    prev.filter((c) => c.id !== chatId)
-                  );
-                  setActiveChat("main");
-                }}
-              />
-            ))}
-          </ScrollableTabList>
-        </div>
+        <ChatTabs
+          activeChat={activeChat}
+          componentChats={componentChats}
+          mode={mode}
+          setActiveChat={setActiveChat}
+          setComponentChats={setComponentChats}
+          dispatch={dispatch}
+        />
       </div>
 
-      <div className="flex-1 overflow-y-auto pt-4 px-4 space-y-4 min-h-[300px] max-h-[calc(80vh-200px)] relative">
-        {activeChat === "main"
-          ? // Render main chat messages from Redux
-            messages.map((message) => (
-              <Message
-                key={message.id}
-                message={message}
-                timestamp={message.timestamp}
-                onOptionSelect={handleOptionSelect}
-                openComponentChat={openComponentChat}
-                selectedComponent={selectedComponent}
-                replacedMessageIds={replacedMessageIds}
-              />
-            ))
-          : // Render component-specific chat messages from local state
-            componentChats
-              .find((chat) => chat.id === activeChat)
-              ?.messages.map((message) => (
-                <Message
-                  key={message.id}
-                  message={message}
-                  timestamp={message.timestamp}
-                  onOptionSelect={handleOptionSelect}
-                  openComponentChat={openComponentChat}
-                  selectedComponent={selectedComponent}
-                  replacedMessageIds={replacedMessageIds}
-                />
-              ))}
-        {isAddingComponent && <TypingIndicator />}
-        <div ref={messagesEndRef} />
-      </div>
+      <MessageList
+        messages={messages}
+        activeChat={activeChat}
+        componentChats={componentChats}
+        isAddingComponent={isAddingComponent}
+        handleOptionSelect={handleOptionSelect}
+        openComponentChat={openComponentChat}
+        selectedComponent={selectedComponent}
+        replacedMessageIds={replacedMessageIds}
+      />
 
-      <form onSubmit={handleSubmit} className="p-3 border-t border-blue-100">
-        <div className="flex items-center gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={inputPlaceholder}
-            className="flex-1 p-2 border border-blue-200 rounded-lg focus:outline-none focus:border-blue-400"
-          />
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`p-2 rounded-lg ${
-              isLoading
-                ? "bg-gray-200 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-600"
-            } text-white transition-colors`}
-          >
-            <FaPaperPlane />
-          </button>
-        </div>
-      </form>
+      <ChatInput
+        input={input}
+        setInput={setInput}
+        handleSubmit={handleSubmit}
+        isLoading={isLoading}
+        inputPlaceholder={inputPlaceholder}
+      />
     </div>
   );
 };
