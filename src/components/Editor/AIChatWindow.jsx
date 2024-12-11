@@ -1,11 +1,12 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   sendMessage,
   addMessage,
   changeProvider,
 } from "../../features/aiChatSlice";
-import { FaTimes, FaPaperPlane, FaExternalLinkAlt } from "react-icons/fa";
+import { setSelectedIds } from "../../features/editorSlice";
+import { FaTimes, FaPaperPlane, FaExternalLinkAlt, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { LLMProviders } from "../../services/llm/llmService";
 import { aiAddComponent } from "../../features/editorSlice";
 import { AICommandExecutor } from "../../services/aiExecutor";
@@ -424,15 +425,130 @@ const getInitialSuggestions = () => {
   ];
 };
 
-const ChatTab = ({ label, isActive, onSelect, onClose, chatId }) => (
+const ScrollableTabList = ({ children }) => {
+  const [showArrows, setShowArrows] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const tabsRef = useRef(null);
+
+  const checkScroll = useCallback(() => {
+    if (tabsRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = tabsRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 1);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(checkScroll, 0);
+    
+    const handleResize = () => {
+      clearTimeout(timeoutId);
+      setTimeout(checkScroll, 100);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(timeoutId);
+    };
+  }, [checkScroll, children]);
+
+  const scroll = (direction) => {
+    if (tabsRef.current) {
+      const scrollAmount = direction === 'left' ? -200 : 200;
+      tabsRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      setTimeout(checkScroll, 300);
+    }
+  };
+
+  const handleWheel = (e) => {
+    if (tabsRef.current) {
+      // Prevent both default behavior and propagation
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Calculate scroll amount based on deltaY (vertical scroll)
+      // or deltaX (horizontal scroll) with a multiplier for smoother scrolling
+      const scrollMultiplier = 2;
+      const scrollAmount = (e.deltaY || e.deltaX) * scrollMultiplier;
+      
+      // Apply the scroll
+      tabsRef.current.scrollLeft += scrollAmount;
+      
+      // Check scroll position
+      requestAnimationFrame(checkScroll);
+    }
+  };
+
+  useEffect(() => {
+    if (!tabsRef.current) return;
+    
+    const observer = new MutationObserver(checkScroll);
+    observer.observe(tabsRef.current, { 
+      childList: true, 
+      subtree: true,
+      characterData: true 
+    });
+    
+    // Add wheel event listener to the tabs container
+    const tabsElement = tabsRef.current;
+    tabsElement.addEventListener('wheel', handleWheel, { passive: false });
+    
+    return () => {
+      observer.disconnect();
+      tabsElement.removeEventListener('wheel', handleWheel);
+    };
+  }, [checkScroll]);
+
+  return (
+    <div 
+      className="relative flex items-center w-full"
+      onMouseEnter={() => setShowArrows(true)}
+      onMouseLeave={() => setShowArrows(false)}
+    >
+      {showArrows && canScrollLeft && (
+        <button
+          onClick={() => scroll('left')}
+          className="absolute left-0 z-10 h-full px-1 bg-gradient-to-r from-white to-transparent hover:bg-gradient-to-r hover:from-gray-50 hover:to-transparent transition-all"
+        >
+          <FaChevronLeft className="text-gray-500" />
+        </button>
+      )}
+      
+      <div
+        ref={tabsRef}
+        className="flex overflow-x-auto scrollbar-hide w-full"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        onScroll={checkScroll}
+      >
+        <div className="flex min-w-min">
+          {children}
+        </div>
+      </div>
+
+      {showArrows && canScrollRight && (
+        <button
+          onClick={() => scroll('right')}
+          className="absolute right-0 z-10 h-full px-1 bg-gradient-to-l from-white to-transparent hover:bg-gradient-to-l hover:from-gray-50 hover:to-transparent transition-all"
+        >
+          <FaChevronRight className="text-gray-500" />
+        </button>
+      )}
+    </div>
+  );
+};
+
+const ChatTab = ({ label, isActive, onSelect, onClose, chatId, componentId, mode }) => (
   <div
-    className={`flex items-center gap-2 px-3 py-2 cursor-pointer border-b-2 text-sm
+    className={`flex items-center gap-2 px-3 py-2 cursor-pointer border-b-2 text-sm flex-shrink-0
       ${
         isActive
           ? "border-blue-500 bg-blue-50 text-blue-700"
           : "border-transparent hover:bg-gray-50 text-gray-600"
       }`}
-    onClick={onSelect}
+    onClick={() => onSelect(componentId)}
   >
     <span className="truncate max-w-[120px]">{label}</span>
     {label !== "Main Chat" && (
@@ -458,6 +574,7 @@ const AIChatWindow = ({ onClose }) => {
   );
   const selectedIds = useSelector((state) => state.editor.selectedIds);
   const components = useSelector((state) => state.editor.components);
+  const mode = useSelector((state) => state.editor.mode);
 
   // Add the awaitingResponse state
   const [awaitingResponse, setAwaitingResponse] = useState(null);
@@ -470,22 +587,47 @@ const AIChatWindow = ({ onClose }) => {
 
   // Enhanced function to find selected component, including nested children
   const findSelectedComponent = (components, selectedId) => {
-    for (const component of components) {
-      if (component.id === selectedId) {
-        return component;
+    let deepestMatch = null;
+    let maxDepth = -1;
+
+    const searchComponent = (component, depth = 0) => {
+      if (component.id === selectedId && depth > maxDepth) {
+        deepestMatch = component;
+        maxDepth = depth;
       }
+      
       if (component.children && component.children.length > 0) {
-        const found = findSelectedComponent(component.children, selectedId);
-        if (found) {
-          // Add parent reference to help with context
-          return {
-            ...found,
-            parent: component,
-          };
+        component.children.forEach(child => {
+          searchComponent(child, depth + 1);
+        });
+      }
+    };
+
+    components.forEach(component => searchComponent(component));
+    
+    if (deepestMatch) {
+      // Find and attach immediate parent if it exists
+      const findParent = (components, targetId, parent = null) => {
+        for (const comp of components) {
+          if (comp.id === targetId) return parent;
+          if (comp.children) {
+            const found = findParent(comp.children, targetId, comp);
+            if (found) return found;
+          }
         }
+        return null;
+      };
+      
+      const parent = findParent(components, deepestMatch.id);
+      if (parent) {
+        return {
+          ...deepestMatch,
+          parent
+        };
       }
     }
-    return null;
+    
+    return deepestMatch;
   };
 
   // Get the selected component details, including nested components
@@ -511,6 +653,9 @@ const AIChatWindow = ({ onClose }) => {
   // Add these refs near the top of the component with other state declarations
   const initializationRef = useRef(false);
   const componentMessageRef = useRef(false);
+
+  // Move the ref declaration outside of the effect
+  const lastHandledComponentRef = useRef(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -1055,19 +1200,16 @@ const AIChatWindow = ({ onClose }) => {
     }
   };
 
-  // Replace the existing useEffect
+  // Update the useEffect that handles component selection
   useEffect(() => {
     if (!isVisible) {
-      // Reset initialization flags when chat is closed
       initializationRef.current = false;
-      componentMessageRef.current = false;
       return;
     }
 
     // Handle initial messages only once
     if (!initializationRef.current && messages.length === 0) {
       initializationRef.current = true;
-
       const initialMessage = {
         id: Date.now().toString(),
         role: "assistant",
@@ -1076,47 +1218,67 @@ const AIChatWindow = ({ onClose }) => {
         options: getInitialSuggestions(),
       };
       dispatch(addMessage(initialMessage));
+      return;
     }
 
-    // Handle component selection changes
+    // Handle component selection
     if (selectedComponent) {
-      // Check if there's an existing chat for this component
+      const chatId = `${selectedComponent.type}_${selectedComponent.id}`;
+      
+      // Check if we already have a chat for this component
       const existingChat = componentChats.find(chat => chat.componentId === selectedComponent.id);
       
       if (existingChat) {
-        // If there's an existing chat, switch to it
-        setActiveChat(existingChat.id);
-        componentMessageRef.current = true; // Prevent duplicate messages
-      } else {
-        // If no existing chat, switch to main chat and show component message
-        setActiveChat('main');
-        
-        // Only show the message if we haven't shown one for this component
-        if (!componentMessageRef.current) {
-          componentMessageRef.current = true;
-          const componentMessage = {
-            id: Date.now().toString(),
-            role: "assistant",
-            content: `Here are some things you can do with the ${selectedComponent.type.toLowerCase()}:`,
-            timestamp: new Date(),
-            options: getComponentSpecificOptions(selectedComponent),
-          };
-          dispatch(addMessage(componentMessage));
+        // Switch to existing chat
+        if (activeChat !== existingChat.id) {
+          setActiveChat(existingChat.id);
         }
+      } else {
+        // Create new component chat
+        const initialMessage = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: `Here are some things you can do with the ${selectedComponent.type.toLowerCase()}:`,
+          timestamp: new Date(),
+          options: getComponentSpecificOptions(selectedComponent),
+        };
+
+        setComponentChats(prev => [
+          ...prev,
+          {
+            id: chatId,
+            componentId: selectedComponent.id,
+            type: selectedComponent.type,
+            name: selectedComponent.type,
+            messages: [initialMessage],
+          },
+        ]);
+        setActiveChat(chatId);
+
+        // Add a subtle confirmation in main chat
+        const confirmationMessage = {
+          id: Date.now().toString(),
+          role: 'assistant',
+          content: `Opened ${selectedComponent.type} chat`,
+          timestamp: new Date(),
+          status: 'success'
+        };
+        dispatch(addMessage(confirmationMessage));
       }
     } else {
-      // Reset component message flag when no component is selected
-      componentMessageRef.current = false;
+      // No component selected, switch back to main chat
+      if (activeChat !== 'main') {
+        setActiveChat('main');
+      }
     }
 
     // Cleanup function
     return () => {
       if (!isVisible) {
         initializationRef.current = false;
-        componentMessageRef.current = false;
       }
     };
-  }, [isVisible, selectedComponent?.id, messages.length, componentChats, dispatch]);
+  }, [isVisible, selectedComponent?.id, dispatch, componentChats, activeChat]);
 
   // Keep the createOrOpenComponentChat function unchanged for manual switching
   const createOrOpenComponentChat = (component) => {
@@ -1341,27 +1503,38 @@ const AIChatWindow = ({ onClose }) => {
           </div>
         </div>
 
-        <div className="flex border-b border-gray-200">
-          <ChatTab
-            label="Main Chat"
-            isActive={activeChat === "main"}
-            onSelect={() => setActiveChat("main")}
-          />
-          {componentChats.map((chat) => (
+        <div className="flex border-b border-gray-200 w-full">
+          <ScrollableTabList>
             <ChatTab
-              key={chat.id}
-              chatId={chat.id}
-              label={chat.name}
-              isActive={activeChat === chat.id}
-              onSelect={() => setActiveChat(chat.id)}
-              onClose={(chatId) => {
-                setComponentChats((prev) =>
-                  prev.filter((c) => c.id !== chatId)
-                );
-                setActiveChat("main");
-              }}
+              label="Main Chat"
+              isActive={activeChat === "main"}
+              onSelect={() => setActiveChat("main")}
+              mode={mode}
             />
-          ))}
+            {componentChats.map((chat) => (
+              <ChatTab
+                key={chat.id}
+                chatId={chat.id}
+                label={chat.name}
+                isActive={activeChat === chat.id}
+                componentId={chat.componentId}
+                mode={mode}
+                onSelect={(componentId) => {
+                  setActiveChat(chat.id);
+                  // Only select component if we're in edit mode
+                  if (mode === 'edit' && componentId) {
+                    dispatch(setSelectedIds([componentId]));
+                  }
+                }}
+                onClose={(chatId) => {
+                  setComponentChats((prev) =>
+                    prev.filter((c) => c.id !== chatId)
+                  );
+                  setActiveChat("main");
+                }}
+              />
+            ))}
+          </ScrollableTabList>
         </div>
       </div>
 

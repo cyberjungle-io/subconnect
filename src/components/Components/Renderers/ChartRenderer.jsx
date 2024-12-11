@@ -30,7 +30,9 @@ const ChartRenderer = ({ component }) => {
   const queries = useSelector((state) => state.w3s?.queries?.list ?? []);
 
   const formatData = (data, dataKeys, nameKey) => {
-    if (!data || !Array.isArray(data)) return [];
+    if (!data || !Array.isArray(data) || !dataKeys || !Array.isArray(dataKeys) || !nameKey) {
+      return [];
+    }
 
     return data
       .map((item) => {
