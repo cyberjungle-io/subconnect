@@ -80,7 +80,10 @@ const Message = ({
             return (
               <button
                 key={index}
-                onClick={() => !isDisabled && onOptionSelect(option)}
+                onClick={() => !isDisabled && onOptionSelect({
+                  ...option,
+                  text: option.command || option.text
+                })}
                 className={`text-[10px] px-1.5 py-0.5 rounded-md text-left flex-shrink-0 flex items-center gap-1
                   ${isDisabled 
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 

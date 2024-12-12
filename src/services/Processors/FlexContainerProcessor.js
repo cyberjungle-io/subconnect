@@ -21,6 +21,7 @@ import {
   FaCompress,
   FaPlus,
   FaTimes,
+  FaCloudSun,
 } from "react-icons/fa";
 
 export class FlexContainerProcessor {
@@ -431,20 +432,208 @@ export class FlexContainerProcessor {
         icon: FaBorderStyle,
         options: [
           {
-            text: "add border",
-            type: "command",
+            text: "Border Width",
+            type: "info",
+            icon: FaBorderStyle,
+            className: headerClass,
           },
           {
-            text: "remove border",
-            type: "command",
+            type: "wrapper",
+            className: "flex flex-col gap-1",
+            options: [
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
+                    text: "small",
+                    command: "set border width to small",
+                    type: "command",
+                    icon: FaBorderStyle,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "medium",
+                    command: "set border width to medium",
+                    type: "command",
+                    icon: FaBorderStyle,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "large",
+                    command: "set border width to large",
+                    type: "command",
+                    icon: FaBorderStyle,
+                    className: buttonClass,
+                  },
+                ],
+              },
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
+                    text: "add 1px",
+                    command: "add 1px to border",
+                    type: "command",
+                    icon: FaPlus,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "remove 1px",
+                    command: "remove 1px from border",
+                    type: "command",
+                    icon: FaTimes,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "remove border",
+                    command: "remove border",
+                    type: "command",
+                    icon: FaTimes,
+                    className: buttonClass,
+                  },
+                ],
+              },
+            ],
           },
           {
-            text: "make corners rounded",
-            type: "command",
+            text: "Border Radius",
+            type: "info",
+            icon: FaBorderStyle,
+            className: headerClass,
           },
           {
-            text: "add shadow",
+            type: "wrapper",
+            className: "flex flex-col gap-1",
+            options: [
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
+                    text: "small",
+                    command: "set border radius to small",
+                    type: "command",
+                    icon: FaBorderStyle,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "medium",
+                    command: "set border radius to medium",
+                    type: "command",
+                    icon: FaBorderStyle,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "large",
+                    command: "set border radius to large",
+                    type: "command",
+                    icon: FaBorderStyle,
+                    className: buttonClass,
+                  },
+                ],
+              },
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
+                    text: "add 1px",
+                    command: "add 1px to radius",
+                    type: "command",
+                    icon: FaPlus,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "remove 1px",
+                    command: "remove 1px from radius",
+                    type: "command",
+                    icon: FaTimes,
+                    className: buttonClass,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        text: "Shadow",
+        type: "category",
+        icon: FaCloudSun,
+        options: [
+          {
+            text: "Outer Shadow",
+            type: "info",
+            icon: FaCloudSun,
+            className: headerClass,
+          },
+          {
+            type: "wrapper",
+            className: "flex gap-1",
+            options: [
+              {
+                text: "subtle",
+                command: "add subtle outer shadow",
+                type: "command",
+                icon: FaCloudSun,
+                className: buttonClass,
+              },
+              {
+                text: "medium",
+                command: "add medium outer shadow",
+                type: "command",
+                icon: FaCloudSun,
+                className: buttonClass,
+              },
+              {
+                text: "pronounced",
+                command: "add pronounced outer shadow",
+                type: "command",
+                icon: FaCloudSun,
+                className: buttonClass,
+              },
+            ],
+          },
+          {
+            text: "Inner Shadow",
+            type: "info",
+            icon: FaCloudSun,
+            className: headerClass,
+          },
+          {
+            type: "wrapper",
+            className: "flex gap-1",
+            options: [
+              {
+                text: "subtle",
+                command: "add subtle inner shadow",
+                type: "command",
+                icon: FaCloudSun,
+                className: buttonClass,
+              },
+              {
+                text: "medium",
+                command: "add medium inner shadow",
+                type: "command",
+                icon: FaCloudSun,
+                className: buttonClass,
+              },
+              {
+                text: "deep",
+                command: "add deep inner shadow",
+                type: "command",
+                icon: FaCloudSun,
+                className: buttonClass,
+              },
+            ],
+          },
+          {
+            text: "remove shadow",
             type: "command",
+            icon: FaTimes,
+            className: buttonClass,
           },
         ],
       },
