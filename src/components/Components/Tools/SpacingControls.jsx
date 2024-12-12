@@ -176,7 +176,7 @@ const SpacingControls = ({ style, onStyleChange, component }) => {
           className="w-12 p-1 text-xs border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
         />
         <select
-          value={value.match(/[a-z%]+/i) || 'px'}
+          value={value.match(/[a-z%]+/i)?.[0] || 'px'}
           onChange={(e) => {
             const numericPart = value.replace(/[^\d.-]/g, '') || '0';
             const newValue = numericPart + e.target.value;

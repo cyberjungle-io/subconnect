@@ -1,9 +1,9 @@
-import { 
-  FaExpand, 
-  FaArrowsAlt, 
-  FaBorderStyle, 
-  FaPalette, 
-  FaLayerGroup, 
+import {
+  FaExpand,
+  FaArrowsAlt,
+  FaBorderStyle,
+  FaPalette,
+  FaLayerGroup,
   FaMousePointer,
   FaArrowsAltH,
   FaArrowsAltV,
@@ -18,8 +18,10 @@ import {
   FaColumns,
   FaGripHorizontal,
   FaCompressAlt,
-  FaCompress
-} from 'react-icons/fa';
+  FaCompress,
+  FaPlus,
+  FaTimes,
+} from "react-icons/fa";
 
 export class FlexContainerProcessor {
   static getSuggestions() {
@@ -37,159 +39,159 @@ export class FlexContainerProcessor {
             text: "Direction",
             type: "info",
             icon: FaArrowRight,
-            className: headerClass
+            className: headerClass,
           },
           {
             text: "horizontal",
             type: "command",
             icon: FaArrowsAltH,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "vertical",
             type: "command",
             icon: FaArrowsAltV,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "Wrap",
             type: "info",
             icon: FaArrowsAlt,
-            className: headerClass
+            className: headerClass,
           },
           {
             text: "wrap",
             type: "command",
             icon: FaArrowsAltH,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "no wrap",
             type: "command",
             icon: FaGripLines,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "Justify Content",
             type: "info",
             icon: FaWrench,
-            className: headerClass
+            className: headerClass,
           },
           {
             text: "start",
             type: "command",
             icon: FaAlignLeft,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "center",
             type: "command",
             icon: FaAlignCenter,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "end",
             type: "command",
             icon: FaAlignRight,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "between",
             type: "command",
             icon: FaGripLines,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "around",
             type: "command",
             icon: FaColumns,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "evenly",
             type: "command",
             icon: FaGripLinesVertical,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "Align Items",
             type: "info",
             icon: FaWrench,
-            className: headerClass
+            className: headerClass,
           },
           {
             text: "start",
             type: "command",
             icon: FaAlignLeft,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "center",
             type: "command",
             icon: FaAlignCenter,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "end",
             type: "command",
             icon: FaAlignRight,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "stretch",
             type: "command",
             icon: FaExpandAlt,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "baseline",
             type: "command",
             icon: FaGripLines,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "Align Content",
             type: "info",
             icon: FaWrench,
-            className: headerClass
+            className: headerClass,
           },
           {
             text: "start",
             type: "command",
             icon: FaAlignLeft,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "center",
             type: "command",
             icon: FaAlignCenter,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "end",
             type: "command",
             icon: FaAlignRight,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "stretch",
             type: "command",
             icon: FaExpandAlt,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "between",
             type: "command",
             icon: FaGripLines,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "around",
             type: "command",
             icon: FaColumns,
-            className: buttonClass
-          }
-        ]
+            className: buttonClass,
+          },
+        ],
       },
       {
         text: "Size",
@@ -200,59 +202,59 @@ export class FlexContainerProcessor {
             text: "fit to content",
             type: "command",
             icon: FaCompress,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "fit vertical",
             type: "command",
             icon: FaArrowsAltV,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "fit horizontal",
             type: "command",
             icon: FaArrowsAltH,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "make it bigger",
             type: "command",
             icon: FaExpandAlt,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "make it smaller",
             type: "command",
             icon: FaCompressAlt,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "set width to 100%",
             type: "command",
             icon: FaArrowsAltH,
-            className: buttonClass
+            className: buttonClass,
           },
           {
             text: "set height to auto",
             type: "command",
             icon: FaArrowsAltV,
             className: buttonClass,
-            checkEnabled: (component) => component?.style?.height !== 'auto'
+            checkEnabled: (component) => component?.style?.height !== "auto",
           },
           {
             text: "set height to 200px",
             type: "command",
             icon: FaArrowsAltV,
             className: buttonClass,
-            checkVisible: (component) => component?.style?.height === 'auto'
+            checkVisible: (component) => component?.style?.height === "auto",
           },
           {
             text: "set width to 300px",
             type: "command",
             icon: FaArrowsAltH,
-            className: buttonClass
-          }
-        ]
+            className: buttonClass,
+          },
+        ],
       },
       {
         text: "Spacing",
@@ -260,22 +262,168 @@ export class FlexContainerProcessor {
         icon: FaArrowsAlt,
         options: [
           {
-            text: "add padding",
-            type: "command",
+            text: "Padding",
+            type: "info",
+            icon: FaExpandAlt,
+            className: headerClass,
           },
           {
-            text: "remove padding",
-            type: "command",
+            type: "wrapper",
+            className: "flex flex-col gap-1",
+            options: [
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
+                    text: "small",
+                    type: "command",
+                    icon: FaExpand,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "medium",
+                    type: "command",
+                    icon: FaExpand,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "large",
+                    type: "command",
+                    icon: FaExpand,
+                    className: buttonClass,
+                  },
+                ],
+              },
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
+                    text: "add 5px",
+                    type: "command",
+                    icon: FaPlus,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "remove 5px",
+                    type: "command",
+                    icon: FaTimes,
+                    className: buttonClass,
+                  },
+                ],
+              },
+            ],
           },
           {
-            text: "add gap between items",
-            type: "command",
+            text: "Margin",
+            type: "info",
+            icon: FaArrowsAlt,
+            className: headerClass,
           },
           {
-            text: "remove gap",
-            type: "command",
-          }
-        ]
+            type: "wrapper",
+            className: "flex flex-col gap-1",
+            options: [
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
+                    text: "small",
+                    type: "command",
+                    icon: FaArrowsAlt,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "medium",
+                    type: "command",
+                    icon: FaArrowsAlt,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "large",
+                    type: "command",
+                    icon: FaArrowsAlt,
+                    className: buttonClass,
+                  },
+                ],
+              },
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
+                    text: "add 5px",
+                    type: "command",
+                    icon: FaPlus,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "remove 5px",
+                    type: "command",
+                    icon: FaTimes,
+                    className: buttonClass,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            text: "Gap",
+            type: "info",
+            icon: FaGripLines,
+            className: headerClass,
+          },
+          {
+            type: "wrapper",
+            className: "flex flex-col gap-1",
+            options: [
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
+                    text: "small",
+                    type: "command",
+                    icon: FaGripLines,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "medium",
+                    type: "command",
+                    icon: FaGripLines,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "large",
+                    type: "command",
+                    icon: FaGripLines,
+                    className: buttonClass,
+                  },
+                ],
+              },
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
+                    text: "add 5px",
+                    type: "command",
+                    icon: FaPlus,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "remove 5px",
+                    type: "command",
+                    icon: FaTimes,
+                    className: buttonClass,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       },
       {
         text: "Border",
@@ -297,8 +445,8 @@ export class FlexContainerProcessor {
           {
             text: "add shadow",
             type: "command",
-          }
-        ]
+          },
+        ],
       },
       {
         text: "Background",
@@ -316,8 +464,8 @@ export class FlexContainerProcessor {
           {
             text: "add gradient",
             type: "command",
-          }
-        ]
+          },
+        ],
       },
       {
         text: "Button",
@@ -339,9 +487,9 @@ export class FlexContainerProcessor {
           {
             text: "add click animation",
             type: "command",
-          }
-        ]
-      }
+          },
+        ],
+      },
     ];
   }
-} 
+}

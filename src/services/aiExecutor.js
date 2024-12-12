@@ -1,5 +1,10 @@
 import { componentConfig } from "../components/Components/componentConfig";
-import { aiAddComponent, updateComponent, updateColorTheme, updateToolbarSettings } from "../features/editorSlice";
+import {
+  aiAddComponent,
+  updateComponent,
+  updateColorTheme,
+  updateToolbarSettings,
+} from "../features/editorSlice";
 import { StyleCommandProcessor } from "./styleCommandProcessor";
 import LLMService from "./llm/llmService";
 import { KanbanProcessor } from "./Processors/KanbanProcessor";
@@ -12,6 +17,7 @@ import { ImageProcessor } from "./Processors/ImageProcessor";
 import { QueryValueProcessor } from "./Processors/QueryValueProcessor";
 import { ToolbarProcessor } from "./Processors/ToolbarProcessor";
 import { LLMProcessor } from "./Processors/LLMProcessor";
+import { SpacingProcessor } from "./Processors/SpacingProcessor";
 
 export class AICommandExecutor {
   // Define actionWords as a static class property
@@ -53,7 +59,12 @@ export class AICommandExecutor {
     ].filter(Boolean); // Remove null values
   }
 
-  static async processCommand(input, dispatch, selectedComponent = null, state = null) {
+  static async processCommand(
+    input,
+    dispatch,
+    selectedComponent = null,
+    state = null
+  ) {
     try {
       // Clean the input first
       const cleanInput = input.replace(/\{[\s\S]*\}/g, "").trim();
@@ -61,39 +72,110 @@ export class AICommandExecutor {
 
       // Check for shadow pattern early
       const shadowPattern = /shadow/i;
-      if (input.match(shadowPattern) && !input.match(/(?:inner|outer)\s*shadow/i)) {
+      if (
+        input.match(shadowPattern) &&
+        !input.match(/(?:inner|outer)\s*shadow/i)
+      ) {
         return {
           success: true,
-          message: "What kind of shadow would you like? You can specify:\n- Inner shadow\n- Outer shadow",
+          message:
+            "What kind of shadow would you like? You can specify:\n- Inner shadow\n- Outer shadow",
           needsMoreInfo: true,
           type: "shadow",
         };
       }
 
+      // Process spacing commands for any component
+      const spacingResult = SpacingProcessor.processCommand(input);
+      if (spacingResult && selectedComponent) {
+        try {
+          let updatedStyle;
+          if (spacingResult.adjust) {
+            // Handle incremental adjustments
+            updatedStyle = spacingResult.adjust(selectedComponent.style);
+          } else {
+            // Handle absolute value updates (presets)
+            updatedStyle = spacingResult.style;
+          }
+
+          const updatedComponent = {
+            ...selectedComponent,
+            style: {
+              ...selectedComponent.style,
+              ...updatedStyle,
+            },
+          };
+
+          console.log('Original component style:', selectedComponent.style);
+          console.log('Spacing update:', updatedStyle);
+          console.log('Updated component style:', updatedComponent.style);
+
+          await dispatch(
+            updateComponent({
+              id: selectedComponent.id,
+              updates: updatedComponent,
+            })
+          );
+
+          // Generate success message in standard format
+          const property = Object.keys(updatedStyle)[0];
+          const value = updatedStyle[property];
+          const action = input.includes('add') ? 'Set' : input.includes('remove') ? 'Set' : 'Updated';
+          return {
+            success: true,
+            message: `${action} ${property} to ${value}`,
+            isCommandExecution: true  // This flag will trigger the checkmark style
+          };
+        } catch (error) {
+          console.error("Spacing update failed:", error);
+          return {
+            success: false,
+            message: `Failed to update spacing: ${error.message}`,
+          };
+        }
+      }
+
       // Handle Query Value commands
       if (selectedComponent?.type === "QUERY_VALUE") {
-        const queryResult = await this.processQueryValueCommand(cleanInput, selectedComponent, dispatch, state);
+        const queryResult = await this.processQueryValueCommand(
+          cleanInput,
+          selectedComponent,
+          dispatch,
+          state
+        );
         if (queryResult) return queryResult;
       }
 
       // Try direct style processing first
       if (selectedComponent) {
-        const styleResult = await this.processStyleCommand(cleanInput, selectedComponent, dispatch);
+        const styleResult = await this.processStyleCommand(
+          cleanInput,
+          selectedComponent,
+          dispatch
+        );
         if (styleResult) return styleResult;
       }
 
       // If direct processing didn't work, try LLM interpretation
-      const llmResult = await this.processWithLLM(cleanInput, selectedComponent, dispatch);
+      const llmResult = await this.processWithLLM(
+        cleanInput,
+        selectedComponent,
+        dispatch
+      );
       if (llmResult) return llmResult;
 
       // Fallback to traditional processing
-      return await this.processTraditionalCommand(input, dispatch, selectedComponent, state);
-
+      return await this.processTraditionalCommand(
+        input,
+        dispatch,
+        selectedComponent,
+        state
+      );
     } catch (error) {
       console.error("Error in processCommand:", error);
       return {
         success: false,
-        message: `Failed to process command: ${error.message}`
+        message: `Failed to process command: ${error.message}`,
       };
     }
   }
@@ -102,31 +184,40 @@ export class AICommandExecutor {
     if (!QueryValueProcessor.isQueryValueCommand(input)) return null;
 
     console.log("Processing Query Value-specific command");
-    const result = QueryValueProcessor.processCommand(input, component.props || {}, state);
+    const result = QueryValueProcessor.processCommand(
+      input,
+      component.props || {},
+      state
+    );
 
     if (!result) return null;
 
     try {
-      await dispatch(updateComponent({
-        id: component.id,
-        updates: { ...component, props: result.props }
-      }));
+      await dispatch(
+        updateComponent({
+          id: component.id,
+          updates: { ...component, props: result.props },
+        })
+      );
 
       return {
         success: true,
-        message: result.message
+        message: result.message,
       };
     } catch (error) {
       console.error("Query Value update failed:", error);
       return {
         success: false,
-        message: `Failed to update Query Value: ${error.message}`
+        message: `Failed to update Query Value: ${error.message}`,
       };
     }
   }
 
   static async processStyleCommand(input, component, dispatch) {
-    const styleResult = StyleCommandProcessor.processStyleCommand(input, component);
+    const styleResult = StyleCommandProcessor.processStyleCommand(
+      input,
+      component
+    );
     if (!styleResult?.style) return null;
 
     try {
@@ -139,20 +230,22 @@ export class AICommandExecutor {
       };
 
       console.log("Dispatching component update:", updatedComponent);
-      await dispatch(updateComponent({
-        id: component.id,
-        updates: updatedComponent,
-      }));
+      await dispatch(
+        updateComponent({
+          id: component.id,
+          updates: updatedComponent,
+        })
+      );
 
       return {
         success: true,
-        message: `Updated style successfully`
+        message: `Updated style successfully`,
       };
     } catch (error) {
       console.error("Style update failed:", error);
       return {
         success: false,
-        message: `Failed to update style: ${error.message}`
+        message: `Failed to update style: ${error.message}`,
       };
     }
   }
@@ -163,7 +256,12 @@ export class AICommandExecutor {
       console.log("Detected intent:", intent);
 
       if (intent.type === "STYLE_UPDATE" && selectedComponent) {
-        return await LLMProcessor.processStyleUpdate(input, intent, selectedComponent, dispatch);
+        return await LLMProcessor.processStyleUpdate(
+          input,
+          intent,
+          selectedComponent,
+          dispatch
+        );
       } else if (intent.type === "ADD_COMPONENT") {
         return await LLMProcessor.processAddComponent(intent, dispatch);
       }
@@ -173,12 +271,17 @@ export class AICommandExecutor {
       console.error("Error processing with LLM:", error);
       return {
         success: false,
-        message: `Failed to process with LLM: ${error.message}`
+        message: `Failed to process with LLM: ${error.message}`,
       };
     }
   }
 
-  static async processTraditionalCommand(input, dispatch, selectedComponent, state = null) {
+  static async processTraditionalCommand(
+    input,
+    dispatch,
+    selectedComponent,
+    state = null
+  ) {
     const lowercaseInput = input.toLowerCase();
 
     // Check for ambiguous commands that need clarification
@@ -465,7 +568,10 @@ export class AICommandExecutor {
     }
 
     // Add check for Table commands
-    if (selectedComponent?.type === "TABLE" && TableProcessor.isTableCommand(input)) {
+    if (
+      selectedComponent?.type === "TABLE" &&
+      TableProcessor.isTableCommand(input)
+    ) {
       console.log("Processing Table-specific command");
       const result = TableProcessor.processCommand(
         input,

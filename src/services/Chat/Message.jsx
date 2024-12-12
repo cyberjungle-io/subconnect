@@ -36,6 +36,14 @@ const Message = ({
             return null;
           }
 
+          if (option.type === "wrapper") {
+            return (
+              <div key={index} className={option.className}>
+                {renderOptions(option.options)}
+              </div>
+            );
+          }
+
           if (option.type === "category") {
             const Icon = option.icon;
             return (
