@@ -71,61 +71,96 @@ export class SizeProcessor {
   static processCommand(input, currentStyle = {}) {
     console.log('SizeProcessor received input:', input);
     console.log('Current style:', currentStyle);
-    const stylePatterns = this.getStylePatterns();
-
-    // Process height patterns specifically for relative changes first
-    const relativeHeightPattern = new RegExp(`(?:increase|add|increment|raise|decrease|subtract|reduce|lower)\\s*(?:the)?\\s*height\\s*(?:by)?\\s*(\\d+)\\s*(?:px|em|rem|%|vw|vh)`, 'i');
-    const relativeMatch = input.match(relativeHeightPattern);
     
-    if (relativeMatch) {
-      console.log('Matched relative height change:', relativeMatch);
-      const changeAmount = parseInt(relativeMatch[1]);
-      const currentHeight = currentStyle.height || '0px';
-      console.log('Current height:', currentHeight);
+    // Handle "make bigger/smaller" commands
+    const sizeChangePattern = /(?:make|set)\s*(?:it|this)?\s*(bigger|larger|smaller)/i;
+    const sizeMatch = input.match(sizeChangePattern);
+    
+    if (sizeMatch) {
+      const isBigger = sizeMatch[1].match(/bigger|larger/i);
+      const changes = {};
       
-      // Extract current numeric value and unit
-      const currentMatch = currentHeight.match(/^(\d+)([a-z%]+)$/i);
-      if (!currentMatch) {
-        console.log('Could not parse current height:', currentHeight);
-        return null;
+      // Process width
+      if (currentStyle.width) {
+        const widthMatch = currentStyle.width.match(/^([\d.]+)([%px]+|auto)$/);
+        if (widthMatch) {
+          const [_, value, unit] = widthMatch;
+          if (unit === '%') {
+            const currentValue = parseFloat(value);
+            const newValue = isBigger ? currentValue + 10 : currentValue - 10;
+            changes.width = `${Math.min(Math.max(newValue, 10), 100)}%`;
+          } else if (unit === 'px') {
+            const currentValue = parseFloat(value);
+            const newValue = isBigger ? currentValue + 20 : currentValue - 20;
+            changes.width = `${Math.max(newValue, 20)}px`;
+          }
+        } else if (currentStyle.width === 'auto') {
+          changes.width = isBigger ? '200px' : '100px';
+        }
+      } else {
+        changes.width = isBigger ? '200px' : '100px';
       }
       
-      const currentValue = parseInt(currentMatch[1]);
-      const unit = currentMatch[2];
-      console.log('Current value:', currentValue, 'Unit:', unit);
-      
-      // Determine if increasing or decreasing
-      const isIncreasing = /(?:increase|add|increment|raise)/i.test(input);
-      const newValue = isIncreasing ? currentValue + changeAmount : currentValue - changeAmount;
-      console.log('New value:', newValue);
-      
-      return {
-        style: {
-          height: `${newValue}${unit}`
+      // Process height
+      if (currentStyle.height) {
+        const heightMatch = currentStyle.height.match(/^([\d.]+)([%px]+|auto)$/);
+        if (heightMatch) {
+          const [_, value, unit] = heightMatch;
+          if (unit === '%') {
+            const currentValue = parseFloat(value);
+            const newValue = isBigger ? currentValue + 10 : currentValue - 10;
+            changes.height = `${Math.min(Math.max(newValue, 10), 100)}%`;
+          } else if (unit === 'px') {
+            const currentValue = parseFloat(value);
+            const newValue = isBigger ? currentValue + 20 : currentValue - 20;
+            changes.height = `${Math.max(newValue, 20)}px`;
+          }
+        } else if (currentStyle.height === 'auto') {
+          changes.height = isBigger ? '200px' : '100px';
         }
-      };
+      } else {
+        changes.height = isBigger ? '200px' : '100px';
+      }
+      
+      return { style: changes };
     }
 
-    // Process regular height patterns
-    for (const pattern of stylePatterns.height) {
+    // Handle specific width/height patterns
+    const stylePatterns = this.getStylePatterns();
+
+    // Process width patterns
+    for (const pattern of stylePatterns.width) {
       const match = input.match(pattern);
       if (match) {
         let value = match[1]?.toLowerCase();
-
-        // Handle auto
-        if (input.includes('auto')) {
-          value = 'auto';
-        }
-
+        
         // Handle percentage shortcuts
         if (['25', '50', '75', '100'].includes(value)) {
           value = `${value}%`;
         }
-
-        console.log('Matched height pattern, value:', value);
+        
         return {
           style: {
-            height: value
+            width: value || 'auto'
+          }
+        };
+      }
+    }
+
+    // Process height patterns
+    for (const pattern of stylePatterns.height) {
+      const match = input.match(pattern);
+      if (match) {
+        let value = match[1]?.toLowerCase();
+        
+        // Handle percentage shortcuts
+        if (['25', '50', '75', '100'].includes(value)) {
+          value = `${value}%`;
+        }
+        
+        return {
+          style: {
+            height: value || 'auto'
           }
         };
       }

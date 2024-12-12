@@ -16,7 +16,8 @@ import {
   FaArrowRight,
   FaWrench,
   FaColumns,
-  FaGripHorizontal
+  FaGripHorizontal,
+  FaCompressAlt
 } from 'react-icons/fa';
 
 export class FlexContainerProcessor {
@@ -197,18 +198,38 @@ export class FlexContainerProcessor {
           {
             text: "make it bigger",
             type: "command",
+            icon: FaExpandAlt,
+            className: buttonClass
           },
           {
             text: "make it smaller",
             type: "command",
+            icon: FaCompressAlt,
+            className: buttonClass
           },
           {
             text: "set width to 100%",
             type: "command",
+            icon: FaArrowsAltH,
+            className: buttonClass
           },
           {
             text: "set height to auto",
             type: "command",
+            icon: FaArrowsAltV,
+            className: buttonClass
+          },
+          {
+            text: "set width to 300px",
+            type: "command",
+            icon: FaArrowsAltH,
+            className: buttonClass
+          },
+          {
+            text: "set height to 200px",
+            type: "command",
+            icon: FaArrowsAltV,
+            className: buttonClass
           }
         ]
       },
