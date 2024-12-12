@@ -81,7 +81,7 @@ const useDragDrop = (component, onMoveComponent, onAddChild, isDragModeEnabled) 
 };
 
 const getComponentStyle = (component, globalSettings, isFlexChild, isTopLevel, parent) => {
-  const { style, type, props } = component;
+  const { style = {}, type, props = {} } = component;
   const generalComponentStyle = globalSettings?.generalComponentStyle || defaultGlobalSettings.generalComponentStyle;
   
   const componentStyle = {
@@ -92,7 +92,7 @@ const getComponentStyle = (component, globalSettings, isFlexChild, isTopLevel, p
     cursor: style.cursor || (type === "FLEX_CONTAINER" ? "pointer" : "default"),
     color: style.color || (parent?.style?.color || 'inherit'),
     boxSizing: 'border-box',
-    borderRadius: style.borderRadius || props.borderRadius || generalComponentStyle.borderRadius || '4px',
+    borderRadius: style.borderRadius || props?.borderRadius || generalComponentStyle.borderRadius || '4px',
     padding: style.padding || "0px",
     margin: style.margin || "0px",
     backgroundColor: style.backgroundColor || 'transparent',
@@ -102,7 +102,6 @@ const getComponentStyle = (component, globalSettings, isFlexChild, isTopLevel, p
     transition: style.transition || 'none',
     minWidth: style.minWidth || 'auto',
     minHeight: style.minHeight || 'auto',
-    // Explicitly set width and height from style if available
     width: style.width || '100%',
     height: style.height || 'auto',
   };
