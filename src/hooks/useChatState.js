@@ -1,17 +1,17 @@
-import { useState, useRef, useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { addMessage } from '../features/aiChatSlice';
-import { AICommandExecutor } from '../services/aiExecutor';
-import ChatMessageService from '../services/chatMessageService';
-import { useComponentSelection } from './useComponentSelection';
+import { useState, useRef, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { addMessage } from "../features/aiChatSlice";
+import { AICommandExecutor } from "../services/aiExecutor";
+import ChatMessageService from "../services/Chat/chatMessageService";
+import { useComponentSelection } from "./useComponentSelection";
 
 function useChatState() {
   const dispatch = useDispatch();
   const { selectedComponent } = useComponentSelection();
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isAddingComponent, setIsAddingComponent] = useState(false);
   const [componentChats, setComponentChats] = useState([]);
-  const [activeChat, setActiveChat] = useState('main');
+  const [activeChat, setActiveChat] = useState("main");
   const [replacedMessageIds] = useState(new Set());
 
   const messages = useSelector((state) => state.aiChat.messages);
@@ -23,17 +23,17 @@ function useChatState() {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage = ChatMessageService.createMessage(input, 'user');
-    
-    if (activeChat === 'main') {
+    const userMessage = ChatMessageService.createMessage(input, "user");
+
+    if (activeChat === "main") {
       dispatch(addMessage(userMessage));
     } else {
-      setComponentChats(prev => 
-        prev.map(chat => {
+      setComponentChats((prev) =>
+        prev.map((chat) => {
           if (chat.id === activeChat) {
             return {
               ...chat,
-              messages: [...(chat.messages || []), userMessage]
+              messages: [...(chat.messages || []), userMessage],
             };
           }
           return chat;
@@ -41,34 +41,35 @@ function useChatState() {
       );
     }
 
-    setInput('');
+    setInput("");
     setIsAddingComponent(true);
 
     try {
       const commandResult = await AICommandExecutor.processCommand(
         input,
         dispatch,
-        activeChat !== 'main' && !componentChats.find(c => c.id === activeChat)?.type === 'general' 
-          ? selectedComponent 
+        activeChat !== "main" &&
+          !componentChats.find((c) => c.id === activeChat)?.type === "general"
+          ? selectedComponent
           : null,
         { w3s: { queries: { list: queries } } }
       );
 
       const responseMessage = ChatMessageService.createMessage(
         commandResult?.message || "I'll help you with that.",
-        'assistant',
+        "assistant",
         commandResult?.options
       );
 
-      if (activeChat === 'main') {
+      if (activeChat === "main") {
         dispatch(addMessage(responseMessage));
       } else {
-        setComponentChats(prev =>
-          prev.map(chat => {
+        setComponentChats((prev) =>
+          prev.map((chat) => {
             if (chat.id === activeChat) {
               return {
                 ...chat,
-                messages: [...(chat.messages || []), responseMessage]
+                messages: [...(chat.messages || []), responseMessage],
               };
             }
             return chat;
@@ -76,21 +77,21 @@ function useChatState() {
         );
       }
     } catch (error) {
-      console.error('Error processing command:', error);
+      console.error("Error processing command:", error);
       const errorMessage = ChatMessageService.createMessage(
-        'Sorry, I encountered an error processing your request.',
-        'assistant'
+        "Sorry, I encountered an error processing your request.",
+        "assistant"
       );
-      
-      if (activeChat === 'main') {
+
+      if (activeChat === "main") {
         dispatch(addMessage(errorMessage));
       } else {
-        setComponentChats(prev =>
-          prev.map(chat => {
+        setComponentChats((prev) =>
+          prev.map((chat) => {
             if (chat.id === activeChat) {
               return {
                 ...chat,
-                messages: [...(chat.messages || []), errorMessage]
+                messages: [...(chat.messages || []), errorMessage],
               };
             }
             return chat;
@@ -103,16 +104,17 @@ function useChatState() {
   };
 
   const createNewGeneralChat = useCallback(() => {
-    const chatNumber = componentChats.filter(chat => chat.type === 'general').length + 1;
+    const chatNumber =
+      componentChats.filter((chat) => chat.type === "general").length + 1;
     const newChatId = `general-${Date.now()}`;
     const newChat = {
       id: newChatId,
       name: `Chat ${chatNumber}`,
-      type: 'general',
-      messages: []
+      type: "general",
+      messages: [],
     };
-    
-    setComponentChats(prev => [...prev, newChat]);
+
+    setComponentChats((prev) => [...prev, newChat]);
     setTimeout(() => setActiveChat(newChatId), 0);
   }, [componentChats]);
 
@@ -134,4 +136,4 @@ function useChatState() {
   };
 }
 
-export default useChatState; 
+export default useChatState;

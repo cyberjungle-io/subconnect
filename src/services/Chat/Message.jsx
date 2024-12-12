@@ -30,7 +30,7 @@ const Message = ({
     if (!Array.isArray(options)) return null;
 
     return (
-      <div className={`mt-2 flex gap-2 flex-wrap w-full`}>
+      <div className="mt-2 flex gap-1.5 flex-wrap w-full">
         {options.map((option, index) => {
           if (option.type === "category") {
             const Icon = option.icon;
@@ -38,11 +38,11 @@ const Message = ({
               <button
                 key={index}
                 onClick={() => onOptionSelect(option)}
-                className="text-left px-3 py-2 bg-blue-50/80 hover:bg-blue-100/80 rounded-lg text-blue-600 
-                transition-all duration-150 flex-shrink-0 flex items-center gap-2 shadow-sm border border-blue-200 
-                hover:border-blue-300"
+                className={`text-left px-2 py-1.5 bg-blue-50/80 hover:bg-blue-100/80 rounded-md text-blue-600 
+                transition-all duration-150 flex-shrink-0 flex items-center gap-1.5 shadow-sm border border-blue-200 
+                hover:border-blue-300 text-xs`}
               >
-                {Icon && <Icon className="text-sm" />}
+                {Icon && <Icon className="text-xs" />}
                 {option.text}
               </button>
             );
@@ -53,9 +53,9 @@ const Message = ({
             return (
               <div
                 key={index}
-                className="w-full text-sm font-semibold text-gray-600 mt-3 mb-1 border-b border-gray-200 pb-1 flex items-center gap-2"
+                className="w-full text-xs font-medium text-gray-500 mt-2 mb-1 border-b border-gray-200 pb-1 flex items-center gap-1.5"
               >
-                {Icon && <Icon className="text-sm" />}
+                {Icon && <Icon className="text-xs" />}
                 {option.text}
               </div>
             );
@@ -67,11 +67,11 @@ const Message = ({
               <button
                 key={index}
                 onClick={() => onOptionSelect(option)}
-                className="text-sm px-2.5 py-1 bg-white hover:bg-gray-50 rounded-md text-gray-700 
+                className={`text-xs px-2 py-1 bg-white hover:bg-gray-50 rounded-md text-gray-700 
                 transition-all duration-150 text-left flex-shrink-0 border border-gray-200 
-                hover:border-gray-300 hover:text-gray-900 flex items-center gap-2"
+                hover:border-gray-300 hover:text-gray-900 flex items-center gap-1.5 ${option.className || ''}`}
               >
-                {Icon && <Icon className="text-sm text-gray-500" />}
+                {Icon && <Icon className="text-xs text-gray-500" />}
                 {option.text}
               </button>
             );
