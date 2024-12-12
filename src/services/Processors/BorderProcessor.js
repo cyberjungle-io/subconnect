@@ -63,11 +63,6 @@ export class BorderProcessor {
     let matchFound = false;
     let result = null;
 
-    // Check if border is currently removed
-    const isBorderRemoved = currentStyle.borderWidth === '0px' || 
-                           currentStyle.borderStyle === 'none' || 
-                           !currentStyle.borderWidth;
-
     // Handle basic add/remove border commands
     const addBorderMatch = input.match(/^add\s*(?:a)?\s*border$/i);
     if (addBorderMatch) {
@@ -85,44 +80,10 @@ export class BorderProcessor {
       return {
         style: {
           borderWidth: '0px',
-          borderStyle: currentStyle.borderStyle || 'solid',
-          borderColor: currentStyle.borderColor || 'black'
+          borderStyle: 'none',
+          borderColor: 'transparent'
         }
       };
-    }
-
-    // If border is removed and we're trying to modify it, restore default border first
-    if (isBorderRemoved && (
-      input.includes('border width') || 
-      input.match(/^add\s*1px\s*(?:to\s*)?border$/i) ||
-      input.match(/^small|medium|large$/i)
-    )) {
-      const baseStyle = {
-        borderStyle: 'solid',
-        borderColor: 'black'
-      };
-
-      // Handle increment/decrement patterns
-      if (input.match(/^add\s*1px\s*(?:to\s*)?border$/i)) {
-        return {
-          style: {
-            ...baseStyle,
-            borderWidth: '1px'
-          }
-        };
-      }
-
-      // Handle presets
-      const presetMatch = input.match(/^(?:set|make|change)\s*(?:the\s*)?(?:border\s*)?(?:width|radius)?\s*(?:to\s*)?(small|medium|large)$/i);
-      if (presetMatch) {
-        const size = presetMatch[1].toLowerCase();
-        return {
-          style: {
-            ...baseStyle,
-            borderWidth: presets.borderWidth[size]
-          }
-        };
-      }
     }
 
     // Handle rounded corners without specific value

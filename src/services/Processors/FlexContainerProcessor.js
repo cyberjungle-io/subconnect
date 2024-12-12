@@ -24,6 +24,25 @@ import {
   FaCloudSun,
 } from "react-icons/fa";
 
+const isLightColor = (color) => {
+  // Convert hex to RGB
+  let r, g, b;
+  if (color.startsWith('#')) {
+    const hex = color.replace('#', '');
+    r = parseInt(hex.substr(0, 2), 16);
+    g = parseInt(hex.substr(2, 2), 16);
+    b = parseInt(hex.substr(4, 2), 16);
+  } else if (color.startsWith('rgb')) {
+    [r, g, b] = color.match(/\d+/g).map(Number);
+  } else {
+    return true; // Default to dark text for named colors
+  }
+  
+  // Calculate relative luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5;
+};
+
 export class FlexContainerProcessor {
   static getSuggestions() {
     const buttonClass = "text-xs px-1 py-1"; // Smaller text and padding
@@ -555,6 +574,96 @@ export class FlexContainerProcessor {
                 ],
               },
             ],
+          },
+          {
+            text: "Border Color",
+            type: "info",
+            icon: FaPalette,
+            className: headerClass,
+          },
+          {
+            type: "wrapper",
+            className: "flex flex-col gap-1",
+            options: [
+              {
+                type: "wrapper",
+                className: "flex flex-wrap gap-1",
+                options: (state) => {
+                  const colorTheme = state?.colorTheme || [];
+                  
+                  // Create array of theme colors
+                  const themeButtons = colorTheme.length === 0 ? [
+                    {
+                      text: "black",
+                      command: "set border color to black",
+                      type: "command",
+                      icon: FaPalette,
+                      className: buttonClass,
+                      style: {
+                        backgroundColor: '#000000',
+                        color: '#ffffff',
+                        minWidth: '60px',
+                        textAlign: 'center'
+                      }
+                    },
+                    {
+                      text: "gray",
+                      command: "set border color to gray",
+                      type: "command",
+                      icon: FaPalette,
+                      className: buttonClass,
+                      style: {
+                        backgroundColor: '#808080',
+                        color: '#ffffff',
+                        minWidth: '60px',
+                        textAlign: 'center'
+                      }
+                    },
+                    {
+                      text: "blue",
+                      command: "set border color to blue",
+                      type: "command",
+                      icon: FaPalette,
+                      className: buttonClass,
+                      style: {
+                        backgroundColor: '#0000ff',
+                        color: '#ffffff',
+                        minWidth: '60px',
+                        textAlign: 'center'
+                      }
+                    }
+                  ] : colorTheme.map(color => ({
+                    text: color.name,
+                    command: `set border color to ${color.value}`,
+                    type: "command",
+                    icon: FaPalette,
+                    className: `${buttonClass} relative`,
+                    style: {
+                      backgroundColor: color.value,
+                      color: isLightColor(color.value) ? '#000000' : '#ffffff',
+                      minWidth: '60px',
+                      textAlign: 'center'
+                    },
+                  }));
+
+                  // Add custom color button
+                  return [
+                    ...themeButtons,
+                    {
+                      text: "custom",
+                      command: "set border color to custom",
+                      type: "command",
+                      icon: FaPalette,
+                      className: buttonClass,
+                      style: {
+                        minWidth: '60px',
+                        textAlign: 'center'
+                      }
+                    }
+                  ];
+                }
+              }
+            ]
           },
         ],
       },

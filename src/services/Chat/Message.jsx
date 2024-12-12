@@ -1,6 +1,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { FaExternalLinkAlt } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
 
 const Message = ({
   message,
@@ -10,6 +11,8 @@ const Message = ({
   selectedComponent,
   replacedMessageIds = new Set(),
 }) => {
+  const colorTheme = useSelector(state => state.editor.colorTheme);
+
   const isReplaced = replacedMessageIds.has(message.id) || false;
 
   if (isReplaced) {
@@ -39,7 +42,10 @@ const Message = ({
           if (option.type === "wrapper") {
             return (
               <div key={index} className={option.className}>
-                {renderOptions(option.options)}
+                {renderOptions(typeof option.options === 'function' 
+                  ? option.options({ colorTheme })
+                  : option.options
+                )}
               </div>
             );
           }
@@ -89,6 +95,7 @@ const Message = ({
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                     : 'bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300'
                   } transition-all duration-150`}
+                style={option.style}
                 disabled={isDisabled}
                 title={isDisabled ? 'Height is already auto' : undefined}
               >
