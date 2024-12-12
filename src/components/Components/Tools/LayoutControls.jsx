@@ -85,7 +85,7 @@ const LayoutControls = ({ style, onStyleChange }) => {
                     : inactiveButtonClass
                 } flex-1`}
               >
-                {value === "row" ? "Column" : "Row"}
+                {value === "row" ? "Horizontal" : "Vertical"}
               </button>
             ))}
           </div>

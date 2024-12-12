@@ -38,13 +38,13 @@ export class FlexContainerProcessor {
             className: headerClass
           },
           {
-            text: "row",
+            text: "horizontal",
             type: "command",
             icon: FaArrowsAltH,
             className: buttonClass
           },
           {
-            text: "column",
+            text: "vertical",
             type: "command",
             icon: FaArrowsAltV,
             className: buttonClass

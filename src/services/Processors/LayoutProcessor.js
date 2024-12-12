@@ -2,20 +2,20 @@ export class LayoutProcessor {
   // Update natural language mappings to include simpler terms
   static naturalLanguageMap = {
     // Direction mappings
+    "horizontal": "row",
+    "vertical": "column",
     "left to right": "row",
     "top to bottom": "column",
-    horizontal: "row",
-    vertical: "column",
-    sideways: "row",
+    "sideways": "row",
     "up and down": "column",
-    across: "row",
-    down: "column",
-    "change to row": "row",
-    "change to column": "column",
-    "set to row": "row",
-    "set to column": "column",
-    row: "row",
-    column: "column",
+    "across": "row",
+    "down": "column",
+    "change to horizontal": "row",
+    "change to vertical": "column",
+    "set to horizontal": "row",
+    "set to vertical": "column",
+    "row": "row",
+    "column": "column",
 
     // Justify content mappings
     between: "space-between",
@@ -97,11 +97,11 @@ export class LayoutProcessor {
   static getStylePatterns() {
     return {
       flexDirection: [
-        /(?:set|make|change)?\s*(?:the)?\s*direction\s*(?:to)?\s*(row|column)/i,
-        /(?:set|make|change)?\s*(?:the)?\s*flex\s*direction\s*(?:to)?\s*(row|column)/i,
+        /(?:set|make|change)?\s*(?:the)?\s*direction\s*(?:to)?\s*(horizontal|vertical|row|column)/i,
+        /(?:set|make|change)?\s*(?:the)?\s*flex\s*direction\s*(?:to)?\s*(horizontal|vertical|row|column)/i,
         /(?:arrange|layout|display)\s*(?:items)?\s*(horizontally|vertically)/i,
         /(?:stack|place)\s*(?:items|elements)?\s*(horizontally|vertically)/i,
-        /(?:put|align)\s*(?:items|elements)?\s*(?:in\s*a)?\s*(row|column)/i,
+        /(?:put|align)\s*(?:items|elements)?\s*(?:in\s*a)?\s*(horizontal|vertical)\s*(?:layout)?/i,
         /(?:make|create)\s*(?:a)?\s*(horizontal|vertical)\s*(?:layout|arrangement)/i,
         /(?:items|elements)\s*should\s*(?:go|be)\s*(horizontally|vertically)/i,
         /(?:flow|arrange)\s*(?:from)?\s*(left to right|top to bottom)/i,
