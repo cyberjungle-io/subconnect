@@ -703,14 +703,15 @@ const AIChatWindow = ({ onClose }) => {
     }
   };
 
-  // Update the useEffect that handles component selection
+  // Modify the component selection effect
   useEffect(() => {
+    // Skip if chat window is not visible
     if (!isVisible) {
       initializationRef.current = false;
       return;
     }
 
-    // Handle initial messages only once
+    // Handle initial welcome message only once
     if (!initializationRef.current && messages.length === 0) {
       initializationRef.current = true;
       const initialMessage = {
@@ -727,51 +728,54 @@ const AIChatWindow = ({ onClose }) => {
     // Handle component selection
     if (selectedComponent) {
       const chatId = `${selectedComponent.type}_${selectedComponent.id}`;
-
-      // Check if we already have a chat for this component
-      const existingChat = componentChats.find(
-        (chat) => chat.componentId === selectedComponent.id
-      );
-
-      if (existingChat) {
-        // Switch to existing chat
-        if (activeChat !== existingChat.id) {
-          setActiveChat(existingChat.id);
+      
+      // Only proceed if this is a new component selection
+      if (lastHandledComponentRef.current !== selectedComponent.id) {
+        lastHandledComponentRef.current = selectedComponent.id;
+        
+        // Add selection notification only once per component
+        if (!componentMessageRef.current) {
+          ChatMessageService.addNotification(`Component selected: ${selectedComponent.type}`);
+          componentMessageRef.current = true;
         }
-      } else {
-        // Create new component chat
-        const initialMessage = {
-          id: Date.now().toString(),
-          role: "assistant",
-          content: `Here are some things you can do with the ${selectedComponent.type.toLowerCase()}:`,
-          timestamp: new Date(),
-          options: getComponentSpecificOptions(selectedComponent),
-        };
 
-        setComponentChats((prev) => [
-          ...prev,
-          {
-            id: chatId,
-            componentId: selectedComponent.id,
-            type: selectedComponent.type,
-            name: selectedComponent.type,
-            messages: [initialMessage],
-          },
-        ]);
-        setActiveChat(chatId);
+        // Check for existing chat
+        const existingChat = componentChats.find(chat => chat.componentId === selectedComponent.id);
 
-        // Add a subtle confirmation in main chat
-        const confirmationMessage = {
-          id: Date.now().toString(),
-          role: "assistant",
-          content: `Opened ${selectedComponent.type} chat`,
-          timestamp: new Date(),
-          status: "success",
-        };
-        dispatch(addMessage(confirmationMessage));
+        if (existingChat) {
+          // Switch to existing chat if not already active
+          if (activeChat !== existingChat.id) {
+            setActiveChat(existingChat.id);
+          }
+        } else {
+          // Create new component chat
+          const initialMessage = {
+            id: Date.now().toString(),
+            role: "assistant",
+            content: `Here are some things you can do with the ${selectedComponent.type.toLowerCase()}:`,
+            timestamp: new Date(),
+            options: getComponentSpecificOptions(selectedComponent),
+          };
+
+          setComponentChats(prev => [
+            ...prev,
+            {
+              id: chatId,
+              componentId: selectedComponent.id,
+              type: selectedComponent.type,
+              name: selectedComponent.type,
+              messages: [initialMessage],
+            },
+          ]);
+          setActiveChat(chatId);
+        }
       }
     } else {
-      // No component selected, switch back to main chat
+      // Reset refs when no component is selected
+      componentMessageRef.current = false;
+      lastHandledComponentRef.current = null;
+      
+      // Switch back to main chat if needed
       if (activeChat !== "main") {
         setActiveChat("main");
       }
@@ -783,7 +787,14 @@ const AIChatWindow = ({ onClose }) => {
         initializationRef.current = false;
       }
     };
-  }, [isVisible, selectedComponent?.id, dispatch, componentChats, activeChat]);
+  }, [
+    isVisible, 
+    selectedComponent, 
+    dispatch, 
+    messages.length, 
+    componentChats, 
+    activeChat
+  ]); // Add all dependencies
 
   // Keep the createOrOpenComponentChat function unchanged for manual switching
   const createOrOpenComponentChat = (component) => {
@@ -865,48 +876,6 @@ const AIChatWindow = ({ onClose }) => {
         return [];
     }
   };
-
-  // Update the useEffect for component selection
-  useEffect(() => {
-    if (selectedComponent && !componentMessageRef.current) {
-      ChatMessageService.addNotification(
-        `Component selected: ${selectedComponent.type}`
-      );
-    }
-  }, [selectedComponent]);
-
-  // Update the useEffect that depends on isVisible
-  useEffect(() => {
-    // Only run the effect if the chat window is visible
-    if (!isVisible) {
-      initializationRef.current = false;
-      return;
-    }
-
-    if (selectedComponent && !componentMessageRef.current) {
-      // Create initial message for component selection
-      const message = ChatMessageService.createMessage(
-        `Component selected: ${selectedComponent.type}`,
-        "assistant",
-        true
-      );
-      dispatch(addMessage(message));
-      componentMessageRef.current = true;
-    }
-
-    // Reset the ref when component changes
-    if (selectedComponent?.id !== lastHandledComponentRef.current) {
-      componentMessageRef.current = false;
-      lastHandledComponentRef.current = selectedComponent?.id;
-    }
-
-    // Cleanup function
-    return () => {
-      if (!isVisible) {
-        initializationRef.current = false;
-      }
-    };
-  }, [isVisible, selectedComponent?.id, dispatch, componentChats, activeChat]);
 
   const [showSettings, setShowSettings] = useState(false);
 
