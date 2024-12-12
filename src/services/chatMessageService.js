@@ -1,15 +1,15 @@
-import { store } from "../../store/store";
-import { addMessage } from "../../features/aiChatSlice";
-import { format } from "date-fns";
+import { store } from '../store/store';
+import { addMessage } from '../features/aiChatSlice';
+import { format } from 'date-fns';
 
 class ChatMessageService {
-  static createMessage(content, role = "assistant", options = null) {
+  static createMessage(content, role = 'assistant', options = null) {
     return {
       id: Date.now().toString(),
       content,
       role,
       timestamp: new Date().toISOString(),
-      options,
+      options
     };
   }
 
@@ -17,9 +17,9 @@ class ChatMessageService {
     const message = {
       id: Date.now().toString(),
       content,
-      role: "assistant",
+      role: 'assistant',
       timestamp: new Date().toISOString(),
-      isNotification: true,
+      isNotification: true
     };
     store.dispatch(addMessage(message));
     return message;
@@ -43,8 +43,8 @@ class ChatMessageService {
   }
 
   static formatTimestamp(timestamp) {
-    return format(new Date(timestamp), "HH:mm");
+    return format(new Date(timestamp), 'HH:mm');
   }
 }
 
-export default ChatMessageService;
+export default ChatMessageService; 

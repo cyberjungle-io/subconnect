@@ -1,13 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addMessage, changeProvider } from "../../features/aiChatSlice";
-import {
-  FaTimes,
-  FaChevronLeft,
-  FaChevronRight,
-  FaCog,
-  FaPlus,
-} from "react-icons/fa";
+import { FaTimes, FaChevronLeft, FaChevronRight, FaCog, FaPlus } from "react-icons/fa";
 import { LLMProviders } from "../llm/llmService";
 import { AICommandExecutor } from "../aiExecutor";
 import { TableProcessor } from "../Processors/TableProcessor";
@@ -17,10 +11,10 @@ import { componentConfig } from "../../components/Components/componentConfig";
 import ChatTabs from "./ChatTabs";
 import MessageList from "./MessageList";
 import ChatInput from "./ChatInput";
-import ChatMessageService from "./chatMessageService";
+import ChatMessageService from "../chatMessageService";
 import { useComponentSelection } from "../../hooks/useComponentSelection";
 import useChatState from "../../hooks/useChatState";
-import { FlexContainerProcessor } from "../Processors/FlexContainerProcessor";
+import { FlexContainerProcessor } from '../Processors/FlexContainerProcessor';
 
 const getInitialSuggestions = () => {
   // Name mapping for specific components
@@ -713,7 +707,6 @@ const AIChatWindow = ({ onClose }) => {
   useEffect(() => {
     if (!isVisible) {
       initializationRef.current = false;
-      componentMessageRef.current = false;
       return;
     }
 
@@ -731,27 +724,17 @@ const AIChatWindow = ({ onClose }) => {
       return;
     }
 
-    // Only proceed if we have a selected component
-    if (!selectedComponent) {
-      if (activeChat !== "main") {
-        setActiveChat("main");
-      }
-      return;
-    }
+    // Handle component selection
+    if (selectedComponent) {
+      const chatId = `${selectedComponent.type}_${selectedComponent.id}`;
 
-    const chatId = `${selectedComponent.type}_${selectedComponent.id}`;
-
-    // Check if this is a new component selection
-    if (selectedComponent.id !== lastHandledComponentRef.current) {
-      lastHandledComponentRef.current = selectedComponent.id;
-
-      // Find existing chat
+      // Check if we already have a chat for this component
       const existingChat = componentChats.find(
         (chat) => chat.componentId === selectedComponent.id
       );
 
       if (existingChat) {
-        // Only switch if we're not already on this chat
+        // Switch to existing chat
         if (activeChat !== existingChat.id) {
           setActiveChat(existingChat.id);
         }
@@ -776,16 +759,31 @@ const AIChatWindow = ({ onClose }) => {
           },
         ]);
         setActiveChat(chatId);
+
+        // Add a subtle confirmation in main chat
+        const confirmationMessage = {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: `Opened ${selectedComponent.type} chat`,
+          timestamp: new Date(),
+          status: "success",
+        };
+        dispatch(addMessage(confirmationMessage));
+      }
+    } else {
+      // No component selected, switch back to main chat
+      if (activeChat !== "main") {
+        setActiveChat("main");
       }
     }
-  }, [
-    isVisible,
-    selectedComponent,
-    dispatch,
-    componentChats,
-    activeChat,
-    messages.length,
-  ]);
+
+    // Cleanup function
+    return () => {
+      if (!isVisible) {
+        initializationRef.current = false;
+      }
+    };
+  }, [isVisible, selectedComponent?.id, dispatch, componentChats, activeChat]);
 
   // Keep the createOrOpenComponentChat function unchanged for manual switching
   const createOrOpenComponentChat = (component) => {
@@ -956,9 +954,7 @@ const AIChatWindow = ({ onClose }) => {
 
         {showSettings && (
           <div className="p-4 border-b border-blue-100 bg-white">
-            <h4 className="text-sm font-semibold text-gray-700 mb-3">
-              Settings
-            </h4>
+            <h4 className="text-sm font-semibold text-gray-700 mb-3">Settings</h4>
             <div className="space-y-3">
               <div className="flex flex-col gap-1">
                 <label className="text-sm text-gray-600">AI Provider</label>

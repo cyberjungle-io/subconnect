@@ -21,8 +21,8 @@ import {
 
 export class FlexContainerProcessor {
   static getSuggestions() {
-    const buttonClass = "text-xs px-1.5 py-1"; // Smaller text and padding
-    const headerClass = "text-xs font-medium text-gray-500"; // Smaller, medium weight headers
+    const buttonClass = "text-xs px-1 py-1"; // Smaller text and padding
+    const headerClass = "text-xs font-small text-gray-200"; // Changed from text-gray-600 to text-gray-400 for lighter headers
 
     return [
       {
