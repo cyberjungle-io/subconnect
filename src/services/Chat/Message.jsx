@@ -32,6 +32,10 @@ const Message = ({
     return (
       <div className={`mt-1.5 flex gap-1 flex-wrap w-full`}>
         {options.map((option, index) => {
+          if (option.checkVisible && !option.checkVisible(selectedComponent)) {
+            return null;
+          }
+
           if (option.type === "category") {
             const Icon = option.icon;
             return (
@@ -63,15 +67,21 @@ const Message = ({
 
           if (option.type === "command") {
             const Icon = option.icon;
+            const isDisabled = option.checkEnabled && !option.checkEnabled(selectedComponent);
+            
             return (
               <button
                 key={index}
-                onClick={() => onOptionSelect(option)}
-                className="text-[10px] px-1.5 py-0.5 bg-white hover:bg-gray-50 rounded-md text-gray-700 
-                transition-all duration-150 text-left flex-shrink-0 border border-gray-200 
-                hover:border-gray-300 hover:text-gray-900 flex items-center gap-1"
+                onClick={() => !isDisabled && onOptionSelect(option)}
+                className={`text-[10px] px-1.5 py-0.5 rounded-md text-left flex-shrink-0 flex items-center gap-1
+                  ${isDisabled 
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                    : 'bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300'
+                  } transition-all duration-150`}
+                disabled={isDisabled}
+                title={isDisabled ? 'Height is already auto' : undefined}
               >
-                {Icon && <Icon className="text-[10px] text-gray-500" />}
+                {Icon && <Icon className={`text-[10px] ${isDisabled ? 'text-gray-400' : 'text-gray-500'}`} />}
                 {option.text}
               </button>
             );

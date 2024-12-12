@@ -17,7 +17,8 @@ import {
   FaWrench,
   FaColumns,
   FaGripHorizontal,
-  FaCompressAlt
+  FaCompressAlt,
+  FaCompress
 } from 'react-icons/fa';
 
 export class FlexContainerProcessor {
@@ -196,6 +197,24 @@ export class FlexContainerProcessor {
         icon: FaExpand,
         options: [
           {
+            text: "fit to content",
+            type: "command",
+            icon: FaCompress,
+            className: buttonClass
+          },
+          {
+            text: "fit vertical",
+            type: "command",
+            icon: FaArrowsAltV,
+            className: buttonClass
+          },
+          {
+            text: "fit horizontal",
+            type: "command",
+            icon: FaArrowsAltH,
+            className: buttonClass
+          },
+          {
             text: "make it bigger",
             type: "command",
             icon: FaExpandAlt,
@@ -217,18 +236,20 @@ export class FlexContainerProcessor {
             text: "set height to auto",
             type: "command",
             icon: FaArrowsAltV,
-            className: buttonClass
-          },
-          {
-            text: "set width to 300px",
-            type: "command",
-            icon: FaArrowsAltH,
-            className: buttonClass
+            className: buttonClass,
+            checkEnabled: (component) => component?.style?.height !== 'auto'
           },
           {
             text: "set height to 200px",
             type: "command",
             icon: FaArrowsAltV,
+            className: buttonClass,
+            checkVisible: (component) => component?.style?.height === 'auto'
+          },
+          {
+            text: "set width to 300px",
+            type: "command",
+            icon: FaArrowsAltH,
             className: buttonClass
           }
         ]

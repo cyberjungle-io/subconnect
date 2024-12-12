@@ -9,9 +9,7 @@ export class SizeProcessor {
         new RegExp(`(?:set|make|change)?\\s*(?:the)?\\s*width\\s*(?:to|=|:)?\\s*(${number}${units})`, 'i'),
         // Percentage shortcuts
         /(?:set|make|change)?\s*(?:the)?\s*width\s*(?:to|=|:)?\s*(25|50|75|100)\s*(?:percent|%)/i,
-        // Fit content
-        /(?:set|make|change)?\s*(?:the)?\s*width\s*(?:to|=|:)?\s*fit\s*content/i,
-        // Auto size
+        // Auto width
         /(?:set|make|change)?\s*(?:the)?\s*width\s*(?:to)?\s*auto/i,
         /automatic\s*width/i
       ],
@@ -20,15 +18,11 @@ export class SizeProcessor {
         new RegExp(`(?:set|make|change)?\\s*(?:the)?\\s*height\\s*(?:to|=|:)?\\s*(${number}${units})`, 'i'),
         // Percentage shortcuts
         /(?:set|make|change)?\s*(?:the)?\s*height\s*(?:to|=|:)?\s*(25|50|75|100)\s*(?:percent|%)/i,
-        // Fit content
-        /(?:set|make|change)?\s*(?:the)?\s*height\s*(?:to|=|:)?\s*fit\s*content/i,
-        // Auto size
+        // Auto height - add more variations
         /(?:set|make|change)?\s*(?:the)?\s*height\s*(?:to)?\s*auto/i,
         /automatic\s*height/i,
-        
-        // New patterns for relative changes
-        new RegExp(`(?:increase|add|increment|raise)\\s*(?:the)?\\s*height\\s*(?:by)?\\s*(${number})\\s*${units}`, 'i'),
-        new RegExp(`(?:decrease|subtract|reduce|lower)\\s*(?:the)?\\s*height\\s*(?:by)?\\s*(${number})\\s*${units}`, 'i'),
+        /make\s*(?:the)?\s*height\s*automatic/i,
+        /set\s*(?:to)?\s*auto(?:matic)?\s*height/i
       ],
       // Min/Max patterns
       minWidth: [
@@ -72,6 +66,60 @@ export class SizeProcessor {
     console.log('SizeProcessor received input:', input);
     console.log('Current style:', currentStyle);
     
+    // Add specific check for fit commands
+    const fitPattern = /fit\s*(?:to)?\s*(content|vertical|horizontal)/i;
+    const fitMatch = input.match(fitPattern);
+    
+    if (fitMatch) {
+      const fitType = fitMatch[1].toLowerCase();
+      console.log('Matched fit pattern:', fitType);
+      
+      switch (fitType) {
+        case 'content':
+          return {
+            style: {
+              width: 'fit-content',
+              height: 'fit-content'
+            }
+          };
+        case 'vertical':
+          return {
+            style: {
+              height: 'fit-content'
+            }
+          };
+        case 'horizontal':
+          return {
+            style: {
+              width: 'fit-content'
+            }
+          };
+      }
+    }
+
+    // Add specific check for auto height command
+    const autoHeightPattern = /(?:set|make|change)?\s*(?:the)?\s*height\s*(?:to)?\s*auto(?:matic)?/i;
+    if (autoHeightPattern.test(input)) {
+      console.log('Matched auto height pattern');
+      
+      // Check if height is already auto
+      if (currentStyle.height === 'auto') {
+        // Return null to indicate no change needed
+        console.log('Height is already auto, no change needed');
+        return null;
+      }
+      
+      // Store the previous height value for potential undo
+      const previousHeight = currentStyle.height;
+      console.log('Changing height from', previousHeight, 'to auto');
+      
+      return {
+        style: {
+          height: 'auto'
+        }
+      };
+    }
+
     // Handle "make bigger/smaller" commands
     const sizeChangePattern = /(?:make|set)\s*(?:it|this)?\s*(bigger|larger|smaller)/i;
     const sizeMatch = input.match(sizeChangePattern);
@@ -80,25 +128,39 @@ export class SizeProcessor {
       const isBigger = sizeMatch[1].match(/bigger|larger/i);
       const changes = {};
       
+      // Helper function to calculate new size
+      const calculateNewSize = (currentValue, unit, isIncrease) => {
+        if (unit === '%') {
+          // For percentages, use smaller increments
+          const increment = 5;
+          const newValue = isIncrease ? currentValue + increment : currentValue - increment;
+          // Allow percentage to go from 5% to 100%
+          return `${Math.min(Math.max(newValue, 5), 100)}%`;
+        } else if (unit === 'px') {
+          // For pixels, use larger increments and no upper limit
+          const increment = 50;
+          const newValue = isIncrease ? currentValue + increment : currentValue - increment;
+          // Only limit the minimum pixel size
+          return `${Math.max(newValue, 50)}px`;
+        }
+        return null;
+      };
+
       // Process width
       if (currentStyle.width) {
         const widthMatch = currentStyle.width.match(/^([\d.]+)([%px]+|auto)$/);
         if (widthMatch) {
           const [_, value, unit] = widthMatch;
-          if (unit === '%') {
-            const currentValue = parseFloat(value);
-            const newValue = isBigger ? currentValue + 10 : currentValue - 10;
-            changes.width = `${Math.min(Math.max(newValue, 10), 100)}%`;
-          } else if (unit === 'px') {
-            const currentValue = parseFloat(value);
-            const newValue = isBigger ? currentValue + 20 : currentValue - 20;
-            changes.width = `${Math.max(newValue, 20)}px`;
-          }
+          const currentValue = parseFloat(value);
+          const newSize = calculateNewSize(currentValue, unit, isBigger);
+          if (newSize) changes.width = newSize;
         } else if (currentStyle.width === 'auto') {
-          changes.width = isBigger ? '200px' : '100px';
+          // Start with a reasonable default size when converting from auto
+          changes.width = isBigger ? '300px' : '200px';
         }
       } else {
-        changes.width = isBigger ? '200px' : '100px';
+        // If no width is set, start with a default
+        changes.width = isBigger ? '300px' : '200px';
       }
       
       // Process height
@@ -106,22 +168,19 @@ export class SizeProcessor {
         const heightMatch = currentStyle.height.match(/^([\d.]+)([%px]+|auto)$/);
         if (heightMatch) {
           const [_, value, unit] = heightMatch;
-          if (unit === '%') {
-            const currentValue = parseFloat(value);
-            const newValue = isBigger ? currentValue + 10 : currentValue - 10;
-            changes.height = `${Math.min(Math.max(newValue, 10), 100)}%`;
-          } else if (unit === 'px') {
-            const currentValue = parseFloat(value);
-            const newValue = isBigger ? currentValue + 20 : currentValue - 20;
-            changes.height = `${Math.max(newValue, 20)}px`;
-          }
+          const currentValue = parseFloat(value);
+          const newSize = calculateNewSize(currentValue, unit, isBigger);
+          if (newSize) changes.height = newSize;
         } else if (currentStyle.height === 'auto') {
-          changes.height = isBigger ? '200px' : '100px';
+          // Start with a reasonable default size when converting from auto
+          changes.height = isBigger ? '300px' : '200px';
         }
       } else {
-        changes.height = isBigger ? '200px' : '100px';
+        // If no height is set, start with a default
+        changes.height = isBigger ? '300px' : '200px';
       }
       
+      console.log('Size changes:', changes);
       return { style: changes };
     }
 
@@ -133,6 +192,15 @@ export class SizeProcessor {
       const match = input.match(pattern);
       if (match) {
         let value = match[1]?.toLowerCase();
+        
+        // Handle auto width
+        if (input.includes('auto')) {
+          return {
+            style: {
+              width: 'auto'
+            }
+          };
+        }
         
         // Handle percentage shortcuts
         if (['25', '50', '75', '100'].includes(value)) {
@@ -152,6 +220,15 @@ export class SizeProcessor {
       const match = input.match(pattern);
       if (match) {
         let value = match[1]?.toLowerCase();
+        
+        // Handle auto height
+        if (input.includes('auto')) {
+          return {
+            style: {
+              height: 'auto'
+            }
+          };
+        }
         
         // Handle percentage shortcuts
         if (['25', '50', '75', '100'].includes(value)) {
