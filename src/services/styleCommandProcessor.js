@@ -16,12 +16,14 @@ export class StyleCommandProcessor {
 
   static processStyleCommand(input, component) {
     console.log("StyleCommandProcessor received input:", input);
-    console.log("Component style:", component.style);
-    console.log("Last context:", {
-      property: this.lastModifiedProperty,
-      value: this.lastModifiedValue,
-      processor: this.lastUsedProcessor?.name,
-    });
+    console.log("Component style:", component?.style);
+    console.log("Last context:", this.lastContext);
+
+    // If we get a PROMPT type response from any processor, return it directly
+    const borderResult = BorderProcessor.processCommand(input, component?.style);
+    if (borderResult?.type === 'PROMPT') {
+      return borderResult;
+    }
 
     // Check if this is a text-specific command
     const isTextCommand =

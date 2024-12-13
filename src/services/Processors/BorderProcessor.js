@@ -1,3 +1,5 @@
+import { ColorProcessor } from './ColorProcessor';
+
 export class BorderProcessor {
   static getStylePatterns() {
     return {
@@ -28,7 +30,12 @@ export class BorderProcessor {
         /(?:set|make|change)?\s*(?:the)?\s*border\s*style\s*(?:to|=|:)?\s*(solid|dashed|dotted|double|groove|ridge|inset|outset)/i,
       ],
       borderColor: [
-        /(?:set|make|change)?\s*(?:the)?\s*border\s*color\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|#[0-9a-fA-F]{3,6})/i,
+        /(?:set|make|change)?\s*(?:the)?\s*border\s*color\s*(?:to|=|:)?\s*(#[0-9a-fA-F]{6}|[a-zA-Z]+)/i,
+        /(?:set|make|change)?\s*(?:the)?\s*border\s*(?:to|=|:)?\s*(#[0-9a-fA-F]{6}|[a-zA-Z]+)/i,
+        /(?:color|make|set)\s*(?:the)?\s*border\s*(#[0-9a-fA-F]{6}|[a-zA-Z]+)/i,
+        /border\s*color\s*(?:to|=|:)?\s*(#[0-9a-fA-F]{6}|[a-zA-Z]+)/i,
+        /(?:set|make|change|use|pick|choose|select|add)\s*(?:a|the)?\s*(?:custom|different|specific|new|another)\s*(?:border\s*)?color/i,
+        /(?:i\s*want\s*|i\s*need\s*|i\s*would\s*like\s*)(?:a|the)?\s*(?:custom|different|specific|new|another)\s*(?:border\s*)?color/i
       ]
     };
   }
@@ -62,6 +69,41 @@ export class BorderProcessor {
     const stylePatterns = this.getStylePatterns();
     let matchFound = false;
     let result = null;
+
+    // Check for custom color request first
+    if (input.includes('custom') || 
+        /(?:set|make|change|use|pick|choose|select|add|want|need|like)\s*(?:a|the)?\s*(?:custom|different|specific|new|another)\s*(?:border\s*)?color/i.test(input)) {
+      return {
+        success: true,
+        type: 'PROMPT',
+        message: 'Enter your custom border color:',
+        options: [
+          {
+            text: 'Color formats accepted:',
+            type: 'info'
+          },
+          {
+            text: '• Color names (e.g., blue, red, green)',
+            type: 'info'
+          },
+          {
+            text: '• Hex codes (e.g., #FF0000, #00FF00)',
+            type: 'info'
+          },
+          {
+            text: '• RGB values (e.g., rgb(255, 0, 0))',
+            type: 'info'
+          },
+          {
+            text: '• RGBA values (e.g., rgba(255, 0, 0, 0.5))',
+            type: 'info'
+          }
+        ],
+        needsMoreInfo: true,
+        property: 'borderColor',
+        style: {}
+      };
+    }
 
     // Handle basic add/remove border commands
     const addBorderMatch = input.match(/^add\s*(?:a)?\s*border$/i);
@@ -182,7 +224,7 @@ export class BorderProcessor {
       }
     }
 
-    // Process other border-related patterns
+    // Process specific color commands
     for (const [property, patterns] of Object.entries(stylePatterns)) {
       for (const pattern of patterns) {
         const match = input.match(pattern);
@@ -192,19 +234,15 @@ export class BorderProcessor {
           const value = match[1]?.toLowerCase();
           
           if (value) {
-            // Handle border property specially to avoid shorthand
-            if (property === 'border') {
+            // Don't process if the value is 'custom'
+            if (value === 'custom') continue;
+            
+            // Validate color using ColorProcessor
+            const colorResult = ColorProcessor.processCommand(`set color to ${value}`);
+            if (colorResult && colorResult.style.color) {
               result = {
                 style: {
-                  borderWidth: value,
-                  borderStyle: 'solid',
-                  borderColor: 'black'
-                }
-              };
-            } else {
-              result = {
-                style: {
-                  [property]: value
+                  [property]: colorResult.style.color
                 }
               };
             }

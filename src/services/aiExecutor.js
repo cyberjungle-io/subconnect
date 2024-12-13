@@ -214,10 +214,19 @@ export class AICommandExecutor {
   }
 
   static async processStyleCommand(input, component, dispatch) {
-    const styleResult = StyleCommandProcessor.processStyleCommand(
-      input,
-      component
-    );
+    const styleResult = StyleCommandProcessor.processStyleCommand(input, component);
+    
+    // Handle PROMPT type responses
+    if (styleResult?.type === 'PROMPT') {
+      return {
+        success: true,
+        message: styleResult.message,
+        options: styleResult.options,
+        needsMoreInfo: styleResult.needsMoreInfo,
+        property: styleResult.property
+      };
+    }
+
     if (!styleResult?.style) return null;
 
     try {
