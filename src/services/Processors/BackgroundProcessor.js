@@ -95,7 +95,21 @@ export class BackgroundProcessor {
             type: 'info'
           }
         ],
-        property: 'backgroundColor'
+        property: 'backgroundColor',
+        followUp: {
+          type: 'COLOR_CHANGE',
+          command: (color) => `set background color to ${color}`
+        }
+      };
+    }
+
+    // Check if this is a direct color value (followUp from PROMPT)
+    const directColorPattern = /^([a-z]+|#[0-9a-f]{3,6}|rgb\(\d+,\s*\d+,\s*\d+\))$/i;
+    if (directColorPattern.test(input)) {
+      return {
+        style: {
+          backgroundColor: this.colorKeywords[lowercaseInput] || input
+        }
       };
     }
 
