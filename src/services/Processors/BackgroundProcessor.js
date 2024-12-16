@@ -31,6 +31,9 @@ export class BackgroundProcessor {
   static getStylePatterns() {
     return {
       backgroundColor: [
+        // Add pattern to catch the initial command
+        /^(?:change|set|modify)\s+(?:the\s+)?background\s+color$/i,
+        
         // Exact color changes
         /(?:set|make|change)?\s*(?:the)?\s*background\s*(?:color)?\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|transparent|#[0-9a-fA-F]{3,6})/i,
         /background\s*(?:color)?\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|transparent|#[0-9a-fA-F]{3,6})/i,
@@ -65,6 +68,37 @@ export class BackgroundProcessor {
     console.log('BackgroundProcessor received input:', input, 'Current style:', currentStyle);
     const lowercaseInput = input.toLowerCase();
     
+    // Check for initial background color change command
+    if (/^(?:change|set|modify)\s+(?:the\s+)?background\s+color$/i.test(input)) {
+      return {
+        type: 'PROMPT',
+        message: 'What color would you like to use? You can specify:',
+        options: [
+          {
+            text: 'Color names (e.g., blue, red, green)',
+            type: 'info'
+          },
+          {
+            text: 'Hex codes (#FF0000)',
+            type: 'info'
+          },
+          {
+            text: 'RGB values (rgb(255, 0, 0))',
+            type: 'info'
+          },
+          {
+            text: 'HSL values (hsl(0, 100%, 50%))',
+            type: 'info'
+          },
+          {
+            text: 'RGBA with opacity (rgba(255, 0, 0, 0.5))',
+            type: 'info'
+          }
+        ],
+        property: 'backgroundColor'
+      };
+    }
+
     // Handle opacity/transparency changes FIRST
     const opacityPatterns = [
       /(?:make|set)\s*(?:the|it|background)?\s*(?:a\s*)?(?:little|bit|more|less|much)?\s*(?:more|less)\s*(transparent|opaque)/i,
