@@ -1,10 +1,10 @@
 // src/App.js
 
-import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import store from './store/store';
-import { checkAuthStatus } from './features/userSlice';
+import { checkAuthStatus, logoutUser } from './features/userSlice';
 import { fetchProjects, fetchSharedProjects } from './w3s/w3sSlice';
 import LandingPage from './pages/LandingPage';
 import LoginForm from './components/auth/LoginForm';
@@ -46,10 +46,19 @@ const PrivateRoute = ({ children }) => {
 function AppContent() {
   const dispatch = useDispatch();
   const { currentUser } = useSelector((state) => state.user);
+  const location = useLocation();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
+    // Force logout if accessing register page with invitation
+    if (location.pathname === '/register' && location.search.includes('invitation') && currentUser) {
+      setIsLoggingOut(true);
+      dispatch(logoutUser()).then(() => {
+        setIsLoggingOut(false);
+      });
+    }
     dispatch(checkAuthStatus());
-  }, [dispatch]);
+  }, [dispatch, location, currentUser]);
 
   useEffect(() => {
     if (currentUser) {
@@ -58,58 +67,82 @@ function AppContent() {
     }
   }, [currentUser, dispatch]);
 
-  return (
-    <Router>
-      <Routes>
-        <Route path="/" element={currentUser ? <Navigate to="/editor" /> : <LandingPage />} />
-        <Route path="/login" element={currentUser ? <Navigate to="/editor" /> : <LoginForm />} />
-        <Route
-          path="/editor"
-          element={
-            <PrivateRoute>
-              <MainEditor />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/project/:projectId"
-          element={
-            <MainEditor />
-          }
-        />
-        <Route path="/pricing" element={<PricingPage />} />
-        <Route path="/bug-report" element={<BugReportPage />} />
-        <Route path="/node-services" element={<NodeServicesPage />} />
-        <Route path="/tutorials" element={<TutorialsPage />} />
-        <Route path="/docs" element={<DocumentationPage />}>
-          <Route index element={<DocsLanding />} />
-          <Route path="components/flex-container" element={<FlexContainerDocs />} />
-          <Route path="components/image" element={<ImageDocs />} />
-          <Route path="components/charts" element={<ChartDocs />} />
-          <Route path="components/text" element={<TextDocs />} />
-          <Route path="components/kanban" element={<KanbanDocs />} />
-          <Route path="components/todo" element={<TodoDocs />} />
-          <Route path="components/video" element={<VideoDocs />} />
-          <Route path="components/whiteboard" element={<WhiteboardDocs />} />
-          <Route path="components/table" element={<TableDocs />} />
-          <Route path="components/query-value" element={<QueryValueDocs />} />
-          <Route path="guides/responsive-design" element={<ResponsiveDesignDocs />} />
-          <Route path="legal/terms" element={<TermsOfService />} />
-          <Route path="legal/privacy" element={<PrivacyPolicy />} />
-          <Route path="reset-password/:token" element={<AuthLayout />} />
-        </Route>
-        <Route
-          path="/reset-password/:token"
-          element={
-            <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-              <div className="max-w-md w-full space-y-8">
-                <ResetPasswordForm />
-              </div>
+  const renderRegisterContent = () => {
+    if (isLoggingOut) {
+      return (
+        <>
+          <LandingPage />
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-white rounded-lg p-8 max-w-md w-full m-4">
+              <RegisterForm />
             </div>
-          }
-        />
-      </Routes>
-    </Router>
+          </div>
+        </>
+      );
+    }
+    return currentUser ? <Navigate to="/editor" /> : (
+      <>
+        <LandingPage />
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full m-4">
+            <RegisterForm />
+          </div>
+        </div>
+      </>
+    );
+  };
+
+  return (
+    <Routes>
+      <Route path="/" element={currentUser ? <Navigate to="/editor" /> : <LandingPage />} />
+      <Route path="/login" element={currentUser ? <Navigate to="/editor" /> : <LoginForm />} />
+      <Route path="/register" element={renderRegisterContent()} />
+      <Route
+        path="/editor"
+        element={
+          <PrivateRoute>
+            <MainEditor />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/project/:projectId"
+        element={
+          <MainEditor />
+        }
+      />
+      <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/bug-report" element={<BugReportPage />} />
+      <Route path="/node-services" element={<NodeServicesPage />} />
+      <Route path="/tutorials" element={<TutorialsPage />} />
+      <Route path="/docs" element={<DocumentationPage />}>
+        <Route index element={<DocsLanding />} />
+        <Route path="components/flex-container" element={<FlexContainerDocs />} />
+        <Route path="components/image" element={<ImageDocs />} />
+        <Route path="components/charts" element={<ChartDocs />} />
+        <Route path="components/text" element={<TextDocs />} />
+        <Route path="components/kanban" element={<KanbanDocs />} />
+        <Route path="components/todo" element={<TodoDocs />} />
+        <Route path="components/video" element={<VideoDocs />} />
+        <Route path="components/whiteboard" element={<WhiteboardDocs />} />
+        <Route path="components/table" element={<TableDocs />} />
+        <Route path="components/query-value" element={<QueryValueDocs />} />
+        <Route path="guides/responsive-design" element={<ResponsiveDesignDocs />} />
+        <Route path="legal/terms" element={<TermsOfService />} />
+        <Route path="legal/privacy" element={<PrivacyPolicy />} />
+        <Route path="reset-password/:token" element={<AuthLayout />} />
+      </Route>
+      <Route
+        path="/reset-password/:token"
+        element={
+          <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8">
+              <ResetPasswordForm />
+            </div>
+          </div>
+        }
+      />
+    </Routes>
   );
 }
 
@@ -117,7 +150,9 @@ function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <AppContent />
+        <Router>
+          <AppContent />
+        </Router>
       </PersistGate>
     </Provider>
   );
