@@ -48,27 +48,74 @@ export class LLMProcessor {
   }
 
   static async processStyleUpdate(input, intent, selectedComponent, dispatch) {
-    const llmService = new LLMService();
-    const stylePrompt = `
-      Convert this natural language request into a specific style command.
-      Original request: "${input}"
-      Target property: "${intent.targetProperty}"
-      
-      Available patterns:
-      ${JSON.stringify(StyleCommandProcessor.getStylePatterns(), null, 2)}
-      
-      Respond with the most appropriate command that matches the patterns.
-    `;
-
     try {
-      const styleResponse = await llmService.sendMessage(stylePrompt);
-      const processedCommand = styleResponse.content.trim();
+      // Map LLM property names to actual style properties and their processors
+      const propertyMap = {
+        'background-color': {
+          property: 'backgroundColor',
+          command: (value) => `set background color to ${value}`
+        },
+        'color': {
+          property: 'color',
+          command: (value) => `set color to ${value}`
+        },
+        'border-color': {
+          property: 'borderColor',
+          command: (value) => `set border color to ${value}`
+        },
+        'border-width': {
+          property: 'borderWidth',
+          command: (value) => `set border width to ${value}`
+        },
+        'border-style': {
+          property: 'borderStyle',
+          command: (value) => `set border style to ${value}`
+        },
+        'font-size': {
+          property: 'fontSize',
+          command: (value) => `set font size to ${value}`
+        },
+        'padding': {
+          property: 'padding',
+          command: (value) => `set padding to ${value}`
+        },
+        'margin': {
+          property: 'margin',
+          command: (value) => `set margin to ${value}`
+        },
+        'width': {
+          property: 'width',
+          command: (value) => `set width to ${value}`
+        },
+        'height': {
+          property: 'height',
+          command: (value) => `set height to ${value}`
+        }
+      };
+
+      const propertyConfig = propertyMap[intent.targetProperty];
+      if (!propertyConfig) {
+        console.log('Unknown property:', intent.targetProperty);
+        return null;
+      }
+
+      // Format the command using the property-specific formatter
+      const formattedCommand = propertyConfig.command(intent.value);
+      console.log('Formatted style command:', formattedCommand);
 
       const styleResult = StyleCommandProcessor.processStyleCommand(
-        processedCommand,
+        formattedCommand,
         selectedComponent
       );
-      if (!styleResult) return null;
+
+      console.log('Style processor result:', styleResult);
+
+      if (!styleResult?.style) {
+        console.log('No style update generated');
+        return null;
+      }
+
+      console.log('Style update to apply:', styleResult.style);
 
       const updatedComponent = {
         ...selectedComponent,
@@ -77,6 +124,8 @@ export class LLMProcessor {
           ...styleResult.style,
         },
       };
+
+      console.log('Updating component with:', updatedComponent);
 
       await dispatch(
         updateComponent({
@@ -87,11 +136,15 @@ export class LLMProcessor {
 
       return {
         success: true,
-        message: `Updated ${intent.targetProperty} to ${intent.value}`,
+        message: `Updated ${propertyConfig.property} to ${intent.value}`,
+        isCommandExecution: true
       };
     } catch (error) {
       console.error("LLM style update failed:", error);
-      throw error;
+      return {
+        success: false,
+        message: `Failed to update style: ${error.message}`,
+      };
     }
   }
 

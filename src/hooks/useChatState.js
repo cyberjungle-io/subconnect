@@ -45,35 +45,80 @@ function useChatState() {
     setIsAddingComponent(true);
 
     try {
+      const targetComponent = activeChat !== 'main' && componentChats.find(c => c.id === activeChat)
+        ? selectedComponent 
+        : null;
+
+      console.log('Processing command for component:', targetComponent);
+
       const commandResult = await AICommandExecutor.processCommand(
         input,
         dispatch,
-        activeChat !== 'main' && !componentChats.find(c => c.id === activeChat)?.type === 'general' 
-          ? selectedComponent 
-          : null,
+        targetComponent,
         { w3s: { queries: { list: queries } } }
       );
 
-      const responseMessage = ChatMessageService.createMessage(
-        commandResult?.message || "I'll help you with that.",
-        'assistant',
-        commandResult?.options
-      );
+      if (commandResult) {
+        console.log('Command result:', commandResult);
 
-      if (activeChat === 'main') {
-        dispatch(addMessage(responseMessage));
+        let responseMessage;
+        if (commandResult.needsMoreInfo) {
+          responseMessage = ChatMessageService.createMessage(
+            commandResult.message,
+            'assistant',
+            commandResult.options
+          );
+        } else if (commandResult.isCommandExecution) {
+          responseMessage = ChatMessageService.createMessage(
+            commandResult.message,
+            'assistant',
+            null,
+            { isCommandExecution: true }
+          );
+        } else {
+          responseMessage = ChatMessageService.createMessage(
+            commandResult.message || "Command processed successfully.",
+            'assistant',
+            commandResult.options
+          );
+        }
+
+        if (activeChat === 'main') {
+          dispatch(addMessage(responseMessage));
+        } else {
+          setComponentChats(prev =>
+            prev.map(chat => {
+              if (chat.id === activeChat) {
+                return {
+                  ...chat,
+                  messages: [...(chat.messages || []), responseMessage]
+                };
+              }
+              return chat;
+            })
+          );
+        }
       } else {
-        setComponentChats(prev =>
-          prev.map(chat => {
-            if (chat.id === activeChat) {
-              return {
-                ...chat,
-                messages: [...(chat.messages || []), responseMessage]
-              };
-            }
-            return chat;
-          })
+        const noResultMessage = ChatMessageService.createMessage(
+          "I couldn't process that command. Could you try rephrasing it?",
+          'assistant'
         );
+        
+        if (activeChat === 'main') {
+          dispatch(addMessage(noResultMessage));
+        } else {
+          setComponentChats(prev =>
+            prev.map(chat => {
+              if (chat.id === activeChat) {
+                return {
+                  ...chat,
+                  messages: [...(chat.messages || []), noResultMessage]
+                };
+              }
+              return chat;
+            })
+          );
+        }
       }
     } catch (error) {
       console.error('Error processing command:', error);
