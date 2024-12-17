@@ -51,71 +51,71 @@ export class LLMProcessor {
     try {
       // Map LLM property names to actual style properties and their processors
       const propertyMap = {
-        'background-color': {
-          property: 'backgroundColor',
-          command: (value) => `set background color to ${value}`
+        "background-color": {
+          property: "backgroundColor",
+          command: (value) => `set background color to ${value}`,
         },
-        'color': {
-          property: 'color',
-          command: (value) => `set color to ${value}`
+        color: {
+          property: "color",
+          command: (value) => `set color to ${value}`,
         },
-        'border-color': {
-          property: 'borderColor',
-          command: (value) => `set border color to ${value}`
+        "border-color": {
+          property: "borderColor",
+          command: (value) => `set border color to ${value}`,
         },
-        'border-width': {
-          property: 'borderWidth',
-          command: (value) => `set border width to ${value}`
+        "border-width": {
+          property: "borderWidth",
+          command: (value) => `set border width to ${value}`,
         },
-        'border-style': {
-          property: 'borderStyle',
-          command: (value) => `set border style to ${value}`
+        "border-style": {
+          property: "borderStyle",
+          command: (value) => `set border style to ${value}`,
         },
-        'font-size': {
-          property: 'fontSize',
-          command: (value) => `set font size to ${value}`
+        "font-size": {
+          property: "fontSize",
+          command: (value) => `set font size to ${value}`,
         },
-        'padding': {
-          property: 'padding',
-          command: (value) => `set padding to ${value}`
+        padding: {
+          property: "padding",
+          command: (value) => `set padding to ${value}`,
         },
-        'margin': {
-          property: 'margin',
-          command: (value) => `set margin to ${value}`
+        margin: {
+          property: "margin",
+          command: (value) => `set margin to ${value}`,
         },
-        'width': {
-          property: 'width',
-          command: (value) => `set width to ${value}`
+        width: {
+          property: "width",
+          command: (value) => `set width to ${value}`,
         },
-        'height': {
-          property: 'height',
-          command: (value) => `set height to ${value}`
-        }
+        height: {
+          property: "height",
+          command: (value) => `set height to ${value}`,
+        },
       };
 
       const propertyConfig = propertyMap[intent.targetProperty];
       if (!propertyConfig) {
-        console.log('Unknown property:', intent.targetProperty);
+        console.log("Unknown property:", intent.targetProperty);
         return null;
       }
 
       // Format the command using the property-specific formatter
       const formattedCommand = propertyConfig.command(intent.value);
-      console.log('Formatted style command:', formattedCommand);
+      console.log("Formatted style command:", formattedCommand);
 
       const styleResult = StyleCommandProcessor.processStyleCommand(
         formattedCommand,
         selectedComponent
       );
 
-      console.log('Style processor result:', styleResult);
+      console.log("Style processor result:", styleResult);
 
       if (!styleResult?.style) {
-        console.log('No style update generated');
+        console.log("No style update generated");
         return null;
       }
 
-      console.log('Style update to apply:', styleResult.style);
+      console.log("Style update to apply:", styleResult.style);
 
       const updatedComponent = {
         ...selectedComponent,
@@ -125,7 +125,7 @@ export class LLMProcessor {
         },
       };
 
-      console.log('Updating component with:', updatedComponent);
+      console.log("Updating component with:", updatedComponent);
 
       await dispatch(
         updateComponent({
@@ -137,7 +137,7 @@ export class LLMProcessor {
       return {
         success: true,
         message: `Updated ${propertyConfig.property} to ${intent.value}`,
-        isCommandExecution: true
+        isCommandExecution: true,
       };
     } catch (error) {
       console.error("LLM style update failed:", error);
@@ -174,7 +174,10 @@ export class LLMProcessor {
     }
 
     if (!componentType || !componentConfig[componentType]) {
-      console.log("Failed to determine component type. Available types:", Object.keys(componentConfig));
+      console.log(
+        "Failed to determine component type. Available types:",
+        Object.keys(componentConfig)
+      );
       return {
         success: false,
         message: `Could not determine which component to add from: ${
@@ -238,12 +241,12 @@ export class LLMProcessor {
       "kanban board": "KANBAN",
       list: "TODO",
       "todo list": "TODO",
-      "todo": "TODO",
-      "todos": "TODO",
+      todo: "TODO",
+      todos: "TODO",
       "task list": "TODO",
-      "tasks": "TODO",
-      "board": "KANBAN",
-      "taskboard": "KANBAN",
+      tasks: "TODO",
+      board: "KANBAN",
+      taskboard: "KANBAN",
       "task board": "KANBAN",
     };
 
@@ -254,8 +257,9 @@ export class LLMProcessor {
     }
 
     // If no direct match, try to find a partial match
-    const matchingKey = Object.keys(componentMap).find(key => {
-      const keyMatches = key.includes(normalizedName) || normalizedName.includes(key);
+    const matchingKey = Object.keys(componentMap).find((key) => {
+      const keyMatches =
+        key.includes(normalizedName) || normalizedName.includes(key);
       console.log(`Checking '${key}' against '${normalizedName}':`, keyMatches);
       return keyMatches;
     });
@@ -268,8 +272,13 @@ export class LLMProcessor {
     // If still no match, try matching against component config names
     const configMatch = Object.entries(componentConfig).find(([_, config]) => {
       const configName = config.name.toLowerCase();
-      const matches = configName.includes(normalizedName) || normalizedName.includes(configName);
-      console.log(`Checking config name '${configName}' against '${normalizedName}':`, matches);
+      const matches =
+        configName.includes(normalizedName) ||
+        normalizedName.includes(configName);
+      console.log(
+        `Checking config name '${configName}' against '${normalizedName}':`,
+        matches
+      );
       return matches;
     });
 

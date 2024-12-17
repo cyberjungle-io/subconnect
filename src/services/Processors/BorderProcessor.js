@@ -74,7 +74,6 @@ export class BorderProcessor {
     if (input.includes('custom') || 
         /(?:set|make|change|use|pick|choose|select|add|want|need|like)\s*(?:a|the)?\s*(?:custom|different|specific|new|another)\s*(?:border\s*)?color/i.test(input)) {
       return {
-        success: true,
         type: 'PROMPT',
         message: 'Enter your custom border color:',
         options: [
@@ -99,9 +98,21 @@ export class BorderProcessor {
             type: 'info'
           }
         ],
-        needsMoreInfo: true,
         property: 'borderColor',
-        style: {}
+        followUp: {
+          type: 'COLOR_CHANGE',
+          command: (color) => `set border color to ${color}`
+        }
+      };
+    }
+
+    // Check if this is a direct color value (followUp from PROMPT)
+    const directColorPattern = /^([a-z]+|#[0-9a-f]{3,6}|rgb\(\d+,\s*\d+,\s*\d+\))$/i;
+    if (directColorPattern.test(input)) {
+      return {
+        style: {
+          borderColor: input.toLowerCase()
+        }
       };
     }
 

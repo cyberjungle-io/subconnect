@@ -7,7 +7,7 @@ import { LayoutProcessor } from "./Processors/LayoutProcessor";
 import { ButtonProcessor } from "./Processors/ButtonProcessor";
 import { TextProcessor } from "./Processors/TextProcessor";
 import { VideoProcessor } from "./Processors/VideoProcessor";
-import { BasicTextProcessor } from './Processors/BasicTextProcessor';
+import { BasicTextProcessor } from "./Processors/BasicTextProcessor";
 
 export class StyleCommandProcessor {
   static lastModifiedProperty = null;
@@ -20,8 +20,11 @@ export class StyleCommandProcessor {
     console.log("Last context:", this.lastContext);
 
     // If we get a PROMPT type response from any processor, return it directly
-    const borderResult = BorderProcessor.processCommand(input, component?.style);
-    if (borderResult?.type === 'PROMPT') {
+    const borderResult = BorderProcessor.processCommand(
+      input,
+      component?.style
+    );
+    if (borderResult?.type === "PROMPT") {
       return borderResult;
     }
 
@@ -92,7 +95,7 @@ export class StyleCommandProcessor {
       const result = processor.processCommand(input, component?.style);
 
       // Return PROMPT responses directly
-      if (result?.type === 'PROMPT') {
+      if (result?.type === "PROMPT") {
         return result;
       }
 

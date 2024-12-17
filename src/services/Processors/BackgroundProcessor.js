@@ -1,3 +1,5 @@
+import { ColorProcessor } from './ColorProcessor';
+
 export class BackgroundProcessor {
   static colorKeywords = {
     // Common color aliases
@@ -65,7 +67,7 @@ export class BackgroundProcessor {
   }
 
   static processCommand(input, currentStyle = {}) {
-    console.log('BackgroundProcessor received input:', input, 'Current style:', currentStyle);
+    console.log('BackgroundProcessor received input:', input);
     const lowercaseInput = input.toLowerCase();
     
     // Check for initial background color change command
@@ -75,29 +77,30 @@ export class BackgroundProcessor {
         message: 'What color would you like to use? You can specify:',
         options: [
           {
-            text: 'Color names (e.g., blue, red, green)',
+            text: 'Color formats accepted:',
             type: 'info'
           },
           {
-            text: 'Hex codes (#FF0000)',
+            text: '• Color names (e.g., blue, red, green)',
             type: 'info'
           },
           {
-            text: 'RGB values (rgb(255, 0, 0))',
+            text: '• Hex codes (e.g., #FF0000)',
             type: 'info'
           },
           {
-            text: 'HSL values (hsl(0, 100%, 50%))',
+            text: '• RGB values (e.g., rgb(255, 0, 0))',
             type: 'info'
           },
           {
-            text: 'RGBA with opacity (rgba(255, 0, 0, 0.5))',
+            text: '• RGBA values (e.g., rgba(255, 0, 0, 0.5))',
             type: 'info'
           }
         ],
         property: 'backgroundColor',
         followUp: {
           type: 'COLOR_CHANGE',
+          property: 'backgroundColor',
           command: (color) => `set background color to ${color}`
         }
       };
@@ -106,84 +109,27 @@ export class BackgroundProcessor {
     // Check if this is a direct color value (followUp from PROMPT)
     const directColorPattern = /^([a-z]+|#[0-9a-f]{3,6}|rgb\(\d+,\s*\d+,\s*\d+\))$/i;
     if (directColorPattern.test(input)) {
-      return {
-        style: {
-          backgroundColor: this.colorKeywords[lowercaseInput] || input
-        }
-      };
-    }
-
-    // Handle opacity/transparency changes FIRST
-    const opacityPatterns = [
-      /(?:make|set)\s*(?:the|it|background)?\s*(?:a\s*)?(?:little|bit|more|less|much)?\s*(?:more|less)\s*(transparent|opaque)/i,
-      /(?:increase|decrease)\s*(?:the)?\s*(?:background)?\s*opacity/i,
-      /(?:make|set)\s*(?:the|it|background)?\s*opacity\s*(?:a\s*)?(?:little|bit)?\s*(higher|lower)/i
-    ];
-
-    for (const pattern of opacityPatterns) {
-      const match = lowercaseInput.match(pattern);
-      if (match) {
-        console.log('Matched opacity change:', match);
-        
-        // Get current background color and convert to RGB if it's hex
-        let currentColor = currentStyle?.backgroundColor || '#0000ff';
-        let currentOpacity = 1;
-        let r, g, b;
-        
-        console.log('Current color:', currentColor);
-        
-        // Handle different color formats
-        if (currentColor.startsWith('#')) {
-          // Convert hex to RGB
-          const hex = currentColor.replace('#', '');
-          r = parseInt(hex.substr(0, 2), 16);
-          g = parseInt(hex.substr(2, 2), 16);
-          b = parseInt(hex.substr(4, 2), 16);
-        } else if (currentColor.startsWith('rgba')) {
-          // Extract values from rgba
-          const values = currentColor.match(/[\d.]+/g).map(Number);
-          r = values[0];
-          g = values[1];
-          b = values[2];
-          currentOpacity = values[3];
-        } else if (currentColor.startsWith('rgb')) {
-          // Extract values from rgb
-          const values = currentColor.match(/\d+/g).map(Number);
-          r = values[0];
-          g = values[1];
-          b = values[2];
-        }
-        
-        console.log('Parsed RGB values:', r, g, b, 'Current opacity:', currentOpacity);
-        
-        // Determine opacity adjustment
-        let opacityChange = 0.2; // Default change amount
-        
-        // Handle different types of opacity changes
-        if (lowercaseInput.includes('little') || lowercaseInput.includes('bit')) {
-          opacityChange *= 0.5; // Smaller change for "a little" modifiers
-        } else if (lowercaseInput.includes('much')) {
-          opacityChange *= 1.5; // Larger change for "much" modifier
-        }
-        
-        // Determine direction of change
-        if (lowercaseInput.includes('more transparent') || 
-            lowercaseInput.includes('decrease opacity') || 
-            lowercaseInput.includes('opacity lower')) {
-          opacityChange *= -1;
-        }
-        
-        // Calculate new opacity
-        const newOpacity = Math.max(0, Math.min(1, currentOpacity + opacityChange));
-        console.log('Adjusting opacity from', currentOpacity, 'to', newOpacity);
-        
-        // Create new rgba color
-        const newColor = `rgba(${r}, ${g}, ${b}, ${newOpacity})`;
-        console.log('New color:', newColor);
-        
+      // For direct color inputs, check if we're in a background color context
+      if (currentStyle?._lastCommand?.includes('background')) {
         return {
           style: {
-            backgroundColor: newColor
+            backgroundColor: input.toLowerCase()
+          }
+        };
+      }
+      // If not explicitly for background, let other processors handle it
+      return null;
+    }
+
+    // Handle background-specific color commands
+    const bgColorPattern = /(?:set|make|change)?\s*(?:the)?\s*background\s*(?:color)?\s*(?:to|=|:)?\s*(#[0-9a-fA-F]{6}|[a-zA-Z]+)/i;
+    const bgMatch = input.match(bgColorPattern);
+    if (bgMatch) {
+      const color = bgMatch[1]?.toLowerCase();
+      if (color) {
+        return {
+          style: {
+            backgroundColor: this.colorKeywords[color] || color
           }
         };
       }
