@@ -22,22 +22,32 @@ import {
   FaPlus,
   FaTimes,
   FaCloudSun,
+  FaRegSquare,
+  FaSquare,
+  FaCaretDown,
+  FaArrowUp,
+  FaWater,
+  FaAdjust,
+  FaRegDotCircle,
+  FaDotCircle,
+  FaCircle,
+  FaRegCircle,
 } from "react-icons/fa";
 
 const isLightColor = (color) => {
   // Convert hex to RGB
   let r, g, b;
-  if (color.startsWith('#')) {
-    const hex = color.replace('#', '');
+  if (color.startsWith("#")) {
+    const hex = color.replace("#", "");
     r = parseInt(hex.substr(0, 2), 16);
     g = parseInt(hex.substr(2, 2), 16);
     b = parseInt(hex.substr(4, 2), 16);
-  } else if (color.startsWith('rgb')) {
+  } else if (color.startsWith("rgb")) {
     [r, g, b] = color.match(/\d+/g).map(Number);
   } else {
     return true; // Default to dark text for named colors
   }
-  
+
   // Calculate relative luminance
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance > 0.5;
@@ -590,61 +600,66 @@ export class FlexContainerProcessor {
                 className: "flex flex-wrap gap-1",
                 options: (state) => {
                   const colorTheme = state?.colorTheme || [];
-                  
+
                   // Create array of theme colors
-                  const themeButtons = colorTheme.length === 0 ? [
-                    {
-                      text: "black",
-                      command: "set border color to black",
-                      type: "command",
-                      icon: FaPalette,
-                      className: buttonClass,
-                      style: {
-                        backgroundColor: '#000000',
-                        color: '#ffffff',
-                        minWidth: '60px',
-                        textAlign: 'center'
-                      }
-                    },
-                    {
-                      text: "gray",
-                      command: "set border color to gray",
-                      type: "command",
-                      icon: FaPalette,
-                      className: buttonClass,
-                      style: {
-                        backgroundColor: '#808080',
-                        color: '#ffffff',
-                        minWidth: '60px',
-                        textAlign: 'center'
-                      }
-                    },
-                    {
-                      text: "blue",
-                      command: "set border color to blue",
-                      type: "command",
-                      icon: FaPalette,
-                      className: buttonClass,
-                      style: {
-                        backgroundColor: '#0000ff',
-                        color: '#ffffff',
-                        minWidth: '60px',
-                        textAlign: 'center'
-                      }
-                    }
-                  ] : colorTheme.map(color => ({
-                    text: color.name,
-                    command: `set border color to ${color.value}`,
-                    type: "command",
-                    icon: FaPalette,
-                    className: `${buttonClass} relative`,
-                    style: {
-                      backgroundColor: color.value,
-                      color: isLightColor(color.value) ? '#000000' : '#ffffff',
-                      minWidth: '60px',
-                      textAlign: 'center'
-                    },
-                  }));
+                  const themeButtons =
+                    colorTheme.length === 0
+                      ? [
+                          {
+                            text: "black",
+                            command: "set border color to black",
+                            type: "command",
+                            icon: FaPalette,
+                            className: buttonClass,
+                            style: {
+                              backgroundColor: "#000000",
+                              color: "#ffffff",
+                              minWidth: "60px",
+                              textAlign: "center",
+                            },
+                          },
+                          {
+                            text: "gray",
+                            command: "set border color to gray",
+                            type: "command",
+                            icon: FaPalette,
+                            className: buttonClass,
+                            style: {
+                              backgroundColor: "#808080",
+                              color: "#ffffff",
+                              minWidth: "60px",
+                              textAlign: "center",
+                            },
+                          },
+                          {
+                            text: "blue",
+                            command: "set border color to blue",
+                            type: "command",
+                            icon: FaPalette,
+                            className: buttonClass,
+                            style: {
+                              backgroundColor: "#0000ff",
+                              color: "#ffffff",
+                              minWidth: "60px",
+                              textAlign: "center",
+                            },
+                          },
+                        ]
+                      : colorTheme.map((color) => ({
+                          text: color.name,
+                          command: `set border color to ${color.value}`,
+                          type: "command",
+                          icon: FaPalette,
+                          className: `${buttonClass} relative`,
+                          style: {
+                            backgroundColor: color.value,
+                            color: isLightColor(color.value)
+                              ? "#000000"
+                              : "#ffffff",
+                            minWidth: "60px",
+                            textAlign: "center",
+                          },
+                        }));
 
                   // Add custom color button
                   return [
@@ -656,14 +671,14 @@ export class FlexContainerProcessor {
                       icon: FaPalette,
                       className: buttonClass,
                       style: {
-                        minWidth: '60px',
-                        textAlign: 'center'
-                      }
-                    }
+                        minWidth: "60px",
+                        textAlign: "center",
+                      },
+                    },
                   ];
-                }
-              }
-            ]
+                },
+              },
+            ],
           },
         ],
       },
@@ -690,21 +705,37 @@ export class FlexContainerProcessor {
                     text: "subtle",
                     command: "add subtle outer shadow",
                     type: "command",
-                    icon: FaCloudSun,
+                    icon: FaRegSquare,
                     className: buttonClass,
                   },
                   {
                     text: "medium",
                     command: "add medium outer shadow",
                     type: "command",
-                    icon: FaCloudSun,
+                    icon: FaSquare,
+                    className: buttonClass,
+                    style: { color: '#666666' },
+                  },
+                  {
+                    text: "harsh",
+                    command: "add harsh outer shadow",
+                    type: "command",
+                    icon: FaSquare,
+                    className: buttonClass,
+                    style: { color: '#000000' },
+                  },
+                  {
+                    text: "floating",
+                    command: "add floating outer shadow",
+                    type: "command",
+                    icon: FaArrowUp,
                     className: buttonClass,
                   },
                   {
-                    text: "pronounced",
-                    command: "add pronounced outer shadow",
+                    text: "layered",
+                    command: "add layered outer shadow",
                     type: "command",
-                    icon: FaCloudSun,
+                    icon: FaLayerGroup,
                     className: buttonClass,
                   },
                 ],
@@ -714,9 +745,23 @@ export class FlexContainerProcessor {
                 className: "flex gap-1",
                 options: [
                   {
+                    text: "X Offset",
+                    type: "command",
+                    icon: FaArrowsAltH,
+                    className: buttonClass,
+                    command: "customize outer shadow x-offset",
+                  },
+                  {
+                    text: "Y Offset",
+                    type: "command",
+                    icon: FaArrowsAltV,
+                    className: buttonClass,
+                    command: "customize outer shadow y-offset",
+                  },
+                  {
                     text: "Blur",
                     type: "command",
-                    icon: FaCloudSun,
+                    icon: FaWater,
                     className: buttonClass,
                     command: "customize outer shadow blur",
                   },
@@ -737,7 +782,7 @@ export class FlexContainerProcessor {
                   {
                     text: "Opacity",
                     type: "command",
-                    icon: FaCloudSun,
+                    icon: FaAdjust,
                     className: buttonClass,
                     command: "customize outer shadow opacity",
                   },
@@ -763,21 +808,35 @@ export class FlexContainerProcessor {
                     text: "subtle",
                     command: "add subtle inner shadow",
                     type: "command",
-                    icon: FaCloudSun,
+                    icon: FaRegDotCircle,
                     className: buttonClass,
                   },
                   {
                     text: "medium",
                     command: "add medium inner shadow",
                     type: "command",
-                    icon: FaCloudSun,
+                    icon: FaDotCircle,
                     className: buttonClass,
                   },
                   {
                     text: "deep",
                     command: "add deep inner shadow",
                     type: "command",
-                    icon: FaCloudSun,
+                    icon: FaCircle,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "pressed",
+                    command: "add pressed inner shadow",
+                    type: "command",
+                    icon: FaCompressAlt,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "hollow",
+                    command: "add hollow inner shadow",
+                    type: "command",
+                    icon: FaRegCircle,
                     className: buttonClass,
                   },
                 ],
@@ -789,7 +848,7 @@ export class FlexContainerProcessor {
                   {
                     text: "Blur",
                     type: "command",
-                    icon: FaCloudSun,
+                    icon: FaWater,
                     className: buttonClass,
                     command: "customize inner shadow blur",
                   },
@@ -810,7 +869,7 @@ export class FlexContainerProcessor {
                   {
                     text: "Opacity",
                     type: "command",
-                    icon: FaCloudSun,
+                    icon: FaAdjust,
                     className: buttonClass,
                     command: "customize inner shadow opacity",
                   },
@@ -827,8 +886,8 @@ export class FlexContainerProcessor {
                 type: "command",
                 icon: FaTimes,
                 className: buttonClass,
-              }
-            ]
+              },
+            ],
           },
         ],
       },

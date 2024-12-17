@@ -75,18 +75,88 @@ export class ShadowProcessor {
   static getShadowPresets() {
     return {
       outer: {
-        subtle: '0px 2px 4px 0px rgba(0, 0, 0, 0.15)',
-        medium: '0px 4px 8px 0px rgba(0, 0, 0, 0.25)',
-        harsh: '0px 6px 12px 0px rgba(0, 0, 0, 0.35)',
-        darker: '0px 8px 16px 0px rgba(0, 0, 0, 0.45)',
-        darkest: '0px 10px 20px 0px rgba(0, 0, 0, 0.6)'
+        subtle: {
+          x: '0px',
+          y: '2px',
+          blur: '4px',
+          spread: '0px',
+          color: '#000000',
+          opacity: 0.15,
+          description: 'A light, small shadow'
+        },
+        medium: {
+          x: '0px',
+          y: '4px',
+          blur: '8px',
+          spread: '0px',
+          color: '#000000',
+          opacity: 0.2,
+          description: 'A balanced, medium-sized shadow'
+        },
+        harsh: {
+          x: '4px',
+          y: '4px',
+          blur: '8px',
+          spread: '0px',
+          color: '#000000',
+          opacity: 0.25,
+          description: 'A stronger, more visible shadow'
+        },
+        floating: {
+          x: '0px',
+          y: '8px',
+          blur: '16px',
+          spread: '-2px',
+          color: '#000000',
+          opacity: 0.25,
+          description: 'An elevated effect with negative spread'
+        },
+        layered: {
+          x: '0px',
+          y: '2px',
+          blur: '4px',
+          spread: '0px',
+          color: '#000000',
+          opacity: 0.2,
+          description: 'A subtle, close shadow good for cards'
+        }
       },
       inner: {
-        subtle: 'inset 0 0 4px 0px rgba(0, 0, 0, 0.15)',
-        medium: 'inset 0 0 10px 3px rgba(0, 0, 0, 0.25)',
-        deep: 'inset 0 0 16px 6px rgba(0, 0, 0, 0.35)',
-        pressed: 'inset 0 0 2px 1px rgba(0, 0, 0, 0.3)',
-        hollow: 'inset 0 0 16px 8px rgba(0, 0, 0, 0.15)'
+        subtle: {
+          blur: '4px',
+          spread: '0px',
+          color: '#000000',
+          opacity: 0.15,
+          description: 'A light inner shadow'
+        },
+        medium: {
+          blur: '10px',
+          spread: '3px',
+          color: '#000000',
+          opacity: 0.25,
+          description: 'A balanced inner shadow'
+        },
+        deep: {
+          blur: '16px',
+          spread: '6px',
+          color: '#000000',
+          opacity: 0.3,
+          description: 'A pronounced inner shadow'
+        },
+        pressed: {
+          blur: '2px',
+          spread: '1px',
+          color: '#000000',
+          opacity: 0.3,
+          description: 'A tight inner shadow for pressed states'
+        },
+        hollow: {
+          blur: '16px',
+          spread: '8px',
+          color: '#000000',
+          opacity: 0.15,
+          description: 'A soft, spread-out inner shadow'
+        }
       }
     };
   }
@@ -94,45 +164,108 @@ export class ShadowProcessor {
   static processCommand(input, currentStyle = {}) {
     console.log('ShadowProcessor received input:', input, 'Current style:', currentStyle);
     const lowercaseInput = input.toLowerCase();
+    const presets = this.getShadowPresets();
 
-    // Handle intensity modifications
-    const intensityMatch = lowercaseInput.match(/(?:make|set)\s*(?:it|the shadow|the outer shadow)?\s*(darker|lighter|stronger|weaker)/i);
-    if (intensityMatch) {
-      const currentShadow = this.getCurrentShadowStyle(currentStyle);
-      if (!currentShadow) {
-        // If no shadow exists, add a medium outer shadow first
+    // Helper function to generate shadow string
+    const generateShadowString = (preset, isInner = false) => {
+      const { x = '0px', y = '0px', blur, spread, color, opacity } = preset;
+      const rgba = `rgba(0, 0, 0, ${opacity})`;
+      return isInner 
+        ? `inset 0 0 ${blur} ${spread} ${rgba}`
+        : `${x} ${y} ${blur} ${spread} ${rgba}`;
+    };
+
+    // Handle outer shadow presets
+    for (const [presetName, preset] of Object.entries(presets.outer)) {
+      const pattern = new RegExp(`add\\s+${presetName}\\s+outer\\s+shadow`, 'i');
+      if (pattern.test(lowercaseInput)) {
         return {
           style: {
-            boxShadow: this.getShadowPresets().outer.medium
+            boxShadow: generateShadowString(preset)
           }
         };
       }
+    }
 
-      const isInnerShadow = currentShadow.includes('inset');
-      const currentPreset = this.getCurrentPresetLevel(currentShadow);
-      const intensityTerm = intensityMatch[1];
+    // Handle inner shadow presets
+    for (const [presetName, preset] of Object.entries(presets.inner)) {
+      const pattern = new RegExp(`add\\s+${presetName}\\s+inner\\s+shadow`, 'i');
+      if (pattern.test(lowercaseInput)) {
+        return {
+          style: {
+            boxShadow: generateShadowString(preset, true)
+          }
+        };
+      }
+    }
 
-      // Get the next shadow value based on intensity
-      const nextShadow = this.getNextIntensityLevel(currentPreset, intensityTerm);
+    // Handle customization commands
+    if (lowercaseInput.includes('customize')) {
+      const isInner = lowercaseInput.includes('inner');
+      const isOuter = lowercaseInput.includes('outer');
       
+      if (!isInner && !isOuter) {
+        return {
+          type: 'PROMPT',
+          message: 'What kind of shadow would you like to customize?\n- Inner shadow\n- Outer shadow',
+          needsMoreInfo: true,
+          property: 'shadowType'
+        };
+      }
+
+      if (lowercaseInput.includes('blur')) {
+        return {
+          type: 'PROMPT',
+          message: 'Enter blur radius (in pixels):',
+          needsMoreInfo: true,
+          property: isInner ? 'innerShadowBlur' : 'outerShadowBlur'
+        };
+      }
+
+      if (lowercaseInput.includes('spread')) {
+        return {
+          type: 'PROMPT',
+          message: 'Enter spread radius (in pixels):',
+          needsMoreInfo: true,
+          property: isInner ? 'innerShadowSpread' : 'outerShadowSpread'
+        };
+      }
+
+      if (lowercaseInput.includes('color')) {
+        return {
+          type: 'PROMPT',
+          message: 'Enter shadow color:',
+          needsMoreInfo: true,
+          property: isInner ? 'innerShadowColor' : 'outerShadowColor',
+          options: [
+            { text: 'You can use:', type: 'info' },
+            { text: '• Color names (e.g., black, gray)', type: 'info' },
+            { text: '• Hex codes (#000000)', type: 'info' },
+            { text: '• RGB values (rgb(0,0,0))', type: 'info' }
+          ]
+        };
+      }
+
+      if (lowercaseInput.includes('opacity')) {
+        return {
+          type: 'PROMPT',
+          message: 'Enter opacity (0-1):',
+          needsMoreInfo: true,
+          property: isInner ? 'innerShadowOpacity' : 'outerShadowOpacity'
+        };
+      }
+    }
+
+    // Handle remove shadow command
+    if (lowercaseInput.includes('remove shadow')) {
       return {
         style: {
-          boxShadow: isInnerShadow ? `inset ${nextShadow}` : nextShadow
+          boxShadow: 'none'
         }
       };
     }
 
-    // Handle outer shadow commands
-    if (lowercaseInput.includes('outer shadow') || 
-        (lowercaseInput.includes('shadow') && !lowercaseInput.includes('inner'))) {
-      return {
-        style: {
-          boxShadow: this.getShadowPresets().outer.medium
-        }
-      };
-    }
-
-    // Rest of the existing processCommand code...
+    return null;
   }
 
   // Helper method to get current shadow style
