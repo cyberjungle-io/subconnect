@@ -70,8 +70,8 @@ export class BackgroundProcessor {
     console.log('BackgroundProcessor received input:', input);
     const lowercaseInput = input.toLowerCase();
     
-    // Check for initial background color change command
-    if (/^(?:change|set|modify)\s+(?:the\s+)?background\s+color$/i.test(input)) {
+    // More flexible pattern for initial background color command
+    if (/^(?:change|set|modify)?\s*(?:the\s+)?background\s*(?:color)?$/i.test(input)) {
       return {
         type: 'PROMPT',
         message: 'What color would you like to use? You can specify:',
@@ -91,13 +91,10 @@ export class BackgroundProcessor {
           {
             text: '• RGB values (e.g., rgb(255, 0, 0))',
             type: 'info'
-          },
-          {
-            text: '• RGBA values (e.g., rgba(255, 0, 0, 0.5))',
-            type: 'info'
           }
         ],
         property: 'backgroundColor',
+        context: 'background',
         followUp: {
           type: 'COLOR_CHANGE',
           property: 'backgroundColor',
@@ -109,16 +106,11 @@ export class BackgroundProcessor {
     // Check if this is a direct color value (followUp from PROMPT)
     const directColorPattern = /^([a-z]+|#[0-9a-f]{3,6}|rgb\(\d+,\s*\d+,\s*\d+\))$/i;
     if (directColorPattern.test(input)) {
-      // For direct color inputs, check if we're in a background color context
-      if (currentStyle?._lastCommand?.includes('background')) {
-        return {
-          style: {
-            backgroundColor: input.toLowerCase()
-          }
-        };
-      }
-      // If not explicitly for background, let other processors handle it
-      return null;
+      return {
+        style: {
+          backgroundColor: input.toLowerCase()
+        }
+      };
     }
 
     // Handle background-specific color commands

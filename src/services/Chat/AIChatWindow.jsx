@@ -15,6 +15,7 @@ import ChatMessageService from "../chatMessageService";
 import { useComponentSelection } from "../../hooks/useComponentSelection";
 import useChatState from "../../hooks/useChatState";
 import { FlexContainerProcessor } from '../Processors/FlexContainerProcessor';
+import { StyleCommandProcessor } from "../styleCommandProcessor";
 
 const getInitialSuggestions = () => {
   // Name mapping for specific components
@@ -601,6 +602,16 @@ const AIChatWindow = ({ onClose }) => {
       ) {
         input = option.value;
       } else if (option.type === "category") {
+        const contextMap = {
+          "Border": "border",
+          "Background": "background",
+          "Text": "text"
+        };
+        
+        if (contextMap[option.text]) {
+          StyleCommandProcessor.setContext(contextMap[option.text]);
+        }
+        
         const message = {
           id: Date.now().toString(),
           role: "assistant",

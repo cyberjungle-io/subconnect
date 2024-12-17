@@ -13,11 +13,62 @@ export class StyleCommandProcessor {
   static lastModifiedProperty = null;
   static lastModifiedValue = null;
   static lastUsedProcessor = null;
+  static currentContext = null;
+  static pendingPrompt = null;
 
   static processStyleCommand(input, component) {
     console.log("StyleCommandProcessor received input:", input);
     console.log("Component style:", component?.style);
-    console.log("Last context:", this.lastContext);
+    console.log("Current context:", this.currentContext);
+
+    // Handle direct color input when we have a pending prompt
+    const directColorPattern = /^([a-z]+|#[0-9a-f]{3,6}|rgb\(\d+,\s*\d+,\s*\d+\))$/i;
+    if (this.pendingPrompt && directColorPattern.test(input)) {
+      const contextProcessorMap = {
+        'border': BorderProcessor,
+        'background': BackgroundProcessor,
+        'text': TextProcessor
+      };
+
+      const contextProcessor = contextProcessorMap[this.currentContext];
+      if (contextProcessor) {
+        // Use the stored followUp command to process the color
+        const command = this.pendingPrompt.followUp.command(input);
+        const result = contextProcessor.processCommand(command, component?.style);
+        this.pendingPrompt = null; // Clear the pending prompt
+        return result;
+      }
+    }
+
+    // If we have a context and this is a color command, prioritize the appropriate processor
+    if (this.currentContext && input.match(/(?:color|#[0-9a-fA-F]{6}|rgb|rgba)/i)) {
+      const contextProcessorMap = {
+        'border': BorderProcessor,
+        'background': BackgroundProcessor,
+        'text': TextProcessor
+      };
+
+      const contextProcessor = contextProcessorMap[this.currentContext];
+      if (contextProcessor) {
+        const result = contextProcessor.processCommand(input, component?.style);
+        if (result) {
+          // Store prompt information if this is a PROMPT type response
+          if (result.type === 'PROMPT') {
+            this.pendingPrompt = result;
+            this.currentContext = result.context || this.currentContext;
+            return result;
+          }
+          
+          // Only store context if we have style updates
+          if (result.style) {
+            this.lastModifiedProperty = Object.keys(result.style)[0];
+            this.lastModifiedValue = result.style[this.lastModifiedProperty];
+            this.lastUsedProcessor = contextProcessor;
+          }
+          return result;
+        }
+      }
+    }
 
     // If we get a PROMPT type response from any processor, return it directly
     const borderResult = BorderProcessor.processCommand(
@@ -122,6 +173,14 @@ export class StyleCommandProcessor {
     this.lastModifiedProperty = null;
     this.lastModifiedValue = null;
     this.lastUsedProcessor = null;
+    this.currentContext = null;
+    this.pendingPrompt = null;
+  }
+
+  static setContext(context) {
+    console.log("Setting context to:", context);
+    this.currentContext = context;
+    this.pendingPrompt = null;
   }
 
   static getPropertyNames() {
