@@ -88,10 +88,13 @@ export class StyleCommandProcessor {
 
     // Try each processor
     for (const processor of processors) {
-      console.log(
-        `Trying ${processor.name}${isTextCommand ? " (Text Command Mode)" : ""}`
-      );
-      const result = processor.processCommand(input, component.style);
+      console.log(`Trying ${processor.name}`);
+      const result = processor.processCommand(input, component?.style);
+
+      // Return PROMPT responses directly
+      if (result?.type === 'PROMPT') {
+        return result;
+      }
 
       if (result) {
         // Store context

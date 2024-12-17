@@ -218,13 +218,28 @@ export class AICommandExecutor {
     
     // Handle PROMPT type responses
     if (styleResult?.type === 'PROMPT') {
+      if (styleResult.followUp) {
+        // Store the followUp info for next command
+        this.pendingFollowUp = styleResult.followUp;
+      }
       return {
         success: true,
         message: styleResult.message,
         options: styleResult.options,
-        needsMoreInfo: styleResult.needsMoreInfo,
+        needsMoreInfo: true,
         property: styleResult.property
       };
+    }
+
+    // Check if this is a followUp response
+    if (this.pendingFollowUp) {
+      const followUpType = this.pendingFollowUp.type;
+      if (followUpType === 'COLOR_CHANGE') {
+        // Transform the input using the stored command generator
+        input = this.pendingFollowUp.command(input);
+        // Clear the pending followUp
+        this.pendingFollowUp = null;
+      }
     }
 
     if (!styleResult?.style) return null;
