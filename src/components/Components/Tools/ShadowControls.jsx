@@ -300,10 +300,10 @@ export const ShadowControlsPanel = ({
     setInnerShadow(newInnerShadow);
     setActiveInnerPreset(presetName);
 
-    // Immediately apply the new shadow
+    // Build the complete shadow string
     const shadows = [];
 
-    // Always add the new inner shadow since we're applying a preset
+    // Add the inner shadow
     const { blur, spread, color, opacity } = newInnerShadow;
     if (color && typeof opacity === "number") {
       const r = parseInt(color.slice(1, 3), 16);
@@ -313,13 +313,29 @@ export const ShadowControlsPanel = ({
       shadows.push(`inset 0 0 ${blur} ${spread} ${rgba}`);
     }
 
+    // Preserve existing outer shadow if it's enabled
+    if (showOuterShadow && outerShadow) {
+      const {
+        color: outerColor,
+        opacity: outerOpacity,
+        blur: outerBlur,
+        spread: outerSpread,
+        x,
+        y,
+      } = outerShadow;
+      if (outerColor && typeof outerOpacity === "number") {
+        const r = parseInt(outerColor.slice(1, 3), 16);
+        const g = parseInt(outerColor.slice(3, 5), 16);
+        const b = parseInt(outerColor.slice(5, 7), 16);
+        const rgba = `rgba(${r}, ${g}, ${b}, ${outerOpacity})`;
+        shadows.push(`${x} ${y} ${outerBlur} ${outerSpread} ${rgba}`);
+      }
+    }
+
+    // Apply the combined shadows
     const boxShadow = shadows.length > 0 ? shadows.join(", ") : "none";
     onStyleChange({
-      style: {
-        boxShadow,
-        // Ensure we preserve any existing styles
-        ...(style || {}),
-      },
+      style: { boxShadow },
     });
   };
 
