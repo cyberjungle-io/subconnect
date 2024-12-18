@@ -214,7 +214,8 @@ export class ShadowProcessor {
         shadowValues = this.parseShadowString(shadowParts[shadowIndex]);
       }
 
-      // Store the original opacity before any updates
+      // Store the original color and opacity before any updates
+      const originalColor = shadowValues.color;
       const originalOpacity = shadowValues.opacity;
 
       // Update the specified property
@@ -222,6 +223,7 @@ export class ShadowProcessor {
         const numValue = parseFloat(value);
         if (!isNaN(numValue)) {
           shadowValues.opacity = Math.max(0, Math.min(1, numValue));
+          shadowValues.color = originalColor; // Preserve color
         }
       } else if (property === "color") {
         try {
@@ -241,8 +243,7 @@ export class ShadowProcessor {
               .padStart(2, "0")}${Number(g)
               .toString(16)
               .padStart(2, "0")}${Number(b).toString(16).padStart(2, "0")}`;
-            // Restore the original opacity
-            shadowValues.opacity = originalOpacity;
+            shadowValues.opacity = originalOpacity; // Preserve opacity
           } else {
             shadowValues.color = value;
           }
@@ -251,7 +252,10 @@ export class ShadowProcessor {
           shadowValues.color = value;
         }
       } else {
+        // For all other properties (blur, spread, etc.), preserve color and opacity
         shadowValues[property] = value;
+        shadowValues.color = originalColor;
+        shadowValues.opacity = originalOpacity;
       }
 
       // Generate new shadow string
