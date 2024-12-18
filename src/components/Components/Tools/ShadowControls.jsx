@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import ColorPicker from '../../common/ColorPicker';
 
 const SHADOW_PRESETS = {
@@ -99,66 +99,11 @@ const INITIAL_SHADOW_STATE = {
 const activeButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300";
 const inactiveButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]";
 
-export const ShadowControlsPanel = ({ onStyleChange, showInnerShadow, showOuterShadow, style }) => {
+export const ShadowControlsPanel = ({ onStyleChange, showInnerShadow, showOuterShadow }) => {
   const [innerShadow, setInnerShadow] = useState(INITIAL_SHADOW_STATE.inner);
   const [outerShadow, setOuterShadow] = useState(INITIAL_SHADOW_STATE.outer);
   const [activePreset, setActivePreset] = useState('subtle');
   const [activeInnerPreset, setActiveInnerPreset] = useState('subtle');
-
-  // Update local state when style prop changes
-  useEffect(() => {
-    if (style?.boxShadow) {
-      const parseShadowString = (shadowString) => {
-        if (!shadowString || shadowString === 'none') return null;
-        
-        const shadows = shadowString.split(',').map(s => s.trim());
-        const result = { inner: null, outer: null };
-
-        shadows.forEach(shadow => {
-          const isInner = shadow.includes('inset');
-          const parts = shadow.trim().split(' ');
-          const startIndex = isInner ? 1 : 0;
-
-          const shadowObj = {
-            x: parts[startIndex] || '0px',
-            y: parts[startIndex + 1] || '0px',
-            blur: parts[startIndex + 2] || '0px',
-            spread: parts[startIndex + 3] || '0px',
-            color: '#000000',
-            opacity: 0.2
-          };
-
-          // Parse color and opacity from rgba
-          const colorMatch = shadow.match(/rgba\(([\d,\s.]+)\)/);
-          if (colorMatch) {
-            const [r, g, b, a] = colorMatch[1].split(',').map(n => parseFloat(n.trim()));
-            shadowObj.color = `#${[r, g, b].map(n => Math.round(n).toString(16).padStart(2, '0')).join('')}`;
-            shadowObj.opacity = a;
-          }
-
-          if (isInner) {
-            result.inner = shadowObj;
-          } else {
-            result.outer = shadowObj;
-          }
-        });
-
-        return result;
-      };
-
-      const parsed = parseShadowString(style.boxShadow);
-      if (parsed) {
-        if (parsed.inner) {
-          setInnerShadow(prev => ({ ...prev, ...parsed.inner }));
-          setActiveInnerPreset(null);
-        }
-        if (parsed.outer) {
-          setOuterShadow(prev => ({ ...prev, ...parsed.outer }));
-          setActivePreset(null);
-        }
-      }
-    }
-  }, [style?.boxShadow]); // Only depend on boxShadow property
 
   const handleShadowChange = useCallback(() => {
     const shadows = [];
@@ -168,9 +113,11 @@ export const ShadowControlsPanel = ({ onStyleChange, showInnerShadow, showOuterS
       const { blur, spread, color, opacity } = innerShadow;
       let rgba;
       
+      // Handle both hex and rgba color formats
       if (color.startsWith('rgba')) {
-        rgba = color;
+        rgba = color; // Already in rgba format
       } else {
+        // Convert hex to rgba
         const r = parseInt(color.slice(1,3), 16);
         const g = parseInt(color.slice(3,5), 16);
         const b = parseInt(color.slice(5,7), 16);
@@ -181,24 +128,25 @@ export const ShadowControlsPanel = ({ onStyleChange, showInnerShadow, showOuterS
     }
     
     // Handle outer shadow
-    if (showOuterShadow) {
-      const { color, opacity, blur, spread, x, y } = outerShadow;
-      let rgba;
-      
-      if (color.startsWith('rgba')) {
-        rgba = color;
-      } else {
-        const r = parseInt(color.slice(1,3), 16);
-        const g = parseInt(color.slice(3,5), 16);
-        const b = parseInt(color.slice(5,7), 16);
-        rgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
-      }
+    const { color, opacity, blur, spread, x, y } = outerShadow;
+    let rgba;
+    
+    if (color.startsWith('rgba')) {
+      rgba = color;
+    } else {
+      const r = parseInt(color.slice(1,3), 16);
+      const g = parseInt(color.slice(3,5), 16);
+      const b = parseInt(color.slice(5,7), 16);
+      rgba = `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    }
 
+    // Main shadow with X and Y offsets
+    if (parseFloat(x) !== 0 || parseFloat(y) !== 0) {
       shadows.push(`${x} ${y} ${blur} ${spread} ${rgba}`);
     }
 
     onStyleChange({ boxShadow: shadows.join(', ') });
-  }, [innerShadow, outerShadow, showInnerShadow, showOuterShadow, onStyleChange]);
+  }, [innerShadow, outerShadow, showInnerShadow, onStyleChange]);
 
   const applyPreset = (presetName) => {
     setOuterShadow(prev => ({
