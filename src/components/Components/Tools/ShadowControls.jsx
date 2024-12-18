@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import ColorPicker from '../../common/ColorPicker';
 
 const SHADOW_PRESETS = {
@@ -99,11 +99,72 @@ const INITIAL_SHADOW_STATE = {
 const activeButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300";
 const inactiveButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]";
 
-export const ShadowControlsPanel = ({ onStyleChange, showInnerShadow, showOuterShadow }) => {
+export const ShadowControlsPanel = ({ onStyleChange, showInnerShadow, showOuterShadow, style }) => {
   const [innerShadow, setInnerShadow] = useState(INITIAL_SHADOW_STATE.inner);
   const [outerShadow, setOuterShadow] = useState(INITIAL_SHADOW_STATE.outer);
   const [activePreset, setActivePreset] = useState('subtle');
   const [activeInnerPreset, setActiveInnerPreset] = useState('subtle');
+
+  // Parse shadow string into components
+  const parseShadowString = useCallback((shadowString) => {
+    const parts = shadowString.split(' ');
+    const color = parts.slice(-1)[0];
+    const isInner = parts[0] === 'inset';
+    const startIndex = isInner ? 1 : 0;
+
+    return {
+      x: isInner ? '0px' : parts[startIndex] || '0px',
+      y: isInner ? '0px' : parts[startIndex + 1] || '0px',
+      blur: parts[startIndex + 2] || '4px',
+      spread: parts[startIndex + 3] || '0px',
+      color: color.includes('rgba') ? '#000000' : color,
+      opacity: parseFloat(color.match(/rgba\([^)]+,\s*([\d.]+)\)/)?.[1] || '0.15')
+    };
+  }, []);
+
+  // Update state when style changes
+  useEffect(() => {
+    if (style?.boxShadow && style.boxShadow !== 'none') {
+      const shadows = style.boxShadow.split(',').map(s => s.trim());
+      
+      // Parse inner shadow
+      const innerShadowStr = shadows.find(s => s.includes('inset'));
+      if (innerShadowStr) {
+        const parsedInner = parseShadowString(innerShadowStr);
+        setInnerShadow(prev => ({
+          ...prev,
+          ...parsedInner
+        }));
+
+        // Set inner preset based on opacity
+        const opacity = parsedInner.opacity;
+        let newInnerPreset = 'subtle';
+        if (opacity > 0.15 && opacity <= 0.25) newInnerPreset = 'medium';
+        else if (opacity > 0.25 && opacity <= 0.3) newInnerPreset = 'deep';
+        else if (opacity > 0.3) newInnerPreset = 'pressed';
+        setActiveInnerPreset(newInnerPreset);
+      }
+
+      // Parse outer shadow
+      const outerShadowStr = shadows.find(s => !s.includes('inset'));
+      if (outerShadowStr) {
+        const parsedOuter = parseShadowString(outerShadowStr);
+        setOuterShadow(prev => ({
+          ...prev,
+          ...parsedOuter
+        }));
+
+        // Set outer preset based on opacity and other values
+        const { opacity, y, spread } = parsedOuter;
+        let newOuterPreset = 'subtle';
+        if (opacity > 0.15 && opacity <= 0.2) newOuterPreset = 'medium';
+        else if (opacity > 0.2 && opacity <= 0.25) newOuterPreset = 'harsh';
+        else if (parseFloat(y) >= 8 || parseFloat(spread) < 0) newOuterPreset = 'floating';
+        else if (opacity > 0.25) newOuterPreset = 'layered';
+        setActivePreset(newOuterPreset);
+      }
+    }
+  }, [style?.boxShadow, parseShadowString]);
 
   const handleShadowChange = useCallback(() => {
     const shadows = [];

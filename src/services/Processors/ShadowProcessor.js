@@ -350,7 +350,10 @@ export class ShadowProcessor {
 
   static generateShadowString(shadow, isInner = false) {
     const { x = '0px', y = '0px', blur, spread, color, opacity } = shadow;
-    const rgba = color.startsWith('rgba') ? color : `rgba(0, 0, 0, ${opacity})`;
+    const rgba = color.startsWith('rgba') ? 
+      color : 
+      `rgba(${parseInt(color.slice(1,3), 16)}, ${parseInt(color.slice(3,5), 16)}, ${parseInt(color.slice(5,7), 16)}, ${opacity})`;
+    
     return isInner 
       ? `inset 0 0 ${blur} ${spread} ${rgba}`
       : `${x} ${y} ${blur} ${spread} ${rgba}`;
@@ -360,13 +363,20 @@ export class ShadowProcessor {
     const parts = shadowString.trim().split(' ');
     const isInner = parts[0] === 'inset';
     const startIndex = isInner ? 1 : 0;
-
+    const color = parts.slice(-1)[0];
+    
     return {
-      x: parts[startIndex] || '0px',
-      y: parts[startIndex + 1] || '0px',
-      blur: parts[startIndex + 2] || '0px',
+      x: isInner ? '0px' : parts[startIndex] || '0px',
+      y: isInner ? '0px' : parts[startIndex + 1] || '0px',
+      blur: parts[startIndex + 2] || '4px',
       spread: parts[startIndex + 3] || '0px',
-      color: parts.slice(startIndex + 4).join(' ') || 'rgba(0, 0, 0, 0.2)'
+      color: color.includes('rgba') ? 
+        `#${color.match(/rgba\((\d+),\s*(\d+),\s*(\d+)/i)
+          .slice(1)
+          .map(n => parseInt(n).toString(16).padStart(2, '0'))
+          .join('')}` : 
+        color,
+      opacity: parseFloat(color.match(/rgba\([^)]+,\s*([\d.]+)\)/)?.[1] || '0.15')
     };
   }
 
