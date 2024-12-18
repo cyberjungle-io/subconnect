@@ -173,7 +173,7 @@ export class ShadowProcessor {
     );
     const lowercaseInput = input.toLowerCase();
 
-    // Handle shadow removal first - check for any removal-related phrases
+    // Handle shadow removal first
     if (
       /(remove|clear|delete|get rid of|turn off|switch off|no) .*(shadow|shadows)/i.test(
         lowercaseInput
@@ -190,83 +190,73 @@ export class ShadowProcessor {
     if (this.pendingCustomization) {
       const { isInner, property } = this.pendingCustomization;
       const value = input.trim();
-      this.pendingCustomization = null; // Clear pending state
+      this.pendingCustomization = null;
 
-      // Generate the shadow string with the new value
+      // Get current shadow state
       const currentShadow = currentStyle.boxShadow || "none";
-      const shadowParts = currentShadow.split(",").map((part) => part.trim());
+      const shadowParts = currentShadow
+        .split(/,(?![^(]*\))/g)
+        .map((part) => part.trim());
 
       // Find the relevant shadow (inner or outer)
       const shadowIndex = isInner
         ? shadowParts.findIndex((part) => part.includes("inset"))
         : shadowParts.findIndex((part) => !part.includes("inset"));
 
+      let shadowValues;
       if (shadowIndex === -1) {
-        // If no existing shadow of this type, create a new one
-        const preset = isInner
+        // If no existing shadow of this type, use default preset
+        shadowValues = isInner
           ? this.getShadowPresets().inner.medium
           : this.getShadowPresets().outer.medium;
-        const newShadow = { ...preset };
-
-        // Update the specified property
-        switch (property) {
-          case "xOffset":
-            newShadow.x = value;
-            break;
-          case "yOffset":
-            newShadow.y = value;
-            break;
-          case "blur":
-            newShadow.blur = value;
-            break;
-          case "spread":
-            newShadow.spread = value;
-            break;
-          case "color":
-            newShadow.color = value;
-            break;
-          case "opacity":
-            newShadow.opacity = parseFloat(value);
-            break;
-        }
-
-        const shadowString = this.generateShadowString(newShadow, isInner);
-        return {
-          style: {
-            boxShadow: shadowString,
-          },
-        };
+      } else {
+        // Parse existing shadow
+        shadowValues = this.parseShadowString(shadowParts[shadowIndex]);
       }
 
-      // Modify existing shadow
-      const shadowValues = this.parseShadowString(shadowParts[shadowIndex]);
+      // Store the original opacity before any updates
+      const originalOpacity = shadowValues.opacity;
 
       // Update the specified property
-      switch (property) {
-        case "xOffset":
-          shadowValues.x = value;
-          break;
-        case "yOffset":
-          shadowValues.y = value;
-          break;
-        case "blur":
-          shadowValues.blur = value;
-          break;
-        case "spread":
-          shadowValues.spread = value;
-          break;
-        case "color":
+      if (property === "opacity") {
+        const numValue = parseFloat(value);
+        if (!isNaN(numValue)) {
+          shadowValues.opacity = Math.max(0, Math.min(1, numValue));
+        }
+      } else if (property === "color") {
+        try {
+          const tempDiv = document.createElement('div');
+          tempDiv.style.color = value;
+          document.body.appendChild(tempDiv);
+          const computedColor = window.getComputedStyle(tempDiv).color;
+          document.body.removeChild(tempDiv);
+
+          const rgbMatch = computedColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+          if (rgbMatch) {
+            const [_, r, g, b] = rgbMatch;
+            shadowValues.color = `#${Number(r).toString(16).padStart(2, '0')}${Number(g).toString(16).padStart(2, '0')}${Number(b).toString(16).padStart(2, '0')}`;
+            // Restore the original opacity
+            shadowValues.opacity = originalOpacity;
+          } else {
+            shadowValues.color = value;
+          }
+        } catch (error) {
+          console.error('Error parsing color:', error);
           shadowValues.color = value;
-          break;
-        case "opacity":
-          shadowValues.opacity = parseFloat(value);
-          break;
+        }
+      } else {
+        shadowValues[property] = value;
       }
 
-      shadowParts[shadowIndex] = this.generateShadowString(
-        shadowValues,
-        isInner
-      );
+      // Generate new shadow string
+      const newShadowString = this.generateShadowString(shadowValues, isInner);
+
+      // Update shadow parts array
+      if (shadowIndex === -1) {
+        shadowParts.push(newShadowString);
+      } else {
+        shadowParts[shadowIndex] = newShadowString;
+      }
 
       return {
         style: {
@@ -381,12 +371,25 @@ export class ShadowProcessor {
 
   static generateShadowString(shadow, isInner = false) {
     const { x = "0px", y = "0px", blur, spread, color, opacity } = shadow;
-    const rgba = color.startsWith("rgba")
-      ? color
-      : `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(
-          color.slice(3, 5),
-          16
-        )}, ${parseInt(color.slice(5, 7), 16)}, ${opacity})`;
+
+    // Ensure opacity is a valid number between 0 and 1
+    const validOpacity = Math.max(0, Math.min(1, parseFloat(opacity) || 0.15));
+
+    // Convert color to RGB components
+    let r, g, b;
+    if (color.startsWith("#")) {
+      r = parseInt(color.slice(1, 3), 16);
+      g = parseInt(color.slice(3, 5), 16);
+      b = parseInt(color.slice(5, 7), 16);
+    } else if (color.startsWith("rgb")) {
+      const match = color.match(/\d+/g);
+      [r, g, b] = match ? match.map(Number) : [0, 0, 0];
+    } else {
+      [r, g, b] = [0, 0, 0]; // Default to black if color format is invalid
+    }
+
+    // Create rgba string with validated opacity
+    const rgba = `rgba(${r}, ${g}, ${b}, ${validOpacity})`;
 
     return isInner
       ? `inset 0 0 ${blur} ${spread} ${rgba}`
@@ -394,26 +397,63 @@ export class ShadowProcessor {
   }
 
   static parseShadowString(shadowString) {
-    const parts = shadowString.trim().split(" ");
+    if (!shadowString || shadowString === "none") {
+      return {
+        x: "0px",
+        y: "0px",
+        blur: "4px",
+        spread: "0px",
+        color: "#000000",
+        opacity: 0.15,
+      };
+    }
+
+    const parts = shadowString.trim().split(/\s+/);
     const isInner = parts[0] === "inset";
     const startIndex = isInner ? 1 : 0;
-    const color = parts.slice(-1)[0];
+
+    // Extract color and opacity
+    let color = "#000000";
+    let opacity = 0.15;
+
+    // Find the color/rgba value (it's always the last part)
+    const colorPart = parts[parts.length - 1];
+
+    if (colorPart) {
+      if (colorPart.startsWith("rgba")) {
+        // Parse rgba format
+        const rgbaMatch = colorPart.match(
+          /rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/
+        );
+        if (rgbaMatch) {
+          const [_, r, g, b, a] = rgbaMatch;
+          color = `#${Number(r).toString(16).padStart(2, "0")}${Number(g)
+            .toString(16)
+            .padStart(2, "0")}${Number(b).toString(16).padStart(2, "0")}`;
+          opacity = parseFloat(a);
+        }
+      } else if (colorPart.startsWith("#")) {
+        // Handle hex color
+        color = colorPart;
+      } else if (colorPart.startsWith("rgb")) {
+        // Parse rgb format
+        const rgbMatch = colorPart.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+        if (rgbMatch) {
+          const [_, r, g, b] = rgbMatch;
+          color = `#${Number(r).toString(16).padStart(2, "0")}${Number(g)
+            .toString(16)
+            .padStart(2, "0")}${Number(b).toString(16).padStart(2, "0")}`;
+        }
+      }
+    }
 
     return {
       x: isInner ? "0px" : parts[startIndex] || "0px",
       y: isInner ? "0px" : parts[startIndex + 1] || "0px",
       blur: parts[startIndex + 2] || "4px",
       spread: parts[startIndex + 3] || "0px",
-      color: color.includes("rgba")
-        ? `#${color
-            .match(/rgba\((\d+),\s*(\d+),\s*(\d+)/i)
-            .slice(1)
-            .map((n) => parseInt(n).toString(16).padStart(2, "0"))
-            .join("")}`
-        : color,
-      opacity: parseFloat(
-        color.match(/rgba\([^)]+,\s*([\d.]+)\)/)?.[1] || "0.15"
-      ),
+      color,
+      opacity,
     };
   }
 
