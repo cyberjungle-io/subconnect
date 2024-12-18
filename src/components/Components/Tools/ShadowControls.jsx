@@ -90,11 +90,11 @@ const INNER_SHADOW_PRESETS = {
 const INITIAL_SHADOW_STATE = {
   inner: {
     ...INNER_SHADOW_PRESETS.subtle,
-    color: '#000000',
+    color: "#000000",
   },
   outer: {
     ...SHADOW_PRESETS.subtle,
-    color: '#000000',
+    color: "#000000",
   },
 };
 
@@ -111,6 +111,12 @@ export const ShadowControlsPanel = ({
   onToggleInnerShadow,
   onToggleOuterShadow,
 }) => {
+  console.log("ShadowControlsPanel mounted/updated with props:", {
+    showInnerShadow,
+    showOuterShadow,
+    currentBoxShadow: style?.boxShadow,
+  });
+
   const [activePreset, setActivePreset] = useState(null);
   const [activeInnerPreset, setActiveInnerPreset] = useState(null);
 
@@ -123,7 +129,9 @@ export const ShadowControlsPanel = ({
 
     // Fix: Improved regex to capture the entire rgba value
     const rgbaMatch = shadowString.match(/rgba\([^)]+\)/);
-    const color = rgbaMatch ? rgbaMatch[0] : shadowString.split(" ").slice(-1)[0];
+    const color = rgbaMatch
+      ? rgbaMatch[0]
+      : shadowString.split(" ").slice(-1)[0];
 
     // Remove the rgba part from the string to parse other values
     const parts = shadowString
@@ -135,14 +143,16 @@ export const ShadowControlsPanel = ({
 
     // Fix: Properly handle rgba values
     let parsedColor, opacity;
-    if (color.startsWith('rgba')) {
-      const rgbaValues = color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/);
+    if (color.startsWith("rgba")) {
+      const rgbaValues = color.match(
+        /rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/
+      );
       if (rgbaValues) {
         const [_, r, g, b, a] = rgbaValues;
         parsedColor = color; // Keep the full rgba color
         opacity = parseFloat(a);
       } else {
-        parsedColor = '#000000';
+        parsedColor = "#000000";
         opacity = 1;
       }
     } else {
@@ -162,64 +172,34 @@ export const ShadowControlsPanel = ({
 
   // Update state when style changes
   useEffect(() => {
-    console.log("Style changed:", style?.boxShadow);
+    console.log("Style change effect triggered:", style?.boxShadow);
     if (style?.boxShadow && style.boxShadow !== "none") {
-      // Fix: Use regex to properly split shadows while preserving rgba() values
       const shadows = style.boxShadow
         .split(/,(?![^(]*\))/g)
         .map((s) => s.trim());
-      console.log("Parsed shadows:", shadows);
+      console.log("Parsed shadows in ShadowControls:", shadows);
 
-      // Determine shadow types present
       const hasInnerShadow = shadows.some((s) => s.includes("inset"));
       const hasOuterShadow = shadows.some((s) => !s.includes("inset"));
       console.log(
-        "Shadow detection - Inner:",
+        "Shadow detection in ShadowControls - Inner:",
         hasInnerShadow,
         "Outer:",
         hasOuterShadow
       );
 
-      // Only update states for shadows that are actually present
-      shadows.forEach((shadowStr) => {
-        const parsedShadow = parseShadowString(shadowStr);
-        console.log(
-          "Parsed shadow string:",
-          shadowStr,
-          "Result:",
-          parsedShadow
-        );
-        if (parsedShadow) {
-          const isInner = shadowStr.includes("inset");
-          if (isInner) {
-            setInnerShadow((prev) => ({ ...prev, ...parsedShadow }));
-            // Don't update outer shadow state
-          } else {
-            setOuterShadow((prev) => ({ ...prev, ...parsedShadow }));
-            // Don't update inner shadow state
-          }
-        }
+      // Log before updating visibility states
+      console.log("Current visibility states:", {
+        showInnerShadow,
+        showOuterShadow,
       });
-
-      // Update visibility states only if they don't match the current shadow presence
-      if (hasInnerShadow !== showInnerShadow) {
-        onToggleInnerShadow();
-      }
-      if (hasOuterShadow !== showOuterShadow) {
-        onToggleOuterShadow();
-      }
-    } else {
-      // If no shadow or "none", reset both states
-      if (showInnerShadow) {
-        onToggleInnerShadow();
-      }
-      if (showOuterShadow) {
-        onToggleOuterShadow();
-      }
+      console.log("Should update visibility?", {
+        inner: hasInnerShadow !== showInnerShadow,
+        outer: hasOuterShadow !== showOuterShadow,
+      });
     }
   }, [
     style?.boxShadow,
-    parseShadowString,
     showInnerShadow,
     showOuterShadow,
     onToggleInnerShadow,
@@ -227,12 +207,12 @@ export const ShadowControlsPanel = ({
   ]);
 
   const handleShadowChange = useCallback(() => {
-    console.log('handleShadowChange called');
-    console.log('Current states:', {
+    console.log("handleShadowChange called");
+    console.log("Current states:", {
       showInnerShadow,
       showOuterShadow,
       innerShadow,
-      outerShadow
+      outerShadow,
     });
 
     const shadows = [];
@@ -240,29 +220,35 @@ export const ShadowControlsPanel = ({
     if (showInnerShadow && innerShadow) {
       const { blur, spread, color, opacity } = innerShadow;
       // If color is already in rgba format, use it directly
-      const rgba = color?.startsWith('rgba') 
-        ? color 
-        : color 
-          ? `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, ${opacity})`
-          : `rgba(0, 0, 0, ${opacity})`;
+      const rgba = color?.startsWith("rgba")
+        ? color
+        : color
+        ? `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(
+            color.slice(3, 5),
+            16
+          )}, ${parseInt(color.slice(5, 7), 16)}, ${opacity})`
+        : `rgba(0, 0, 0, ${opacity})`;
       shadows.push(`inset 0 0 ${blur} ${spread} ${rgba}`);
-      console.log('Added inner shadow:', shadows[shadows.length - 1]);
+      console.log("Added inner shadow:", shadows[shadows.length - 1]);
     }
 
     if (showOuterShadow && outerShadow) {
       const { color, opacity, blur, spread, x, y } = outerShadow;
-      const rgba = color?.startsWith('rgba') 
-        ? color 
-        : color 
-          ? `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, ${opacity})`
-          : `rgba(0, 0, 0, ${opacity})`;
+      const rgba = color?.startsWith("rgba")
+        ? color
+        : color
+        ? `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(
+            color.slice(3, 5),
+            16
+          )}, ${parseInt(color.slice(5, 7), 16)}, ${opacity})`
+        : `rgba(0, 0, 0, ${opacity})`;
       shadows.push(`${x} ${y} ${blur} ${spread} ${rgba}`);
-      console.log('Added outer shadow:', shadows[shadows.length - 1]);
+      console.log("Added outer shadow:", shadows[shadows.length - 1]);
     }
 
     const boxShadow = shadows.length > 0 ? shadows.join(", ") : "none";
-    console.log('Final box-shadow value:', boxShadow);
-    
+    console.log("Final box-shadow value:", boxShadow);
+
     // Use requestAnimationFrame to ensure state is updated
     requestAnimationFrame(() => {
       onStyleChange({
@@ -279,19 +265,19 @@ export const ShadowControlsPanel = ({
 
   const handleManualChange = useCallback(
     (updates) => {
-      console.log('handleManualChange called with:', updates);
+      console.log("handleManualChange called with:", updates);
       setOuterShadow((prev) => {
-        console.log('Previous outer shadow state:', prev);
+        console.log("Previous outer shadow state:", prev);
         const newState = { ...prev };
-        
+
         if (updates.color) {
-          console.log('Updating outer shadow color to:', updates.color);
+          console.log("Updating outer shadow color to:", updates.color);
           newState.color = updates.color;
         } else {
           Object.assign(newState, updates);
         }
-        
-        console.log('New outer shadow state:', newState);
+
+        console.log("New outer shadow state:", newState);
         return newState;
       });
       setActivePreset(null);
@@ -302,19 +288,19 @@ export const ShadowControlsPanel = ({
 
   const handleManualInnerChange = useCallback(
     (updates) => {
-      console.log('handleManualInnerChange called with:', updates);
+      console.log("handleManualInnerChange called with:", updates);
       setInnerShadow((prev) => {
-        console.log('Previous inner shadow state:', prev);
+        console.log("Previous inner shadow state:", prev);
         const newState = { ...prev };
-        
+
         if (updates.color) {
-          console.log('Updating inner shadow color to:', updates.color);
+          console.log("Updating inner shadow color to:", updates.color);
           newState.color = updates.color;
         } else {
           Object.assign(newState, updates);
         }
-        
-        console.log('New inner shadow state:', newState);
+
+        console.log("New inner shadow state:", newState);
         return newState;
       });
       setActiveInnerPreset(null);
@@ -528,36 +514,20 @@ export const ShadowControlsPanel = ({
               <label className="block text-sm font-medium text-gray-700">
                 Color
               </label>
-              <div className="space-y-2" 
-                  onClick={(e) => {
-                    console.log('ColorPicker container clicked');
-                    e.stopPropagation();
-                  }}>
+              <div
+                className="space-y-2"
+                onClick={(e) => {
+                  console.log("ColorPicker container clicked");
+                  e.stopPropagation();
+                }}
+              >
                 <ColorPicker
                   color={innerShadow.color}
                   onChange={(newColor) => {
-                    console.log('ColorPicker onChange called with:', newColor);
+                    console.log("ColorPicker onChange called with:", newColor);
                     handleManualInnerChange({ color: newColor });
                   }}
                 />
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Opacity: {Math.round(innerShadow.opacity * 100)}%
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={innerShadow.opacity}
-                    onChange={(e) => {
-                      handleManualInnerChange({
-                        opacity: parseFloat(e.target.value),
-                      });
-                    }}
-                    className="w-full"
-                  />
-                </div>
               </div>
             </div>
           </div>
@@ -681,24 +651,6 @@ export const ShadowControlsPanel = ({
                     handleManualChange({ color: newColor });
                   }}
                 />
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">
-                    Opacity: {Math.round(outerShadow.opacity * 100)}%
-                  </label>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={outerShadow.opacity}
-                    onChange={(e) => {
-                      handleManualChange({
-                        opacity: parseFloat(e.target.value),
-                      });
-                    }}
-                    className="w-full"
-                  />
-                </div>
               </div>
             </div>
           </div>

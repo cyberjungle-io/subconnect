@@ -250,7 +250,7 @@ const FloatingToolbar = ({
 
   const handleToolbarInteraction = useCallback(
     (e) => {
-      console.log('Toolbar interaction:', e.type);
+      console.log("Toolbar interaction:", e.type);
       e.stopPropagation();
       onToolbarInteraction(e);
     },
@@ -258,7 +258,7 @@ const FloatingToolbar = ({
   );
 
   const handleDoubleClick = useCallback((e) => {
-    console.log('Toolbar double click');
+    console.log("Toolbar double click");
     e.stopPropagation();
     e.preventDefault();
   }, []);
@@ -335,11 +335,11 @@ const FloatingToolbar = ({
   };
 
   const handleToggleInnerShadow = useCallback(() => {
-    setShowInnerShadow(prev => !prev);
+    setShowInnerShadow((prev) => !prev);
   }, []);
 
   const handleToggleOuterShadow = useCallback(() => {
-    setShowOuterShadow(prev => !prev);
+    setShowOuterShadow((prev) => !prev);
   }, []);
 
   const renderActiveControl = () => {
@@ -474,6 +474,11 @@ const FloatingToolbar = ({
           />
         );
       case "Shadow":
+        console.log("Rendering ShadowControlsPanel with states:", {
+          showInnerShadow,
+          showOuterShadow,
+          currentBoxShadow: style?.boxShadow,
+        });
         return (
           <div>
             <ShadowControlsPanel
@@ -590,6 +595,38 @@ const FloatingToolbar = ({
         );
       });
   };
+
+  const detectExistingShadows = useCallback((boxShadow) => {
+    console.log("detectExistingShadows called with:", boxShadow);
+    if (!boxShadow || boxShadow === "none")
+      return { inner: false, outer: false };
+
+    const shadows = boxShadow.split(/,(?![^(]*\))/g).map((s) => s.trim());
+    const result = {
+      inner: shadows.some((s) => s.includes("inset")),
+      outer: shadows.some((s) => !s.includes("inset")),
+    };
+    console.log("detectExistingShadows result:", result);
+    return result;
+  }, []);
+
+  useEffect(() => {
+    console.log("Shadow initialization effect triggered");
+    console.log("activeControl:", activeControl);
+    console.log("current style.boxShadow:", style?.boxShadow);
+
+    if (activeControl === "Shadow" && style?.boxShadow) {
+      const { inner, outer } = detectExistingShadows(style.boxShadow);
+      console.log(
+        "Setting initial shadow states - inner:",
+        inner,
+        "outer:",
+        outer
+      );
+      setShowInnerShadow(inner);
+      setShowOuterShadow(outer);
+    }
+  }, [activeControl, style?.boxShadow, detectExistingShadows]);
 
   return (
     <>
