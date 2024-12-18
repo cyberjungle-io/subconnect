@@ -504,31 +504,29 @@ export const ShadowControlsPanel = ({
               <label className="block text-sm font-medium text-gray-700">
                 Color
               </label>
-              <div className="flex space-x-4">
-                <div className="flex-grow">
-                  <ColorPicker
-                    color={innerShadow.color}
-                    onChange={(newColor) => {
-                      if (newColor.startsWith("rgba")) {
-                        const rgba = newColor.match(/\d+/g);
-                        if (rgba && rgba.length >= 3) {
-                          const hex =
-                            "#" +
-                            rgba
-                              .slice(0, 3)
-                              .map((x) =>
-                                parseInt(x).toString(16).padStart(2, "0")
-                              )
-                              .join("");
-                          handleManualInnerChange({ color: hex });
-                        }
-                      } else {
-                        handleManualInnerChange({ color: newColor });
+              <div className="space-y-2">
+                <ColorPicker
+                  color={innerShadow.color}
+                  onChange={(newColor) => {
+                    if (newColor.startsWith("rgba")) {
+                      const rgba = newColor.match(/\d+/g);
+                      if (rgba && rgba.length >= 3) {
+                        const hex =
+                          "#" +
+                          rgba
+                            .slice(0, 3)
+                            .map((x) =>
+                              parseInt(x).toString(16).padStart(2, "0")
+                            )
+                            .join("");
+                        handleManualInnerChange({ color: hex });
                       }
-                    }}
-                  />
-                </div>
-                <div className="w-32">
+                    } else {
+                      handleManualInnerChange({ color: newColor });
+                    }
+                  }}
+                />
+                <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Opacity: {Math.round(innerShadow.opacity * 100)}%
                   </label>
@@ -662,35 +660,29 @@ export const ShadowControlsPanel = ({
               <label className="block text-sm font-medium text-gray-700">
                 Color
               </label>
-              <div className="flex space-x-4">
-                <div className="flex-grow">
-                  <ColorPicker
-                    color={outerShadow.color}
-                    onChange={(newColor) => {
-                      // If the new color is in rgba format, extract just the hex
-                      if (newColor.startsWith("rgba")) {
-                        // Extract the RGB values
-                        const rgba = newColor.match(/\d+/g);
-                        if (rgba && rgba.length >= 3) {
-                          // Convert RGB to hex
-                          const hex =
-                            "#" +
-                            rgba
-                              .slice(0, 3)
-                              .map((x) =>
-                                parseInt(x).toString(16).padStart(2, "0")
-                              )
-                              .join("");
-                          handleManualChange({ color: hex });
-                        }
-                      } else {
-                        // It's already a hex color
-                        handleManualChange({ color: newColor });
+              <div className="space-y-2">
+                <ColorPicker
+                  color={outerShadow.color}
+                  onChange={(newColor) => {
+                    if (newColor.startsWith("rgba")) {
+                      const rgba = newColor.match(/\d+/g);
+                      if (rgba && rgba.length >= 3) {
+                        const hex =
+                          "#" +
+                          rgba
+                            .slice(0, 3)
+                            .map((x) =>
+                              parseInt(x).toString(16).padStart(2, "0")
+                            )
+                            .join("");
+                        handleManualChange({ color: hex });
                       }
-                    }}
-                  />
-                </div>
-                <div className="w-32">
+                    } else {
+                      handleManualChange({ color: newColor });
+                    }
+                  }}
+                />
+                <div>
                   <label className="block text-sm font-medium text-gray-700">
                     Opacity: {Math.round(outerShadow.opacity * 100)}%
                   </label>
