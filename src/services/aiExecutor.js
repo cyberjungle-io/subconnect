@@ -68,13 +68,18 @@ export class AICommandExecutor {
     try {
       // Clean the input first
       const cleanInput = input.replace(/\{[\s\S]*\}/g, "").trim();
-      console.log("Cleaned input:", cleanInput);
 
-      // Check for shadow pattern early
       const shadowPattern = /shadow/i;
+      const isRemoveShadow =
+        /(remove|clear|delete|get rid of|turn off|switch off|no) .*(shadow|shadows)/i.test(
+          cleanInput
+        );
+
+      // Check for shadow pattern early - MODIFIED to skip for removal commands
       if (
         input.match(shadowPattern) &&
-        !input.match(/(?:inner|outer)\s*shadow/i)
+        !input.match(/(?:inner|outer)\s*shadow/i) &&
+        !isRemoveShadow // Skip the prompt if it's a removal command
       ) {
         return {
           success: true,
@@ -82,6 +87,30 @@ export class AICommandExecutor {
             "What kind of shadow would you like? You can specify:\n- Inner shadow\n- Outer shadow",
           needsMoreInfo: true,
           type: "shadow",
+        };
+      }
+
+      // If it's a remove shadow command, process it directly
+      if (isRemoveShadow && selectedComponent) {
+        const updatedComponent = {
+          ...selectedComponent,
+          style: {
+            ...selectedComponent.style,
+            boxShadow: "none",
+          },
+        };
+
+        await dispatch(
+          updateComponent({
+            id: selectedComponent.id,
+            updates: updatedComponent,
+          })
+        );
+
+        return {
+          success: true,
+          message: "Removed shadow",
+          isCommandExecution: true,
         };
       }
 
@@ -106,10 +135,6 @@ export class AICommandExecutor {
             },
           };
 
-          console.log('Original component style:', selectedComponent.style);
-          console.log('Spacing update:', updatedStyle);
-          console.log('Updated component style:', updatedComponent.style);
-
           await dispatch(
             updateComponent({
               id: selectedComponent.id,
@@ -120,14 +145,17 @@ export class AICommandExecutor {
           // Generate success message in standard format
           const property = Object.keys(updatedStyle)[0];
           const value = updatedStyle[property];
-          const action = input.includes('add') ? 'Set' : input.includes('remove') ? 'Set' : 'Updated';
+          const action = input.includes("add")
+            ? "Set"
+            : input.includes("remove")
+            ? "Set"
+            : "Updated";
           return {
             success: true,
             message: `${action} ${property} to ${value}`,
-            isCommandExecution: true  // This flag will trigger the checkmark style
+            isCommandExecution: true, // This flag will trigger the checkmark style
           };
         } catch (error) {
-          console.error("Spacing update failed:", error);
           return {
             success: false,
             message: `Failed to update spacing: ${error.message}`,
@@ -214,10 +242,13 @@ export class AICommandExecutor {
   }
 
   static async processStyleCommand(input, component, dispatch) {
-    const styleResult = StyleCommandProcessor.processStyleCommand(input, component);
-    
+    const styleResult = StyleCommandProcessor.processStyleCommand(
+      input,
+      component
+    );
+
     // Handle PROMPT type responses
-    if (styleResult?.type === 'PROMPT') {
+    if (styleResult?.type === "PROMPT") {
       if (styleResult.followUp) {
         // Store the followUp info for next command
         this.pendingFollowUp = styleResult.followUp;
@@ -227,14 +258,14 @@ export class AICommandExecutor {
         message: styleResult.message,
         options: styleResult.options,
         needsMoreInfo: true,
-        property: styleResult.property
+        property: styleResult.property,
       };
     }
 
     // Check if this is a followUp response
     if (this.pendingFollowUp) {
       const followUpType = this.pendingFollowUp.type;
-      if (followUpType === 'COLOR_CHANGE') {
+      if (followUpType === "COLOR_CHANGE") {
         // Transform the input using the stored command generator
         input = this.pendingFollowUp.command(input);
         // Clear the pending followUp
