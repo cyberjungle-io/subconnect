@@ -171,8 +171,35 @@ export const ShadowControlsPanel = ({
         .split(/,(?![^(]*\))/g)
         .map((s) => s.trim());
 
-      const hasInnerShadow = shadows.some((s) => s.includes("inset"));
-      const hasOuterShadow = shadows.some((s) => !s.includes("inset"));
+      const innerShadowString = shadows.find((s) => s.includes("inset"));
+      const outerShadowString = shadows.find((s) => !s.includes("inset"));
+
+      const hasInnerShadow = Boolean(innerShadowString);
+      const hasOuterShadow = Boolean(outerShadowString);
+
+      // Update inner shadow state if it exists
+      if (hasInnerShadow) {
+        const parsedInnerShadow = parseShadowString(innerShadowString);
+        if (parsedInnerShadow) {
+          setInnerShadow(parsedInnerShadow);
+        }
+      }
+
+      // Update outer shadow state if it exists
+      if (hasOuterShadow) {
+        const parsedOuterShadow = parseShadowString(outerShadowString);
+        if (parsedOuterShadow) {
+          setOuterShadow(parsedOuterShadow);
+        }
+      }
+
+      // Update visibility states if needed
+      if (hasInnerShadow !== showInnerShadow) {
+        onToggleInnerShadow();
+      }
+      if (hasOuterShadow !== showOuterShadow) {
+        onToggleOuterShadow();
+      }
     }
   }, [
     style?.boxShadow,
@@ -180,6 +207,7 @@ export const ShadowControlsPanel = ({
     showOuterShadow,
     onToggleInnerShadow,
     onToggleOuterShadow,
+    parseShadowString,
   ]);
 
   const handleShadowChange = useCallback(() => {

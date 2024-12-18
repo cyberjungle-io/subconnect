@@ -225,23 +225,29 @@ export class ShadowProcessor {
         }
       } else if (property === "color") {
         try {
-          const tempDiv = document.createElement('div');
+          const tempDiv = document.createElement("div");
           tempDiv.style.color = value;
           document.body.appendChild(tempDiv);
           const computedColor = window.getComputedStyle(tempDiv).color;
           document.body.removeChild(tempDiv);
 
-          const rgbMatch = computedColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+          const rgbMatch = computedColor.match(
+            /rgb\((\d+),\s*(\d+),\s*(\d+)\)/
+          );
           if (rgbMatch) {
             const [_, r, g, b] = rgbMatch;
-            shadowValues.color = `#${Number(r).toString(16).padStart(2, '0')}${Number(g).toString(16).padStart(2, '0')}${Number(b).toString(16).padStart(2, '0')}`;
+            shadowValues.color = `#${Number(r)
+              .toString(16)
+              .padStart(2, "0")}${Number(g)
+              .toString(16)
+              .padStart(2, "0")}${Number(b).toString(16).padStart(2, "0")}`;
             // Restore the original opacity
             shadowValues.opacity = originalOpacity;
           } else {
             shadowValues.color = value;
           }
         } catch (error) {
-          console.error('Error parsing color:', error);
+          console.error("Error parsing color:", error);
           shadowValues.color = value;
         }
       } else {
