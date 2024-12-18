@@ -604,6 +604,14 @@ const FloatingToolbar = ({
   }, []);
 
   useEffect(() => {
+    if (style?.boxShadow) {
+      const { inner, outer } = detectExistingShadows(style.boxShadow);
+      setShowInnerShadow(inner);
+      setShowOuterShadow(outer);
+    }
+  }, []);
+
+  useEffect(() => {
     if (activeControl === "Shadow" && style?.boxShadow) {
       const { inner, outer } = detectExistingShadows(style.boxShadow);
       setShowInnerShadow(inner);
