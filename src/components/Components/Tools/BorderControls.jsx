@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ColorPicker from '../../common/ColorPicker';
 import { FaLink, FaUnlink } from 'react-icons/fa'; // Import chain link icons
-import { ShadowControls, ShadowControlsPanel } from './ShadowControls';
 
 const UNITS = ['px', '%', 'em', 'rem', 'vw', 'vh'];
 
@@ -16,10 +15,6 @@ const BorderControls = ({ style, onStyleChange }) => {
   const [showAllBorderWidth, setShowAllBorderWidth] = useState(true);
   const [showAllBorderRadius, setShowAllBorderRadius] = useState(true);
   const [previousBorderState, setPreviousBorderState] = useState(null);
-  const [showInnerShadow, setShowInnerShadow] = useState(false);
-  const [showOuterShadow, setShowOuterShadow] = useState(false);
-
-  const updateTimeoutRef = useRef(null);
 
   // Update the button classes
   const activeButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300";
@@ -46,15 +41,6 @@ const BorderControls = ({ style, onStyleChange }) => {
     }
     setShowBorder(style.borderWidth !== '0px');
   }, [style]);
-
-  const debouncedStyleChange = useCallback((updates) => {
-    if (updateTimeoutRef.current) {
-      clearTimeout(updateTimeoutRef.current);
-    }
-    updateTimeoutRef.current = setTimeout(() => {
-      onStyleChange(updates);
-    }, 100); // Adjust this delay as needed
-  }, [onStyleChange]);
 
   const handleBorderChange = useCallback((property, value) => {
     let updates = {};
@@ -414,18 +400,6 @@ const BorderControls = ({ style, onStyleChange }) => {
         >
           Border
         </button>
-        <button
-          onClick={() => setShowInnerShadow(prev => !prev)}
-          className={showInnerShadow ? activeButtonClass : inactiveButtonClass}
-        >
-          Inner Shadow
-        </button>
-        <button
-          onClick={() => setShowOuterShadow(prev => !prev)}
-          className={showOuterShadow ? activeButtonClass : inactiveButtonClass}
-        >
-          Outer Shadow
-        </button>
       </div>
 
       {showBorder && (
@@ -435,16 +409,6 @@ const BorderControls = ({ style, onStyleChange }) => {
           {widthContent}
           {radiusContent}
           {colorContent}
-        </div>
-      )}
-
-      {(showInnerShadow || showOuterShadow) && (
-        <div className="pt-4">
-          <ShadowControlsPanel 
-            showInnerShadow={showInnerShadow}
-            showOuterShadow={showOuterShadow}
-            onStyleChange={onStyleChange}
-          />
         </div>
       )}
     </div>

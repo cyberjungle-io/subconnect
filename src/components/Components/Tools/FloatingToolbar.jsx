@@ -1,130 +1,169 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FaTimes, FaLayerGroup, FaPalette, FaExpand, FaBorderStyle, FaFont, FaImage, FaChartBar, FaPlay, FaArrowsAlt, FaMousePointer, FaPencilAlt, FaDatabase, FaSave, FaClipboardList, FaTable, FaFillDrip, FaBars, FaListUl, FaUserPlus } from 'react-icons/fa';
-import SizeControls from './SizeControls';
-import LayoutControls from './LayoutControls';
-import BorderControls from './BorderControls';
-import BackgroundControls from './BackgroundControls';
-import TextControls from './TextControls';
-import ImageControls from './ImageControls';
-import ChartControls from './ChartControls';
-import SpacingControls from './SpacingControls';
-import VideoControls from './VideoControls';
-import WhiteboardControls from './WhiteboardControls';
-import ButtonControls from './ButtonControls';
-import QueryValueControls from './QueryValueControls';
-import BasicTextControls from './BasicTextControls';
-import ChartDataControls from './ChartDataControls';
-import KanbanControls from './KanbanControls';
-import { useDispatch,useSelector } from 'react-redux';
-import { renameComponent, saveComponentThunk } from '../../../features/editorSlice';
-import ColorThemeControls from './ColorThemeControls';
-import TableControls from './TableControls';
-import TableDataControls from './TableDataControls';
-import ToolbarControls from './ToolbarControls';
-import TodoControls from './TodoControls';
-import { showToast } from '../../../features/toastSlice';
-import { saveSingleComponent } from '../../../features/savedComponentsSlice';
-import SaveComponentModal from '../../common/SaveComponentModal';
-import { usePageNavigation } from '../../../contexts/PageNavigationContext';
-import KanbanAccessControls from './KanbanAccessControls';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import {
+  FaTimes,
+  FaLayerGroup,
+  FaPalette,
+  FaExpand,
+  FaBorderStyle,
+  FaFont,
+  FaImage,
+  FaChartBar,
+  FaPlay,
+  FaArrowsAlt,
+  FaMousePointer,
+  FaPencilAlt,
+  FaDatabase,
+  FaSave,
+  FaClipboardList,
+  FaTable,
+  FaFillDrip,
+  FaBars,
+  FaListUl,
+  FaUserPlus,
+  FaCloudSun,
+} from "react-icons/fa";
+import SizeControls from "./SizeControls";
+import LayoutControls from "./LayoutControls";
+import BorderControls from "./BorderControls";
+import BackgroundControls from "./BackgroundControls";
+import TextControls from "./TextControls";
+import ImageControls from "./ImageControls";
+import ChartControls from "./ChartControls";
+import SpacingControls from "./SpacingControls";
+import VideoControls from "./VideoControls";
+import WhiteboardControls from "./WhiteboardControls";
+import ButtonControls from "./ButtonControls";
+import QueryValueControls from "./QueryValueControls";
+import BasicTextControls from "./BasicTextControls";
+import ChartDataControls from "./ChartDataControls";
+import KanbanControls from "./KanbanControls";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  renameComponent,
+  saveComponentThunk,
+} from "../../../features/editorSlice";
+import ColorThemeControls from "./ColorThemeControls";
+import TableControls from "./TableControls";
+import TableDataControls from "./TableDataControls";
+import ToolbarControls from "./ToolbarControls";
+import TodoControls from "./TodoControls";
+import { showToast } from "../../../features/toastSlice";
+import { saveSingleComponent } from "../../../features/savedComponentsSlice";
+import SaveComponentModal from "../../common/SaveComponentModal";
+import { usePageNavigation } from "../../../contexts/PageNavigationContext";
+import KanbanAccessControls from "./KanbanAccessControls";
+import ShadowControlsPanel from "./ShadowControls";
 
 const iconMap = {
   FLEX_CONTAINER: [
-    { icon: FaExpand, tooltip: 'Size' },
-    { icon: FaArrowsAlt, tooltip: 'Spacing' },
-    { icon: FaBorderStyle, tooltip: 'Border' },
-    { icon: FaPalette, tooltip: 'Background' },
-    { icon: FaLayerGroup, tooltip: 'Layout' },
-    { icon: FaMousePointer, tooltip: 'Button Controls' },
+    { icon: FaExpand, tooltip: "Size" },
+    { icon: FaArrowsAlt, tooltip: "Spacing" },
+    { icon: FaBorderStyle, tooltip: "Border" },
+    { icon: FaCloudSun, tooltip: "Shadow" },
+    { icon: FaPalette, tooltip: "Background" },
+    { icon: FaLayerGroup, tooltip: "Layout" },
+    { icon: FaMousePointer, tooltip: "Button Controls" },
   ],
   TEXT: [
-    { icon: FaExpand, tooltip: 'Size' },
-    { icon: FaArrowsAlt, tooltip: 'Spacing' },
-    { icon: FaBorderStyle, tooltip: 'Border' },
-    { icon: FaPalette, tooltip: 'Background' },
-    { icon: FaFont, tooltip: 'Text Controls' },
+    { icon: FaExpand, tooltip: "Size" },
+    { icon: FaArrowsAlt, tooltip: "Spacing" },
+    { icon: FaBorderStyle, tooltip: "Border" },
+    { icon: FaCloudSun, tooltip: "Shadow" },
+    { icon: FaPalette, tooltip: "Background" },
+    { icon: FaFont, tooltip: "Text Controls" },
   ],
   IMAGE: [
-    { icon: FaExpand, tooltip: 'Size' },
-    { icon: FaArrowsAlt, tooltip: 'Spacing' },
-    { icon: FaBorderStyle, tooltip: 'Border' },
-    { icon: FaPalette, tooltip: 'Background' },
-    { icon: FaImage, tooltip: 'Image Controls' },
+    { icon: FaExpand, tooltip: "Size" },
+    { icon: FaArrowsAlt, tooltip: "Spacing" },
+    { icon: FaBorderStyle, tooltip: "Border" },
+    { icon: FaCloudSun, tooltip: "Shadow" },
+    { icon: FaPalette, tooltip: "Background" },
+    { icon: FaImage, tooltip: "Image Controls" },
   ],
   CHART: [
-    { icon: FaExpand, tooltip: 'Size' },
-    { icon: FaArrowsAlt, tooltip: 'Spacing' },
-    { icon: FaBorderStyle, tooltip: 'Border' },
-    { icon: FaPalette, tooltip: 'Background' },
-    { icon: FaChartBar, tooltip: 'Chart Controls' },
-    { icon: FaDatabase, tooltip: 'Chart Data' },
+    { icon: FaExpand, tooltip: "Size" },
+    { icon: FaArrowsAlt, tooltip: "Spacing" },
+    { icon: FaBorderStyle, tooltip: "Border" },
+    { icon: FaCloudSun, tooltip: "Shadow" },
+    { icon: FaPalette, tooltip: "Background" },
+    { icon: FaChartBar, tooltip: "Chart Controls" },
+    { icon: FaDatabase, tooltip: "Chart Data" },
   ],
   VIDEO: [
-    { icon: FaExpand, tooltip: 'Size' },
-    { icon: FaArrowsAlt, tooltip: 'Spacing' },
-    { icon: FaBorderStyle, tooltip: 'Border' },
-    { icon: FaPalette, tooltip: 'Background' },
-    { icon: FaPlay, tooltip: 'Video Controls' },
+    { icon: FaExpand, tooltip: "Size" },
+    { icon: FaArrowsAlt, tooltip: "Spacing" },
+    { icon: FaBorderStyle, tooltip: "Border" },
+    { icon: FaCloudSun, tooltip: "Shadow" },
+    { icon: FaPalette, tooltip: "Background" },
+    { icon: FaPlay, tooltip: "Video Controls" },
   ],
   WHITEBOARD: [
-    { icon: FaExpand, tooltip: 'Size' },
-    { icon: FaArrowsAlt, tooltip: 'Spacing' },
-    { icon: FaBorderStyle, tooltip: 'Border' },
-    { icon: FaPalette, tooltip: 'Background' },
-    { icon: FaPencilAlt, tooltip: 'Whiteboard Controls' },
+    { icon: FaExpand, tooltip: "Size" },
+    { icon: FaArrowsAlt, tooltip: "Spacing" },
+    { icon: FaBorderStyle, tooltip: "Border" },
+    { icon: FaCloudSun, tooltip: "Shadow" },
+    { icon: FaPalette, tooltip: "Background" },
+    { icon: FaPencilAlt, tooltip: "Whiteboard Controls" },
   ],
   QUERY_VALUE: [
-    { icon: FaExpand, tooltip: 'Size' },
-    { icon: FaArrowsAlt, tooltip: 'Spacing' },
-    { icon: FaBorderStyle, tooltip: 'Border' },
-    { icon: FaPalette, tooltip: 'Background' },
-    { icon: FaDatabase, tooltip: 'Query Controls' },
-    { icon: FaFont, tooltip: 'Text Controls' },
-  ],
-  CANVAS: [
-    { icon: FaArrowsAlt, tooltip: 'Spacing' },
-    { icon: FaFillDrip, tooltip: 'Background' },
-    { icon: FaPalette, tooltip: 'Color Theme' },
-    { icon: FaBars, tooltip: 'Toolbar Settings' },
+    { icon: FaExpand, tooltip: "Size" },
+    { icon: FaArrowsAlt, tooltip: "Spacing" },
+    { icon: FaBorderStyle, tooltip: "Border" },
+    { icon: FaCloudSun, tooltip: "Shadow" },
+    { icon: FaPalette, tooltip: "Background" },
+    { icon: FaDatabase, tooltip: "Query Controls" },
+    { icon: FaFont, tooltip: "Text Controls" },
   ],
   KANBAN: [
-    { icon: FaExpand, tooltip: 'Size' },
-    { icon: FaArrowsAlt, tooltip: 'Spacing' },
-    { icon: FaBorderStyle, tooltip: 'Border' },
-    { icon: FaClipboardList, tooltip: 'Kanban Controls' },
-    { icon: FaFont, tooltip: 'Text Styling' },
-    { icon: FaUserPlus, tooltip: 'Manage Access' },
+    { icon: FaExpand, tooltip: "Size" },
+    { icon: FaArrowsAlt, tooltip: "Spacing" },
+    { icon: FaBorderStyle, tooltip: "Border" },
+    { icon: FaCloudSun, tooltip: "Shadow" },
+    { icon: FaClipboardList, tooltip: "Kanban Controls" },
+    { icon: FaFont, tooltip: "Text Styling" },
+    { icon: FaUserPlus, tooltip: "Manage Access" },
   ],
   TABLE: [
-    { icon: FaExpand, tooltip: 'Size' },
-    { icon: FaArrowsAlt, tooltip: 'Spacing' },
-    { icon: FaBorderStyle, tooltip: 'Border' },
-    { icon: FaTable, tooltip: 'Table Style' },
-    { icon: FaDatabase, tooltip: 'Table Data' },
-    { icon: FaPalette, tooltip: 'Background' },
-    { icon: FaFont, tooltip: 'Text Styling' },
-  ],
-  TOOLBAR: [
-    { icon: FaPalette, tooltip: 'Toolbar Settings' },
+    { icon: FaExpand, tooltip: "Size" },
+    { icon: FaArrowsAlt, tooltip: "Spacing" },
+    { icon: FaBorderStyle, tooltip: "Border" },
+    { icon: FaCloudSun, tooltip: "Shadow" },
+    { icon: FaTable, tooltip: "Table Style" },
+    { icon: FaDatabase, tooltip: "Table Data" },
+    { icon: FaPalette, tooltip: "Background" },
+    { icon: FaFont, tooltip: "Text Styling" },
   ],
   TODO: [
-    { icon: FaExpand, tooltip: 'Size' },
-    { icon: FaArrowsAlt, tooltip: 'Spacing' },
-    { icon: FaBorderStyle, tooltip: 'Border' },
-    { icon: FaPalette, tooltip: 'Background' },
-    { icon: FaListUl, tooltip: 'Todo Controls' },
-    { icon: FaFont, tooltip: 'Text Controls' },
+    { icon: FaExpand, tooltip: "Size" },
+    { icon: FaArrowsAlt, tooltip: "Spacing" },
+    { icon: FaBorderStyle, tooltip: "Border" },
+    { icon: FaCloudSun, tooltip: "Shadow" },
+    { icon: FaPalette, tooltip: "Background" },
+    { icon: FaListUl, tooltip: "Todo Controls" },
+    { icon: FaFont, tooltip: "Text Controls" },
   ],
 };
 
-const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose, style, props, content, onStyleChange, onToolbarInteraction, component, className = '' }) => {
+const FloatingToolbar = ({
+  componentId,
+  componentType,
+  initialPosition,
+  onClose,
+  style,
+  props,
+  content,
+  onStyleChange,
+  onToolbarInteraction,
+  component,
+  className = "",
+}) => {
   const dispatch = useDispatch();
   const userId = useSelector((state) => state.user.currentUser._id); // Move useSelector here
   const [position, setPosition] = useState(initialPosition);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [activeControl, setActiveControl] = useState('Size');
-  const [toolbarHeight, setToolbarHeight] = useState('auto');
+  const [activeControl, setActiveControl] = useState("Size");
+  const [toolbarHeight, setToolbarHeight] = useState("auto");
   const [isMouseDown, setIsMouseDown] = useState(false);
   const toolbarRef = useRef(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -132,17 +171,24 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   const inputRef = useRef(null);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const { pages } = usePageNavigation();
+  const [showInnerShadow, setShowInnerShadow] = useState(true);
+  const [showOuterShadow, setShowOuterShadow] = useState(true);
+
+  const activeButtonClass =
+    "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300";
+  const inactiveButtonClass =
+    "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]";
 
   useEffect(() => {
     const updateToolbarSize = () => {
       const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
     };
 
     updateToolbarSize();
-    window.addEventListener('resize', updateToolbarSize);
+    window.addEventListener("resize", updateToolbarSize);
 
-    return () => window.removeEventListener('resize', updateToolbarSize);
+    return () => window.removeEventListener("resize", updateToolbarSize);
   }, []);
 
   useEffect(() => {
@@ -184,45 +230,51 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
     };
 
     if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
     }
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
   }, [isDragging, dragOffset]);
 
   useEffect(() => {
-    if (activeControl === 'Size') {
-      setToolbarHeight('auto');
+    if (activeControl === "Size") {
+      setToolbarHeight("auto");
     } else {
-      setToolbarHeight('60px');
+      setToolbarHeight("60px");
     }
   }, [activeControl]);
 
-  const handleToolbarInteraction = useCallback((e) => {
-    e.stopPropagation();
-    onToolbarInteraction(e);
-  }, [onToolbarInteraction]);
+  const handleToolbarInteraction = useCallback(
+    (e) => {
+      e.stopPropagation();
+      onToolbarInteraction(e);
+    },
+    [onToolbarInteraction]
+  );
 
   const handleDoubleClick = useCallback((e) => {
     e.stopPropagation();
     e.preventDefault();
   }, []);
 
-  const handleMouseDown = useCallback((e) => {
-    if (!isEditing) {
-      setIsDragging(true);
-      setIsMouseDown(true);
-      setDragOffset({
-        x: e.clientX - position.x,
-        y: e.clientY - position.y,
-      });
-      onToolbarInteraction(e);
-    }
-  }, [position, onToolbarInteraction, isEditing]);
+  const handleMouseDown = useCallback(
+    (e) => {
+      if (!isEditing) {
+        setIsDragging(true);
+        setIsMouseDown(true);
+        setDragOffset({
+          x: e.clientX - position.x,
+          y: e.clientY - position.y,
+        });
+        onToolbarInteraction(e);
+      }
+    },
+    [position, onToolbarInteraction, isEditing]
+  );
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -237,10 +289,10 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       }
     };
 
-    document.addEventListener('mouseup', handleGlobalMouseUp);
+    document.addEventListener("mouseup", handleGlobalMouseUp);
 
     return () => {
-      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener("mouseup", handleGlobalMouseUp);
     };
   }, [isMouseDown, handleMouseUp]);
 
@@ -251,9 +303,9 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       }
     };
 
-    document.addEventListener('dblclick', handleDoubleClickOutside);
+    document.addEventListener("dblclick", handleDoubleClickOutside);
     return () => {
-      document.removeEventListener('dblclick', handleDoubleClickOutside);
+      document.removeEventListener("dblclick", handleDoubleClickOutside);
     };
   }, [onClose]);
 
@@ -286,114 +338,171 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       props,
       content,
       onStyleChange: (updates) => {
-        onStyleChange({ 
-          style: { 
-            ...style, 
-            ...updates,
-            enablePageNavigation: updates.enablePageNavigation !== undefined 
-              ? updates.enablePageNavigation 
-              : style.enablePageNavigation,
-            targetPageId: updates.targetPageId !== undefined 
-              ? updates.targetPageId 
-              : style.targetPageId
-          } 
-        });
+        if (updates.style) {
+          onStyleChange({
+            style: {
+              ...style,
+              ...updates.style,
+              enablePageNavigation:
+                updates.style.enablePageNavigation !== undefined
+                  ? updates.style.enablePageNavigation
+                  : style.enablePageNavigation,
+              targetPageId:
+                updates.style.targetPageId !== undefined
+                  ? updates.style.targetPageId
+                  : style.targetPageId,
+            },
+          });
+        }
+        if (updates.props)
+          onStyleChange({ props: { ...props, ...updates.props } });
+        if (updates.content !== undefined)
+          onStyleChange({ content: updates.content });
       },
       onPropsChange: (updates) => onStyleChange({ props: updates }),
       onContentChange: (content) => onStyleChange({ content }),
     };
 
     switch (activeControl) {
-      case 'Size':
+      case "Size":
         return <SizeControls {...sharedProps} componentType={componentType} />;
-      case 'Spacing':
+      case "Spacing":
         return <SpacingControls {...sharedProps} />;
-      case 'Border':
-        return componentType === 'KANBAN' ? (
+      case "Border":
+        return componentType === "KANBAN" ? (
           <BorderControls
             style={props.columnBorderStyle || {}}
-            onStyleChange={(updates) => onStyleChange({ props: { ...props, columnBorderStyle: updates } })}
+            onStyleChange={(updates) =>
+              onStyleChange({ props: { ...props, columnBorderStyle: updates } })
+            }
           />
         ) : (
           <BorderControls {...sharedProps} />
         );
-      case 'Background':
+      case "Background":
         return <BackgroundControls {...sharedProps} />;
-      case 'Text Controls':
-        return componentType === 'TEXT' ? (
+      case "Text Controls":
+        return componentType === "TEXT" ? (
           <TextControls {...sharedProps} />
         ) : (
           <BasicTextControls {...sharedProps} />
         );
-      case 'Image Controls':
+      case "Image Controls":
         return (
-          <ImageControls 
-            {...sharedProps} 
+          <ImageControls
+            {...sharedProps}
             component={component}
             onStyleChange={(updates) => {
               onStyleChange({
                 ...updates,
                 style: {
                   ...style,
-                  ...(updates.style || {})
+                  ...(updates.style || {}),
                 },
                 props: {
                   ...props,
-                  ...(updates.props || {})
-                }
+                  ...(updates.props || {}),
+                },
               });
             }}
           />
         );
-      case 'Layout':
+      case "Layout":
         return <LayoutControls {...sharedProps} />;
-      case 'Chart Controls':
+      case "Chart Controls":
         return <ChartControls {...sharedProps} />;
-      case 'Chart Data':
+      case "Chart Data":
         return <ChartDataControls {...sharedProps} />;
-      case 'Video Controls':
+      case "Video Controls":
         return <VideoControls {...sharedProps} />;
-      case 'Whiteboard Controls':
+      case "Whiteboard Controls":
         return <WhiteboardControls {...sharedProps} />;
-      case 'Button Controls':
+      case "Button Controls":
         return <ButtonControls {...sharedProps} pages={pages} />;
-      case 'Query Controls':
-        return  <QueryValueControls {...sharedProps} />;
-      case 'Kanban Controls':
+      case "Query Controls":
+        return <QueryValueControls {...sharedProps} />;
+      case "Kanban Controls":
         return <KanbanControls {...sharedProps} />;
-      case 'Text Styling': // Changed from 'Header Text' to 'Text Styling'
-        return componentType === 'KANBAN' ? (
+      case "Text Styling": // Changed from 'Header Text' to 'Text Styling'
+        return componentType === "KANBAN" ? (
           <div>
-            <BasicTextControls 
-              {...sharedProps} 
-              style={props.columnHeaderStyle || {}} 
-              onStyleChange={(updates) => onStyleChange({ props: { ...props, columnHeaderStyle: updates } })}
+            <BasicTextControls
+              {...sharedProps}
+              style={props.columnHeaderStyle || {}}
+              onStyleChange={(updates) =>
+                onStyleChange({
+                  props: { ...props, columnHeaderStyle: updates },
+                })
+              }
               label="Column Header Text"
             />
-            <BasicTextControls 
-              {...sharedProps} 
-              style={props.taskTextStyle || {}} 
-              onStyleChange={(updates) => onStyleChange({ props: { ...props, taskTextStyle: updates } })}
+            <BasicTextControls
+              {...sharedProps}
+              style={props.taskTextStyle || {}}
+              onStyleChange={(updates) =>
+                onStyleChange({ props: { ...props, taskTextStyle: updates } })
+              }
               label="Task Text"
             />
           </div>
         ) : null;
-      case 'Color Theme':
+      case "Color Theme":
         return <ColorThemeControls />;
-      case 'Table Style':
+      case "Table Style":
         return <TableControls {...sharedProps} />;
-      case 'Table Data':
+      case "Table Data":
         return <TableDataControls {...sharedProps} />;
-      case 'Toolbar Settings':
+      case "Toolbar Settings":
         return <ToolbarControls {...sharedProps} />;
-      case 'Todo Controls':
+      case "Todo Controls":
         return <TodoControls {...sharedProps} />;
-      case 'Manage Access':
+      case "Manage Access":
         return (
           <KanbanAccessControls
             props={props}
             onClose={() => setActiveControl(null)}
           />
+        );
+      case "Shadow":
+        return (
+          <div className="space-y-4">
+            <div className="flex w-full space-x-2">
+              <button
+                onClick={() => setShowInnerShadow((prev) => !prev)}
+                className={
+                  showInnerShadow ? activeButtonClass : inactiveButtonClass
+                }
+              >
+                Inner Shadow
+              </button>
+              <button
+                onClick={() => setShowOuterShadow((prev) => !prev)}
+                className={
+                  showOuterShadow ? activeButtonClass : inactiveButtonClass
+                }
+              >
+                Outer Shadow
+              </button>
+            </div>
+
+            <div className="pt-4">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                Shadow
+              </h3>
+              <ShadowControlsPanel
+                showInnerShadow={showInnerShadow}
+                showOuterShadow={showOuterShadow}
+                onStyleChange={(updates) => {
+                  onStyleChange({
+                    style: {
+                      ...style,
+                      ...updates,
+                    },
+                  });
+                }}
+              />
+            </div>
+          </div>
         );
       default:
         return null;
@@ -402,9 +511,10 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
 
   const buttonClass = (isActive) => `
     p-2 rounded-full
-    ${isActive 
-      ? 'bg-[#cce7ff] text-blue-600 border border-blue-300' 
-      : 'hover:bg-[#d9ecff] border border-transparent'
+    ${
+      isActive
+        ? "bg-[#cce7ff] text-blue-600 border border-blue-300"
+        : "hover:bg-[#d9ecff] border border-transparent"
     }
   `;
 
@@ -415,17 +525,22 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   }, [isEditing]);
 
   const handleRename = () => {
-    if (editedName.trim() !== '' && editedName !== (props.name || componentType)) {
-      dispatch(renameComponent({ id: componentId, newName: editedName.trim() }));
+    if (
+      editedName.trim() !== "" &&
+      editedName !== (props.name || componentType)
+    ) {
+      dispatch(
+        renameComponent({ id: componentId, newName: editedName.trim() })
+      );
       onStyleChange({ props: { ...props, name: editedName.trim() } });
     }
     setIsEditing(false);
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleRename();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setEditedName(props.name || componentType);
       setIsEditing(false);
     }
@@ -438,11 +553,15 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
   };
 
   const handleSaveConfirm = ({ name, description }) => {
-    const uniqueId = `${componentType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+    const uniqueId = `${componentType}_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+
     const processComponent = (comp) => {
       const baseComponent = {
-        id: `${comp.type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        id: `${comp.type}_${Date.now()}_${Math.random()
+          .toString(36)
+          .substr(2, 9)}`,
         type: comp.type,
         style: comp.style || {},
         props: comp.props || {},
@@ -452,7 +571,9 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
       };
 
       if (comp.children && Array.isArray(comp.children)) {
-        baseComponent.children = comp.children.map(child => processComponent(child));
+        baseComponent.children = comp.children.map((child) =>
+          processComponent(child)
+        );
       }
 
       return baseComponent;
@@ -467,20 +588,24 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
     });
 
     componentToSave.createdBy = userId;
-    
+
     dispatch(saveSingleComponent(componentToSave))
       .unwrap()
       .then(() => {
-        dispatch(showToast({ 
-          message: 'Component saved to palette successfully!', 
-          type: 'success' 
-        }));
+        dispatch(
+          showToast({
+            message: "Component saved to palette successfully!",
+            type: "success",
+          })
+        );
       })
       .catch((error) => {
-        dispatch(showToast({ 
-          message: 'Failed to save component: ' + error.message, 
-          type: 'error' 
-        }));
+        dispatch(
+          showToast({
+            message: "Failed to save component: " + error.message,
+            type: "error",
+          })
+        );
       });
   };
 
@@ -492,64 +617,66 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
         style={{
           left: `${position.x}px`,
           top: `${position.y}px`,
-          maxHeight: '95vh',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-          MozUserSelect: 'none',
-          msUserSelect: 'none',
-          transform: 'scale(0.8)',
-          transformOrigin: 'top left', // Add this line
+          maxHeight: "95vh",
+          userSelect: "none",
+          WebkitUserSelect: "none",
+          MozUserSelect: "none",
+          msUserSelect: "none",
+          transform: "scale(0.8)",
+          transformOrigin: "top left", // Add this line
         }}
         onClick={handleToolbarInteraction}
         onDoubleClick={handleDoubleClick}
       >
         <div
-          className={`h-6 ${isEditing ? '' : 'cursor-move'} bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
+          className={`h-6 ${
+            isEditing ? "" : "cursor-move"
+          } bg-[#e1f0ff] rounded-t-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200`}
           onMouseDown={handleMouseDown}
         />
         <div className="px-4 pt-1 pb-3">
           <div
-            className={`flex items-center mb-3 ${isEditing ? '' : 'cursor-move'}`}
+            className={`flex items-center mb-3 ${
+              isEditing ? "" : "cursor-move"
+            }`}
             onMouseDown={handleMouseDown}
           >
             <div className="flex-grow mr-2 min-w-0">
-              {componentType === 'TOOLBAR' ? (
+              {componentType === "TOOLBAR" ? (
                 <h3 className="text-lg font-semibold text-gray-500 truncate">
                   Toolbar Settings
                 </h3>
+              ) : isEditing ? (
+                <input
+                  ref={inputRef}
+                  value={editedName}
+                  onChange={(e) => setEditedName(e.target.value)}
+                  onBlur={handleRename}
+                  onKeyDown={handleKeyDown}
+                  className="text-lg font-semibold text-gray-500 bg-white border border-gray-300 rounded px-1 py-0 w-full select-text"
+                  style={{
+                    userSelect: "text",
+                    WebkitUserSelect: "text",
+                    MozUserSelect: "text",
+                    msUserSelect: "text",
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
               ) : (
-                isEditing ? (
-                  <input
-                    ref={inputRef}
-                    value={editedName}
-                    onChange={(e) => setEditedName(e.target.value)}
-                    onBlur={handleRename}
-                    onKeyDown={handleKeyDown}
-                    className="text-lg font-semibold text-gray-500 bg-white border border-gray-300 rounded px-1 py-0 w-full select-text"
-                    style={{
-                      userSelect: 'text',
-                      WebkitUserSelect: 'text',
-                      MozUserSelect: 'text',
-                      msUserSelect: 'text',
-                    }}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <h3 
-                    className="text-lg font-semibold text-gray-500 cursor-text truncate"
-                    onDoubleClick={(e) => {
-                      e.stopPropagation();
-                      setIsEditing(true);
-                    }}
-                    title={props?.name || componentType}
-                  >
-                    {props?.name || componentType}
-                  </h3>
-                )
+                <h3
+                  className="text-lg font-semibold text-gray-500 cursor-text truncate"
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    setIsEditing(true);
+                  }}
+                  title={props?.name || componentType}
+                >
+                  {props?.name || componentType}
+                </h3>
               )}
             </div>
             <div className="flex-shrink-0 flex items-center">
-              {componentType !== 'TOOLBAR' && (
+              {componentType !== "TOOLBAR" && (
                 <button
                   onClick={handleSaveComponent}
                   className="mr-2 text-gray-500 hover:text-blue-600"
@@ -558,8 +685,8 @@ const FloatingToolbar = ({ componentId, componentType, initialPosition, onClose,
                   <FaSave />
                 </button>
               )}
-              <button 
-                onClick={onClose} 
+              <button
+                onClick={onClose}
                 className="text-gray-500 hover:text-blue-600"
                 title="Close"
               >

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import ColorPicker from '../../common/ColorPicker';
 
 const SHADOW_PRESETS = {
@@ -96,14 +96,121 @@ const INITIAL_SHADOW_STATE = {
   }
 };
 
-const activeButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300";
-const inactiveButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]";
+const activeButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300 font-normal";
+const inactiveButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff] font-normal";
 
-export const ShadowControlsPanel = ({ onStyleChange, showInnerShadow, showOuterShadow }) => {
-  const [innerShadow, setInnerShadow] = useState(INITIAL_SHADOW_STATE.inner);
-  const [outerShadow, setOuterShadow] = useState(INITIAL_SHADOW_STATE.outer);
-  const [activePreset, setActivePreset] = useState('subtle');
-  const [activeInnerPreset, setActiveInnerPreset] = useState('subtle');
+const parseShadowValue = (boxShadow) => {
+  if (!boxShadow || boxShadow === 'none') {
+    return { inner: null, outer: null };
+  }
+
+  const shadows = boxShadow.split(',').map(s => s.trim());
+  const result = { inner: null, outer: null };
+
+  shadows.forEach(shadow => {
+    if (shadow.includes('inset')) {
+      // Parse inner shadow
+      const matches = shadow.match(/inset\s+0\s+0\s+(\d+(?:px)?)\s+(\d+(?:px)?)\s+rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/);
+      if (matches) {
+        const [, blur, spread, r, g, b, opacity] = matches;
+        result.inner = {
+          blur,
+          spread,
+          color: `#${[r, g, b].map(x => parseInt(x).toString(16).padStart(2, '0')).join('')}`,
+          opacity: parseFloat(opacity)
+        };
+      }
+    } else {
+      // Parse outer shadow
+      const matches = shadow.match(/([-\d.]+(?:px)?)\s+([-\d.]+(?:px)?)\s+(\d+(?:px)?)\s+(\d+(?:px)?)\s+rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/);
+      if (matches) {
+        const [, x, y, blur, spread, r, g, b, opacity] = matches;
+        result.outer = {
+          x,
+          y,
+          blur,
+          spread,
+          color: `#${[r, g, b].map(x => parseInt(x).toString(16).padStart(2, '0')).join('')}`,
+          opacity: parseFloat(opacity)
+        };
+      }
+    }
+  });
+
+  return result;
+};
+
+export const ShadowControlsPanel = ({ onStyleChange, showInnerShadow, showOuterShadow, style }) => {
+  // Initialize states based on current style
+  const [innerShadow, setInnerShadow] = useState(() => {
+    const currentShadows = parseShadowValue(style?.boxShadow);
+    return currentShadows.inner || INITIAL_SHADOW_STATE.inner;
+  });
+
+  const [outerShadow, setOuterShadow] = useState(() => {
+    const currentShadows = parseShadowValue(style?.boxShadow);
+    return currentShadows.outer || INITIAL_SHADOW_STATE.outer;
+  });
+
+  // Initialize active presets based on current values
+  const [activePreset, setActivePreset] = useState(() => {
+    const currentShadows = parseShadowValue(style?.boxShadow);
+    if (!currentShadows.outer) return null;
+    
+    // Find matching preset
+    return Object.entries(SHADOW_PRESETS).find(([, preset]) => {
+      const current = currentShadows.outer;
+      return preset.x === current.x &&
+             preset.y === current.y &&
+             preset.blur === current.blur &&
+             preset.spread === current.spread &&
+             Math.abs(preset.opacity - current.opacity) < 0.01;
+    })?.[0] || null;
+  });
+
+  const [activeInnerPreset, setActiveInnerPreset] = useState(() => {
+    const currentShadows = parseShadowValue(style?.boxShadow);
+    if (!currentShadows.inner) return null;
+    
+    // Find matching preset
+    return Object.entries(INNER_SHADOW_PRESETS).find(([, preset]) => {
+      const current = currentShadows.inner;
+      return preset.blur === current.blur &&
+             preset.spread === current.spread &&
+             Math.abs(preset.opacity - current.opacity) < 0.01;
+    })?.[0] || null;
+  });
+
+  // Add effect to update states when style changes
+  useEffect(() => {
+    const currentShadows = parseShadowValue(style?.boxShadow);
+    
+    if (currentShadows.inner) {
+      setInnerShadow(currentShadows.inner);
+      // Update inner preset if it matches
+      const matchingInnerPreset = Object.entries(INNER_SHADOW_PRESETS).find(([, preset]) => {
+        const current = currentShadows.inner;
+        return preset.blur === current.blur &&
+               preset.spread === current.spread &&
+               Math.abs(preset.opacity - current.opacity) < 0.01;
+      })?.[0];
+      setActiveInnerPreset(matchingInnerPreset || null);
+    }
+
+    if (currentShadows.outer) {
+      setOuterShadow(currentShadows.outer);
+      // Update outer preset if it matches
+      const matchingOuterPreset = Object.entries(SHADOW_PRESETS).find(([, preset]) => {
+        const current = currentShadows.outer;
+        return preset.x === current.x &&
+               preset.y === current.y &&
+               preset.blur === current.blur &&
+               preset.spread === current.spread &&
+               Math.abs(preset.opacity - current.opacity) < 0.01;
+      })?.[0];
+      setActivePreset(matchingOuterPreset || null);
+    }
+  }, [style?.boxShadow]);
 
   const handleShadowChange = useCallback(() => {
     const shadows = [];
@@ -393,17 +500,19 @@ export const ShadowControlsPanel = ({ onStyleChange, showInnerShadow, showOuterS
 
   return (
     <div className="space-y-4">
-      {showInnerShadow && (
-        <div>
-          {renderInnerShadowControls()}
-        </div>
-      )}
+      <div className="flex flex-col gap-8">
+        {showInnerShadow && (
+          <div className="flex-shrink-0">
+            {renderInnerShadowControls()}
+          </div>
+        )}
 
-      {showOuterShadow && (
-        <div>
-          {renderOuterShadowControls()}
-        </div>
-      )}
+        {showOuterShadow && (
+          <div className="flex-shrink-0">
+            {renderOuterShadowControls()}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
