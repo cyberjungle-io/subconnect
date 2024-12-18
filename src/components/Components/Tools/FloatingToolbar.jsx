@@ -250,6 +250,7 @@ const FloatingToolbar = ({
 
   const handleToolbarInteraction = useCallback(
     (e) => {
+      console.log('Toolbar interaction:', e.type);
       e.stopPropagation();
       onToolbarInteraction(e);
     },
@@ -257,6 +258,7 @@ const FloatingToolbar = ({
   );
 
   const handleDoubleClick = useCallback((e) => {
+    console.log('Toolbar double click');
     e.stopPropagation();
     e.preventDefault();
   }, []);
