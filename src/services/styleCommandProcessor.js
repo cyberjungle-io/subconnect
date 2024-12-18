@@ -21,7 +21,30 @@ export class StyleCommandProcessor {
     console.log("Component style:", component?.style);
     console.log("Current context:", this.currentContext);
 
-    // Handle direct color input when we have a pending prompt
+    // Check for shadow commands first
+    if (input.toLowerCase().includes('shadow')) {
+      const shadowResult = ShadowProcessor.processCommand(input, component?.style);
+      if (shadowResult) {
+        // Store shadow context if it's a PROMPT
+        if (shadowResult.type === 'PROMPT') {
+          this.pendingPrompt = shadowResult;
+          this.currentContext = 'shadow';
+        }
+        return shadowResult;
+      }
+    }
+
+    // Handle direct color input when we have a pending prompt and shadow context
+    if (this.pendingPrompt && this.currentContext === 'shadow') {
+      const shadowResult = ShadowProcessor.processCommand(input, component?.style);
+      if (shadowResult) {
+        this.pendingPrompt = null;
+        this.currentContext = null;
+        return shadowResult;
+      }
+    }
+
+    // Handle direct color input for other contexts
     const directColorPattern = /^([a-z]+|#[0-9a-f]{3,6}|rgb\(\d+,\s*\d+,\s*\d+\))$/i;
     if (this.pendingPrompt && directColorPattern.test(input)) {
       const contextProcessorMap = {
@@ -32,10 +55,9 @@ export class StyleCommandProcessor {
 
       const contextProcessor = contextProcessorMap[this.currentContext];
       if (contextProcessor) {
-        // Use the stored followUp command to process the color
         const command = this.pendingPrompt.followUp.command(input);
         const result = contextProcessor.processCommand(command, component?.style);
-        this.pendingPrompt = null; // Clear the pending prompt
+        this.pendingPrompt = null;
         return result;
       }
     }

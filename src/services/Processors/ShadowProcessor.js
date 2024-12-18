@@ -1,4 +1,6 @@
 export class ShadowProcessor {
+  static pendingCustomization = null;
+
   static getStylePatterns() {
     return {
       boxShadow: [
@@ -164,94 +166,172 @@ export class ShadowProcessor {
   static processCommand(input, currentStyle = {}) {
     console.log('ShadowProcessor received input:', input, 'Current style:', currentStyle);
     const lowercaseInput = input.toLowerCase();
-    const presets = this.getShadowPresets();
 
-    // Helper function to generate shadow string
-    const generateShadowString = (preset, isInner = false) => {
-      const { x = '0px', y = '0px', blur, spread, color, opacity } = preset;
-      const rgba = `rgba(0, 0, 0, ${opacity})`;
-      return isInner 
-        ? `inset 0 0 ${blur} ${spread} ${rgba}`
-        : `${x} ${y} ${blur} ${spread} ${rgba}`;
-    };
+    // Check if we have a pending customization and are receiving a value
+    if (this.pendingCustomization) {
+      const { isInner, property } = this.pendingCustomization;
+      const value = input.trim();
+      this.pendingCustomization = null; // Clear pending state
 
-    // Handle outer shadow presets
-    for (const [presetName, preset] of Object.entries(presets.outer)) {
-      const pattern = new RegExp(`add\\s+${presetName}\\s+outer\\s+shadow`, 'i');
-      if (pattern.test(lowercaseInput)) {
+      // Generate the shadow string with the new value
+      const currentShadow = currentStyle.boxShadow || 'none';
+      const shadowParts = currentShadow.split(',').map(part => part.trim());
+      
+      // Find the relevant shadow (inner or outer)
+      const shadowIndex = isInner ? 
+        shadowParts.findIndex(part => part.includes('inset')) :
+        shadowParts.findIndex(part => !part.includes('inset'));
+      
+      if (shadowIndex === -1) {
+        // If no existing shadow of this type, create a new one
+        const preset = isInner ? this.getShadowPresets().inner.medium : this.getShadowPresets().outer.medium;
+        const newShadow = { ...preset };
+
+        // Update the specified property
+        switch (property) {
+          case 'xOffset':
+            newShadow.x = value;
+            break;
+          case 'yOffset':
+            newShadow.y = value;
+            break;
+          case 'blur':
+            newShadow.blur = value;
+            break;
+          case 'spread':
+            newShadow.spread = value;
+            break;
+          case 'color':
+            newShadow.color = value;
+            break;
+          case 'opacity':
+            newShadow.opacity = parseFloat(value);
+            break;
+        }
+
+        const shadowString = this.generateShadowString(newShadow, isInner);
         return {
           style: {
-            boxShadow: generateShadowString(preset)
+            boxShadow: shadowString
           }
         };
       }
-    }
 
-    // Handle inner shadow presets
-    for (const [presetName, preset] of Object.entries(presets.inner)) {
-      const pattern = new RegExp(`add\\s+${presetName}\\s+inner\\s+shadow`, 'i');
-      if (pattern.test(lowercaseInput)) {
-        return {
-          style: {
-            boxShadow: generateShadowString(preset, true)
-          }
-        };
+      // Modify existing shadow
+      const shadowValues = this.parseShadowString(shadowParts[shadowIndex]);
+      
+      // Update the specified property
+      switch (property) {
+        case 'xOffset':
+          shadowValues.x = value;
+          break;
+        case 'yOffset':
+          shadowValues.y = value;
+          break;
+        case 'blur':
+          shadowValues.blur = value;
+          break;
+        case 'spread':
+          shadowValues.spread = value;
+          break;
+        case 'color':
+          shadowValues.color = value;
+          break;
+        case 'opacity':
+          shadowValues.opacity = parseFloat(value);
+          break;
       }
+
+      shadowParts[shadowIndex] = this.generateShadowString(shadowValues, isInner);
+      
+      return {
+        style: {
+          boxShadow: shadowParts.join(', ')
+        }
+      };
     }
 
     // Handle customization commands
     if (lowercaseInput.includes('customize')) {
       const isInner = lowercaseInput.includes('inner');
       const isOuter = lowercaseInput.includes('outer');
-      
-      if (!isInner && !isOuter) {
-        return {
-          type: 'PROMPT',
-          message: 'What kind of shadow would you like to customize?\n- Inner shadow\n- Outer shadow',
-          needsMoreInfo: true,
-          property: 'shadowType'
-        };
+
+      let property = null;
+      let example = '';
+      let range = '';
+
+      if (lowercaseInput.includes('x-offset')) {
+        property = 'xOffset';
+        example = '4px';
+        range = '0px to 20px';
+      }
+      else if (lowercaseInput.includes('y-offset')) {
+        property = 'yOffset';
+        example = '4px';
+        range = '0px to 20px';
+      }
+      else if (lowercaseInput.includes('blur')) {
+        property = 'blur';
+        example = '8px';
+        range = '0px to 30px';
+      }
+      else if (lowercaseInput.includes('spread')) {
+        property = 'spread';
+        example = '2px';
+        range = '-10px to 20px';
+      }
+      else if (lowercaseInput.includes('color')) {
+        property = 'color';
+      }
+      else if (lowercaseInput.includes('opacity')) {
+        property = 'opacity';
+        example = '0.3';
+        range = '0 to 1';
       }
 
-      if (lowercaseInput.includes('blur')) {
-        return {
-          type: 'PROMPT',
-          message: 'Enter blur radius (in pixels):',
-          needsMoreInfo: true,
-          property: isInner ? 'innerShadowBlur' : 'outerShadowBlur'
-        };
-      }
+      if (property) {
+        // Store the customization state
+        this.pendingCustomization = { isInner, property };
 
-      if (lowercaseInput.includes('spread')) {
         return {
           type: 'PROMPT',
-          message: 'Enter spread radius (in pixels):',
+          message: `Enter ${property} value:`,
           needsMoreInfo: true,
-          property: isInner ? 'innerShadowSpread' : 'outerShadowSpread'
-        };
-      }
-
-      if (lowercaseInput.includes('color')) {
-        return {
-          type: 'PROMPT',
-          message: 'Enter shadow color:',
-          needsMoreInfo: true,
-          property: isInner ? 'innerShadowColor' : 'outerShadowColor',
-          options: [
-            { text: 'You can use:', type: 'info' },
+          property: `${isInner ? 'inner' : 'outer'}Shadow${property.charAt(0).toUpperCase() + property.slice(1)}`,
+          options: property === 'color' ? [
+            { text: 'Color formats accepted:', type: 'info' },
             { text: '• Color names (e.g., black, gray)', type: 'info' },
             { text: '• Hex codes (#000000)', type: 'info' },
             { text: '• RGB values (rgb(0,0,0))', type: 'info' }
+          ] : [
+            { text: `Example: ${example}`, type: 'info' },
+            { text: `Common range: ${range}`, type: 'info' },
+            { text: property === 'opacity' ? 'Enter a value between 0 and 1' : 'Enter a value in pixels (px)' , type: 'info' }
           ]
         };
       }
+    }
 
-      if (lowercaseInput.includes('opacity')) {
+    // Handle outer shadow presets
+    for (const [presetName, preset] of Object.entries(this.getShadowPresets().outer)) {
+      const pattern = new RegExp(`add\\s+${presetName}\\s+outer\\s+shadow`, 'i');
+      if (pattern.test(lowercaseInput)) {
         return {
-          type: 'PROMPT',
-          message: 'Enter opacity (0-1):',
-          needsMoreInfo: true,
-          property: isInner ? 'innerShadowOpacity' : 'outerShadowOpacity'
+          style: {
+            boxShadow: this.generateShadowString(preset)
+          }
+        };
+      }
+    }
+
+    // Handle inner shadow presets
+    for (const [presetName, preset] of Object.entries(this.getShadowPresets().inner)) {
+      const pattern = new RegExp(`add\\s+${presetName}\\s+inner\\s+shadow`, 'i');
+      if (pattern.test(lowercaseInput)) {
+        return {
+          style: {
+            boxShadow: this.generateShadowString(preset, true)
+          }
         };
       }
     }
@@ -266,6 +346,28 @@ export class ShadowProcessor {
     }
 
     return null;
+  }
+
+  static generateShadowString(shadow, isInner = false) {
+    const { x = '0px', y = '0px', blur, spread, color, opacity } = shadow;
+    const rgba = color.startsWith('rgba') ? color : `rgba(0, 0, 0, ${opacity})`;
+    return isInner 
+      ? `inset 0 0 ${blur} ${spread} ${rgba}`
+      : `${x} ${y} ${blur} ${spread} ${rgba}`;
+  }
+
+  static parseShadowString(shadowString) {
+    const parts = shadowString.trim().split(' ');
+    const isInner = parts[0] === 'inset';
+    const startIndex = isInner ? 1 : 0;
+
+    return {
+      x: parts[startIndex] || '0px',
+      y: parts[startIndex + 1] || '0px',
+      blur: parts[startIndex + 2] || '0px',
+      spread: parts[startIndex + 3] || '0px',
+      color: parts.slice(startIndex + 4).join(' ') || 'rgba(0, 0, 0, 0.2)'
+    };
   }
 
   // Helper method to get current shadow style

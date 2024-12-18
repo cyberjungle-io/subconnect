@@ -469,29 +469,24 @@ const FloatingToolbar = ({
             <div className="flex w-full space-x-2">
               <button
                 onClick={() => setShowInnerShadow((prev) => !prev)}
-                className={
-                  showInnerShadow ? activeButtonClass : inactiveButtonClass
-                }
+                className={showInnerShadow ? activeButtonClass : inactiveButtonClass}
               >
                 Inner Shadow
               </button>
               <button
                 onClick={() => setShowOuterShadow((prev) => !prev)}
-                className={
-                  showOuterShadow ? activeButtonClass : inactiveButtonClass
-                }
+                className={showOuterShadow ? activeButtonClass : inactiveButtonClass}
               >
                 Outer Shadow
               </button>
             </div>
 
             <div className="pt-4">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Shadow
-              </h3>
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Shadow</h3>
               <ShadowControlsPanel
                 showInnerShadow={showInnerShadow}
                 showOuterShadow={showOuterShadow}
+                style={style}
                 onStyleChange={(updates) => {
                   onStyleChange({
                     style: {
