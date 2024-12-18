@@ -171,8 +171,8 @@ const FloatingToolbar = ({
   const inputRef = useRef(null);
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
   const { pages } = usePageNavigation();
-  const [showInnerShadow, setShowInnerShadow] = useState(true);
-  const [showOuterShadow, setShowOuterShadow] = useState(true);
+  const [showInnerShadow, setShowInnerShadow] = useState(false);
+  const [showOuterShadow, setShowOuterShadow] = useState(false);
 
   const activeButtonClass =
     "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300";
@@ -332,6 +332,14 @@ const FloatingToolbar = ({
     );
   };
 
+  const handleToggleInnerShadow = useCallback(() => {
+    setShowInnerShadow(prev => !prev);
+  }, []);
+
+  const handleToggleOuterShadow = useCallback(() => {
+    setShowOuterShadow(prev => !prev);
+  }, []);
+
   const renderActiveControl = () => {
     const sharedProps = {
       style,
@@ -468,8 +476,10 @@ const FloatingToolbar = ({
           <div>
             <ShadowControlsPanel
               onStyleChange={onStyleChange}
-              showInnerShadow={true}
-              showOuterShadow={true}
+              showInnerShadow={showInnerShadow}
+              showOuterShadow={showOuterShadow}
+              onToggleInnerShadow={handleToggleInnerShadow}
+              onToggleOuterShadow={handleToggleOuterShadow}
               style={style}
             />
           </div>
