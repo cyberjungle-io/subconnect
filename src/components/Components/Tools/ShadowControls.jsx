@@ -111,12 +111,6 @@ export const ShadowControlsPanel = ({
   onToggleInnerShadow,
   onToggleOuterShadow,
 }) => {
-  console.log("ShadowControlsPanel mounted/updated with props:", {
-    showInnerShadow,
-    showOuterShadow,
-    currentBoxShadow: style?.boxShadow,
-  });
-
   const [activePreset, setActivePreset] = useState(null);
   const [activeInnerPreset, setActiveInnerPreset] = useState(null);
 
@@ -172,31 +166,13 @@ export const ShadowControlsPanel = ({
 
   // Update state when style changes
   useEffect(() => {
-    console.log("Style change effect triggered:", style?.boxShadow);
     if (style?.boxShadow && style.boxShadow !== "none") {
       const shadows = style.boxShadow
         .split(/,(?![^(]*\))/g)
         .map((s) => s.trim());
-      console.log("Parsed shadows in ShadowControls:", shadows);
 
       const hasInnerShadow = shadows.some((s) => s.includes("inset"));
       const hasOuterShadow = shadows.some((s) => !s.includes("inset"));
-      console.log(
-        "Shadow detection in ShadowControls - Inner:",
-        hasInnerShadow,
-        "Outer:",
-        hasOuterShadow
-      );
-
-      // Log before updating visibility states
-      console.log("Current visibility states:", {
-        showInnerShadow,
-        showOuterShadow,
-      });
-      console.log("Should update visibility?", {
-        inner: hasInnerShadow !== showInnerShadow,
-        outer: hasOuterShadow !== showOuterShadow,
-      });
     }
   }, [
     style?.boxShadow,
@@ -207,14 +183,6 @@ export const ShadowControlsPanel = ({
   ]);
 
   const handleShadowChange = useCallback(() => {
-    console.log("handleShadowChange called");
-    console.log("Current states:", {
-      showInnerShadow,
-      showOuterShadow,
-      innerShadow,
-      outerShadow,
-    });
-
     const shadows = [];
 
     if (showInnerShadow && innerShadow) {
@@ -229,7 +197,6 @@ export const ShadowControlsPanel = ({
           )}, ${parseInt(color.slice(5, 7), 16)}, ${opacity})`
         : `rgba(0, 0, 0, ${opacity})`;
       shadows.push(`inset 0 0 ${blur} ${spread} ${rgba}`);
-      console.log("Added inner shadow:", shadows[shadows.length - 1]);
     }
 
     if (showOuterShadow && outerShadow) {
@@ -243,11 +210,9 @@ export const ShadowControlsPanel = ({
           )}, ${parseInt(color.slice(5, 7), 16)}, ${opacity})`
         : `rgba(0, 0, 0, ${opacity})`;
       shadows.push(`${x} ${y} ${blur} ${spread} ${rgba}`);
-      console.log("Added outer shadow:", shadows[shadows.length - 1]);
     }
 
     const boxShadow = shadows.length > 0 ? shadows.join(", ") : "none";
-    console.log("Final box-shadow value:", boxShadow);
 
     // Use requestAnimationFrame to ensure state is updated
     requestAnimationFrame(() => {
@@ -265,19 +230,15 @@ export const ShadowControlsPanel = ({
 
   const handleManualChange = useCallback(
     (updates) => {
-      console.log("handleManualChange called with:", updates);
       setOuterShadow((prev) => {
-        console.log("Previous outer shadow state:", prev);
         const newState = { ...prev };
 
         if (updates.color) {
-          console.log("Updating outer shadow color to:", updates.color);
           newState.color = updates.color;
         } else {
           Object.assign(newState, updates);
         }
 
-        console.log("New outer shadow state:", newState);
         return newState;
       });
       setActivePreset(null);
@@ -288,19 +249,15 @@ export const ShadowControlsPanel = ({
 
   const handleManualInnerChange = useCallback(
     (updates) => {
-      console.log("handleManualInnerChange called with:", updates);
       setInnerShadow((prev) => {
-        console.log("Previous inner shadow state:", prev);
         const newState = { ...prev };
 
         if (updates.color) {
-          console.log("Updating inner shadow color to:", updates.color);
           newState.color = updates.color;
         } else {
           Object.assign(newState, updates);
         }
 
-        console.log("New inner shadow state:", newState);
         return newState;
       });
       setActiveInnerPreset(null);
@@ -356,13 +313,6 @@ export const ShadowControlsPanel = ({
   );
 
   const handleToggleInnerShadow = () => {
-    console.log(
-      "Before toggle - Inner:",
-      showInnerShadow,
-      "Outer:",
-      showOuterShadow
-    );
-
     // Batch our state updates
     const newShowInnerShadow = !showInnerShadow;
 
@@ -517,14 +467,12 @@ export const ShadowControlsPanel = ({
               <div
                 className="space-y-2"
                 onClick={(e) => {
-                  console.log("ColorPicker container clicked");
                   e.stopPropagation();
                 }}
               >
                 <ColorPicker
                   color={innerShadow.color}
                   onChange={(newColor) => {
-                    console.log("ColorPicker onChange called with:", newColor);
                     handleManualInnerChange({ color: newColor });
                   }}
                 />

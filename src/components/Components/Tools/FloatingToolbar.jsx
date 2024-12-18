@@ -474,11 +474,6 @@ const FloatingToolbar = ({
           />
         );
       case "Shadow":
-        console.log("Rendering ShadowControlsPanel with states:", {
-          showInnerShadow,
-          showOuterShadow,
-          currentBoxShadow: style?.boxShadow,
-        });
         return (
           <div>
             <ShadowControlsPanel
@@ -597,7 +592,6 @@ const FloatingToolbar = ({
   };
 
   const detectExistingShadows = useCallback((boxShadow) => {
-    console.log("detectExistingShadows called with:", boxShadow);
     if (!boxShadow || boxShadow === "none")
       return { inner: false, outer: false };
 
@@ -606,23 +600,12 @@ const FloatingToolbar = ({
       inner: shadows.some((s) => s.includes("inset")),
       outer: shadows.some((s) => !s.includes("inset")),
     };
-    console.log("detectExistingShadows result:", result);
     return result;
   }, []);
 
   useEffect(() => {
-    console.log("Shadow initialization effect triggered");
-    console.log("activeControl:", activeControl);
-    console.log("current style.boxShadow:", style?.boxShadow);
-
     if (activeControl === "Shadow" && style?.boxShadow) {
       const { inner, outer } = detectExistingShadows(style.boxShadow);
-      console.log(
-        "Setting initial shadow states - inner:",
-        inner,
-        "outer:",
-        outer
-      );
       setShowInnerShadow(inner);
       setShowOuterShadow(outer);
     }
