@@ -29,13 +29,31 @@ const ButtonControls = ({ style, onStyleChange }) => {
   const [previousHoverState, setPreviousHoverState] = useState(null);
 
   const handleChange = (updates) => {
+    console.log('ButtonControls handleChange called with:', updates);
+    console.log('Current style:', style);
+    
     let finalUpdates = { ...updates };
 
     // Handle page navigation toggle
     if ('enablePageNavigation' in updates) {
-      if (!updates.enablePageNavigation) {
-        finalUpdates.targetPageId = ''; // Clear target page when disabling navigation
-      }
+      console.log('Handling navigation toggle:', updates.enablePageNavigation);
+      
+      // Create a complete navigation update
+      finalUpdates = {
+        ...finalUpdates,
+        enablePageNavigation: updates.enablePageNavigation,
+        targetPageId: !updates.enablePageNavigation ? '' : (style.targetPageId || '')
+      };
+      
+      console.log('Final updates before style change:', finalUpdates);
+      
+      // Apply the update directly to style
+      onStyleChange({
+        ...style,
+        enablePageNavigation: finalUpdates.enablePageNavigation,
+        targetPageId: finalUpdates.targetPageId
+      });
+      return;
     }
 
     onStyleChange({
@@ -106,7 +124,11 @@ const ButtonControls = ({ style, onStyleChange }) => {
       {/* Control buttons at the top */}
       <div className="flex w-full space-x-2">
         <button
-          onClick={() => handleChange({ enablePageNavigation: !style.enablePageNavigation })}
+          onClick={() => {
+            console.log('Navigation button clicked');
+            console.log('Current enablePageNavigation:', style.enablePageNavigation);
+            handleChange({ enablePageNavigation: !style.enablePageNavigation });
+          }}
           className={style.enablePageNavigation ? activeButtonClass : inactiveButtonClass}
         >
           Page Navigation
