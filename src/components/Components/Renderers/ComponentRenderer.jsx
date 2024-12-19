@@ -602,6 +602,144 @@ const ComponentRenderer = React.memo(
     const { size: width, unit: widthUnit } = getSize("width");
     const { size: height, unit: heightUnit } = getSize("height");
 
+    // Add this at the component level (before the return statement)
+    const originalStyleRef = useRef({
+      backgroundColor: null,
+      color: null,
+    });
+
+    // Define the handlers as functions inside the component
+    const handleMouseEnter = (e) => {
+      const floatingToolbar = document.querySelector(".floating-toolbar");
+      const target = e.currentTarget;
+
+      const hasParentHover =
+        parent &&
+        parent.type === "FLEX_CONTAINER" &&
+        (parent.style?.hoverColor || parent.style?.hoverBackgroundColor);
+
+      if (
+        (component.type === "FLEX_CONTAINER" && component.style) ||
+        hasParentHover
+      ) {
+        if (!floatingToolbar || !floatingToolbar.contains(e.target)) {
+          const styleToApply = hasParentHover ? parent.style : component.style;
+
+          // Only store original values if they haven't been stored yet
+          if (!originalStyleRef.current.backgroundColor) {
+            originalStyleRef.current.backgroundColor =
+              getComputedStyle(target).backgroundColor;
+            originalStyleRef.current.color = getComputedStyle(target).color;
+          }
+
+          // Store in dataset using the ref values
+          target.dataset.originalBg = originalStyleRef.current.backgroundColor;
+          target.dataset.originalColor = originalStyleRef.current.color;
+
+          // Apply transitions to all elements before any color changes
+          const transition = "all 200ms ease-in-out";
+          target.style.transition = transition;
+
+          // Apply transitions to content elements first
+          target
+            .querySelectorAll(".component-content.hover-target")
+            .forEach((child) => {
+              child.style.transition = transition;
+            });
+
+          // Apply transitions to child components
+          if (component.type === "FLEX_CONTAINER") {
+            target.querySelectorAll(".component-wrapper").forEach((child) => {
+              child.style.transition = transition;
+              if (!child.dataset.originalBg) {
+                child.dataset.originalBg =
+                  getComputedStyle(child).backgroundColor;
+              }
+            });
+          }
+
+          // Now apply the color changes
+          if (styleToApply.hoverBackgroundColor) {
+            target.style.backgroundColor = styleToApply.hoverBackgroundColor;
+
+            if (component.type === "FLEX_CONTAINER") {
+              target.querySelectorAll(".component-wrapper").forEach((child) => {
+                child.style.backgroundColor = "transparent";
+              });
+            }
+          }
+
+          if (styleToApply.hoverColor) {
+            target.style.color = styleToApply.hoverColor;
+            target
+              .querySelectorAll(".component-content.hover-target")
+              .forEach((child) => {
+                child.style.color = styleToApply.hoverColor;
+              });
+          }
+        }
+      }
+    };
+
+    const handleMouseLeave = (e) => {
+      const floatingToolbar = document.querySelector(".floating-toolbar");
+      const target = e.currentTarget;
+
+      const hasParentHover =
+        parent &&
+        parent.type === "FLEX_CONTAINER" &&
+        (parent.style?.hoverColor || parent.style?.hoverBackgroundColor);
+
+      if (
+        (component.type === "FLEX_CONTAINER" && component.style) ||
+        hasParentHover
+      ) {
+        const shouldResetStyles =
+          !floatingToolbar ||
+          !e.relatedTarget ||
+          (e.relatedTarget instanceof Node &&
+            !floatingToolbar.contains(e.relatedTarget));
+
+        if (shouldResetStyles) {
+          // Use the stored original values from ref
+          target.style.backgroundColor =
+            originalStyleRef.current.backgroundColor;
+          target.style.color = originalStyleRef.current.color;
+
+          // Reset text color for all content elements
+          target
+            .querySelectorAll(".component-content.hover-target")
+            .forEach((child) => {
+              child.style.color = originalStyleRef.current.color;
+              child.style.transition = "color 200ms ease-in-out";
+            });
+
+          // Restore child component backgrounds
+          if (component.type === "FLEX_CONTAINER") {
+            const children = target.querySelectorAll(".component-wrapper");
+            children.forEach((child) => {
+              child.style.backgroundColor = child.dataset.originalBg || "";
+              delete child.dataset.originalBg;
+            });
+          }
+
+          // Clear the dataset
+          delete target.dataset.originalBg;
+          delete target.dataset.originalColor;
+        }
+      }
+    };
+
+    // Add cleanup when component unmounts
+    useEffect(() => {
+      return () => {
+        originalStyleRef.current = {
+          backgroundColor: null,
+          color: null,
+        };
+      };
+    }, []);
+
     // Use the same rendering logic for both view and edit modes
     return (
       <>
@@ -631,102 +769,9 @@ const ComponentRenderer = React.memo(
             ${isViewMode ? "" : isOver ? "bg-blue-100" : ""}
             ${component.type === "FLEX_CONTAINER" ? "hover-effects" : ""}
           `}
-          onMouseEnter={(e) => {
-            const floatingToolbar = document.querySelector(".floating-toolbar");
-
-            const hasParentHover =
-              parent &&
-              parent.type === "FLEX_CONTAINER" &&
-              (parent.style?.hoverColor || parent.style?.hoverBackgroundColor);
-
-            if (
-              (component.type === "FLEX_CONTAINER" && component.style) ||
-              hasParentHover
-            ) {
-              const target = e.currentTarget;
-              if (!floatingToolbar || !floatingToolbar.contains(e.target)) {
-                const styleToApply = hasParentHover
-                  ? parent.style
-                  : component.style;
-
-                // Store original values
-                target.dataset.originalBg =
-                  getComputedStyle(target).backgroundColor;
-                target.dataset.originalColor = getComputedStyle(target).color;
-
-                // Apply hover styles with transition
-                if (styleToApply.hoverBackgroundColor) {
-                  target.style.backgroundColor =
-                    styleToApply.hoverBackgroundColor;
-                }
-
-                if (styleToApply.hoverColor) {
-                  target.style.color = styleToApply.hoverColor;
-                  // Only apply color to component content elements
-                  target
-                    .querySelectorAll(".component-content.hover-target")
-                    .forEach((child) => {
-                      if (!floatingToolbar?.contains(child)) {
-                        child.style.color = styleToApply.hoverColor;
-                      }
-                    });
-                }
-
-                // Ensure transition is applied
-                target.style.transition =
-                  styleToApply.transition || "all 200ms ease-in-out";
-              }
-            }
-          }}
-          onMouseLeave={(e) => {
-            const floatingToolbar = document.querySelector(".floating-toolbar");
-
-            const hasParentHover =
-              parent &&
-              parent.type === "FLEX_CONTAINER" &&
-              (parent.style?.hoverColor || parent.style?.hoverBackgroundColor);
-
-            if (
-              (component.type === "FLEX_CONTAINER" && component.style) ||
-              hasParentHover
-            ) {
-              const target = e.currentTarget;
-              const shouldResetStyles =
-                !floatingToolbar ||
-                !e.relatedTarget ||
-                (e.relatedTarget instanceof Node &&
-                  !floatingToolbar.contains(e.relatedTarget));
-
-              if (shouldResetStyles) {
-                // Get the original computed styles
-                const computedStyle = getComputedStyle(target);
-
-                // Restore original values with transition
-                target.style.backgroundColor =
-                  target.dataset.originalBg || computedStyle.backgroundColor;
-                target.style.color =
-                  target.dataset.originalColor || computedStyle.color;
-
-                // Reset color only for component content elements
-                target
-                  .querySelectorAll(".component-content.hover-target")
-                  .forEach((child) => {
-                    if (!floatingToolbar?.contains(child)) {
-                      child.style.color =
-                        target.dataset.originalColor || computedStyle.color;
-                    }
-                  });
-
-                // Clear stored values
-                delete target.dataset.originalBg;
-                delete target.dataset.originalColor;
-              }
-            }
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleClick(e);
-          }}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          onClick={handleClick}
           onDoubleClick={handleDoubleClick}
           data-id={component.id}
           tabIndex={0}
