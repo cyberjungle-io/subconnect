@@ -117,13 +117,27 @@ export class ButtonProcessor {
       console.log('Is enabling navigation:', isEnable);
       
       if (isEnable) {
-        // Get pages from Redux store
+        // Get pages and current component from Redux store
         const state = store.getState();
+        console.log('Full Redux State:', state);
+        
         const pages = state.w3s?.currentProject?.data?.pages || [];
-        console.log('Available pages:', pages);
+        const currentPage = state.editor?.currentPage?._id || 
+                           state.w3s?.currentProject?.data?.pages?.find(p => p.selected)?._id;
+        
+        console.log('Pages:', pages);
+        console.log('Current page ID:', currentPage);
+        console.log('Editor current page:', state.editor?.currentPage);
+        
+        // Filter out the current page from options
+        const availablePages = pages.filter(page => {
+          console.log('Comparing page:', page._id, 'with current:', currentPage);
+          return page._id !== currentPage;
+        });
+        console.log('Available pages (excluding current):', availablePages);
         
         // Create page selection options
-        const pageOptions = pages.map(page => ({
+        const pageOptions = availablePages.map(page => ({
           text: page.name,
           type: "command",
           icon: FaArrowRight,
@@ -184,13 +198,16 @@ export class ButtonProcessor {
           message: `Target page set to: ${targetPage.name}`
         };
       } else {
+        const currentPage = state.editor?.currentPage?._id || 
+                           state.w3s?.currentProject?.data?.pages?.find(p => p.selected)?._id;
+        const availablePages = pages.filter(page => page._id !== currentPage);
         return {
           message: `Page "${pageName}" not found. Available pages:`,
-          options: pages.map(page => ({
+          options: availablePages.map(page => ({
             text: page.name,
             type: "command",
             command: `set target page to ${page.name}`,
-            icon: "FaArrowRight"
+            icon: FaArrowRight
           }))
         };
       }
@@ -248,6 +265,31 @@ export class ButtonProcessor {
           activeShadow: undefined,
           activeBackgroundColor: undefined
         }
+      };
+    }
+
+    // Handle hover color prompts
+    if (input === "change hover color") {
+      return {
+        type: "PROMPT",
+        message: "What color would you like for the hover effect? You can specify:\n- A color name (e.g., blue, red)\n- A hex color code (#FF0000)",
+        followUp: {
+          type: "COLOR_CHANGE",
+          command: (color) => `set hover color to ${color}`
+        },
+        context: "hover"
+      };
+    }
+
+    if (input === "change hover text color") {
+      return {
+        type: "PROMPT",
+        message: "What color would you like for the hover text? You can specify:\n- A color name (e.g., white, black)\n- A hex color code (#000000)",
+        followUp: {
+          type: "COLOR_CHANGE",
+          command: (color) => `set hover text color to ${color}`
+        },
+        context: "hover"
       };
     }
 

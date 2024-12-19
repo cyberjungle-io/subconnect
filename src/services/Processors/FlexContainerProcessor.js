@@ -961,13 +961,13 @@ export class FlexContainerProcessor {
                 className: "flex gap-1",
                 options: [
                   {
-                    text: "set hover color to blue",
+                    text: "change hover color",
                     type: "command",
                     icon: FaPalette,
                     className: buttonClass,
                   },
                   {
-                    text: "set hover text color to white",
+                    text: "change hover text color",
                     type: "command",
                     icon: FaPalette,
                     className: buttonClass,
