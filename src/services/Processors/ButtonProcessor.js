@@ -136,7 +136,7 @@ export class ButtonProcessor {
         });
         console.log('Available pages (excluding current):', availablePages);
         
-        // Create page selection options
+        // Create page selection options with FaArrowRight component
         const pageOptions = availablePages.map(page => ({
           text: page.name,
           type: "command",
@@ -155,13 +155,13 @@ export class ButtonProcessor {
             hoverBackgroundColor: '#f0f0f0',
             hoverScale: 1.02
           },
-          message: "Navigation enabled. Select a target page:",
+          message: "✓ Navigation enabled",
           options: [
             {
-              text: "Target Page",
+              text: "Select Target Page",
               type: "info",
               icon: FaArrowRight,
-              className: "text-xs font-small text-gray-200"
+              className: "text-xs font-small text-gray-200 mt-2"
             },
             ...pageOptions
           ]
@@ -198,12 +198,9 @@ export class ButtonProcessor {
           message: `Target page set to: ${targetPage.name}`
         };
       } else {
-        const currentPage = state.editor?.currentPage?._id || 
-                           state.w3s?.currentProject?.data?.pages?.find(p => p.selected)?._id;
-        const availablePages = pages.filter(page => page._id !== currentPage);
         return {
           message: `Page "${pageName}" not found. Available pages:`,
-          options: availablePages.map(page => ({
+          options: pages.map(page => ({
             text: page.name,
             type: "command",
             command: `set target page to ${page.name}`,
@@ -265,31 +262,6 @@ export class ButtonProcessor {
           activeShadow: undefined,
           activeBackgroundColor: undefined
         }
-      };
-    }
-
-    // Handle hover color prompts
-    if (input === "change hover color") {
-      return {
-        type: "PROMPT",
-        message: "What color would you like for the hover effect? You can specify:\n- A color name (e.g., blue, red)\n- A hex color code (#FF0000)",
-        followUp: {
-          type: "COLOR_CHANGE",
-          command: (color) => `set hover color to ${color}`
-        },
-        context: "hover"
-      };
-    }
-
-    if (input === "change hover text color") {
-      return {
-        type: "PROMPT",
-        message: "What color would you like for the hover text? You can specify:\n- A color name (e.g., white, black)\n- A hex color code (#000000)",
-        followUp: {
-          type: "COLOR_CHANGE",
-          command: (color) => `set hover text color to ${color}`
-        },
-        context: "hover"
       };
     }
 
