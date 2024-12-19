@@ -6,6 +6,7 @@ import {
   renameComponent,
 } from "../../../features/editorSlice"; // Update this import
 import { v4 as uuidv4 } from "uuid";
+import ReactDOM from "react-dom";
 
 import HeadingRenderer from "./HeadingRenderer";
 import TextRenderer from "./TextRenderer";
@@ -493,38 +494,49 @@ const ComponentRenderer = React.memo(
         isDragModeEnabled,
       };
 
+      // Wrap the content in a div with content-element class
+      const renderWithContentClass = (content) => (
+        <div className="content-element component-content hover-target">
+          {content}
+        </div>
+      );
+
       switch (component.type) {
         case "FLEX_CONTAINER":
-          return renderChildren();
+          return renderWithContentClass(renderChildren());
         case "HEADING":
-          return <HeadingRenderer {...sharedProps} />;
+          return renderWithContentClass(<HeadingRenderer {...sharedProps} />);
         case "TEXT":
-          return <TextRenderer {...sharedProps} />;
+          return renderWithContentClass(<TextRenderer {...sharedProps} />);
         case "IMAGE":
-          return <ImageRenderer {...sharedProps} />;
+          return renderWithContentClass(<ImageRenderer {...sharedProps} />);
         case "BUTTON":
-          return <ButtonRenderer {...sharedProps} />;
+          return renderWithContentClass(<ButtonRenderer {...sharedProps} />);
         case "CHART":
-          return (
+          return renderWithContentClass(
             <ChartRenderer
               {...sharedProps}
               globalChartStyle={globalSettings.chartStyle}
             />
           );
         case "WHITEBOARD":
-          return (
+          return renderWithContentClass(
             <WhiteboardRenderer {...sharedProps} isViewMode={isViewMode} />
           );
         case "VIDEO":
-          return <VideoRenderer {...sharedProps} />;
+          return renderWithContentClass(<VideoRenderer {...sharedProps} />);
         case "QUERY_VALUE":
-          return <QueryValueRenderer {...sharedProps} />;
+          return renderWithContentClass(
+            <QueryValueRenderer {...sharedProps} />
+          );
         case "KANBAN":
-          return <KanbanRenderer {...sharedProps} isInteractive={isViewMode} />;
+          return renderWithContentClass(
+            <KanbanRenderer {...sharedProps} isInteractive={isViewMode} />
+          );
         case "TABLE":
-          return <TableRenderer {...sharedProps} />;
+          return renderWithContentClass(<TableRenderer {...sharedProps} />);
         case "TODO":
-          return (
+          return renderWithContentClass(
             <TodoRenderer
               component={component}
               isViewMode={isViewMode}
@@ -614,14 +626,13 @@ const ComponentRenderer = React.memo(
               : {}),
             position: "relative",
           }}
-          className={`
-          ${isViewMode ? "" : isThisComponentSelected ? "shadow-lg" : ""}
-          ${isViewMode ? "" : isOver ? "bg-blue-100" : ""}
-          ${component.type === "FLEX_CONTAINER" ? "hover-effects" : ""}
-        `}
+          className={`component-wrapper
+            ${isViewMode ? "" : isThisComponentSelected ? "shadow-lg" : ""}
+            ${isViewMode ? "" : isOver ? "bg-blue-100" : ""}
+            ${component.type === "FLEX_CONTAINER" ? "hover-effects" : ""}
+          `}
           onMouseEnter={(e) => {
             const floatingToolbar = document.querySelector(".floating-toolbar");
-
             console.log("MouseEnter - Component Style:", component.style);
 
             const hasParentHover =
@@ -652,10 +663,14 @@ const ComponentRenderer = React.memo(
 
                 if (styleToApply.hoverColor) {
                   target.style.color = styleToApply.hoverColor;
-                  // Apply color to all children
-                  target.querySelectorAll("*").forEach((child) => {
-                    child.style.color = styleToApply.hoverColor;
-                  });
+                  // Only apply color to component content elements
+                  target
+                    .querySelectorAll(".component-content.hover-target")
+                    .forEach((child) => {
+                      if (!floatingToolbar?.contains(child)) {
+                        child.style.color = styleToApply.hoverColor;
+                      }
+                    });
                 }
 
                 // Ensure transition is applied
@@ -693,11 +708,15 @@ const ComponentRenderer = React.memo(
                 target.style.color =
                   target.dataset.originalColor || computedStyle.color;
 
-                // Reset color for all children
-                target.querySelectorAll("*").forEach((child) => {
-                  child.style.color =
-                    target.dataset.originalColor || computedStyle.color;
-                });
+                // Reset color only for component content elements
+                target
+                  .querySelectorAll(".component-content.hover-target")
+                  .forEach((child) => {
+                    if (!floatingToolbar?.contains(child)) {
+                      child.style.color =
+                        target.dataset.originalColor || computedStyle.color;
+                    }
+                  });
 
                 // Clear stored values
                 delete target.dataset.originalBg;
@@ -746,45 +765,48 @@ const ComponentRenderer = React.memo(
             </>
           )}
         </div>
-        {toolbarState.show && (
-          <FloatingToolbar
-            className="floating-toolbar"
-            componentId={component.id}
-            componentType={component.type}
-            initialPosition={toolbarState.position}
-            onClose={() => {
-              handleToolbarClose();
-              onDeselect();
-            }}
-            style={component.style}
-            props={component.props}
-            content={component.content}
-            component={component}
-            onStyleChange={(updates) => {
-              if (updates.style) {
-                const updatedStyle = {
-                  ...component.style,
-                  ...updates.style,
-                };
-                // Ensure min/max values are applied correctly
-                if (updatedStyle.width) {
-                  updatedStyle.minWidth = updatedStyle.minWidth || "auto";
-                  updatedStyle.maxWidth = updatedStyle.maxWidth || "100%";
+
+        {/* Replace the existing FloatingToolbar render with this */}
+        {toolbarState.show &&
+          ReactDOM.createPortal(
+            <FloatingToolbar
+              className="floating-toolbar"
+              componentId={component.id}
+              componentType={component.type}
+              initialPosition={toolbarState.position}
+              onClose={() => {
+                handleToolbarClose();
+                onDeselect();
+              }}
+              style={component.style}
+              props={component.props}
+              content={component.content}
+              component={component}
+              onStyleChange={(updates) => {
+                if (updates.style) {
+                  const updatedStyle = {
+                    ...component.style,
+                    ...updates.style,
+                  };
+                  if (updatedStyle.width) {
+                    updatedStyle.minWidth = updatedStyle.minWidth || "auto";
+                    updatedStyle.maxWidth = updatedStyle.maxWidth || "100%";
+                  }
+                  if (updatedStyle.height) {
+                    updatedStyle.minHeight = updatedStyle.minHeight || "auto";
+                    updatedStyle.maxHeight = updatedStyle.maxHeight || "100%";
+                  }
+                  onUpdate(component.id, { style: updatedStyle });
                 }
-                if (updatedStyle.height) {
-                  updatedStyle.minHeight = updatedStyle.minHeight || "auto";
-                  updatedStyle.maxHeight = updatedStyle.maxHeight || "100%";
-                }
-                onUpdate(component.id, { style: updatedStyle });
-              }
-              if (updates.props)
-                onUpdate(component.id, { props: updates.props });
-              if (updates.content !== undefined)
-                onUpdate(component.id, { content: updates.content });
-            }}
-            onToolbarInteraction={handleToolbarInteraction}
-          />
-        )}
+                if (updates.props)
+                  onUpdate(component.id, { props: updates.props });
+                if (updates.content !== undefined)
+                  onUpdate(component.id, { content: updates.content });
+              }}
+              onToolbarInteraction={handleToolbarInteraction}
+            />,
+            document.body
+          )}
       </>
     );
   }
