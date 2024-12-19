@@ -932,6 +932,14 @@ export class FlexContainerProcessor {
               !component?.style?.enablePageNavigation,
           },
           {
+            text: "change target page",
+            type: "command",
+            icon: FaArrowRight,
+            className: buttonClass,
+            checkEnabled: (component) => component?.style?.enablePageNavigation,
+            command: "enable page navigation",
+          },
+          {
             text: "disable page navigation",
             type: "command",
             icon: FaTimes,

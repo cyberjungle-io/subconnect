@@ -1,5 +1,6 @@
 import React from 'react';
 import { store } from '../../store/store';
+import { FaArrowRight } from 'react-icons/fa';
 
 export class ButtonProcessor {
   static colorKeywords = {
@@ -125,7 +126,7 @@ export class ButtonProcessor {
         const pageOptions = pages.map(page => ({
           text: page.name,
           type: "command",
-          icon: "FaArrowRight",
+          icon: FaArrowRight,
           command: `set target page to ${page.name}`,
           value: page._id,
           className: buttonClass
@@ -145,7 +146,7 @@ export class ButtonProcessor {
             {
               text: "Target Page",
               type: "info",
-              icon: "FaArrowRight",
+              icon: FaArrowRight,
               className: "text-xs font-small text-gray-200"
             },
             ...pageOptions
