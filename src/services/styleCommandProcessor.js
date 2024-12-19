@@ -22,21 +22,27 @@ export class StyleCommandProcessor {
     console.log("Current context:", this.currentContext);
 
     // Check for shadow commands first
-    if (input.toLowerCase().includes('shadow')) {
-      const shadowResult = ShadowProcessor.processCommand(input, component?.style);
+    if (input.toLowerCase().includes("shadow")) {
+      const shadowResult = ShadowProcessor.processCommand(
+        input,
+        component?.style
+      );
       if (shadowResult) {
         // Store shadow context if it's a PROMPT
-        if (shadowResult.type === 'PROMPT') {
+        if (shadowResult.type === "PROMPT") {
           this.pendingPrompt = shadowResult;
-          this.currentContext = 'shadow';
+          this.currentContext = "shadow";
         }
         return shadowResult;
       }
     }
 
     // Handle direct color input when we have a pending prompt and shadow context
-    if (this.pendingPrompt && this.currentContext === 'shadow') {
-      const shadowResult = ShadowProcessor.processCommand(input, component?.style);
+    if (this.pendingPrompt && this.currentContext === "shadow") {
+      const shadowResult = ShadowProcessor.processCommand(
+        input,
+        component?.style
+      );
       if (shadowResult) {
         this.pendingPrompt = null;
         this.currentContext = null;
@@ -45,29 +51,36 @@ export class StyleCommandProcessor {
     }
 
     // Handle direct color input for other contexts
-    const directColorPattern = /^([a-z]+|#[0-9a-f]{3,6}|rgb\(\d+,\s*\d+,\s*\d+\))$/i;
+    const directColorPattern =
+      /^([a-z]+|#[0-9a-f]{3,6}|rgb\(\d+,\s*\d+,\s*\d+\))$/i;
     if (this.pendingPrompt && directColorPattern.test(input)) {
       const contextProcessorMap = {
-        'border': BorderProcessor,
-        'background': BackgroundProcessor,
-        'text': TextProcessor
+        border: BorderProcessor,
+        background: BackgroundProcessor,
+        text: TextProcessor,
       };
 
       const contextProcessor = contextProcessorMap[this.currentContext];
       if (contextProcessor) {
         const command = this.pendingPrompt.followUp.command(input);
-        const result = contextProcessor.processCommand(command, component?.style);
+        const result = contextProcessor.processCommand(
+          command,
+          component?.style
+        );
         this.pendingPrompt = null;
         return result;
       }
     }
 
     // If we have a context and this is a color command, prioritize the appropriate processor
-    if (this.currentContext && input.match(/(?:color|#[0-9a-fA-F]{6}|rgb|rgba)/i)) {
+    if (
+      this.currentContext &&
+      input.match(/(?:color|#[0-9a-fA-F]{6}|rgb|rgba)/i)
+    ) {
       const contextProcessorMap = {
-        'border': BorderProcessor,
-        'background': BackgroundProcessor,
-        'text': TextProcessor
+        border: BorderProcessor,
+        background: BackgroundProcessor,
+        text: TextProcessor,
       };
 
       const contextProcessor = contextProcessorMap[this.currentContext];
@@ -75,12 +88,12 @@ export class StyleCommandProcessor {
         const result = contextProcessor.processCommand(input, component?.style);
         if (result) {
           // Store prompt information if this is a PROMPT type response
-          if (result.type === 'PROMPT') {
+          if (result.type === "PROMPT") {
             this.pendingPrompt = result;
             this.currentContext = result.context || this.currentContext;
             return result;
           }
-          
+
           // Only store context if we have style updates
           if (result.style) {
             this.lastModifiedProperty = Object.keys(result.style)[0];
@@ -166,23 +179,29 @@ export class StyleCommandProcessor {
     for (const processor of processors) {
       console.log(`Trying ${processor.name}`);
       const result = processor.processCommand(input, component?.style);
-
-      // Return PROMPT responses directly
-      if (result?.type === "PROMPT") {
-        return result;
-      }
+      console.log(`${processor.name} result:`, result);
 
       if (result) {
-        // Store context
-        this.lastModifiedProperty = Object.keys(result.style)[0];
-        this.lastModifiedValue = result.style[this.lastModifiedProperty];
-        this.lastUsedProcessor = processor;
+        // Log the full result object
+        console.log(`Full result from ${processor.name}:`, result);
 
-        console.log("Updated context:", {
-          property: this.lastModifiedProperty,
-          value: this.lastModifiedValue,
-          processor: this.lastUsedProcessor.name,
-        });
+        if (result.style) {
+          this.lastModifiedProperty = Object.keys(result.style)[0];
+          this.lastModifiedValue = result.style[this.lastModifiedProperty];
+          this.lastUsedProcessor = processor.name;
+
+          console.log("Updated context:", {
+            property: this.lastModifiedProperty,
+            value: this.lastModifiedValue,
+            processor: this.lastUsedProcessor,
+          });
+        }
+
+        // Log if message or options are present
+        if (result.message)
+          console.log("Result includes message:", result.message);
+        if (result.options)
+          console.log("Result includes options:", result.options);
 
         return result;
       }

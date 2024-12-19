@@ -32,6 +32,8 @@ import {
   FaDotCircle,
   FaCircle,
   FaRegCircle,
+  FaClock,
+  FaHandPointer,
 } from "react-icons/fa";
 
 const isLightColor = (color) => {
@@ -714,7 +716,7 @@ export class FlexContainerProcessor {
                     type: "command",
                     icon: FaSquare,
                     className: buttonClass,
-                    style: { color: '#666666' },
+                    style: { color: "#666666" },
                   },
                   {
                     text: "harsh",
@@ -722,7 +724,7 @@ export class FlexContainerProcessor {
                     type: "command",
                     icon: FaSquare,
                     className: buttonClass,
-                    style: { color: '#000000' },
+                    style: { color: "#000000" },
                   },
                   {
                     text: "floating",
@@ -916,20 +918,112 @@ export class FlexContainerProcessor {
         icon: FaMousePointer,
         options: [
           {
-            text: "make clickable",
-            type: "command",
+            text: "Page Navigation",
+            type: "info",
+            icon: FaArrowRight,
+            className: headerClass,
           },
           {
-            text: "add hover effect",
+            text: "enable page navigation",
             type: "command",
+            icon: FaMousePointer,
+            className: buttonClass,
           },
           {
-            text: "change cursor to pointer",
+            text: "disable page navigation",
             type: "command",
+            icon: FaTimes,
+            className: buttonClass,
           },
           {
-            text: "add click animation",
-            type: "command",
+            text: "Hover Effects",
+            type: "info",
+            icon: FaAdjust,
+            className: headerClass,
+          },
+          {
+            type: "wrapper",
+            className: "flex flex-col gap-1",
+            options: [
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
+                    text: "set hover color to blue",
+                    type: "command",
+                    icon: FaPalette,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "set hover text color to white",
+                    type: "command",
+                    icon: FaPalette,
+                    className: buttonClass,
+                  },
+                ],
+              },
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
+                    text: "make bigger on hover",
+                    type: "command",
+                    icon: FaExpandAlt,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "make smaller on hover",
+                    type: "command",
+                    icon: FaCompressAlt,
+                    className: buttonClass,
+                  },
+                ],
+              },
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
+                    text: "change cursor to pointer",
+                    type: "command",
+                    icon: FaMousePointer,
+                    className: buttonClass,
+                  },
+                  {
+                    text: "make hover transition smooth",
+                    type: "command",
+                    icon: FaClock,
+                    className: buttonClass,
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            text: "Click Effects",
+            type: "info",
+            icon: FaHandPointer,
+            className: headerClass,
+          },
+          {
+            type: "wrapper",
+            className: "flex gap-1",
+            options: [
+              {
+                text: "add click animation",
+                type: "command",
+                icon: FaCompressAlt,
+                className: buttonClass,
+              },
+              {
+                text: "remove click effects",
+                type: "command",
+                icon: FaTimes,
+                className: buttonClass,
+              },
+            ],
           },
         ],
       },

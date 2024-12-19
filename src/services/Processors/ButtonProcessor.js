@@ -1,3 +1,6 @@
+import React from 'react';
+import { store } from '../../store/store';
+
 export class ButtonProcessor {
   static colorKeywords = {
     // Common color aliases
@@ -30,200 +33,260 @@ export class ButtonProcessor {
 
   static getStylePatterns() {
     return {
-      hoverBackgroundColor: [
-        // Exact color changes
-        /(?:set|make|change)?\s*(?:the)?\s*hover\s*(?:background)?\s*color\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|transparent|#[0-9a-fA-F]{3,6})/i,
-        /when\s*(?:I|user)?\s*hover\s*(?:make|set|change)?\s*(?:the)?\s*(?:background)?\s*color\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|transparent|#[0-9a-fA-F]{3,6})/i,
-        // Natural language patterns
-        /(?:i want|i need|please make)?\s*(?:the)?\s*button\s*(?:to)?\s*(?:turn|change|become)\s*(blue|red|green|black|white|yellow|purple|gray|transparent)\s*(?:when|on|while)?\s*(?:I|we|user)?\s*hover/i,
-        /(?:can you|could you)?\s*make\s*(?:the)?\s*button\s*(blue|red|green|black|white|yellow|purple|gray|transparent)\s*(?:when|on|while)?\s*(?:I|we|user)?\s*hover/i,
-        // Intensity modifiers
-        /(?:set|make|change)?\s*(?:the)?\s*hover\s*(?:color)?\s*(?:to)?\s*(?:a\s*)?(light|dark)?\s*(blue|red|green|black|white|yellow|purple|gray|grey|#[0-9a-fA-F]{3,6}|sky|navy|forest|crimson|gold|silver)/i
+      // Page Navigation Section
+      enablePageNavigation: [
+        // Enable patterns
+        /^enable\s*(?:page)?\s*navigation$/i,
+        /turn\s*on\s*(?:page)?\s*navigation/i,
+        /make\s*(?:it|this|the container)?\s*(?:a)?\s*(?:page)?\s*(?:link|navigation)/i,
+        /add\s*(?:page)?\s*navigation/i,
+        // Disable patterns
+        /^disable\s*(?:page)?\s*navigation$/i,
+        /turn\s*off\s*(?:page)?\s*navigation/i,
+        /remove\s*(?:page)?\s*navigation/i
       ],
+
+      targetPageId: [
+        // Keep existing targetPageId patterns...
+      ],
+
+      // Hover Effects Section
+      hoverBackgroundColor: [
+        // Color changes
+        /(?:set|change|make)\s*(?:the)?\s*hover\s*(?:background)?\s*color\s*(?:to|=|:)?\s*(#[0-9a-fA-F]{3,6}|[a-z]+)/i,
+        /when\s*(?:I|user)?\s*hover\s*(?:make|set|change)?\s*(?:the)?\s*(?:background)?\s*color\s*(?:to|=|:)?\s*(#[0-9a-fA-F]{3,6}|[a-z]+)/i,
+        // Natural language
+        /(?:i want|please make)?\s*(?:it|the container)?\s*(?:turn|change to|become)\s*(#[0-9a-fA-F]{3,6}|[a-z]+)\s*(?:when|on)?\s*hover/i
+      ],
+
       hoverColor: [
         // Text color changes
-        /(?:set|make|change)?\s*(?:the)?\s*hover\s*text\s*color\s*(?:to|=|:)?\s*(blue|red|green|black|white|yellow|purple|gray|#[0-9a-fA-F]{3,6})/i,
-        // Natural language patterns
-        /(?:i want|i need|please make)?\s*(?:the)?\s*text\s*(?:to)?\s*(?:turn|change|become)\s*(blue|red|green|black|white|yellow|purple|gray)\s*(?:when|on|while)?\s*(?:I|we|user)?\s*hover/i,
-        /(?:can you|could you)?\s*make\s*(?:the)?\s*text\s*(blue|red|green|black|white|yellow|purple|gray)\s*(?:when|on|while)?\s*(?:I|we|user)?\s*hover/i
+        /(?:set|change|make)\s*(?:the)?\s*hover\s*text\s*color\s*(?:to|=|:)?\s*(#[0-9a-fA-F]{3,6}|[a-z]+)/i,
+        /when\s*hovering\s*(?:change|make|set)?\s*(?:the)?\s*text\s*color\s*(?:to|=|:)?\s*(#[0-9a-fA-F]{3,6}|[a-z]+)/i,
+        // Natural language
+        /(?:i want|please make)?\s*(?:the)?\s*text\s*(?:turn|change to|become)\s*(#[0-9a-fA-F]{3,6}|[a-z]+)\s*(?:when|on)?\s*hover/i
       ],
+
       hoverScale: [
-        // Scale changes
-        /(?:set|make|change)?\s*(?:the)?\s*hover\s*scale\s*(?:to|=|:)?\s*(0?\.[0-9]+|1\.?[0-9]*)/i,
-        // Natural language patterns
-        /(?:i want|i need|please make)?\s*(?:the)?\s*button\s*(?:to)?\s*(grow|shrink|expand|contract|get bigger|get smaller)\s*(?:when|on|while)?\s*(?:I|we|user)?\s*hover/i,
-        /(?:can you|could you)?\s*make\s*(?:the)?\s*button\s*(bigger|smaller|larger|tinier)\s*(?:when|on|while)?\s*(?:I|we|user)?\s*hover/i,
-        // Relative size changes
-        /(?:make|set)?\s*(?:the)?\s*button\s*(grow|shrink)\s*(?:a\s*)?(?:little|lot|bit|tad|bunch|ton)?\s*(?:when|on|while)?\s*(?:I|we|user)?\s*hover/i
+        // Direct scale settings
+        /(?:set|change|make)\s*(?:the)?\s*hover\s*scale\s*(?:to|=|:)?\s*(0?\.[0-9]+|1\.?[0-9]*)/i,
+        // Natural language - specific values
+        /(?:make|set)?\s*(?:it|the container)?\s*(?:scale|grow|shrink)\s*to\s*(0?\.[0-9]+|1\.?[0-9]*)\s*(?:when|on)?\s*hover/i,
+        // Natural language - relative
+        /(?:make|set)?\s*(?:it|the container)?\s*(bigger|larger|smaller|tiny|huge)\s*(?:when|on)?\s*hover/i
       ],
+
       cursor: [
-        // Cursor style changes
-        /(?:set|make|change)?\s*(?:the)?\s*cursor\s*(?:to|=|:)?\s*(pointer|default|move|grab|grabbing|not-allowed|wait|progress|help|crosshair|text|copy|cell)/i,
-        // Natural language patterns
-        /(?:i want|i need|please make)?\s*(?:the)?\s*(?:cursor|mouse)\s*(?:to)?\s*(?:look|appear|show|become)\s*(?:like)?\s*(?:a|an)?\s*(pointer|hand|arrow|grabber|text cursor|copy symbol)/i,
-        /(?:can you|could you)?\s*change\s*(?:the)?\s*(?:cursor|mouse)\s*(?:to|into)\s*(?:a|an)?\s*(pointer|hand|arrow|grabber|text cursor|copy symbol)/i
+        // Direct cursor settings
+        /(?:set|change|make)\s*(?:the)?\s*cursor\s*(?:to|=|:)?\s*(pointer|default|move|grab|grabbing|not-allowed|wait|progress|help|crosshair|text|copy|cell)/i,
+        // Natural language
+        /(?:make|set)?\s*(?:the)?\s*mouse\s*(?:cursor|pointer)\s*(?:look like|change to|become)\s*(?:a|an)?\s*(pointer|hand|arrow|grabber|text cursor|copy symbol)/i,
+        /(?:show|display)\s*(?:a|an)?\s*(pointer|hand|arrow|grabber|text cursor|copy symbol)\s*(?:cursor|mouse)/i
       ],
+
       transitionDuration: [
-        // Duration changes
-        /(?:set|make|change)?\s*(?:the)?\s*transition\s*(?:duration|speed|time)?\s*(?:to|=|:)?\s*(\d+)(?:\s*ms)?/i,
-        // Natural language patterns
-        /(?:i want|i need|please make)?\s*(?:the)?\s*(?:hover)?\s*(?:effect|animation|transition)\s*(?:to)?\s*(?:take|last|be)\s*(\d+)(?:\s*ms)?/i,
-        /(?:can you|could you)?\s*make\s*(?:the)?\s*(?:hover)?\s*(?:effect|animation|transition)\s*(faster|slower|quicker|longer|shorter)/i,
-        // Relative speed changes
-        /(?:make|set)?\s*(?:the)?\s*(?:hover)?\s*(?:effect|animation|transition)\s*(faster|slower)\s*(?:by)?\s*(?:a\s*)?(?:little|lot|bit|tad|bunch|ton)?/i
+        // Direct duration settings
+        /(?:set|change|make)\s*(?:the)?\s*(?:hover)?\s*transition\s*(?:duration|speed|time)\s*(?:to|=|:)?\s*(\d+)(?:\s*ms)?/i,
+        // Natural language
+        /(?:make|set)?\s*(?:the)?\s*hover\s*(?:effect|animation|transition)\s*(faster|slower|quick|slow|instant|smooth)/i,
+        /(?:make|set)?\s*(?:the)?\s*hover\s*(?:effect|animation|transition)\s*(?:take|last)\s*(\d+)(?:\s*ms)?/i
       ],
-      enablePageNavigation: [
-        // Basic patterns
-        /(?:enable|activate|turn\s*on)\s*(?:the)?\s*(?:page)?\s*navigation/i,
-        /(?:disable|deactivate|turn\s*off)\s*(?:the)?\s*(?:page)?\s*navigation/i,
-        // Natural language patterns
-        /(?:i want|i need|please)?\s*(?:make|set)?\s*(?:the)?\s*button\s*(?:to)?\s*(?:navigate|link|go)\s*to\s*(?:a|another)?\s*page/i,
-        /(?:can you|could you)?\s*make\s*(?:the)?\s*button\s*(?:clickable|navigable|link to a page)/i,
-        /(?:let|make)?\s*(?:this|the)?\s*button\s*(?:be)?\s*(?:a)?\s*(?:link|navigation button)/i
+
+      // Add patterns for removing effects
+      removeEffects: [
+        /remove\s*(?:all)?\s*(?:hover|click)?\s*effects?/i,
+        /disable\s*(?:all)?\s*(?:hover|click)?\s*effects?/i,
+        /turn\s*off\s*(?:all)?\s*(?:hover|click)?\s*effects?/i
       ],
-      targetPageId: [
-        // Basic patterns
-        /(?:set|make|change)?\s*(?:the)?\s*target\s*page\s*(?:to|=|:)?\s*["']?([^"']+)["']?/i,
-        // Natural language patterns
-        /(?:i want|i need|please)?\s*(?:make|set)?\s*(?:the)?\s*button\s*(?:to)?\s*(?:go|link|navigate)\s*to\s*(?:the)?\s*["']?([^"']+)["']?\s*page/i,
-        /(?:when|if)\s*clicked\s*(?:go|navigate|take\s*me)?\s*to\s*(?:the)?\s*["']?([^"']+)["']?\s*page/i,
-        /(?:can you|could you)?\s*make\s*(?:this|the)?\s*button\s*(?:go|link|navigate)\s*to\s*(?:the)?\s*["']?([^"']+)["']?\s*page/i
-      ]
     };
   }
 
   static processCommand(input) {
     console.log('ButtonProcessor received input:', input);
     const lowercaseInput = input.toLowerCase();
+    const patterns = this.getStylePatterns();
+    const buttonClass = "text-xs px-1 py-1 rounded-md bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300";
 
-    // Handle navigation enable/disable
-    const navigationPattern = /(?:enable|activate|turn\s*on|disable|deactivate|turn\s*off)\s*(?:the)?\s*(?:page)?\s*navigation/i;
-    const navigationMatch = lowercaseInput.match(navigationPattern);
+    // Handle page navigation enable/disable
+    const navigationMatch = patterns.enablePageNavigation.some(pattern => pattern.test(lowercaseInput));
+    console.log('Navigation pattern match:', navigationMatch);
+    
     if (navigationMatch) {
-      const isEnable = /(enable|activate|turn\s*on)/i.test(navigationMatch[0]);
-      return {
-        style: {
-          enablePageNavigation: isEnable,
-          ...(isEnable ? {} : { targetPageId: '' }) // Clear targetPageId if disabling
-        }
-      };
-    }
+      const isEnable = !/(disable|turn\s*off|remove)/i.test(lowercaseInput);
+      console.log('Is enabling navigation:', isEnable);
+      
+      if (isEnable) {
+        // Get pages from Redux store
+        const state = store.getState();
+        const pages = state.w3s?.currentProject?.data?.pages || [];
+        console.log('Available pages:', pages);
+        
+        // Create page selection options
+        const pageOptions = pages.map(page => ({
+          text: page.name,
+          type: "command",
+          icon: "FaArrowRight",
+          command: `set target page to ${page.name}`,
+          value: page._id,
+          className: buttonClass
+        }));
+        console.log('Created page options:', pageOptions);
 
-    // Handle natural language navigation requests
-    const naturalNavPattern = /(?:i want|i need|please|can you|could you)?\s*(?:make|set)?\s*(?:this|the)?\s*button\s*(?:to)?\s*(?:be)?\s*(?:a)?\s*(?:link|navigation button)/i;
-    if (naturalNavPattern.test(lowercaseInput)) {
-      return {
-        style: {
-          enablePageNavigation: true
-        }
-      };
-    }
-
-    // Handle relative speed changes for transitions
-    const speedPattern = /(?:make|set)?\s*(?:the)?\s*(?:hover)?\s*(?:effect|animation|transition)\s*(faster|slower)\s*(?:by)?\s*(?:a\s*)?(little|lot|bit|tad|bunch|ton)?/i;
-    const speedMatch = lowercaseInput.match(speedPattern);
-    if (speedMatch) {
-      const direction = speedMatch[1];
-      const intensity = speedMatch[2] || 'normal';
-      
-      // Base change amount in milliseconds
-      let changeAmount = 100;
-      
-      // Adjust based on intensity
-      if (['little', 'bit', 'tad'].includes(intensity)) {
-        changeAmount = 50;
-      } else if (['lot', 'bunch', 'ton'].includes(intensity)) {
-        changeAmount = 200;
-      }
-      
-      // Determine if we're increasing or decreasing
-      const multiplier = direction === 'slower' ? 1 : -1;
-      
-      return {
-        style: {
-          transitionDuration: `${Math.max(0, 200 + (changeAmount * multiplier))}`,
-          transition: `all ${Math.max(0, 200 + (changeAmount * multiplier))}ms ease-in-out`
-        }
-      };
-    }
-
-    // Handle relative size changes for hover scale
-    const scalePattern = /(?:make|set)?\s*(?:the)?\s*button\s*(grow|shrink)\s*(?:a\s*)?(little|lot|bit|tad|bunch|ton)?/i;
-    const scaleMatch = lowercaseInput.match(scalePattern);
-    if (scaleMatch) {
-      const direction = scaleMatch[1];
-      const intensity = scaleMatch[2] || 'normal';
-      
-      // Base scale change
-      let scaleChange = 0.1;
-      
-      // Adjust based on intensity
-      if (['little', 'bit', 'tad'].includes(intensity)) {
-        scaleChange = 0.05;
-      } else if (['lot', 'bunch', 'ton'].includes(intensity)) {
-        scaleChange = 0.2;
-      }
-      
-      // Determine if we're increasing or decreasing
-      const multiplier = direction === 'grow' ? 1 : -1;
-      
-      return {
-        style: {
-          hoverScale: Math.max(0.5, Math.min(1.5, 1 + (scaleChange * multiplier)))
-        }
-      };
-    }
-
-    // Handle color changes with intensity modifiers
-    const colorPattern = /(?:set|make|change)?\s*(?:the)?\s*hover\s*(?:color)?\s*(?:to)?\s*(?:a\s*)?(light|dark)?\s*(blue|red|green|black|white|yellow|purple|gray|grey|#[0-9a-fA-F]{3,6}|sky|navy|forest|crimson|gold|silver)/i;
-    const colorMatch = lowercaseInput.match(colorPattern);
-    if (colorMatch) {
-      const intensity = colorMatch[1] || '';
-      const baseColor = colorMatch[2].toLowerCase();
-      const colorKey = intensity ? `${intensity} ${baseColor}` : baseColor;
-      
-      if (this.colorKeywords[colorKey]) {
+        const result = {
+          style: {
+            enablePageNavigation: true,
+            cursor: 'pointer',
+            transition: 'all 200ms ease-in-out',
+            hoverBackgroundColor: '#f0f0f0',
+            hoverScale: 1.02
+          },
+          message: "Navigation enabled. Select a target page:",
+          options: [
+            {
+              text: "Target Page",
+              type: "info",
+              icon: "FaArrowRight",
+              className: "text-xs font-small text-gray-200"
+            },
+            ...pageOptions
+          ]
+        };
+        console.log('Returning navigation enable result:', result);
+        return result;
+      } else {
         return {
           style: {
-            hoverBackgroundColor: this.colorKeywords[colorKey]
-          }
+            enablePageNavigation: false,
+            targetPageId: undefined,
+            cursor: 'default',
+            hoverBackgroundColor: undefined,
+            hoverScale: undefined
+          },
+          message: "Page navigation disabled"
         };
       }
     }
 
-    // Process other patterns including targetPageId
-    const stylePatterns = this.getStylePatterns();
-    let result = { style: {} };
+    // Handle target page selection
+    const targetPageMatch = lowercaseInput.match(/set\s*target\s*(?:page)?\s*to\s*(.+)/i);
+    if (targetPageMatch) {
+      const pageName = targetPageMatch[1].trim();
+      const state = store.getState();
+      const pages = state.w3s?.currentProject?.data?.pages || [];
+      const targetPage = pages.find(p => p.name.toLowerCase() === pageName.toLowerCase());
 
-    for (const [property, patterns] of Object.entries(stylePatterns)) {
-      for (const pattern of patterns) {
+      if (targetPage) {
+        return {
+          style: {
+            targetPageId: targetPage._id
+          },
+          message: `Target page set to: ${targetPage.name}`
+        };
+      } else {
+        return {
+          message: `Page "${pageName}" not found. Available pages:`,
+          options: pages.map(page => ({
+            text: page.name,
+            type: "command",
+            command: `set target page to ${page.name}`,
+            icon: "FaArrowRight"
+          }))
+        };
+      }
+    }
+
+    // Handle hover scale relative terms
+    const scaleMatch = lowercaseInput.match(/(?:make|set)?\s*(?:it|the container)?\s*(bigger|larger|smaller|tiny|huge)\s*(?:when|on)?\s*hover/i);
+    if (scaleMatch) {
+      const scaleMap = {
+        tiny: 0.8,
+        smaller: 0.9,
+        bigger: 1.1,
+        larger: 1.15,
+        huge: 1.2
+      };
+      return {
+        style: {
+          hoverScale: scaleMap[scaleMatch[1]] || 1.1,
+          transition: 'all 200ms ease-in-out'
+        }
+      };
+    }
+
+    // Handle transition speed terms
+    const speedMatch = lowercaseInput.match(/(?:make|set)?\s*(?:the)?\s*hover\s*(?:effect|animation|transition)\s*(faster|slower|quick|slow|instant|smooth)/i);
+    if (speedMatch) {
+      const durationMap = {
+        instant: 0,
+        faster: 100,
+        quick: 150,
+        smooth: 300,
+        slower: 400,
+        slow: 500
+      };
+      const duration = durationMap[speedMatch[1]] || 200;
+      return {
+        style: {
+          transitionDuration: duration,
+          transition: `all ${duration}ms ease-in-out`
+        }
+      };
+    }
+
+    // Handle removing all effects
+    if (patterns.removeEffects.some(pattern => pattern.test(lowercaseInput))) {
+      return {
+        style: {
+          cursor: 'default',
+          transition: undefined,
+          hoverBackgroundColor: undefined,
+          hoverColor: undefined,
+          hoverScale: undefined,
+          hoverShadow: undefined,
+          activeScale: undefined,
+          activeShadow: undefined,
+          activeBackgroundColor: undefined
+        }
+      };
+    }
+
+    // Process other patterns
+    let result = { style: {} };
+    
+    for (const [property, propertyPatterns] of Object.entries(patterns)) {
+      for (const pattern of propertyPatterns) {
         const match = input.match(pattern);
         
         if (match) {
           let value = match[1]?.toLowerCase();
 
           // Handle special cases
-          if (property === 'transitionDuration') {
-            value = parseInt(value);
-            result.style.transition = `all ${value}ms ease-in-out`;
-          }
+          switch (property) {
+            case 'transitionDuration':
+              value = parseInt(value);
+              result.style.transition = `all ${value}ms ease-in-out`;
+              break;
 
-          // Handle target page ID
-          if (property === 'targetPageId') {
-            result.style.enablePageNavigation = true; // Auto-enable navigation when setting target
-            result.style.targetPageId = value;
-          }
+            case 'cursor':
+              const cursorMap = {
+                'hand': 'pointer',
+                'arrow': 'default',
+                'grabber': 'grab',
+                'text cursor': 'text',
+                'copy symbol': 'copy'
+              };
+              value = cursorMap[value] || value;
+              break;
 
-          // Map natural language cursor terms to CSS values
-          if (property === 'cursor') {
-            const cursorMap = {
-              'hand': 'pointer',
-              'arrow': 'default',
-              'grabber': 'grab',
-              'text cursor': 'text',
-              'copy symbol': 'copy'
-            };
-            value = cursorMap[value] || value;
+            case 'hoverScale':
+              value = parseFloat(value);
+              if (value < 0.8) value = 0.8;
+              if (value > 1.2) value = 1.2;
+              break;
+
+            case 'targetPageId':
+              result.style.enablePageNavigation = true;
+              break;
           }
 
           if (value !== undefined) {

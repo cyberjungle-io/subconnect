@@ -65,38 +65,24 @@ export class AICommandExecutor {
     selectedComponent = null,
     state = null
   ) {
-    try {
-      // Clean the input first
-      const cleanInput = input.replace(/\{[\s\S]*\}/g, "").trim();
+    console.log("Processing command for", selectedComponent?.type);
 
-      const shadowPattern = /shadow/i;
-      const isRemoveShadow =
-        /(remove|clear|delete|get rid of|turn off|switch off|no) .*(shadow|shadows)/i.test(
-          cleanInput
-        );
+    // First try style processors
+    const styleResult = StyleCommandProcessor.processStyleCommand(
+      input,
+      selectedComponent
+    );
 
-      // Check for shadow pattern early - MODIFIED to skip for removal commands
-      if (
-        input.match(shadowPattern) &&
-        !input.match(/(?:inner|outer)\s*shadow/i) &&
-        !isRemoveShadow // Skip the prompt if it's a removal command
-      ) {
-        return {
-          success: true,
-          message:
-            "What kind of shadow would you like? You can specify:\n- Inner shadow\n- Outer shadow",
-          needsMoreInfo: true,
-          type: "shadow",
-        };
-      }
+    if (styleResult) {
+      console.log("Style processor result:", styleResult);
 
-      // If it's a remove shadow command, process it directly
-      if (isRemoveShadow && selectedComponent) {
+      // If we have style updates, apply them
+      if (styleResult.style && selectedComponent) {
         const updatedComponent = {
           ...selectedComponent,
           style: {
             ...selectedComponent.style,
-            boxShadow: "none",
+            ...styleResult.style,
           },
         };
 
@@ -107,105 +93,166 @@ export class AICommandExecutor {
           })
         );
 
+        // If we have a message and options, return them for the chat
+        if (styleResult.message || styleResult.options) {
+          return {
+            success: true,
+            message: styleResult.message || "Updated style successfully",
+            options: styleResult.options,
+          };
+        }
+
         return {
           success: true,
-          message: "Removed shadow",
-          isCommandExecution: true,
+          message: "Updated style successfully",
         };
       }
 
-      // Process spacing commands for any component
-      const spacingResult = SpacingProcessor.processCommand(input);
-      if (spacingResult && selectedComponent) {
-        try {
-          let updatedStyle;
-          if (spacingResult.adjust) {
-            // Handle incremental adjustments
-            updatedStyle = spacingResult.adjust(selectedComponent.style);
-          } else {
-            // Handle absolute value updates (presets)
-            updatedStyle = spacingResult.style;
-          }
+      // If we only have a message and/or options (no style updates), return them directly
+      if (styleResult.message || styleResult.options) {
+        return {
+          success: true,
+          message: styleResult.message,
+          options: styleResult.options,
+        };
+      }
 
-          const updatedComponent = {
-            ...selectedComponent,
-            style: {
-              ...selectedComponent.style,
-              ...updatedStyle,
-            },
-          };
+      return styleResult;
+    }
 
-          await dispatch(
-            updateComponent({
-              id: selectedComponent.id,
-              updates: updatedComponent,
-            })
-          );
+    // Clean the input first
+    const cleanInput = input.replace(/\{[\s\S]*\}/g, "").trim();
 
-          // Generate success message in standard format
-          const property = Object.keys(updatedStyle)[0];
-          const value = updatedStyle[property];
-          const action = input.includes("add")
-            ? "Set"
-            : input.includes("remove")
-            ? "Set"
-            : "Updated";
-          return {
-            success: true,
-            message: `${action} ${property} to ${value}`,
-            isCommandExecution: true, // This flag will trigger the checkmark style
-          };
-        } catch (error) {
-          return {
-            success: false,
-            message: `Failed to update spacing: ${error.message}`,
-          };
+    const shadowPattern = /shadow/i;
+    const isRemoveShadow =
+      /(remove|clear|delete|get rid of|turn off|switch off|no) .*(shadow|shadows)/i.test(
+        cleanInput
+      );
+
+    // Check for shadow pattern early - MODIFIED to skip for removal commands
+    if (
+      input.match(shadowPattern) &&
+      !input.match(/(?:inner|outer)\s*shadow/i) &&
+      !isRemoveShadow // Skip the prompt if it's a removal command
+    ) {
+      return {
+        success: true,
+        message:
+          "What kind of shadow would you like? You can specify:\n- Inner shadow\n- Outer shadow",
+        needsMoreInfo: true,
+        type: "shadow",
+      };
+    }
+
+    // If it's a remove shadow command, process it directly
+    if (isRemoveShadow && selectedComponent) {
+      const updatedComponent = {
+        ...selectedComponent,
+        style: {
+          ...selectedComponent.style,
+          boxShadow: "none",
+        },
+      };
+
+      await dispatch(
+        updateComponent({
+          id: selectedComponent.id,
+          updates: updatedComponent,
+        })
+      );
+
+      return {
+        success: true,
+        message: "Removed shadow",
+        isCommandExecution: true,
+      };
+    }
+
+    // Process spacing commands for any component
+    const spacingResult = SpacingProcessor.processCommand(input);
+    if (spacingResult && selectedComponent) {
+      try {
+        let updatedStyle;
+        if (spacingResult.adjust) {
+          // Handle incremental adjustments
+          updatedStyle = spacingResult.adjust(selectedComponent.style);
+        } else {
+          // Handle absolute value updates (presets)
+          updatedStyle = spacingResult.style;
         }
-      }
 
-      // Handle Query Value commands
-      if (selectedComponent?.type === "QUERY_VALUE") {
-        const queryResult = await this.processQueryValueCommand(
-          cleanInput,
-          selectedComponent,
-          dispatch,
-          state
+        const updatedComponent = {
+          ...selectedComponent,
+          style: {
+            ...selectedComponent.style,
+            ...updatedStyle,
+          },
+        };
+
+        await dispatch(
+          updateComponent({
+            id: selectedComponent.id,
+            updates: updatedComponent,
+          })
         );
-        if (queryResult) return queryResult;
-      }
 
-      // Try direct style processing first
-      if (selectedComponent) {
-        const styleResult = await this.processStyleCommand(
-          cleanInput,
-          selectedComponent,
-          dispatch
-        );
-        if (styleResult) return styleResult;
+        // Generate success message in standard format
+        const property = Object.keys(updatedStyle)[0];
+        const value = updatedStyle[property];
+        const action = input.includes("add")
+          ? "Set"
+          : input.includes("remove")
+          ? "Set"
+          : "Updated";
+        return {
+          success: true,
+          message: `${action} ${property} to ${value}`,
+          isCommandExecution: true, // This flag will trigger the checkmark style
+        };
+      } catch (error) {
+        return {
+          success: false,
+          message: `Failed to update spacing: ${error.message}`,
+        };
       }
+    }
 
-      // If direct processing didn't work, try LLM interpretation
-      const llmResult = await this.processWithLLM(
+    // Handle Query Value commands
+    if (selectedComponent?.type === "QUERY_VALUE") {
+      const queryResult = await this.processQueryValueCommand(
+        cleanInput,
+        selectedComponent,
+        dispatch,
+        state
+      );
+      if (queryResult) return queryResult;
+    }
+
+    // Try direct style processing first
+    if (selectedComponent) {
+      const styleResult = await this.processStyleCommand(
         cleanInput,
         selectedComponent,
         dispatch
       );
-      if (llmResult) return llmResult;
-
-      // Fallback to traditional processing
-      return await this.processTraditionalCommand(
-        input,
-        dispatch,
-        selectedComponent,
-        state
-      );
-    } catch (error) {
-      console.error("Error in processCommand:", error);
-      return {
-        success: false,
-        message: `Failed to process command: ${error.message}`,
-      };
+      if (styleResult) return styleResult;
     }
+
+    // If direct processing didn't work, try LLM interpretation
+    const llmResult = await this.processWithLLM(
+      cleanInput,
+      selectedComponent,
+      dispatch
+    );
+    if (llmResult) return llmResult;
+
+    // Fallback to traditional processing
+    return await this.processTraditionalCommand(
+      input,
+      dispatch,
+      selectedComponent,
+      state
+    );
   }
 
   static async processQueryValueCommand(input, component, dispatch, state) {
