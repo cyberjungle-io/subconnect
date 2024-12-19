@@ -348,27 +348,31 @@ const FloatingToolbar = ({
       props,
       content,
       onStyleChange: (updates) => {
-        console.log('FloatingToolbar onStyleChange called with:', updates);
-        console.log('Current style:', style);
-        
+        console.log("FloatingToolbar onStyleChange called with:", updates);
+        console.log("Current style:", style);
+
         // Create new style object with navigation properties preserved
         const newStyle = {
           ...style,
           ...(updates.style || {}),
           // Always preserve navigation properties if they exist in either current style or updates
-          enablePageNavigation: 'enablePageNavigation' in updates ? 
-            updates.enablePageNavigation : 
-            (style.enablePageNavigation || false),
-          targetPageId: 'targetPageId' in updates ? 
-            updates.targetPageId : 
-            (style.targetPageId || '')
+          enablePageNavigation:
+            "enablePageNavigation" in updates
+              ? updates.enablePageNavigation
+              : style.enablePageNavigation || false,
+          targetPageId:
+            "targetPageId" in updates
+              ? updates.targetPageId
+              : style.targetPageId || "",
         };
 
-        console.log('Final style update:', newStyle);
-        
+        console.log("Final style update:", newStyle);
+
         onStyleChange({
           ...(updates.props ? { props: { ...props, ...updates.props } } : {}),
-          ...(updates.content !== undefined ? { content: updates.content } : {}),
+          ...(updates.content !== undefined
+            ? { content: updates.content }
+            : {}),
           style: newStyle,
         });
       },
@@ -378,13 +382,13 @@ const FloatingToolbar = ({
 
     // Add logging for Button Controls case
     if (activeControl === "Button Controls") {
-      console.log('Rendering ButtonControls with props:', {
+      console.log("Rendering ButtonControls with props:", {
         ...sharedProps,
         style: {
           ...sharedProps.style,
           enablePageNavigation: sharedProps.style.enablePageNavigation || false,
-          targetPageId: sharedProps.style.targetPageId || ''
-        }
+          targetPageId: sharedProps.style.targetPageId || "",
+        },
       });
     }
 
@@ -443,15 +447,33 @@ const FloatingToolbar = ({
       case "Whiteboard Controls":
         return <WhiteboardControls {...sharedProps} />;
       case "Button Controls":
-        return <ButtonControls 
-          {...sharedProps} 
-          style={{
-            ...sharedProps.style,
-            enablePageNavigation: sharedProps.style.enablePageNavigation || false,
-            targetPageId: sharedProps.style.targetPageId || ''
-          }}
-          pages={pages} 
-        />;
+        return (
+          <ButtonControls
+            {...sharedProps}
+            style={{
+              ...sharedProps.style,
+              enablePageNavigation:
+                sharedProps.style.enablePageNavigation || false,
+              targetPageId: sharedProps.style.targetPageId || "",
+            }}
+            pages={pages}
+            onStyleChange={(updates) => {
+              console.log("FloatingToolbar - Style updates received:", updates);
+              console.log("FloatingToolbar - Current component style:", style);
+
+              const updatedStyle = {
+                ...style,
+                ...updates,
+              };
+
+              console.log(
+                "FloatingToolbar - Final style to be applied:",
+                updatedStyle
+              );
+              onStyleChange({ style: updatedStyle });
+            }}
+          />
+        );
       case "Query Controls":
         return <QueryValueControls {...sharedProps} />;
       case "Kanban Controls":

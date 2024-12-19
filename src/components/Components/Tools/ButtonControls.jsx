@@ -29,37 +29,39 @@ const ButtonControls = ({ style, onStyleChange }) => {
   const [previousHoverState, setPreviousHoverState] = useState(null);
 
   const handleChange = (updates) => {
-    console.log('ButtonControls handleChange called with:', updates);
-    console.log('Current style:', style);
+    console.log('ButtonControls - Initial updates:', updates);
+    console.log('ButtonControls - Current component style:', style);
     
     let finalUpdates = { ...updates };
 
     // Handle page navigation toggle
     if ('enablePageNavigation' in updates) {
-      console.log('Handling navigation toggle:', updates.enablePageNavigation);
+      console.log('ButtonControls - Handling navigation toggle:', updates.enablePageNavigation);
       
-      // Create a complete navigation update
       finalUpdates = {
         ...finalUpdates,
         enablePageNavigation: updates.enablePageNavigation,
         targetPageId: !updates.enablePageNavigation ? '' : (style.targetPageId || '')
       };
-      
-      console.log('Final updates before style change:', finalUpdates);
-      
-      // Apply the update directly to style
-      onStyleChange({
-        ...style,
-        enablePageNavigation: finalUpdates.enablePageNavigation,
-        targetPageId: finalUpdates.targetPageId
-      });
-      return;
     }
 
-    onStyleChange({
+    // Ensure transition is added when hover effects are updated
+    if (updates.hoverColor || updates.hoverBackgroundColor) {
+      finalUpdates = {
+        ...style,  // Include existing style properties
+        ...finalUpdates,  // Add new updates
+        transition: 'all 200ms ease-in-out'
+      };
+      console.log('ButtonControls - Hover updates:', finalUpdates);
+    }
+
+    const newStyle = {
       ...style,
       ...finalUpdates
-    });
+    };
+    
+    console.log('ButtonControls - Final style update:', newStyle);
+    onStyleChange(newStyle);
   };
 
   // Handle hover effects toggle
