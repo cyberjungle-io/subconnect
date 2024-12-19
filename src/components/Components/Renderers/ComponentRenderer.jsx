@@ -606,6 +606,7 @@ const ComponentRenderer = React.memo(
     const originalStyleRef = useRef({
       backgroundColor: null,
       color: null,
+      transform: null,
     });
 
     // Define the handlers as functions inside the component
@@ -616,7 +617,9 @@ const ComponentRenderer = React.memo(
       const hasParentHover =
         parent &&
         parent.type === "FLEX_CONTAINER" &&
-        (parent.style?.hoverColor || parent.style?.hoverBackgroundColor);
+        (parent.style?.hoverColor || 
+         parent.style?.hoverBackgroundColor || 
+         parent.style?.hoverScale);
 
       if (
         (component.type === "FLEX_CONTAINER" && component.style) ||
@@ -630,14 +633,16 @@ const ComponentRenderer = React.memo(
             originalStyleRef.current.backgroundColor =
               getComputedStyle(target).backgroundColor;
             originalStyleRef.current.color = getComputedStyle(target).color;
+            originalStyleRef.current.transform = getComputedStyle(target).transform;
           }
 
           // Store in dataset using the ref values
           target.dataset.originalBg = originalStyleRef.current.backgroundColor;
           target.dataset.originalColor = originalStyleRef.current.color;
+          target.dataset.originalTransform = originalStyleRef.current.transform;
 
-          // Apply transitions to all elements before any color changes
-          const transition = "all 200ms ease-in-out";
+          // Apply transitions to all elements before any changes
+          const transition = "all 200ms ease-in-out, transform 200ms ease-in-out";
           target.style.transition = transition;
 
           // Apply transitions to content elements first
@@ -652,13 +657,12 @@ const ComponentRenderer = React.memo(
             target.querySelectorAll(".component-wrapper").forEach((child) => {
               child.style.transition = transition;
               if (!child.dataset.originalBg) {
-                child.dataset.originalBg =
-                  getComputedStyle(child).backgroundColor;
+                child.dataset.originalBg = getComputedStyle(child).backgroundColor;
               }
             });
           }
 
-          // Now apply the color changes
+          // Apply the color changes
           if (styleToApply.hoverBackgroundColor) {
             target.style.backgroundColor = styleToApply.hoverBackgroundColor;
 
@@ -677,6 +681,11 @@ const ComponentRenderer = React.memo(
                 child.style.color = styleToApply.hoverColor;
               });
           }
+
+          // Apply scale transform if specified
+          if (styleToApply.hoverScale) {
+            target.style.transform = `scale(${styleToApply.hoverScale})`;
+          }
         }
       }
     };
@@ -688,7 +697,9 @@ const ComponentRenderer = React.memo(
       const hasParentHover =
         parent &&
         parent.type === "FLEX_CONTAINER" &&
-        (parent.style?.hoverColor || parent.style?.hoverBackgroundColor);
+        (parent.style?.hoverColor || 
+         parent.style?.hoverBackgroundColor || 
+         parent.style?.hoverScale);
 
       if (
         (component.type === "FLEX_CONTAINER" && component.style) ||
@@ -701,17 +712,17 @@ const ComponentRenderer = React.memo(
             !floatingToolbar.contains(e.relatedTarget));
 
         if (shouldResetStyles) {
-          // Use the stored original values from ref
-          target.style.backgroundColor =
-            originalStyleRef.current.backgroundColor;
+          // Reset all stored styles
+          target.style.backgroundColor = originalStyleRef.current.backgroundColor;
           target.style.color = originalStyleRef.current.color;
+          target.style.transform = originalStyleRef.current.transform || 'none';
 
           // Reset text color for all content elements
           target
             .querySelectorAll(".component-content.hover-target")
             .forEach((child) => {
               child.style.color = originalStyleRef.current.color;
-              child.style.transition = "color 200ms ease-in-out";
+              child.style.transition = "all 200ms ease-in-out";
             });
 
           // Restore child component backgrounds
@@ -726,6 +737,7 @@ const ComponentRenderer = React.memo(
           // Clear the dataset
           delete target.dataset.originalBg;
           delete target.dataset.originalColor;
+          delete target.dataset.originalTransform;
         }
       }
     };
@@ -736,6 +748,7 @@ const ComponentRenderer = React.memo(
         originalStyleRef.current = {
           backgroundColor: null,
           color: null,
+          transform: null,
         };
       };
     }, []);
