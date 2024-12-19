@@ -21,6 +21,36 @@ export class StyleCommandProcessor {
     console.log("Component style:", component?.style);
     console.log("Current context:", this.currentContext);
 
+    // Handle direct color input when we have a pending prompt
+    const directColorPattern =
+      /^([a-z]+|#[0-9a-f]{3,6}|rgb\(\d+,\s*\d+,\s*\d+\))$/i;
+    if (this.pendingPrompt && directColorPattern.test(input)) {
+      if (this.currentContext === "hover") {
+        const command = `set hover background color to ${input}`;
+        const result = ButtonProcessor.processCommand(
+          command,
+          component?.style
+        );
+        this.pendingPrompt = null;
+        this.currentContext = null;
+        return result;
+      }
+      // ... rest of the existing direct color handling
+    }
+
+    // Check if this is a button-related command first
+    if (ButtonProcessor.canHandle(input)) {
+      const result = ButtonProcessor.processCommand(input, component?.style);
+      if (result) {
+        // Store prompt information if this is a PROMPT type response
+        if (result.type === "PROMPT") {
+          this.pendingPrompt = result;
+          this.currentContext = result.context || "hover";
+        }
+        return result;
+      }
+    }
+
     // Check for shadow commands first
     if (input.toLowerCase().includes("shadow")) {
       const shadowResult = ShadowProcessor.processCommand(
@@ -47,28 +77,6 @@ export class StyleCommandProcessor {
         this.pendingPrompt = null;
         this.currentContext = null;
         return shadowResult;
-      }
-    }
-
-    // Handle direct color input for other contexts
-    const directColorPattern =
-      /^([a-z]+|#[0-9a-f]{3,6}|rgb\(\d+,\s*\d+,\s*\d+\))$/i;
-    if (this.pendingPrompt && directColorPattern.test(input)) {
-      const contextProcessorMap = {
-        border: BorderProcessor,
-        background: BackgroundProcessor,
-        text: TextProcessor,
-      };
-
-      const contextProcessor = contextProcessorMap[this.currentContext];
-      if (contextProcessor) {
-        const command = this.pendingPrompt.followUp.command(input);
-        const result = contextProcessor.processCommand(
-          command,
-          component?.style
-        );
-        this.pendingPrompt = null;
-        return result;
       }
     }
 

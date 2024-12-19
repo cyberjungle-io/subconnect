@@ -2,6 +2,26 @@ import React from 'react';
 import { store } from '../../store/store';
 import { FaArrowRight } from 'react-icons/fa';
 
+// Add isLightColor helper function
+const isLightColor = (color) => {
+  // Convert hex to RGB
+  let r, g, b;
+  if (color.startsWith("#")) {
+    const hex = color.replace("#", "");
+    r = parseInt(hex.substr(0, 2), 16);
+    g = parseInt(hex.substr(2, 2), 16);
+    b = parseInt(hex.substr(4, 2), 16);
+  } else if (color.startsWith("rgb")) {
+    [r, g, b] = color.match(/\d+/g).map(Number);
+  } else {
+    return true; // Default to dark text for named colors
+  }
+
+  // Calculate relative luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5;
+};
+
 export class ButtonProcessor {
   static colorKeywords = {
     // Common color aliases
@@ -102,216 +122,150 @@ export class ButtonProcessor {
     };
   }
 
-  static processCommand(input) {
+  static processCommand(input, currentStyle = {}) {
+    // Log incoming command
     console.log('ButtonProcessor received input:', input);
-    const lowercaseInput = input.toLowerCase();
-    const patterns = this.getStylePatterns();
-    const buttonClass = "text-xs px-1 py-1 rounded-md bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300";
 
-    // Handle page navigation enable/disable
-    const navigationMatch = patterns.enablePageNavigation.some(pattern => pattern.test(lowercaseInput));
-    console.log('Navigation pattern match:', navigationMatch);
+    // Handle hover background color setting
+    const hoverColorPattern = /(?:change|set|show|modify|update|pick|choose|select)\s+(?:the\s+)?hover\s+(?:background\s+)?color/i;
+    const directHoverColorPattern = /set\s+hover\s+(?:background\s+)?color\s+to\s+(.+)/i;
     
+    const hoverColorMatch = input.match(hoverColorPattern);
+    const directHoverColorMatch = input.match(directHoverColorPattern);
+
+    if (directHoverColorMatch) {
+      const color = directHoverColorMatch[1].trim();
+      return {
+        style: {
+          hoverBackgroundColor: color,
+          // Add transition if not present
+          transition: currentStyle.transition || 'all 200ms ease-in-out'
+        },
+        message: `Set hover color to ${color}`,
+        success: true
+      };
+    }
+
+    if (hoverColorMatch) {
+      return {
+        type: 'PROMPT',
+        message: 'Choose a hover background color:',
+        context: 'hover',
+        options: [
+          {
+            text: 'Enter color below or select from theme',
+            type: 'info',
+            className: 'text-xs text-gray-600'
+          },
+          {
+            text: '#FF0000, rgb(255,0,0), hsl(0,100%,50%)',
+            type: 'info',
+            className: 'text-[11px] text-gray-400 italic mb-2'
+          },
+          {
+            type: 'wrapper',
+            className: 'flex flex-col gap-1',
+            options: (state) => {
+              const colorTheme = state?.colorTheme || [];
+              
+              // Create array of theme colors
+              const themeButtons = colorTheme.length === 0
+                ? [
+                    {
+                      text: "black",
+                      command: "set hover background color to black",
+                      type: "command",
+                      style: {
+                        backgroundColor: "#000000",
+                        color: "#ffffff",
+                        minWidth: "60px",
+                        textAlign: "center",
+                      },
+                    },
+                    {
+                      text: "gray",
+                      command: "set hover background color to gray",
+                      type: "command",
+                      style: {
+                        backgroundColor: "#808080",
+                        color: "#ffffff",
+                        minWidth: "60px",
+                        textAlign: "center",
+                      },
+                    },
+                    {
+                      text: "blue",
+                      command: "set hover background color to blue",
+                      type: "command",
+                      style: {
+                        backgroundColor: "#0000ff",
+                        color: "#ffffff",
+                        minWidth: "60px",
+                        textAlign: "center",
+                      },
+                    },
+                  ]
+                : colorTheme.map((color) => ({
+                    text: color.name,
+                    command: `set hover background color to ${color.value}`,
+                    type: "command",
+                    style: {
+                      backgroundColor: color.value,
+                      color: isLightColor(color.value) ? "#000000" : "#ffffff",
+                      minWidth: "60px",
+                      textAlign: "center",
+                    },
+                  }));
+
+              return [
+                {
+                  text: "Theme Colors",
+                  type: "info"
+                },
+                {
+                  type: "wrapper",
+                  className: "flex flex-wrap gap-1",
+                  options: themeButtons
+                }
+              ];
+            }
+          }
+        ],
+        property: 'hoverBackgroundColor',
+        followUp: {
+          type: 'COLOR_CHANGE',
+          command: (color) => `set hover background color to ${color}`
+        }
+      };
+    }
+
+    // Navigation pattern matching
+    const navigationPattern = /(?:enable|disable|toggle|add|remove)\s+(?:page\s+)?navigation/i;
+    const navigationMatch = input.match(navigationPattern);
+
     if (navigationMatch) {
-      const isEnable = !/(disable|turn\s*off|remove)/i.test(lowercaseInput);
-      console.log('Is enabling navigation:', isEnable);
-      
-      if (isEnable) {
-        // Get pages and current component from Redux store
-        const state = store.getState();
-        console.log('Full Redux State:', state);
-        
-        const pages = state.w3s?.currentProject?.data?.pages || [];
-        const currentPage = state.editor?.currentPage?._id || 
-                           state.w3s?.currentProject?.data?.pages?.find(p => p.selected)?._id;
-        
-        console.log('Pages:', pages);
-        console.log('Current page ID:', currentPage);
-        console.log('Editor current page:', state.editor?.currentPage);
-        
-        // Filter out the current page from options
-        const availablePages = pages.filter(page => {
-          console.log('Comparing page:', page._id, 'with current:', currentPage);
-          return page._id !== currentPage;
-        });
-        console.log('Available pages (excluding current):', availablePages);
-        
-        // Create page selection options with FaArrowRight component
-        const pageOptions = availablePages.map(page => ({
-          text: page.name,
-          type: "command",
-          icon: FaArrowRight,
-          command: `set target page to ${page.name}`,
-          value: page._id,
-          className: buttonClass
-        }));
-        console.log('Created page options:', pageOptions);
-
-        const result = {
-          style: {
-            enablePageNavigation: true,
-            cursor: 'pointer',
-            transition: 'all 200ms ease-in-out',
-            hoverBackgroundColor: '#f0f0f0',
-            hoverScale: 1.02
-          },
-          message: "✓ Navigation enabled",
-          options: [
-            {
-              text: "Select Target Page",
-              type: "info",
-              icon: FaArrowRight,
-              className: "text-xs font-small text-gray-200 mt-2"
-            },
-            ...pageOptions
-          ]
-        };
-        console.log('Returning navigation enable result:', result);
-        return result;
-      } else {
-        return {
-          style: {
-            enablePageNavigation: false,
-            targetPageId: undefined,
-            cursor: 'default',
-            hoverBackgroundColor: undefined,
-            hoverScale: undefined
-          },
-          message: "Page navigation disabled"
-        };
-      }
-    }
-
-    // Handle target page selection
-    const targetPageMatch = lowercaseInput.match(/set\s*target\s*(?:page)?\s*to\s*(.+)/i);
-    if (targetPageMatch) {
-      const pageName = targetPageMatch[1].trim();
-      const state = store.getState();
-      const pages = state.w3s?.currentProject?.data?.pages || [];
-      const targetPage = pages.find(p => p.name.toLowerCase() === pageName.toLowerCase());
-
-      if (targetPage) {
-        return {
-          style: {
-            targetPageId: targetPage._id
-          },
-          message: `Target page set to: ${targetPage.name}`
-        };
-      } else {
-        return {
-          message: `Page "${pageName}" not found. Available pages:`,
-          options: pages.map(page => ({
-            text: page.name,
-            type: "command",
-            command: `set target page to ${page.name}`,
-            icon: FaArrowRight
-          }))
-        };
-      }
-    }
-
-    // Handle hover scale relative terms
-    const scaleMatch = lowercaseInput.match(/(?:make|set)?\s*(?:it|the container)?\s*(bigger|larger|smaller|tiny|huge)\s*(?:when|on)?\s*hover/i);
-    if (scaleMatch) {
-      const scaleMap = {
-        tiny: 0.8,
-        smaller: 0.9,
-        bigger: 1.1,
-        larger: 1.15,
-        huge: 1.2
-      };
+      const isDisabling = input.toLowerCase().includes('disable');
       return {
         style: {
-          hoverScale: scaleMap[scaleMatch[1]] || 1.1,
-          transition: 'all 200ms ease-in-out'
+          enablePageNavigation: !isDisabling,
+          targetPageId: !isDisabling ? (currentStyle.targetPageId || '') : ''
         }
       };
     }
 
-    // Handle transition speed terms
-    const speedMatch = lowercaseInput.match(/(?:make|set)?\s*(?:the)?\s*hover\s*(?:effect|animation|transition)\s*(faster|slower|quick|slow|instant|smooth)/i);
-    if (speedMatch) {
-      const durationMap = {
-        instant: 0,
-        faster: 100,
-        quick: 150,
-        smooth: 300,
-        slower: 400,
-        slow: 500
-      };
-      const duration = durationMap[speedMatch[1]] || 200;
-      return {
-        style: {
-          transitionDuration: duration,
-          transition: `all ${duration}ms ease-in-out`
-        }
-      };
-    }
+    return null;
+  }
 
-    // Handle removing all effects
-    if (patterns.removeEffects.some(pattern => pattern.test(lowercaseInput))) {
-      return {
-        style: {
-          cursor: 'default',
-          transition: undefined,
-          hoverBackgroundColor: undefined,
-          hoverColor: undefined,
-          hoverScale: undefined,
-          hoverShadow: undefined,
-          activeScale: undefined,
-          activeShadow: undefined,
-          activeBackgroundColor: undefined
-        }
-      };
-    }
-
-    // Process other patterns
-    let result = { style: {} };
+  // Add this static method to help identify button-related commands
+  static canHandle(input) {
+    const buttonPatterns = [
+      /hover\s+(?:background\s+)?color/i,
+      /(?:page\s+)?navigation/i,
+      /cursor/i,
+      /transition/i
+    ];
     
-    for (const [property, propertyPatterns] of Object.entries(patterns)) {
-      for (const pattern of propertyPatterns) {
-        const match = input.match(pattern);
-        
-        if (match) {
-          let value = match[1]?.toLowerCase();
-
-          // Handle special cases
-          switch (property) {
-            case 'transitionDuration':
-              value = parseInt(value);
-              result.style.transition = `all ${value}ms ease-in-out`;
-              break;
-
-            case 'cursor':
-              const cursorMap = {
-                'hand': 'pointer',
-                'arrow': 'default',
-                'grabber': 'grab',
-                'text cursor': 'text',
-                'copy symbol': 'copy'
-              };
-              value = cursorMap[value] || value;
-              break;
-
-            case 'hoverScale':
-              value = parseFloat(value);
-              if (value < 0.8) value = 0.8;
-              if (value > 1.2) value = 1.2;
-              break;
-
-            case 'targetPageId':
-              result.style.enablePageNavigation = true;
-              break;
-          }
-
-          if (value !== undefined) {
-            result.style[property] = value;
-          }
-        }
-      }
-    }
-
-    return Object.keys(result.style).length > 0 ? result : null;
+    return buttonPatterns.some(pattern => pattern.test(input));
   }
 
   static getPropertyNames() {
