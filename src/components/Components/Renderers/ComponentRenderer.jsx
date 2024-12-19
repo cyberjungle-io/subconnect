@@ -633,7 +633,6 @@ const ComponentRenderer = React.memo(
           `}
           onMouseEnter={(e) => {
             const floatingToolbar = document.querySelector(".floating-toolbar");
-            console.log("MouseEnter - Component Style:", component.style);
 
             const hasParentHover =
               parent &&
