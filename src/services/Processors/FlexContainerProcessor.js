@@ -928,12 +928,15 @@ export class FlexContainerProcessor {
             type: "command",
             icon: FaMousePointer,
             className: buttonClass,
+            checkEnabled: (component) =>
+              !component?.style?.enablePageNavigation,
           },
           {
             text: "disable page navigation",
             type: "command",
             icon: FaTimes,
             className: buttonClass,
+            checkEnabled: (component) => component?.style?.enablePageNavigation,
           },
           {
             text: "Hover Effects",

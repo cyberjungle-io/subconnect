@@ -1,7 +1,7 @@
-import React from 'react';
-import { format } from 'date-fns';
-import { FaExternalLinkAlt } from 'react-icons/fa';
-import { useSelector } from 'react-redux';
+import React from "react";
+import { format } from "date-fns";
+import { FaExternalLinkAlt } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
 const Message = ({
   message,
@@ -11,7 +11,7 @@ const Message = ({
   selectedComponent,
   replacedMessageIds = new Set(),
 }) => {
-  const colorTheme = useSelector(state => state.editor.colorTheme);
+  const colorTheme = useSelector((state) => state.editor.colorTheme);
 
   const isReplaced = replacedMessageIds.has(message.id) || false;
 
@@ -42,9 +42,10 @@ const Message = ({
           if (option.type === "wrapper") {
             return (
               <div key={index} className={option.className}>
-                {renderOptions(typeof option.options === 'function' 
-                  ? option.options({ colorTheme })
-                  : option.options
+                {renderOptions(
+                  typeof option.options === "function"
+                    ? option.options({ colorTheme })
+                    : option.options
                 )}
               </div>
             );
@@ -81,25 +82,36 @@ const Message = ({
 
           if (option.type === "command") {
             const Icon = option.icon;
-            const isDisabled = option.checkEnabled && !option.checkEnabled(selectedComponent);
-            
+            const isDisabled =
+              option.checkEnabled && !option.checkEnabled(selectedComponent);
+
             return (
               <button
                 key={index}
-                onClick={() => !isDisabled && onOptionSelect({
-                  ...option,
-                  text: option.command || option.text
-                })}
+                onClick={() =>
+                  !isDisabled &&
+                  onOptionSelect({
+                    ...option,
+                    text: option.command || option.text,
+                  })
+                }
                 className={`text-[10px] px-1.5 py-0.5 rounded-md text-left flex-shrink-0 flex items-center gap-1
-                  ${isDisabled 
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                    : 'bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300'
+                  ${
+                    isDisabled
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300"
                   } transition-all duration-150`}
                 style={option.style}
                 disabled={isDisabled}
-                title={isDisabled ? 'Height is already auto' : undefined}
+                title={isDisabled ? "Navigation is not enabled" : undefined}
               >
-                {Icon && <Icon className={`text-[10px] ${isDisabled ? 'text-gray-400' : 'text-gray-500'}`} />}
+                {Icon && (
+                  <Icon
+                    className={`text-[10px] ${
+                      isDisabled ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  />
+                )}
                 {option.text}
               </button>
             );
@@ -138,7 +150,10 @@ const Message = ({
               d="M5 13l4 4L19 7"
             />
           </svg>
-          <span className="italic max-w-[250px] truncate" title={message.content}>
+          <span
+            className="italic max-w-[250px] truncate"
+            title={message.content}
+          >
             {message.content}
           </span>
         </div>
@@ -150,7 +165,9 @@ const Message = ({
   }
 
   return (
-    <div className={`mb-4 ${message.role === "user" ? "text-right" : "text-left"}`}>
+    <div
+      className={`mb-4 ${message.role === "user" ? "text-right" : "text-left"}`}
+    >
       <div className="flex flex-col gap-1">
         <div className="relative group">
           {isComponentSuggestions && selectedComponent && (
@@ -183,4 +200,4 @@ const Message = ({
   );
 };
 
-export default Message; 
+export default Message;
