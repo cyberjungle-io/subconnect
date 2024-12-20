@@ -34,6 +34,7 @@ import {
   FaRegCircle,
   FaClock,
   FaHandPointer,
+  FaICursor,
 } from "react-icons/fa";
 
 const isLightColor = (color) => {
@@ -961,6 +962,25 @@ export class FlexContainerProcessor {
                 className: "flex gap-1",
                 options: [
                   {
+                    text: "set hover animation",
+                    type: "command",
+                    icon: FaClock,
+                    className: buttonClass,
+                    command: "set hover animation",
+                  },
+                  {
+                    text: "change cursor to pointer",
+                    type: "command",
+                    icon: FaMousePointer,
+                    className: buttonClass,
+                  },
+                ],
+              },
+              {
+                type: "wrapper",
+                className: "flex gap-1",
+                options: [
+                  {
                     text: "change hover color",
                     type: "command",
                     icon: FaPalette,
@@ -970,42 +990,6 @@ export class FlexContainerProcessor {
                     text: "change hover text color",
                     type: "command",
                     icon: FaPalette,
-                    className: buttonClass,
-                  },
-                ],
-              },
-              {
-                type: "wrapper",
-                className: "flex gap-1",
-                options: [
-                  {
-                    text: "make bigger on hover",
-                    type: "command",
-                    icon: FaExpandAlt,
-                    className: buttonClass,
-                  },
-                  {
-                    text: "make smaller on hover",
-                    type: "command",
-                    icon: FaCompressAlt,
-                    className: buttonClass,
-                  },
-                ],
-              },
-              {
-                type: "wrapper",
-                className: "flex gap-1",
-                options: [
-                  {
-                    text: "change cursor to pointer",
-                    type: "command",
-                    icon: FaMousePointer,
-                    className: buttonClass,
-                  },
-                  {
-                    text: "make hover transition smooth",
-                    type: "command",
-                    icon: FaClock,
                     className: buttonClass,
                   },
                 ],
@@ -1032,6 +1016,46 @@ export class FlexContainerProcessor {
                 text: "remove click effects",
                 type: "command",
                 icon: FaTimes,
+                className: buttonClass,
+              },
+            ],
+          },
+          {
+            text: "Pointer Style",
+            type: "info",
+            icon: FaMousePointer,
+            className: headerClass,
+          },
+          {
+            type: "wrapper",
+            className: "flex flex-wrap gap-1",
+            options: [
+              {
+                text: "pointer",
+                command: "set cursor to pointer",
+                type: "command",
+                icon: FaHandPointer,
+                className: buttonClass,
+              },
+              {
+                text: "default",
+                command: "set cursor to default",
+                type: "command",
+                icon: FaMousePointer,
+                className: buttonClass,
+              },
+              {
+                text: "move",
+                command: "set cursor to move",
+                type: "command",
+                icon: FaArrowsAlt,
+                className: buttonClass,
+              },
+              {
+                text: "text",
+                command: "set cursor to text",
+                type: "command",
+                icon: FaICursor,
                 className: buttonClass,
               },
             ],

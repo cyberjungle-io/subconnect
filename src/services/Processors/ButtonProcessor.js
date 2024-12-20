@@ -548,6 +548,204 @@ export class ButtonProcessor {
       };
     }
 
+    // Handle hover animation and scale settings
+    const hoverAnimationPattern = /^(?:set|customize|change|modify)\s+(?:the\s+)?hover\s+animation$/i;
+    const hoverScalePattern = /^(?:set|customize|change|modify)\s+(?:the\s+)?hover\s+scale$/i;
+    const directHoverScalePattern = /^set\s+hover\s+scale\s+to\s+([\d.]+)$/i;
+    const directTransitionPattern = /^set\s+transition\s+duration\s+to\s+(\d+)(?:ms)?$/i;
+
+    const hoverAnimationMatch = input.match(hoverAnimationPattern);
+    const hoverScaleMatch = input.match(hoverScalePattern);
+    const directHoverScaleMatch = input.match(directHoverScalePattern);
+    const directTransitionMatch = input.match(directTransitionPattern);
+
+    // Handle direct transition duration setting
+    if (directTransitionMatch) {
+      const duration = parseInt(directTransitionMatch[1]);
+      if (duration >= 0 && duration <= 1000) {
+        return {
+          style: {
+            transitionDuration: `${duration}ms`,
+            transition: `all ${duration}ms ease-in-out`,
+          },
+          message: `Set transition duration to ${duration}ms`,
+          success: true,
+        };
+      }
+      return {
+        success: false,
+        message: "Transition duration must be between 0 and 1000ms",
+      };
+    }
+
+    // Handle direct hover scale setting
+    if (directHoverScaleMatch) {
+      const scale = parseFloat(directHoverScaleMatch[1]);
+      if (scale >= 0.5 && scale <= 2.0) {
+        return {
+          style: {
+            hoverScale: scale,
+            transition: currentStyle.transition || "all 200ms ease-in-out",
+          },
+          message: `Set hover scale to ${scale}`,
+          success: true,
+        };
+      }
+      return {
+        success: false,
+        message: "Scale value must be between 0.5 and 2.0",
+      };
+    }
+
+    // Handle hover animation menu
+    if (hoverAnimationMatch || hoverScaleMatch) {
+      return {
+        type: "PROMPT",
+        message: "Configure hover animation:",
+        context: "hover",
+        options: [
+          {
+            text: "Scale Effect",
+            type: "info",
+            className: "text-xs font-semibold text-gray-600",
+          },
+          {
+            type: "wrapper",
+            className: "flex flex-wrap gap-1",
+            options: [
+              {
+                text: "Tiny (0.8)",
+                command: "set hover scale to 0.8",
+                type: "command",
+                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+              },
+              {
+                text: "Small (0.9)",
+                command: "set hover scale to 0.9",
+                type: "command",
+                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+              },
+              {
+                text: "Normal (1.0)",
+                command: "set hover scale to 1.0",
+                type: "command",
+                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+              },
+              {
+                text: "Large (1.1)",
+                command: "set hover scale to 1.1",
+                type: "command",
+                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+              },
+              {
+                text: "Huge (1.2)",
+                command: "set hover scale to 1.2",
+                type: "command",
+                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+              },
+            ],
+          },
+          {
+            text: "Or enter a custom scale value (0.5 - 2.0)",
+            type: "info",
+            className: "text-xs text-gray-600 mt-2",
+          },
+          {
+            text: "Transition Speed",
+            type: "info",
+            className: "text-xs font-semibold text-gray-600 mt-4",
+          },
+          {
+            type: "wrapper",
+            className: "flex flex-wrap gap-1",
+            options: [
+              {
+                text: "Instant (0ms)",
+                command: "set transition duration to 0",
+                type: "command",
+                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+              },
+              {
+                text: "Fast (100ms)",
+                command: "set transition duration to 100",
+                type: "command",
+                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+              },
+              {
+                text: "Normal (200ms)",
+                command: "set transition duration to 200",
+                type: "command",
+                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+              },
+              {
+                text: "Smooth (300ms)",
+                command: "set transition duration to 300",
+                type: "command",
+                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+              },
+              {
+                text: "Slow (500ms)",
+                command: "set transition duration to 500",
+                type: "command",
+                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+              },
+            ],
+          },
+          {
+            text: "Or enter a custom duration (0 - 1000ms)",
+            type: "info",
+            className: "text-xs text-gray-600 mt-2",
+          },
+        ],
+        property: "hoverAnimation",
+        needsInput: true,
+        inputType: "number",
+        inputProps: {
+          min: 0,
+          max: 1000,
+          step: 50,
+        },
+        followUp: {
+          type: "DURATION_CHANGE",
+          command: (duration) => `set transition duration to ${duration}`,
+        },
+      };
+    }
+
+    // Handle direct numeric input for duration
+    const numericInput = parseFloat(input);
+    if (!isNaN(numericInput)) {
+      if (numericInput >= 0 && numericInput <= 1000) {
+        return {
+          style: {
+            transitionDuration: `${numericInput}ms`,
+            transition: `all ${numericInput}ms ease-in-out`,
+          },
+          message: `Set transition duration to ${numericInput}ms`,
+          success: true,
+        };
+      }
+      return {
+        success: false,
+        message: "Duration must be between 0 and 1000ms",
+      };
+    }
+
+    // Handle cursor style setting
+    const cursorPattern = /^set\s+cursor\s+to\s+(pointer|default|move|text)$/i;
+    const cursorMatch = input.match(cursorPattern);
+
+    if (cursorMatch) {
+      const cursorType = cursorMatch[1].toLowerCase();
+      return {
+        style: {
+          cursor: cursorType,
+        },
+        message: `Set cursor to ${cursorType}`,
+        success: true,
+      };
+    }
+
     // Navigation pattern matching
     const navigationPattern =
       /(?:enable|disable|toggle|add|remove)\s+(?:page\s+)?navigation/i;
@@ -572,6 +770,7 @@ export class ButtonProcessor {
       /hover\s+(?:background\s+)?color/i,
       /hover\s+text\s+color/i,
       /(?:page\s+)?navigation/i,
+      /set\s+cursor\s+to/i,
       /cursor/i,
       /transition/i,
       /change\s+(?:the\s+)?target\s+page/i,
