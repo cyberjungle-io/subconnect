@@ -81,11 +81,13 @@ export class ButtonProcessor {
       ],
 
       hoverColor: [
-        // Text color changes
+        // Direct hover text color settings
         /(?:set|change|make)\s*(?:the)?\s*hover\s*text\s*color\s*(?:to|=|:)?\s*(#[0-9a-fA-F]{3,6}|[a-z]+)/i,
         /when\s*hovering\s*(?:change|make|set)?\s*(?:the)?\s*text\s*color\s*(?:to|=|:)?\s*(#[0-9a-fA-F]{3,6}|[a-z]+)/i,
         // Natural language
         /(?:i want|please make)?\s*(?:the)?\s*text\s*(?:turn|change to|become)\s*(#[0-9a-fA-F]{3,6}|[a-z]+)\s*(?:when|on)?\s*hover/i,
+        // Simple command
+        /change\s*hover\s*text\s*color/i,
       ],
 
       hoverScale: [
@@ -135,10 +137,10 @@ export class ButtonProcessor {
     console.log("ButtonProcessor received input:", input);
     const state = store.getState();
 
-    // Get current page ID from editor state
-    const currentPageId = state.editor.currentPage?._id;
-
-    console.log("Current page ID:", currentPageId);
+    // Get current page ID from the editor state
+    const currentPageId = state.w3s.currentProject?.data?.pages?.find(
+      (p) => p.active
+    )?._id;
 
     // Log more detailed state information
     console.log("Current Redux State:", {
@@ -146,9 +148,9 @@ export class ButtonProcessor {
       pages: state.w3s.currentProject?.data?.pages?.map((p) => ({
         id: p._id,
         name: p.name,
+        active: p.active,
       })),
       currentProject: state.w3s.currentProject.data,
-      currentPage: state.editor.currentPage
     });
 
     // Handle page navigation commands
@@ -159,6 +161,15 @@ export class ButtonProcessor {
 
     // Get current project from Redux store
     const currentProject = state.w3s.currentProject.data;
+
+    console.log("Processing with:", {
+      currentPageId,
+      availablePages: currentProject?.pages?.filter((p) => !p.active),
+      pattern: {
+        enable: enableNavigationPattern.test(input),
+        change: changeTargetPagePattern.test(input),
+      },
+    });
 
     if (enableNavigationPattern.test(input)) {
       // If there are no pages, just enable navigation
@@ -174,20 +185,21 @@ export class ButtonProcessor {
       }
 
       // Filter out the current page from options
-      const availablePages = currentProject.pages.filter(page => {
-        const isCurrentPage = page._id === currentPageId;
-        console.log("Filtering page:", {
+      const availablePages = currentProject.pages.filter((page) => {
+        const isCurrentPage = page.active;
+        console.log("Checking page:", {
           pageId: page._id,
           pageName: page.name,
-          currentPageId: currentPageId,
-          isCurrentPage
+          isActive: page.active,
+          isCurrentPage,
         });
         return !isCurrentPage;
       });
 
-      console.log("Available pages for navigation:", availablePages);
+      console.log("Filtered pages:", availablePages);
 
       if (availablePages.length === 0) {
+        console.log("No available pages after filtering");
         return {
           style: {
             enablePageNavigation: true,
@@ -197,7 +209,7 @@ export class ButtonProcessor {
         };
       }
 
-      // Return the page selection prompt with filtered pages
+      // If there are pages, return the page selection prompt immediately
       return {
         type: "PROMPT",
         message: "Select a target page:",
@@ -213,7 +225,8 @@ export class ButtonProcessor {
             type: "command",
             command: `set target page to ${page._id}`,
             icon: FaArrowRight,
-            className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+            className:
+              "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
           })),
         ],
         style: {
@@ -244,14 +257,14 @@ export class ButtonProcessor {
         };
       }
 
-      // Filter out the current page from options
-      const availablePages = currentProject.pages.filter(page => {
-        const isCurrentPage = page._id === currentPageId;
+      // Filter out the selected page from options
+      const availablePages = currentProject.pages.filter((page) => {
+        const isCurrentPage = page.active;
         console.log("Checking page for target change:", {
           pageId: page._id,
           pageName: page.name,
-          currentPageId: currentPageId,
-          isCurrentPage
+          isActive: page.active,
+          isCurrentPage,
         });
         return !isCurrentPage;
       });
@@ -280,7 +293,8 @@ export class ButtonProcessor {
             type: "command",
             command: `set target page to ${page._id}`,
             icon: FaArrowRight,
-            className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+            className:
+              "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
           })),
         ],
       };
@@ -417,6 +431,123 @@ export class ButtonProcessor {
       };
     }
 
+    // Handle hover text color setting
+    const hoverTextColorPattern =
+      /(?:change|set|show|modify|update|pick|choose|select)\s+(?:the\s+)?hover\s+text\s+color/i;
+    const directHoverTextColorPattern =
+      /set\s+hover\s+text\s+color\s+to\s+(.+)/i;
+
+    const hoverTextColorMatch = input.match(hoverTextColorPattern);
+    const directHoverTextColorMatch = input.match(directHoverTextColorPattern);
+
+    if (directHoverTextColorMatch) {
+      const color = directHoverTextColorMatch[1].trim();
+      return {
+        style: {
+          hoverColor: color,
+          transition: currentStyle.transition || "all 200ms ease-in-out",
+        },
+        message: `Set hover text color to ${color}`,
+        success: true,
+      };
+    }
+
+    if (hoverTextColorMatch) {
+      return {
+        type: "PROMPT",
+        message: "Choose a hover text color:",
+        context: "hover",
+        options: [
+          {
+            text: "Enter color below or select from theme",
+            type: "info",
+            className: "text-xs text-gray-600",
+          },
+          {
+            text: "#FF0000, rgb(255,0,0), hsl(0,100%,50%)",
+            type: "info",
+            className: "text-[11px] text-gray-400 italic mb-2",
+          },
+          {
+            type: "wrapper",
+            className: "flex flex-col gap-1",
+            options: (state) => {
+              const colorTheme = state?.colorTheme || [];
+
+              // Create array of theme colors
+              const themeButtons =
+                colorTheme.length === 0
+                  ? [
+                      {
+                        text: "black",
+                        command: "set hover text color to black",
+                        type: "command",
+                        style: {
+                          backgroundColor: "#000000",
+                          color: "#ffffff",
+                          minWidth: "60px",
+                          textAlign: "center",
+                        },
+                      },
+                      {
+                        text: "gray",
+                        command: "set hover text color to gray",
+                        type: "command",
+                        style: {
+                          backgroundColor: "#808080",
+                          color: "#ffffff",
+                          minWidth: "60px",
+                          textAlign: "center",
+                        },
+                      },
+                      {
+                        text: "blue",
+                        command: "set hover text color to blue",
+                        type: "command",
+                        style: {
+                          backgroundColor: "#0000ff",
+                          color: "#ffffff",
+                          minWidth: "60px",
+                          textAlign: "center",
+                        },
+                      },
+                    ]
+                  : colorTheme.map((color) => ({
+                      text: color.name,
+                      command: `set hover text color to ${color.value}`,
+                      type: "command",
+                      style: {
+                        backgroundColor: color.value,
+                        color: isLightColor(color.value)
+                          ? "#000000"
+                          : "#ffffff",
+                        minWidth: "60px",
+                        textAlign: "center",
+                      },
+                    }));
+
+              return [
+                {
+                  text: "Theme Colors",
+                  type: "info",
+                },
+                {
+                  type: "wrapper",
+                  className: "flex flex-wrap gap-1",
+                  options: themeButtons,
+                },
+              ];
+            },
+          },
+        ],
+        property: "hoverColor",
+        followUp: {
+          type: "COLOR_CHANGE",
+          command: (color) => `set hover text color to ${color}`,
+        },
+      };
+    }
+
     // Navigation pattern matching
     const navigationPattern =
       /(?:enable|disable|toggle|add|remove)\s+(?:page\s+)?navigation/i;
@@ -439,6 +570,7 @@ export class ButtonProcessor {
   static canHandle(input) {
     const buttonPatterns = [
       /hover\s+(?:background\s+)?color/i,
+      /hover\s+text\s+color/i,
       /(?:page\s+)?navigation/i,
       /cursor/i,
       /transition/i,
