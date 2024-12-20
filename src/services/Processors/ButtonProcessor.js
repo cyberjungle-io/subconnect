@@ -303,12 +303,22 @@ export class ButtonProcessor {
     const targetPageMatch = input.match(setTargetPagePattern);
     if (targetPageMatch) {
       const pageId = targetPageMatch[1];
+      const currentPageId = state?.editor?.currentPage?._id;
+
+      // Don't allow setting target to current page
+      if (pageId === currentPageId) {
+        return {
+          success: false,
+          message: "Cannot set target to current page",
+        };
+      }
+
       return {
         style: {
           targetPageId: pageId,
           enablePageNavigation: true,
         },
-        message: `Updated target page`,
+        message: "Set target page",
         success: true,
       };
     }
