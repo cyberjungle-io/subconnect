@@ -969,9 +969,9 @@ export class FlexContainerProcessor {
                     command: "set hover animation",
                   },
                   {
-                    text: "change cursor to pointer",
+                    text: "change hover color",
                     type: "command",
-                    icon: FaMousePointer,
+                    icon: FaPalette,
                     className: buttonClass,
                   },
                 ],
@@ -981,42 +981,19 @@ export class FlexContainerProcessor {
                 className: "flex gap-1",
                 options: [
                   {
-                    text: "change hover color",
-                    type: "command",
-                    icon: FaPalette,
-                    className: buttonClass,
-                  },
-                  {
                     text: "change hover text color",
                     type: "command",
                     icon: FaPalette,
                     className: buttonClass,
                   },
+                  {
+                    text: "remove all effects",
+                    type: "command",
+                    icon: FaTimes,
+                    className: `${buttonClass} text-red-600 hover:text-red-700`,
+                    command: "remove all hover effects",
+                  },
                 ],
-              },
-            ],
-          },
-          {
-            text: "Click Effects",
-            type: "info",
-            icon: FaHandPointer,
-            className: headerClass,
-          },
-          {
-            type: "wrapper",
-            className: "flex gap-1",
-            options: [
-              {
-                text: "add click animation",
-                type: "command",
-                icon: FaCompressAlt,
-                className: buttonClass,
-              },
-              {
-                text: "remove click effects",
-                type: "command",
-                icon: FaTimes,
-                className: buttonClass,
               },
             ],
           },

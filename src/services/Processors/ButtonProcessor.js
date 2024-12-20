@@ -549,10 +549,13 @@ export class ButtonProcessor {
     }
 
     // Handle hover animation and scale settings
-    const hoverAnimationPattern = /^(?:set|customize|change|modify)\s+(?:the\s+)?hover\s+animation$/i;
-    const hoverScalePattern = /^(?:set|customize|change|modify)\s+(?:the\s+)?hover\s+scale$/i;
+    const hoverAnimationPattern =
+      /^(?:set|customize|change|modify)\s+(?:the\s+)?hover\s+animation$/i;
+    const hoverScalePattern =
+      /^(?:set|customize|change|modify)\s+(?:the\s+)?hover\s+scale$/i;
     const directHoverScalePattern = /^set\s+hover\s+scale\s+to\s+([\d.]+)$/i;
-    const directTransitionPattern = /^set\s+transition\s+duration\s+to\s+(\d+)(?:ms)?$/i;
+    const directTransitionPattern =
+      /^set\s+transition\s+duration\s+to\s+(\d+)(?:ms)?$/i;
 
     const hoverAnimationMatch = input.match(hoverAnimationPattern);
     const hoverScaleMatch = input.match(hoverScalePattern);
@@ -617,31 +620,36 @@ export class ButtonProcessor {
                 text: "Tiny (0.8)",
                 command: "set hover scale to 0.8",
                 type: "command",
-                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+                className:
+                  "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
               },
               {
                 text: "Small (0.9)",
                 command: "set hover scale to 0.9",
                 type: "command",
-                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+                className:
+                  "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
               },
               {
                 text: "Normal (1.0)",
                 command: "set hover scale to 1.0",
                 type: "command",
-                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+                className:
+                  "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
               },
               {
                 text: "Large (1.1)",
                 command: "set hover scale to 1.1",
                 type: "command",
-                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+                className:
+                  "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
               },
               {
                 text: "Huge (1.2)",
                 command: "set hover scale to 1.2",
                 type: "command",
-                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+                className:
+                  "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
               },
             ],
           },
@@ -663,31 +671,36 @@ export class ButtonProcessor {
                 text: "Instant (0ms)",
                 command: "set transition duration to 0",
                 type: "command",
-                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+                className:
+                  "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
               },
               {
                 text: "Fast (100ms)",
                 command: "set transition duration to 100",
                 type: "command",
-                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+                className:
+                  "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
               },
               {
                 text: "Normal (200ms)",
                 command: "set transition duration to 200",
                 type: "command",
-                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+                className:
+                  "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
               },
               {
                 text: "Smooth (300ms)",
                 command: "set transition duration to 300",
                 type: "command",
-                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+                className:
+                  "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
               },
               {
                 text: "Slow (500ms)",
                 command: "set transition duration to 500",
                 type: "command",
-                className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+                className:
+                  "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
               },
             ],
           },
@@ -758,6 +771,26 @@ export class ButtonProcessor {
           enablePageNavigation: !isDisabling,
           targetPageId: !isDisabling ? currentStyle.targetPageId || "" : "",
         },
+      };
+    }
+
+    // Handle removing all hover effects
+    const removeHoverEffectsPattern = /^remove\s+all\s+hover\s+effects$/i;
+    const removeHoverEffectsMatch = input.match(removeHoverEffectsPattern);
+
+    if (removeHoverEffectsMatch) {
+      return {
+        style: {
+          hoverBackgroundColor: undefined,
+          hoverColor: undefined,
+          hoverScale: undefined,
+          cursor: "default",
+          transition: undefined,
+          transitionDuration: undefined,
+        },
+        message: "Removed hover effects",
+        success: true,
+        isCommandExecution: true,
       };
     }
 
