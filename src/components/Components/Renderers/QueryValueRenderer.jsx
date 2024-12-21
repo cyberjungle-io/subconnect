@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { executeQuery } from '../../../features/graphQLSlice';
-import { fetchQueries } from '../../../w3s/w3sSlice';
+import { fetchQueries, fetchWebServices } from '../../../w3s/w3sSlice';
+import { WebServiceExecutor } from '../../../services/webService';
 
 const QueryValueRenderer = ({ component }) => {
   const dispatch = useDispatch();
@@ -9,6 +10,13 @@ const QueryValueRenderer = ({ component }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const query = useSelector(state => state.w3s.queries.list.find(q => q._id === component.props.queryId));
+  const webService = useSelector(state => state.w3s.webServices?.list?.find(s => s._id === component.props.webServiceId));
+
+  useEffect(() => {
+    // Fetch both queries and web services when component mounts
+    dispatch(fetchQueries());
+    dispatch(fetchWebServices());
+  }, [dispatch]);
 
   useEffect(() => {
     if (component.props.queryId) {
@@ -19,8 +27,16 @@ const QueryValueRenderer = ({ component }) => {
       } else {
         executeQueryAndSetValue();
       }
+    } else if (component.props.webServiceId) {
+      if (!webService) {
+        dispatch(fetchWebServices()).then(() => {
+          executeWebServiceAndSetValue();
+        });
+      } else {
+        executeWebServiceAndSetValue();
+      }
     }
-  }, [dispatch, component.props.queryId, component.props.field, query]);
+  }, [dispatch, component.props.queryId, component.props.webServiceId, component.props.field, query, webService]);
 
   const executeQueryAndSetValue = () => {
     if (query) {
@@ -30,22 +46,7 @@ const QueryValueRenderer = ({ component }) => {
         .then((action) => {
           if (action.payload && action.payload.data) {
             let result = action.payload.data;
-            if (component.props.field) {
-              const fieldPath = component.props.field.split('.');
-              for (let i = 0; i < fieldPath.length; i++) {
-                const key = fieldPath[i];
-                if (Array.isArray(result)) {
-                  result = result[0];
-                }
-                if (result && typeof result === 'object') {
-                  result = result[key];
-                } else {
-                  result = undefined;
-                  break;
-                }
-              }
-            }
-            setValue(result);
+            extractAndSetValue(result);
           }
         })
         .catch(err => {
@@ -55,6 +56,40 @@ const QueryValueRenderer = ({ component }) => {
           setLoading(false);
         });
     }
+  };
+
+  const executeWebServiceAndSetValue = async () => {
+    if (webService) {
+      setLoading(true);
+      setError(null);
+      try {
+        const result = await WebServiceExecutor.execute(webService);
+        extractAndSetValue(result);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const extractAndSetValue = (result) => {
+    if (component.props.field) {
+      const fieldPath = component.props.field.split('.');
+      for (let i = 0; i < fieldPath.length; i++) {
+        const key = fieldPath[i];
+        if (Array.isArray(result)) {
+          result = result[0];
+        }
+        if (result && typeof result === 'object') {
+          result = result[key];
+        } else {
+          result = undefined;
+          break;
+        }
+      }
+    }
+    setValue(result);
   };
 
   const formatValue = (value) => {
@@ -151,7 +186,6 @@ const QueryValueRenderer = ({ component }) => {
     width: '100%',
     height: '100%',
     boxSizing: 'border-box',
-    // Apply text styles
     fontFamily: component.style.fontFamily || 'Arial, sans-serif',
     fontSize: component.style.fontSize || '14px',
     fontWeight: component.style.fontWeight || 'normal',
