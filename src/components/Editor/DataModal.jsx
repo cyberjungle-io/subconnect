@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { fetchQueries, deleteQuery } from '../../w3s/w3sSlice';
 import { loadSavedQuery } from '../../features/graphQLSlice';
 import GraphQLQueryTab from './GraphQLQueryTab';
+import WebServiceTab from './WebServiceTab';
 import DeleteConfirmModal from '../common/DeleteConfirmModal';
 import Modal from '../common/Modal';
 
@@ -13,9 +14,9 @@ const DataModal = ({ isOpen, onClose }) => {
 
   const tabs = [
     { name: 'GraphQL Query', icon: FaCode, disabled: false },
+    { name: 'Web Service', icon: FaGlobe, disabled: false },
     { name: 'Data', icon: FaDatabase, disabled: true },
     { name: 'JSON', icon: FaCode, disabled: true },
-    { name: 'REST', icon: FaGlobe, disabled: true },
     { name: 'Saved', icon: FaSave, disabled: false },
   ];
 
@@ -82,6 +83,7 @@ const DataModal = ({ isOpen, onClose }) => {
           </div>
           <div className="flex-grow overflow-hidden p-6">
             {activeTab === 'GraphQL Query' && <GraphQLQueryTab />}
+            {activeTab === 'Web Service' && <WebServiceTab />}
             {activeTab === 'Saved' && <SavedQueriesTab />}
           </div>
         </div>
