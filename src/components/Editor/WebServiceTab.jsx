@@ -35,6 +35,19 @@ const WebServiceTab = () => {
 
   useEffect(() => {
     fetchWebServices();
+    
+    // Check for saved service to load
+    const savedService = localStorage.getItem('currentWebService');
+    if (savedService) {
+      try {
+        const service = JSON.parse(savedService);
+        setCurrentService(service);
+        // Clear the saved service
+        localStorage.removeItem('currentWebService');
+      } catch (error) {
+        console.error('Error loading saved service:', error);
+      }
+    }
   }, []);
 
   const fetchWebServices = async () => {
