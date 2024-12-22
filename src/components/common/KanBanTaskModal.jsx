@@ -33,7 +33,7 @@ const KanBanTaskModal = ({
       setTitle(task.title || '');
       setDescription(task.description || '');
       setComments(task.comments || []);
-      setAssignedTo(task.assignedTo || null);
+      setAssignedTo(task.assignedTo?.user_id || null);
     } else {
       setTitle('');
       setDescription('');
@@ -75,17 +75,21 @@ const KanBanTaskModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!isReadOnly) {
+      const assignedUser = assignedTo ? assignToList.find(user => user.user_id === assignedTo) : null;
       const updatedTask = {
         ...task,
         title,
         description,
         comments,
-        assignedTo,
+        assignedTo: assignedUser ? {
+          user_id: assignedUser.user_id,
+          user_name: assignedUser.user_name
+        } : null,
       };
 
       // If assignment changed, add a comment
-      if (task && task.assignedTo !== assignedTo) {
-        const comment = generateAssignmentComment(task.assignedTo, assignedTo, currentUser?._id);
+      if (task && (!task.assignedTo?.user_id !== assignedTo)) {
+        const comment = generateAssignmentComment(task.assignedTo?.user_id, assignedTo, currentUser?._id);
         if (comment) {
           updatedTask.comments = [...comments, {
             id: Date.now().toString(),
@@ -94,7 +98,10 @@ const KanBanTaskModal = ({
             createdBy: currentUser?._id,
             type: 'system'
           }];
-          updatedTask.assignedBy = currentUser?._id;
+          updatedTask.assignedBy = {
+            user_id: currentUser?._id,
+            user_name: currentUser?.username || currentUser?.email || 'Unknown User'
+          };
           updatedTask.assignedAt = new Date().toISOString();
         }
       }
@@ -103,25 +110,25 @@ const KanBanTaskModal = ({
     }
   };
 
-  const generateAssignmentComment = (oldAssignee, newAssignee, assigner) => {
-    if (!newAssignee && !oldAssignee) return null;
+  const generateAssignmentComment = (oldAssigneeId, newAssigneeId, assignerId) => {
+    if (!newAssigneeId && !oldAssigneeId) return null;
     
     const getUsername = (userId) => {
       const user = assignToList.find(u => u.user_id === userId);
       return user ? user.user_name : 'Unknown User';
     };
     
-    if (!oldAssignee && newAssignee) {
-      return newAssignee === assigner 
-        ? `Task self-assigned by @${getUsername(assigner)}`
-        : `Task assigned to @${getUsername(newAssignee)} by @${getUsername(assigner)}`;
+    if (!oldAssigneeId && newAssigneeId) {
+      return newAssigneeId === assignerId 
+        ? `Task self-assigned by @${getUsername(assignerId)}`
+        : `Task assigned to @${getUsername(newAssigneeId)} by @${getUsername(assignerId)}`;
     }
     
-    if (oldAssignee && !newAssignee) {
-      return `Task unassigned from @${getUsername(oldAssignee)} by @${getUsername(assigner)}`;
+    if (oldAssigneeId && !newAssigneeId) {
+      return `Task unassigned from @${getUsername(oldAssigneeId)} by @${getUsername(assignerId)}`;
     }
     
-    return `Task reassigned from @${getUsername(oldAssignee)} to @${getUsername(newAssignee)} by @${getUsername(assigner)}`;
+    return `Task reassigned from @${getUsername(oldAssigneeId)} to @${getUsername(newAssigneeId)} by @${getUsername(assignerId)}`;
   };
 
   const handleAddComment = (newComment) => {

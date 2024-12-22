@@ -91,8 +91,20 @@ const w3sService = {
 
   getProject: async (id) => {
     try {
+      console.log('Fetching project with ID:', id);
       const response = await api.get(`/projects/${id}`);
-      return response.data;
+      
+      // Fetch access records for this project
+      const accessResponse = await api.get(`/users/access/link/${id}`);
+      
+      // Combine project data with access records
+      const projectData = {
+        ...response.data,
+        access_records: accessResponse.data
+      };
+      
+      console.log('Project data with access records:', projectData);
+      return projectData;
     } catch (error) {
       handleApiError(error);
     }

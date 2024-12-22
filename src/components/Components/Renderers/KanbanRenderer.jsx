@@ -84,17 +84,20 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
           backend_permissions: userAccess?.backend_permissions
         });
 
-        // Use project's access records instead of fetching kanban's
+        // Get all access records for this component
+        const allAccesses = await w3sService.getAccessesByLinkId(component.props.id);
+        console.log("All access records loaded:", allAccesses);
+
+        // Combine user access with all access records
         const accessInfo = {
           ...userAccess,
-          access_records: currentProject?.access_records || []
+          access_records: allAccesses || []
         };
         
-        console.log("Combined access record with project users:", {
+        console.log("Combined access record:", {
           accessInfo,
           userAccess,
-          projectAccessRecords: currentProject?.access_records,
-          currentProject
+          allAccesses
         });
         setAccessRecord(accessInfo);
       } catch (error) {
@@ -104,7 +107,16 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     };
 
     checkUserAccess();
-  }, [component.props.id, currentUser?._id, currentProject?.access_records]);
+  }, [component.props.id, currentUser?._id]);
+
+  // Add this effect to log when access records change
+  useEffect(() => {
+    console.log("Access record updated:", {
+      hasAccessRecords: Boolean(accessRecord?.access_records),
+      accessRecordsCount: accessRecord?.access_records?.length,
+      records: accessRecord?.access_records
+    });
+  }, [accessRecord]);
 
   // Helper function to check if user has admin privileges
   const isAdminOrOwner = useCallback(() => {
@@ -568,9 +580,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
                                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                                   </svg>
-                                  {currentProject?.access_records?.find(record => 
-                                    record.user_id === task.assignedTo
-                                  )?.user_details?.username || 'Unknown User'}
+                                  {task.assignedTo.user_name}
                                 </div>
                               )}
                             </div>
