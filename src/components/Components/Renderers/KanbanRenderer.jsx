@@ -611,10 +611,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                 : !hasPermission(KANBAN_UI_PERMISSIONS.ADD)
             )
           }
-          accessRecord={{
-            ...accessRecord,
-            access_records: currentProject?.access_records || []
-          }}
+          accessRecord={accessRecord}
           currentUser={currentUser}
           currentProject={currentProject}
         />

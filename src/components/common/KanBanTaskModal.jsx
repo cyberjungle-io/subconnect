@@ -13,13 +13,14 @@ const KanBanTaskModal = ({
   currentUser,
   currentProject
 }) => {
-  console.log("KanBanTaskModal props:", {
-    accessRecord,
-    currentUser,
-    currentProject,
-    isReadOnly,
-    task
-  });
+  // console.log("KanBanTaskModal props:", {
+  //   accessRecord,
+  //   currentUser,
+  //   currentProject,
+  //   isReadOnly,
+  //   task
+  // });
+  console.log("Access Record:", accessRecord);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -29,53 +30,104 @@ const KanBanTaskModal = ({
   const [assignToList, setAssignToList] = useState([]);
 
   useEffect(() => {
+    console.log("task state updated:", task);
     if (task) {
       setTitle(task.title || '');
       setDescription(task.description || '');
       setComments(task.comments || []);
-      setAssignedTo(task.assignedTo?.user_id || null);
+      if (task.assignedTo) {
+        if (task.assignedTo.user_id) {
+          setAssignedTo(task.assignedTo.user_id);
+        } else {
+          const userDetails = currentProject?.access_records?.find(
+            record => record.user_id === task.assignedTo
+          )?.user_details;
+          if (userDetails) {
+            setAssignedTo(task.assignedTo);
+          }
+        }
+      } else {
+        setAssignedTo(null);
+      }
     } else {
       setTitle('');
       setDescription('');
       setComments([]);
       setAssignedTo(null);
     }
-  }, [task]);
+  }, [task, currentProject]);
 
   useEffect(() => {
     const list = [];
     
-    // Add project creator
-    if (currentProject?.createdBy && currentProject?.creatorUsername) {
+    // Helper function to get user display name
+    const getUserDisplayName = (record) => {
+      // Try to get username from user_details
+      if (record.user_details) {
+        if (record.user_details.username) return record.user_details.username;
+        if (record.user_details.email) return record.user_details.email;
+      }
+      // Try to get from the record directly
+      if (record.username) return record.username;
+      if (record.email) return record.email;
+      return 'Unknown User';
+    };
+
+    // Add users from project access records
+    if (currentProject?.access_records) {
+      currentProject.access_records.forEach(record => {
+        // Only add if not already in list (avoid duplicates)
+        if (!list.some(user => user.user_id === record.user_id)) {
+          list.push({
+            user_id: record.user_id,
+            user_name: getUserDisplayName(record)
+          });
+        }
+      });
+    }
+
+    // Add users from component access records if they exist
+    if (accessRecord?.access_records) {
+      accessRecord.access_records.forEach(record => {
+        // Only add if not already in list (avoid duplicates)
+        if (!list.some(user => user.user_id === record.user_id)) {
+          list.push({
+            user_id: record.user_id,
+            user_name: getUserDisplayName(record)
+          });
+        }
+      });
+    }
+
+    // Add project creator if not already in list
+    if (currentProject?.createdBy && currentProject?.creatorUsername && 
+        !list.some(user => user.user_id === currentProject.createdBy)) {
       list.push({
         user_id: currentProject.createdBy,
         user_name: currentProject.creatorUsername
       });
     }
 
-    // Add users from access records
-    if (accessRecord?.access_records) {
-      accessRecord.access_records.forEach(record => {
-        // Only add if not already in list (avoid duplicates)
-        list.push({
-          user_id: record.user_id,
-          user_name: record.user_details?.username || record.user_details?.email || 'Unknown User'
-        });
-      });
-    }
-    console.log("accessrecord list before setState:", list);
+    console.log("Project users for dropdown:", {
+      projectAccessRecords: currentProject?.access_records,
+      componentAccessRecords: accessRecord?.access_records,
+      combinedList: list,
+      currentProject
+    });
     setAssignToList(list);
-  }, [accessRecord, currentProject?.createdBy, currentProject?.creatorUsername]);
+  }, [currentProject, accessRecord]);
 
   // Add new useEffect to monitor assignToList changes
   useEffect(() => {
-    console.log("assignToList state updated:", assignToList);
+    // console.log("assignToList state updated:", assignToList);
   }, [assignToList]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!isReadOnly) {
       const assignedUser = assignedTo ? assignToList.find(user => user.user_id === assignedTo) : null;
+      const currentUserDetails = assignToList.find(user => user.user_id === currentUser?._id);
+
       const updatedTask = {
         ...task,
         title,
@@ -88,7 +140,7 @@ const KanBanTaskModal = ({
       };
 
       // If assignment changed, add a comment
-      if (task && (!task.assignedTo?.user_id !== assignedTo)) {
+      if (task && (task.assignedTo?.user_id !== assignedTo)) {
         const comment = generateAssignmentComment(task.assignedTo?.user_id, assignedTo, currentUser?._id);
         if (comment) {
           updatedTask.comments = [...comments, {
@@ -98,7 +150,10 @@ const KanBanTaskModal = ({
             createdBy: currentUser?._id,
             type: 'system'
           }];
-          updatedTask.assignedBy = {
+          updatedTask.assignedBy = currentUserDetails ? {
+            user_id: currentUserDetails.user_id,
+            user_name: currentUserDetails.user_name
+          } : {
             user_id: currentUser?._id,
             user_name: currentUser?.username || currentUser?.email || 'Unknown User'
           };
@@ -153,27 +208,27 @@ const KanBanTaskModal = ({
   };
 
   const canAssignOthers = () => {
-    console.log("Checking assign others permission:", {
-      permissions: accessRecord?.ui_permissions,
-      hasAssignPermission: accessRecord?.ui_permissions?.includes('ASSIGN_TASKS'),
-      isOwner: accessRecord?.backend_permissions?.includes('admin'),
-      isProjectOwner: currentProject?.createdBy === currentUser?._id
-    });
+    // console.log("Checking assign others permission:", {
+    //   permissions: accessRecord?.ui_permissions,
+    //   hasAssignPermission: accessRecord?.ui_permissions?.includes('assign_tasks'),
+    //   isOwner: accessRecord?.backend_permissions?.includes('admin'),
+    //   isProjectOwner: currentProject?.createdBy === currentUser?._id
+    // });
     
-    // Allow if user is project owner, admin, or has ASSIGN_TASKS permission
+    // Allow if user is project owner, admin, or has assign_tasks permission
     return currentProject?.createdBy === currentUser?._id || 
            accessRecord?.backend_permissions?.includes('admin') || 
-           accessRecord?.ui_permissions?.includes('ASSIGN_TASKS');
+           accessRecord?.ui_permissions?.includes('assign_tasks');
   };
 
   const canSelfAssign = () => {
-    console.log("Checking self assign capability:", {
-      isReadOnly,
-      currentUser,
-      currentUserId: currentUser?._id,
-      isOwner: accessRecord?.backend_permissions?.includes('admin'),
-      isProjectOwner: currentProject?.createdBy === currentUser?._id
-    });
+    // console.log("Checking self assign capability:", {
+    //   isReadOnly,
+    //   currentUser,
+    //   currentUserId: currentUser?._id,
+    //   isOwner: accessRecord?.backend_permissions?.includes('admin'),
+    //   isProjectOwner: currentProject?.createdBy === currentUser?._id
+    // });
     
     // Always allow self-assign for project owners or admins, otherwise check if not readonly and user exists
     return currentProject?.createdBy === currentUser?._id ||
@@ -183,12 +238,12 @@ const KanBanTaskModal = ({
 
   if (!isOpen) return null;
 
-  console.log("Rendering dropdown with assignToList:", assignToList);
-  console.log("Current permissions:", {
-    canAssignOthers: canAssignOthers(),
-    canSelfAssign: canSelfAssign(),
-    currentUserId: currentUser?._id
-  });
+  // console.log("Rendering dropdown with assignToList:", assignToList);
+  // console.log("Current permissions:", {
+  //   canAssignOthers: canAssignOthers(),
+  //   canSelfAssign: canSelfAssign(),
+  //   currentUserId: currentUser?._id
+  // });
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" 
@@ -243,7 +298,7 @@ const KanBanTaskModal = ({
               <option value="">Unassigned</option>
               {assignToList.map(user => {
                 const shouldShow = canAssignOthers() || (canSelfAssign() && user.user_id === currentUser?._id);
-                console.log("Dropdown item:", { user, shouldShow, canAssignOthers: canAssignOthers() });
+                // console.log("Dropdown item:", { user, shouldShow, canAssignOthers: canAssignOthers() });
                 
                 if (shouldShow) {
                   return (
