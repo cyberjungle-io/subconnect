@@ -198,6 +198,10 @@ export class KanbanProcessor {
             columnId: targetColumn.id,
             description: "",
             createdAt: new Date().toISOString(),
+            assignedTo: null,
+            assignedBy: null,
+            assignedAt: null,
+            comments: []
           };
 
           const updatedTasks = [...currentTasks, newTask];
