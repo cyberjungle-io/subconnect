@@ -4,7 +4,8 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   deleteComponents,
   renameComponent,
-} from "../../../features/editorSlice"; // Update this import
+  updateComponent,
+} from "../../../features/editorSlice"; // Add updateComponent to imports
 import { v4 as uuidv4 } from "uuid";
 import ReactDOM from "react-dom";
 
@@ -24,6 +25,7 @@ import ResizeHandle from "../../common/ResizeHandle";
 import TableRenderer from "./TableRenderer";
 import TodoRenderer from "./TodoRenderer";
 import { usePageNavigation } from "../../../contexts/PageNavigationContext";
+import { WebServiceExecutor } from '../../../services/webService';
 
 const defaultGlobalSettings = {
   generalComponentStyle: {
@@ -253,6 +255,7 @@ const ComponentRenderer = React.memo(
     const handleClick = useCallback(
       (event) => {
         if (isViewMode) {
+          // Handle page navigation
           const hasParentNavigation =
             parent &&
             parent.type === "FLEX_CONTAINER" &&
@@ -271,6 +274,46 @@ const ComponentRenderer = React.memo(
             navigateToPage(parent.style.targetPageId);
             return;
           }
+
+          // Handle web service execution
+          if (component.style?.serviceConfig) {
+            event.stopPropagation();
+            const { serviceConfig } = component.style;
+
+            // Check for confirmation if required
+            if (serviceConfig.type === 'action' && 
+                serviceConfig.actionConfig?.confirmationRequired &&
+                !window.confirm('Are you sure you want to execute this action?')) {
+              return;
+            }
+
+            // Execute web service
+            WebServiceExecutor.execute(serviceConfig)
+              .then(response => {
+                if (serviceConfig.type === 'action') {
+                  // Show success message for action services
+                  window.alert(serviceConfig.actionConfig?.successMessage || 'Action completed successfully');
+                } else if (serviceConfig.type === 'data' && serviceConfig.responseMapping?.target) {
+                  // Update target component for data services
+                  dispatch(updateComponent({
+                    id: serviceConfig.responseMapping.target,
+                    updates: {
+                      data: response
+                    }
+                  }));
+                }
+              })
+              .catch(error => {
+                // Show error message
+                const errorMessage = serviceConfig.type === 'action'
+                  ? (serviceConfig.actionConfig?.errorMessage || 'Action failed')
+                  : 'Failed to fetch data';
+                window.alert(errorMessage);
+                console.error('Web service execution failed:', error);
+              });
+            return;
+          }
+
           return;
         }
 
@@ -285,6 +328,7 @@ const ComponentRenderer = React.memo(
         isViewMode,
         navigateToPage,
         onSelect,
+        dispatch
       ]
     );
 

@@ -277,6 +277,55 @@ export const fetchSharedProjects = createAsyncThunk(
 // Add a selector to check if editing is allowed
 export const selectCanEdit = state => !state.user.isGuestMode && state.user.currentUser;
 
+// Add web services thunks
+export const fetchWebServices = createAsyncThunk(
+  'w3s/fetchWebServices',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.getWebServices();
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to fetch web services');
+    }
+  }
+);
+
+export const createWebService = createAsyncThunk(
+  'w3s/createWebService',
+  async (serviceData, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.createWebService(serviceData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to create web service');
+    }
+  }
+);
+
+export const updateWebService = createAsyncThunk(
+  'w3s/updateWebService',
+  async ({ id, serviceData }, { rejectWithValue }) => {
+    try {
+      const response = await w3sService.updateWebService(id, serviceData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to update web service');
+    }
+  }
+);
+
+export const deleteWebService = createAsyncThunk(
+  'w3s/deleteWebService',
+  async (id, { rejectWithValue }) => {
+    try {
+      await w3sService.deleteWebService(id);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || 'Failed to delete web service');
+    }
+  }
+);
+
 // Slice
 const initialState = {
   projects: {
@@ -305,6 +354,11 @@ const initialState = {
     error: null,
   },
   sharedProjects: {
+    list: [],
+    status: 'idle',
+    error: null,
+  },
+  webServices: {
     list: [],
     status: 'idle',
     error: null,
@@ -547,6 +601,34 @@ const w3sSlice = createSlice({
           status: 'failed',
           error: action.payload
         };
+      })
+
+      // Web Services cases
+      .addCase(fetchWebServices.pending, (state) => {
+        state.webServices.status = 'loading';
+      })
+      .addCase(fetchWebServices.fulfilled, (state, action) => {
+        state.webServices.status = 'succeeded';
+        state.webServices.list = action.payload;
+      })
+      .addCase(fetchWebServices.rejected, (state, action) => {
+        state.webServices.status = 'failed';
+        state.webServices.error = action.payload;
+      })
+
+      .addCase(createWebService.fulfilled, (state, action) => {
+        state.webServices.list.push(action.payload);
+      })
+
+      .addCase(updateWebService.fulfilled, (state, action) => {
+        const index = state.webServices.list.findIndex(service => service._id === action.payload._id);
+        if (index !== -1) {
+          state.webServices.list[index] = action.payload;
+        }
+      })
+
+      .addCase(deleteWebService.fulfilled, (state, action) => {
+        state.webServices.list = state.webServices.list.filter(service => service._id !== action.payload);
       });
   },
 });

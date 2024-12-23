@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export class KanbanProcessor {
   static kanbanPatterns = [
     /(?:add|create|make|new)\s+column/i,
@@ -198,6 +200,10 @@ export class KanbanProcessor {
             columnId: targetColumn.id,
             description: "",
             createdAt: new Date().toISOString(),
+            assignedTo: null,
+            assignedBy: null,
+            assignedAt: null,
+            comments: []
           };
 
           const updatedTasks = [...currentTasks, newTask];
@@ -321,5 +327,49 @@ export class KanbanProcessor {
     }
 
     return null;
+  }
+
+  static createTask(data) {
+    const task = {
+      id: uuidv4(),
+      columnId: data.columnId || 'col1',
+      createdAt: new Date().toISOString(),
+      title: data.title || '',
+      description: data.description || '',
+      color: data.color || '#ffffff',
+      linkedTodoList: data.linkedTodoList || null,
+      comments: data.comments || [],
+      assignedTo: data.assignedTo ? {
+        user_id: data.assignedTo.user_id || data.assignedTo,
+        user_name: data.assignedTo.user_name || 'Unknown User'
+      } : null,
+      assignedBy: data.assignedBy ? {
+        user_id: data.assignedBy.user_id || data.assignedBy,
+        user_name: data.assignedBy.user_name || 'Unknown User'
+      } : null,
+      assignedAt: data.assignedAt || null
+    };
+
+    return task;
+  }
+
+  static updateTask(task, data) {
+    return {
+      ...task,
+      title: data.title || task.title,
+      description: data.description || task.description,
+      color: data.color || task.color,
+      linkedTodoList: data.linkedTodoList !== undefined ? data.linkedTodoList : task.linkedTodoList,
+      comments: data.comments || task.comments,
+      assignedTo: data.assignedTo ? {
+        user_id: data.assignedTo.user_id || data.assignedTo,
+        user_name: data.assignedTo.user_name || 'Unknown User'
+      } : null,
+      assignedBy: data.assignedBy ? {
+        user_id: data.assignedBy.user_id || data.assignedBy,
+        user_name: data.assignedBy.user_name || 'Unknown User'
+      } : null,
+      assignedAt: data.assignedAt || task.assignedAt
+    };
   }
 }

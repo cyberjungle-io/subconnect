@@ -11,6 +11,7 @@ const KANBAN_UI_PERMISSIONS = {
   ADD: "add", // Can add new tasks
   MODIFY: "modify", // Can modify task details
   MOVE: "move", // Can move tasks between columns
+  ASSIGN_TASKS: "assign_tasks", // Can assign tasks to others
 };
 
 // Helper function to find todo lists
@@ -72,12 +73,33 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
       }
 
       try {
-        const result = await w3sService.getUserAccess(
+        // Get the current user's access
+        const userAccess = await w3sService.getUserAccess(
           component.props.id,
           currentUser._id
         );
-        console.log("Kanban access record loaded:", result);
-        setAccessRecord(result);
+        console.log("Kanban user access loaded:", {
+          userAccess,
+          permissions: userAccess?.ui_permissions,
+          backend_permissions: userAccess?.backend_permissions
+        });
+
+        // Get all access records for this component
+        const allAccesses = await w3sService.getAccessesByLinkId(component.props.id);
+        console.log("All access records loaded:", allAccesses);
+
+        // Combine user access with all access records
+        const accessInfo = {
+          ...userAccess,
+          access_records: allAccesses || []
+        };
+        
+        console.log("Combined access record:", {
+          accessInfo,
+          userAccess,
+          allAccesses
+        });
+        setAccessRecord(accessInfo);
       } catch (error) {
         console.error("Error checking access:", error);
         setAccessRecord(null);
@@ -86,6 +108,15 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
 
     checkUserAccess();
   }, [component.props.id, currentUser?._id]);
+
+  // Add this effect to log when access records change
+  useEffect(() => {
+    console.log("Access record updated:", {
+      hasAccessRecords: Boolean(accessRecord?.access_records),
+      accessRecordsCount: accessRecord?.access_records?.length,
+      records: accessRecord?.access_records
+    });
+  }, [accessRecord]);
 
   // Helper function to check if user has admin privileges
   const isAdminOrOwner = useCallback(() => {
@@ -289,12 +320,10 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
     (event, columnId, task = null) => {
       event.stopPropagation();
 
-      console.log("Handle double click:", {
-        isOwnerOrAdmin: isAdminOrOwner(),
-        columnId,
-        task,
-        createdBy: component.props.createdBy,
-        currentUserId: currentUser?._id,
+      console.log("Opening modal with access record:", {
+        accessRecord,
+        users: accessRecord?.users,
+        currentUser
       });
 
       // Always allow if user is admin or owner
@@ -325,13 +354,7 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
       setSelectedTask(task);
       setIsModalOpen(true);
     },
-    [
-      isInteractive,
-      hasPermission,
-      isAdminOrOwner,
-      component.props.createdBy,
-      currentUser?._id,
-    ]
+    [accessRecord, currentUser, isInteractive, hasPermission, isAdminOrOwner]
   );
 
   const handleAddOrUpdateTask = useCallback(
@@ -552,6 +575,14 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
                                   {task.description}
                                 </p>
                               )}
+                              {task.assignedTo && (
+                                <div className="mt-2 text-xs text-gray-500 flex items-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                                  </svg>
+                                  {task.assignedTo.user_name}
+                                </div>
+                              )}
                             </div>
                           )}
                         </Draggable>
@@ -574,10 +605,15 @@ const KanbanRenderer = ({ component, onUpdate, isInteractive }) => {
           onDelete={handleDeleteTask}
           task={selectedTask}
           isReadOnly={
-            selectedTask
-              ? !hasPermission(KANBAN_UI_PERMISSIONS.MODIFY)
-              : !hasPermission(KANBAN_UI_PERMISSIONS.ADD)
+            !isAdminOrOwner() && (
+              selectedTask
+                ? !hasPermission(KANBAN_UI_PERMISSIONS.MODIFY)
+                : !hasPermission(KANBAN_UI_PERMISSIONS.ADD)
+            )
           }
+          accessRecord={accessRecord}
+          currentUser={currentUser}
+          currentProject={currentProject}
         />
       )}
     </div>

@@ -91,8 +91,20 @@ const w3sService = {
 
   getProject: async (id) => {
     try {
+      console.log('Fetching project with ID:', id);
       const response = await api.get(`/projects/${id}`);
-      return response.data;
+      
+      // Fetch access records for this project
+      const accessResponse = await api.get(`/users/access/link/${id}`);
+      
+      // Combine project data with access records
+      const projectData = {
+        ...response.data,
+        access_records: accessResponse.data
+      };
+      
+      console.log('Project data with access records:', projectData);
+      return projectData;
     } catch (error) {
       handleApiError(error);
     }
@@ -499,6 +511,61 @@ const w3sService = {
     try {
       const response = await api.get(`/users/access/${linkId}/${userId}`);
       return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  // Web Services
+  getWebServices: async () => {
+    try {
+      const response = await api.get('/webservices');
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  getWebService: async (id) => {
+    try {
+      const response = await api.get(`/webservices/${id}`);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  createWebService: async (serviceData) => {
+    try {
+      console.log('Creating web service with data:', {
+        ...serviceData,
+        authentication: serviceData.authentication ? {
+          ...serviceData.authentication,
+          credentials: '**redacted**'
+        } : undefined
+      });
+      const response = await api.post('/webservices', serviceData);
+      console.log('Create web service response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating web service:', error.response?.data || error);
+      handleApiError(error);
+    }
+  },
+
+  updateWebService: async (id, serviceData) => {
+    try {
+      const response = await api.put(`/webservices/${id}`, serviceData);
+      return response.data;
+    } catch (error) {
+      handleApiError(error);
+    }
+  },
+
+  deleteWebService: async (id) => {
+    try {
+      await api.delete(`/webservices/${id}`);
+      return true;
     } catch (error) {
       handleApiError(error);
     }

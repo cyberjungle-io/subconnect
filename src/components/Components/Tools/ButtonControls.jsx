@@ -18,104 +18,47 @@ const CURSOR_OPTIONS = [
   { value: 'cell', label: 'Cell' },
 ];
 
-const ButtonControls = ({ style, onStyleChange }) => {
-  // Get current project from Redux state
-  const currentProject = useSelector(state => state.w3s.currentProject.data);
+const HTTP_METHODS = [
+  { value: 'GET', label: 'GET' },
+  { value: 'POST', label: 'POST' },
+  { value: 'PUT', label: 'PUT' },
+  { value: 'DELETE', label: 'DELETE' },
+];
 
-  // Add state for hover controls visibility
+const AUTH_TYPES = [
+  { value: 'none', label: 'None' },
+  { value: 'bearer', label: 'Bearer Token' },
+  { value: 'api-key', label: 'API Key' },
+];
+
+const ButtonControls = ({ style = {}, onStyleChange }) => {
   const [showHoverEffects, setShowHoverEffects] = useState(false);
+  const [showWebService, setShowWebService] = useState(false);
+  const currentProject = useSelector((state) => state.w3s.currentProject?.data);
 
-  // Store previous hover states when toggling
-  const [previousHoverState, setPreviousHoverState] = useState(null);
-
-  const handleChange = (updates) => {
-    console.log('ButtonControls - Initial updates:', updates);
-    console.log('ButtonControls - Current component style:', style);
-    
-    let finalUpdates = { ...updates };
-
-    // Handle page navigation toggle
-    if ('enablePageNavigation' in updates) {
-      console.log('ButtonControls - Handling navigation toggle:', updates.enablePageNavigation);
-      
-      finalUpdates = {
-        ...finalUpdates,
-        enablePageNavigation: updates.enablePageNavigation,
-        targetPageId: !updates.enablePageNavigation ? '' : (style.targetPageId || '')
-      };
-    }
-
-    // Ensure transition is added when hover effects are updated
-    if (updates.hoverColor || updates.hoverBackgroundColor) {
-      finalUpdates = {
-        ...style,  // Include existing style properties
-        ...finalUpdates,  // Add new updates
-        transition: 'all 200ms ease-in-out'
-      };
-      console.log('ButtonControls - Hover updates:', finalUpdates);
-    }
-
-    const newStyle = {
-      ...style,
-      ...finalUpdates
-    };
-    
-    console.log('ButtonControls - Final style update:', newStyle);
-    onStyleChange(newStyle);
+  const handleChange = (changes) => {
+    onStyleChange({ ...style, ...changes });
   };
 
-  // Handle hover effects toggle
   const toggleHoverEffects = () => {
-    const newShowHoverEffects = !showHoverEffects;
-    setShowHoverEffects(newShowHoverEffects);
-
-    if (!newShowHoverEffects) {
-      // Store current hover states before disabling
-      setPreviousHoverState({
-        hoverBackgroundColor: style.hoverBackgroundColor,
-        hoverColor: style.hoverColor,
-        hoverScale: style.hoverScale,
-        cursor: style.cursor,
-        transitionDuration: style.transitionDuration,
-        transition: style.transition
-      });
-
-      // Clear all hover effects
-      onStyleChange({
-        ...style,
-        hoverBackgroundColor: undefined,
-        hoverColor: undefined,
-        hoverScale: undefined,
-        cursor: 'default',
-        transitionDuration: undefined,
-        transition: undefined
-      });
-    } else if (previousHoverState) {
-      // Restore previous hover states
-      onStyleChange({
-        ...style,
-        ...previousHoverState
-      });
-    }
+    setShowHoverEffects(!showHoverEffects);
   };
 
-  const renderInput = (value, onChange, min, max, step) => {
-    const numericValue = parseFloat(value) || 0;
-
-    return (
-      <div className="flex items-center justify-center w-full">
-        <input
-          type="number"
-          value={numericValue}
-          min={min}
-          max={max}
-          step={step}
-          onChange={(e) => onChange(parseFloat(e.target.value))}
-          className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-        />
-      </div>
-    );
+  const toggleWebService = () => {
+    setShowWebService(!showWebService);
   };
+
+  const renderInput = (value, onChange, min, max, step = 1) => (
+    <input
+      type="number"
+      value={value}
+      onChange={(e) => onChange(parseFloat(e.target.value))}
+      min={min}
+      max={max}
+      step={step}
+      className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+    />
+  );
 
   // Add these button classes
   const activeButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300";
@@ -127,8 +70,6 @@ const ButtonControls = ({ style, onStyleChange }) => {
       <div className="flex w-full space-x-2">
         <button
           onClick={() => {
-            console.log('Navigation button clicked');
-            console.log('Current enablePageNavigation:', style.enablePageNavigation);
             handleChange({ enablePageNavigation: !style.enablePageNavigation });
           }}
           className={style.enablePageNavigation ? activeButtonClass : inactiveButtonClass}
@@ -140,6 +81,12 @@ const ButtonControls = ({ style, onStyleChange }) => {
           className={showHoverEffects ? activeButtonClass : inactiveButtonClass}
         >
           Hover Effects
+        </button>
+        <button
+          onClick={toggleWebService}
+          className={showWebService ? activeButtonClass : inactiveButtonClass}
+        >
+          Web Service
         </button>
       </div>
 
@@ -161,6 +108,261 @@ const ButtonControls = ({ style, onStyleChange }) => {
               </option>
             ))}
           </select>
+        </div>
+      )}
+
+      {/* Web Service Section */}
+      {showWebService && (
+        <div className="pt-4 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Service Type
+            </label>
+            <select
+              value={style.serviceType || 'data'}
+              onChange={(e) => handleChange({ 
+                serviceType: e.target.value,
+                serviceConfig: {
+                  ...style.serviceConfig,
+                  type: e.target.value
+                }
+              })}
+              className="w-full p-2 text-sm border border-gray-300 rounded-md"
+            >
+              <option value="data">Data Service</option>
+              <option value="action">Action Service</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              HTTP Method
+            </label>
+            <select
+              value={style.serviceConfig?.method || 'GET'}
+              onChange={(e) => handleChange({
+                serviceConfig: {
+                  ...style.serviceConfig,
+                  method: e.target.value
+                }
+              })}
+              className="w-full p-2 text-sm border border-gray-300 rounded-md"
+            >
+              {HTTP_METHODS.map(method => (
+                <option key={method.value} value={method.value}>
+                  {method.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Endpoint URL
+            </label>
+            <input
+              type="text"
+              value={style.serviceConfig?.endpoint || ''}
+              onChange={(e) => handleChange({
+                serviceConfig: {
+                  ...style.serviceConfig,
+                  endpoint: e.target.value
+                }
+              })}
+              className="w-full p-2 text-sm border border-gray-300 rounded-md"
+              placeholder="https://api.example.com/data"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Authentication
+            </label>
+            <select
+              value={style.serviceConfig?.authentication?.type || 'none'}
+              onChange={(e) => handleChange({
+                serviceConfig: {
+                  ...style.serviceConfig,
+                  authentication: {
+                    type: e.target.value,
+                    credentials: {}
+                  }
+                }
+              })}
+              className="w-full p-2 text-sm border border-gray-300 rounded-md"
+            >
+              {AUTH_TYPES.map(type => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {style.serviceConfig?.authentication?.type === 'bearer' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Bearer Token
+              </label>
+              <input
+                type="text"
+                value={style.serviceConfig?.authentication?.credentials?.token || ''}
+                onChange={(e) => handleChange({
+                  serviceConfig: {
+                    ...style.serviceConfig,
+                    authentication: {
+                      ...style.serviceConfig.authentication,
+                      credentials: {
+                        token: e.target.value
+                      }
+                    }
+                  }
+                })}
+                className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                placeholder="Enter bearer token"
+              />
+            </div>
+          )}
+
+          {style.serviceConfig?.authentication?.type === 'api-key' && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  API Key Header
+                </label>
+                <input
+                  type="text"
+                  value={style.serviceConfig?.authentication?.credentials?.header || ''}
+                  onChange={(e) => handleChange({
+                    serviceConfig: {
+                      ...style.serviceConfig,
+                      authentication: {
+                        ...style.serviceConfig.authentication,
+                        credentials: {
+                          ...style.serviceConfig.authentication.credentials,
+                          header: e.target.value
+                        }
+                      }
+                    }
+                  })}
+                  className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                  placeholder="X-API-Key"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  API Key
+                </label>
+                <input
+                  type="text"
+                  value={style.serviceConfig?.authentication?.credentials?.key || ''}
+                  onChange={(e) => handleChange({
+                    serviceConfig: {
+                      ...style.serviceConfig,
+                      authentication: {
+                        ...style.serviceConfig.authentication,
+                        credentials: {
+                          ...style.serviceConfig.authentication.credentials,
+                          key: e.target.value
+                        }
+                      }
+                    }
+                  })}
+                  className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                  placeholder="Enter API key"
+                />
+              </div>
+            </>
+          )}
+
+          {style.serviceType === 'data' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Response Path
+              </label>
+              <input
+                type="text"
+                value={style.serviceConfig?.responseMapping?.path || ''}
+                onChange={(e) => handleChange({
+                  serviceConfig: {
+                    ...style.serviceConfig,
+                    responseMapping: {
+                      ...style.serviceConfig?.responseMapping,
+                      path: e.target.value
+                    }
+                  }
+                })}
+                className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                placeholder="data.results"
+              />
+            </div>
+          )}
+
+          {style.serviceType === 'action' && (
+            <>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={style.serviceConfig?.actionConfig?.confirmationRequired || false}
+                  onChange={(e) => handleChange({
+                    serviceConfig: {
+                      ...style.serviceConfig,
+                      actionConfig: {
+                        ...style.serviceConfig?.actionConfig,
+                        confirmationRequired: e.target.checked
+                      }
+                    }
+                  })}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <label className="ml-2 block text-sm text-gray-700">
+                  Require Confirmation
+                </label>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Success Message
+                </label>
+                <input
+                  type="text"
+                  value={style.serviceConfig?.actionConfig?.successMessage || ''}
+                  onChange={(e) => handleChange({
+                    serviceConfig: {
+                      ...style.serviceConfig,
+                      actionConfig: {
+                        ...style.serviceConfig?.actionConfig,
+                        successMessage: e.target.value
+                      }
+                    }
+                  })}
+                  className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                  placeholder="Action completed successfully"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Error Message
+                </label>
+                <input
+                  type="text"
+                  value={style.serviceConfig?.actionConfig?.errorMessage || ''}
+                  onChange={(e) => handleChange({
+                    serviceConfig: {
+                      ...style.serviceConfig,
+                      actionConfig: {
+                        ...style.serviceConfig?.actionConfig,
+                        errorMessage: e.target.value
+                      }
+                    }
+                  })}
+                  className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                  placeholder="Action failed"
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
 
