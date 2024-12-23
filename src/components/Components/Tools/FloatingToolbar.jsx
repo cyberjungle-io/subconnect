@@ -342,42 +342,68 @@ const FloatingToolbar = ({
     setShowOuterShadow((prev) => !prev);
   }, []);
 
+  const handleStyleChange = useCallback(
+    (updates) => {
+      console.log("FloatingToolbar handleStyleChange:", updates);
+
+      // If this is a layout update for FLEX_CONTAINER, update props directly
+      if (componentType === "FLEX_CONTAINER" && updates.style) {
+        const {
+          flexDirection,
+          flexWrap,
+          alignItems,
+          justifyContent,
+          gap,
+          borderRadius,
+          ...otherStyles
+        } = updates.style;
+
+        const propsUpdates = {};
+        // Map flexDirection to direction using the inverse mapping
+        if (flexDirection !== undefined) {
+          propsUpdates.direction = flexDirection === 'row' ? 'horizontal' : 'vertical';
+        }
+        if (flexWrap !== undefined) propsUpdates.wrap = flexWrap;
+        if (alignItems !== undefined) propsUpdates.alignItems = alignItems;
+        if (justifyContent !== undefined) propsUpdates.justifyContent = justifyContent;
+        if (gap !== undefined) propsUpdates.gap = gap;
+
+        // Move borderRadius to style updates
+        if (borderRadius !== undefined) {
+          otherStyles.borderRadius = borderRadius;
+        }
+
+        // Only include non-empty updates
+        const finalUpdates = {};
+        if (Object.keys(propsUpdates).length > 0) {
+          finalUpdates.props = propsUpdates;
+        }
+        if (Object.keys(otherStyles).length > 0) {
+          finalUpdates.style = otherStyles;
+        }
+
+        // Don't send empty updates
+        if (Object.keys(finalUpdates).length > 0) {
+          onStyleChange(finalUpdates);
+        }
+        return;
+      }
+
+      // For non-FLEX_CONTAINER components or non-layout updates
+      if (Object.keys(updates).length > 0) {
+        onStyleChange({ style: updates });
+      }
+    },
+    [componentType, onStyleChange]
+  );
+
   const renderActiveControl = () => {
     const sharedProps = {
       style,
       props,
       content,
-      onStyleChange: (updates) => {
-        console.log("FloatingToolbar onStyleChange called with:", updates);
-        console.log("Current style:", style);
-
-        // Create new style object with navigation properties preserved
-        const newStyle = {
-          ...style,
-          ...(updates.style || {}),
-          // Always preserve navigation properties if they exist in either current style or updates
-          enablePageNavigation:
-            "enablePageNavigation" in updates
-              ? updates.enablePageNavigation
-              : style.enablePageNavigation || false,
-          targetPageId:
-            "targetPageId" in updates
-              ? updates.targetPageId
-              : style.targetPageId || "",
-        };
-
-        console.log("Final style update:", newStyle);
-
-        onStyleChange({
-          ...(updates.props ? { props: { ...props, ...updates.props } } : {}),
-          ...(updates.content !== undefined
-            ? { content: updates.content }
-            : {}),
-          style: newStyle,
-        });
-      },
-      onPropsChange: (updates) => onStyleChange({ props: updates }),
-      onContentChange: (content) => onStyleChange({ content }),
+      onStyleChange: handleStyleChange,
+      component,
     };
 
     // Add logging for Button Controls case

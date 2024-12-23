@@ -25,7 +25,12 @@ import ResizeHandle from "../../common/ResizeHandle";
 import TableRenderer from "./TableRenderer";
 import TodoRenderer from "./TodoRenderer";
 import { usePageNavigation } from "../../../contexts/PageNavigationContext";
-import { WebServiceExecutor } from '../../../services/webService';
+import { WebServiceExecutor } from "../../../services/webService";
+
+const DIRECTION_MAPPING = {
+  horizontal: 'row',
+  vertical: 'column'
+};
 
 const defaultGlobalSettings = {
   generalComponentStyle: {
@@ -112,13 +117,7 @@ const getComponentStyle = (
     cursor: style.cursor || (type === "FLEX_CONTAINER" ? "pointer" : "default"),
     color: style.color || parent?.style?.color || "inherit",
     boxSizing: "border-box",
-    borderRadius:
-      style.borderRadius ||
-      props?.borderRadius ||
-      generalComponentStyle.borderRadius ||
-      "4px",
-    padding: style.padding || "0px",
-    margin: style.margin || "0px",
+    borderRadius: style.borderRadius || props?.borderRadius || "4px",
     backgroundColor: style.backgroundColor || "transparent",
     boxShadow: style.boxShadow || "none",
     opacity: style.opacity || 1,
@@ -128,6 +127,8 @@ const getComponentStyle = (
     minHeight: style.minHeight || "auto",
     width: style.width || "100%",
     height: style.height || "auto",
+    padding: style.padding || "0px",
+    margin: style.margin || "0px",
   };
 
   // Handle component-specific styles
@@ -135,25 +136,14 @@ const getComponentStyle = (
     case "FLEX_CONTAINER":
       Object.assign(componentStyle, {
         display: "flex",
-        flexDirection: style.flexDirection || props.direction || "row",
-        flexWrap: style.flexWrap || props.wrap || "nowrap",
-        alignItems: style.alignItems || props.alignItems || "stretch",
-        justifyContent:
-          style.justifyContent || props.justifyContent || "flex-start",
-        alignContent: style.alignContent || props.alignContent || "stretch",
-        gap: style.gap || "0px",
+        flexDirection: DIRECTION_MAPPING[props.direction] || "row",
+        flexWrap: props.wrap || "nowrap",
+        alignItems: props.alignItems || "center",
+        justifyContent: props.justifyContent || "flex-start",
+        alignContent: props.alignContent || "stretch",
+        gap: props.gap || "0px",
         height: style.height || (isTopLevel ? "300px" : "auto"),
         minHeight: style.minHeight || "50px",
-        "&:hover": {
-          backgroundColor:
-            style.hoverBackgroundColor || componentStyle.backgroundColor,
-          color: style.hoverColor || componentStyle.color,
-          transform: style.hoverScale ? `scale(${style.hoverScale})` : "none",
-          cursor: style.cursor || "pointer",
-        },
-        "& *": {
-          color: "inherit",
-        },
       });
 
       if (style.showBorder !== false) {
@@ -281,35 +271,47 @@ const ComponentRenderer = React.memo(
             const { serviceConfig } = component.style;
 
             // Check for confirmation if required
-            if (serviceConfig.type === 'action' && 
-                serviceConfig.actionConfig?.confirmationRequired &&
-                !window.confirm('Are you sure you want to execute this action?')) {
+            if (
+              serviceConfig.type === "action" &&
+              serviceConfig.actionConfig?.confirmationRequired &&
+              !window.confirm("Are you sure you want to execute this action?")
+            ) {
               return;
             }
 
             // Execute web service
             WebServiceExecutor.execute(serviceConfig)
-              .then(response => {
-                if (serviceConfig.type === 'action') {
+              .then((response) => {
+                if (serviceConfig.type === "action") {
                   // Show success message for action services
-                  window.alert(serviceConfig.actionConfig?.successMessage || 'Action completed successfully');
-                } else if (serviceConfig.type === 'data' && serviceConfig.responseMapping?.target) {
+                  window.alert(
+                    serviceConfig.actionConfig?.successMessage ||
+                      "Action completed successfully"
+                  );
+                } else if (
+                  serviceConfig.type === "data" &&
+                  serviceConfig.responseMapping?.target
+                ) {
                   // Update target component for data services
-                  dispatch(updateComponent({
-                    id: serviceConfig.responseMapping.target,
-                    updates: {
-                      data: response
-                    }
-                  }));
+                  dispatch(
+                    updateComponent({
+                      id: serviceConfig.responseMapping.target,
+                      updates: {
+                        data: response,
+                      },
+                    })
+                  );
                 }
               })
-              .catch(error => {
+              .catch((error) => {
                 // Show error message
-                const errorMessage = serviceConfig.type === 'action'
-                  ? (serviceConfig.actionConfig?.errorMessage || 'Action failed')
-                  : 'Failed to fetch data';
+                const errorMessage =
+                  serviceConfig.type === "action"
+                    ? serviceConfig.actionConfig?.errorMessage ||
+                      "Action failed"
+                    : "Failed to fetch data";
                 window.alert(errorMessage);
-                console.error('Web service execution failed:', error);
+                console.error("Web service execution failed:", error);
               });
             return;
           }
@@ -328,7 +330,7 @@ const ComponentRenderer = React.memo(
         isViewMode,
         navigateToPage,
         onSelect,
-        dispatch
+        dispatch,
       ]
     );
 
@@ -446,49 +448,91 @@ const ComponentRenderer = React.memo(
 
     const handleUpdate = useCallback(
       (id, updates) => {
+        console.log("ComponentRenderer handleUpdate:", { updates });
+
+        // Create new objects to ensure mutability
+        const cleanStyle = updates.style ? { ...updates.style } : {};
+        const cleanProps = updates.props ? { ...updates.props } : {};
+        const currentStyle = { ...component.style };
+        const currentProps = { ...component.props };
+
+        // Remove layout properties from style for FLEX_CONTAINER
+        if (component.type === "FLEX_CONTAINER") {
+          // Create a new style object without the layout properties
+          const {
+            gap,
+            flexDirection,
+            flexWrap,
+            alignItems,
+            justifyContent,
+            alignContent,
+            ...remainingStyle
+          } = cleanStyle;
+
+          // Move borderRadius to style if it exists in props
+          if ("borderRadius" in cleanProps) {
+            remainingStyle.borderRadius = cleanProps.borderRadius;
+            delete cleanProps.borderRadius;
+          }
+
+          // Update cleanStyle with filtered properties
+          Object.assign(cleanStyle, remainingStyle);
+        }
+
+        // Create clean props object without redundant properties
+        const {
+          style: _style,
+          id: _id,
+          name: _name,
+          ...essentialProps
+        } = cleanProps;
+
+        // Create clean component update
         const updatedComponent = {
           ...component,
-          ...updates,
-          style: {
-            ...component.style,
-            ...(updates.style || {}),
-          },
-          props: {
-            ...component.props,
-            ...(updates.props || {}),
-          },
+          style:
+            Object.keys(cleanStyle).length > 0
+              ? {
+                  ...currentStyle,
+                  ...cleanStyle,
+                }
+              : currentStyle,
+          props:
+            Object.keys(essentialProps).length > 0
+              ? {
+                  direction:
+                    essentialProps.direction ||
+                    currentProps?.direction ||
+                    "horizontal",
+                  wrap: essentialProps.wrap || currentProps?.wrap || "nowrap",
+                  alignItems:
+                    essentialProps.alignItems ||
+                    currentProps?.alignItems ||
+                    "center",
+                  justifyContent:
+                    essentialProps.justifyContent ||
+                    currentProps?.justifyContent ||
+                    "flex-start",
+                  gap: essentialProps.gap || currentProps?.gap || "0px",
+                  isDraggingDisabled:
+                    essentialProps.isDraggingDisabled ??
+                    currentProps?.isDraggingDisabled ??
+                    false,
+                  depth: essentialProps.depth ?? currentProps?.depth ?? 0,
+                }
+              : {
+                  direction: "horizontal",
+                  wrap: "nowrap",
+                  alignItems: "center",
+                  justifyContent: "flex-start",
+                  gap: "0px",
+                  isDraggingDisabled: false,
+                  depth: currentProps?.depth ?? 0,
+                },
         };
-        if (updatedComponent.type === "FLEX_CONTAINER") {
-          // Ensure layout properties are correctly updated
-          updatedComponent.style = {
-            ...updatedComponent.style,
-            flexDirection:
-              updates.style?.flexDirection || component.style.flexDirection,
-            flexWrap: updates.style?.flexWrap || component.style.flexWrap,
-            alignItems: updates.style?.alignItems || component.style.alignItems,
-            justifyContent:
-              updates.style?.justifyContent || component.style.justifyContent,
-            alignContent:
-              updates.style?.alignContent || component.style.alignContent,
-          };
-        }
+
+        console.log("ComponentRenderer final update:", updatedComponent);
         onUpdate(id, updatedComponent);
-        if (editingRef.current) {
-          setTimeout(() => {
-            const textElement = componentRef.current.querySelector(
-              '[contenteditable="true"]'
-            );
-            if (textElement) {
-              textElement.focus();
-              const range = document.createRange();
-              const sel = window.getSelection();
-              range.selectNodeContents(textElement);
-              range.collapse(false);
-              sel.removeAllRanges();
-              sel.addRange(range);
-            }
-          }, 0);
-        }
       },
       [onUpdate, component]
     );
@@ -661,9 +705,9 @@ const ComponentRenderer = React.memo(
       const hasParentHover =
         parent &&
         parent.type === "FLEX_CONTAINER" &&
-        (parent.style?.hoverColor || 
-         parent.style?.hoverBackgroundColor || 
-         parent.style?.hoverScale);
+        (parent.style?.hoverColor ||
+          parent.style?.hoverBackgroundColor ||
+          parent.style?.hoverScale);
 
       if (
         (component.type === "FLEX_CONTAINER" && component.style) ||
@@ -672,41 +716,17 @@ const ComponentRenderer = React.memo(
         if (!floatingToolbar || !floatingToolbar.contains(e.target)) {
           const styleToApply = hasParentHover ? parent.style : component.style;
 
-          // Only store original values if they haven't been stored yet
-          if (!originalStyleRef.current.backgroundColor) {
-            originalStyleRef.current.backgroundColor =
+          // Store the current background color if not already stored
+          if (!target.dataset.originalBg) {
+            // Use the component's style background color if set, otherwise use computed style
+            const currentBg =
+              component.style.backgroundColor ||
               getComputedStyle(target).backgroundColor;
-            originalStyleRef.current.color = getComputedStyle(target).color;
-            originalStyleRef.current.transform = getComputedStyle(target).transform;
+            target.dataset.originalBg = currentBg;
+            originalStyleRef.current.backgroundColor = currentBg;
           }
 
-          // Store in dataset using the ref values
-          target.dataset.originalBg = originalStyleRef.current.backgroundColor;
-          target.dataset.originalColor = originalStyleRef.current.color;
-          target.dataset.originalTransform = originalStyleRef.current.transform;
-
-          // Apply transitions to all elements before any changes
-          const transition = "all 200ms ease-in-out, transform 200ms ease-in-out";
-          target.style.transition = transition;
-
-          // Apply transitions to content elements first
-          target
-            .querySelectorAll(".component-content.hover-target")
-            .forEach((child) => {
-              child.style.transition = transition;
-            });
-
-          // Apply transitions to child components
-          if (component.type === "FLEX_CONTAINER") {
-            target.querySelectorAll(".component-wrapper").forEach((child) => {
-              child.style.transition = transition;
-              if (!child.dataset.originalBg) {
-                child.dataset.originalBg = getComputedStyle(child).backgroundColor;
-              }
-            });
-          }
-
-          // Apply the color changes
+          // Apply hover effects if defined
           if (styleToApply.hoverBackgroundColor) {
             target.style.backgroundColor = styleToApply.hoverBackgroundColor;
 
@@ -715,20 +735,6 @@ const ComponentRenderer = React.memo(
                 child.style.backgroundColor = "transparent";
               });
             }
-          }
-
-          if (styleToApply.hoverColor) {
-            target.style.color = styleToApply.hoverColor;
-            target
-              .querySelectorAll(".component-content.hover-target")
-              .forEach((child) => {
-                child.style.color = styleToApply.hoverColor;
-              });
-          }
-
-          // Apply scale transform if specified
-          if (styleToApply.hoverScale) {
-            target.style.transform = `scale(${styleToApply.hoverScale})`;
           }
         }
       }
@@ -741,9 +747,9 @@ const ComponentRenderer = React.memo(
       const hasParentHover =
         parent &&
         parent.type === "FLEX_CONTAINER" &&
-        (parent.style?.hoverColor || 
-         parent.style?.hoverBackgroundColor || 
-         parent.style?.hoverScale);
+        (parent.style?.hoverColor ||
+          parent.style?.hoverBackgroundColor ||
+          parent.style?.hoverScale);
 
       if (
         (component.type === "FLEX_CONTAINER" && component.style) ||
@@ -756,35 +762,27 @@ const ComponentRenderer = React.memo(
             !floatingToolbar.contains(e.relatedTarget));
 
         if (shouldResetStyles) {
-          // Reset all stored styles
-          target.style.backgroundColor = originalStyleRef.current.backgroundColor;
-          target.style.color = originalStyleRef.current.color;
-          target.style.transform = originalStyleRef.current.transform || 'none';
-
-          // Reset text color for all content elements
-          target
-            .querySelectorAll(".component-content.hover-target")
-            .forEach((child) => {
-              child.style.color = originalStyleRef.current.color;
-              child.style.transition = "all 200ms ease-in-out";
-            });
-
-          // Restore child component backgrounds
-          if (component.type === "FLEX_CONTAINER") {
-            const children = target.querySelectorAll(".component-wrapper");
-            children.forEach((child) => {
-              child.style.backgroundColor = child.dataset.originalBg || "";
-              delete child.dataset.originalBg;
-            });
+          // Restore the original background color
+          if (target.dataset.originalBg) {
+            target.style.backgroundColor = target.dataset.originalBg;
           }
 
-          // Clear the dataset
+          // Clear stored values
           delete target.dataset.originalBg;
-          delete target.dataset.originalColor;
-          delete target.dataset.originalTransform;
+          originalStyleRef.current.backgroundColor = null;
         }
       }
     };
+
+    // Add this useEffect to update stored background color when component style changes
+    useEffect(() => {
+      if (componentRef.current && component.style.backgroundColor) {
+        componentRef.current.dataset.originalBg =
+          component.style.backgroundColor;
+        originalStyleRef.current.backgroundColor =
+          component.style.backgroundColor;
+      }
+    }, [component.style.backgroundColor]);
 
     // Add cleanup when component unmounts
     useEffect(() => {
