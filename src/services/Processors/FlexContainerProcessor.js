@@ -37,6 +37,7 @@ import {
   FaICursor,
 } from "react-icons/fa";
 import { LayoutProcessor } from "./LayoutProcessor";
+import { SizeProcessor } from "./SizeProcessor";
 
 const isLightColor = (color) => {
   // Convert hex to RGB
@@ -64,69 +65,7 @@ export class FlexContainerProcessor {
 
     return [
       LayoutProcessor.getSuggestions(headerClass, buttonClass),
-      {
-        text: "Size",
-        type: "category",
-        icon: FaExpand,
-        options: [
-          {
-            text: "fit to content",
-            type: "command",
-            icon: FaCompress,
-            className: buttonClass,
-          },
-          {
-            text: "fit vertical",
-            type: "command",
-            icon: FaArrowsAltV,
-            className: buttonClass,
-          },
-          {
-            text: "fit horizontal",
-            type: "command",
-            icon: FaArrowsAltH,
-            className: buttonClass,
-          },
-          {
-            text: "make it bigger",
-            type: "command",
-            icon: FaExpandAlt,
-            className: buttonClass,
-          },
-          {
-            text: "make it smaller",
-            type: "command",
-            icon: FaCompressAlt,
-            className: buttonClass,
-          },
-          {
-            text: "set width to 100%",
-            type: "command",
-            icon: FaArrowsAltH,
-            className: buttonClass,
-          },
-          {
-            text: "set height to auto",
-            type: "command",
-            icon: FaArrowsAltV,
-            className: buttonClass,
-            checkEnabled: (component) => component?.style?.height !== "auto",
-          },
-          {
-            text: "set height to 200px",
-            type: "command",
-            icon: FaArrowsAltV,
-            className: buttonClass,
-            checkVisible: (component) => component?.style?.height === "auto",
-          },
-          {
-            text: "set width to 300px",
-            type: "command",
-            icon: FaArrowsAltH,
-            className: buttonClass,
-          },
-        ],
-      },
+      SizeProcessor.getSuggestions(headerClass, buttonClass),
       {
         text: "Spacing",
         type: "category",

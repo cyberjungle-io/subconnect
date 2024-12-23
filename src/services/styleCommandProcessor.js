@@ -30,7 +30,9 @@ export class StyleCommandProcessor {
         return {
           style: layoutResult.style,
           props: layoutResult.props,
-          message: `Updated layout ${Object.keys(layoutResult.props || layoutResult.style)[0]}`
+          message: `Updated layout ${
+            Object.keys(layoutResult.props || layoutResult.style)[0]
+          }`,
         };
       }
     }

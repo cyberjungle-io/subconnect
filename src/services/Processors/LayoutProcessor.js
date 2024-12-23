@@ -186,16 +186,16 @@ export class LayoutProcessor {
     if (lowercaseInput === "horizontal") {
       return {
         props: {
-          flexDirection: "row"
-        }
+          flexDirection: "row",
+        },
       };
     }
-    
+
     if (lowercaseInput === "vertical") {
       return {
         props: {
-          flexDirection: "column"
-        }
+          flexDirection: "column",
+        },
       };
     }
 
@@ -209,11 +209,21 @@ export class LayoutProcessor {
         property = "flexDirection";
       } else if (["wrap", "nowrap"].includes(value)) {
         property = "flexWrap";
-      } else if (["flex-start", "flex-end", "center", "space-between", "space-around", "space-evenly"].includes(value)) {
-        const isVerticalAlign = lowercaseInput.includes("vertical") || 
-                              lowercaseInput.includes("height") || 
-                              lowercaseInput.includes("top") || 
-                              lowercaseInput.includes("bottom");
+      } else if (
+        [
+          "flex-start",
+          "flex-end",
+          "center",
+          "space-between",
+          "space-around",
+          "space-evenly",
+        ].includes(value)
+      ) {
+        const isVerticalAlign =
+          lowercaseInput.includes("vertical") ||
+          lowercaseInput.includes("height") ||
+          lowercaseInput.includes("top") ||
+          lowercaseInput.includes("bottom");
         property = isVerticalAlign ? "alignItems" : "justifyContent";
       } else if (["stretch", "baseline"].includes(value)) {
         property = "alignItems";

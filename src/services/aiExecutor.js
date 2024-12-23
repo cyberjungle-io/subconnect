@@ -80,14 +80,18 @@ export class AICommandExecutor {
       if ((styleResult.style || styleResult.props) && selectedComponent) {
         const updatedComponent = {
           ...selectedComponent,
-          style: styleResult.style ? {
-            ...selectedComponent.style,
-            ...styleResult.style,
-          } : selectedComponent.style,
-          props: styleResult.props ? {
-            ...selectedComponent.props,
-            ...styleResult.props,
-          } : selectedComponent.props,
+          style: styleResult.style
+            ? {
+                ...selectedComponent.style,
+                ...styleResult.style,
+              }
+            : selectedComponent.style,
+          props: styleResult.props
+            ? {
+                ...selectedComponent.props,
+                ...styleResult.props,
+              }
+            : selectedComponent.props,
         };
 
         await dispatch(
