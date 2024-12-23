@@ -1,21 +1,37 @@
+import {
+  FaLayerGroup,
+  FaArrowRight,
+  FaArrowsAltH,
+  FaArrowsAltV,
+  FaArrowsAlt,
+  FaGripLines,
+  FaWrench,
+  FaAlignLeft,
+  FaAlignCenter,
+  FaAlignRight,
+  FaColumns,
+  FaGripLinesVertical,
+  FaExpandAlt,
+} from "react-icons/fa";
+
 export class LayoutProcessor {
   // Update natural language mappings to include simpler terms
   static naturalLanguageMap = {
     // Direction mappings
-    "horizontal": "row",
-    "vertical": "column",
+    horizontal: "row",
+    vertical: "column",
     "left to right": "row",
     "top to bottom": "column",
-    "sideways": "row",
+    sideways: "row",
     "up and down": "column",
-    "across": "row",
-    "down": "column",
+    across: "row",
+    down: "column",
     "change to horizontal": "row",
     "change to vertical": "column",
     "set to horizontal": "row",
     "set to vertical": "column",
-    "row": "row",
-    "column": "column",
+    row: "row",
+    column: "column",
 
     // Justify content mappings
     between: "space-between",
@@ -253,5 +269,172 @@ export class LayoutProcessor {
         "Items with explicit width values won't stretch",
       ];
     }
+  }
+
+  static getSuggestions(headerClass, buttonClass) {
+    return {
+      text: "Layout",
+      type: "category",
+      icon: FaLayerGroup,
+      className: headerClass,
+      options: [
+        {
+          text: "Direction",
+          type: "info",
+          icon: FaArrowRight,
+          className: headerClass,
+        },
+        {
+          text: "horizontal",
+          type: "command",
+          icon: FaArrowsAltH,
+          className: buttonClass,
+        },
+        {
+          text: "vertical",
+          type: "command",
+          icon: FaArrowsAltV,
+          className: buttonClass,
+        },
+        {
+          text: "Wrap",
+          type: "info",
+          icon: FaArrowsAlt,
+          className: headerClass,
+        },
+        {
+          text: "wrap",
+          type: "command",
+          icon: FaArrowsAltH,
+          className: buttonClass,
+        },
+        {
+          text: "no wrap",
+          type: "command",
+          icon: FaGripLines,
+          className: buttonClass,
+        },
+        {
+          text: "Justify Content",
+          type: "info",
+          icon: FaWrench,
+          className: headerClass,
+        },
+        {
+          text: "start",
+          type: "command",
+          icon: FaAlignLeft,
+          className: buttonClass,
+        },
+        {
+          text: "center",
+          type: "command",
+          icon: FaAlignCenter,
+          className: buttonClass,
+        },
+        {
+          text: "end",
+          type: "command",
+          icon: FaAlignRight,
+          className: buttonClass,
+        },
+        {
+          text: "between",
+          type: "command",
+          icon: FaGripLines,
+          className: buttonClass,
+        },
+        {
+          text: "around",
+          type: "command",
+          icon: FaColumns,
+          className: buttonClass,
+        },
+        {
+          text: "evenly",
+          type: "command",
+          icon: FaGripLinesVertical,
+          className: buttonClass,
+        },
+        {
+          text: "Align Items",
+          type: "info",
+          icon: FaWrench,
+          className: headerClass,
+        },
+        {
+          text: "start",
+          type: "command",
+          icon: FaAlignLeft,
+          className: buttonClass,
+        },
+        {
+          text: "center",
+          type: "command",
+          icon: FaAlignCenter,
+          className: buttonClass,
+        },
+        {
+          text: "end",
+          type: "command",
+          icon: FaAlignRight,
+          className: buttonClass,
+        },
+        {
+          text: "stretch",
+          type: "command",
+          icon: FaExpandAlt,
+          className: buttonClass,
+        },
+        {
+          text: "baseline",
+          type: "command",
+          icon: FaGripLines,
+          className: buttonClass,
+        },
+        {
+          text: "Align Content",
+          type: "info",
+          icon: FaWrench,
+          className: headerClass,
+        },
+        {
+          text: "start",
+          type: "command",
+          icon: FaAlignLeft,
+          className: buttonClass,
+        },
+        {
+          text: "center",
+          type: "command",
+          icon: FaAlignCenter,
+          className: buttonClass,
+        },
+        {
+          text: "end",
+          type: "command",
+          icon: FaAlignRight,
+          className: buttonClass,
+        },
+        {
+          text: "stretch",
+          type: "command",
+          icon: FaExpandAlt,
+          className: buttonClass,
+        },
+        {
+          text: "between",
+          type: "command",
+          icon: FaGripLines,
+          className: buttonClass,
+        },
+        {
+          text: "around",
+          type: "command",
+          icon: FaColumns,
+          className: buttonClass,
+        },
+      ],
+    };
   }
 }
