@@ -585,11 +585,9 @@ const ComponentRenderer = React.memo(
         if (component.type === "FLEX_CONTAINER") {
           return content;
         }
-        
+
         return (
-          <div 
-            className="w-full h-full relative overflow-visible hover:bg-opacity-10 hover:bg-gray-500"
-          >
+          <div className="w-full h-full relative overflow-visible hover:bg-opacity-10 hover:bg-gray-500">
             {content}
           </div>
         );

@@ -353,19 +353,22 @@ const FloatingToolbar = ({
           flexWrap,
           alignItems,
           justifyContent,
+          alignContent,
           gap,
           borderRadius,
           ...otherStyles
         } = updates.style;
 
         const propsUpdates = {};
-        // Map flexDirection to direction using the inverse mapping
-        if (flexDirection !== undefined) {
-          propsUpdates.direction = flexDirection === 'row' ? 'horizontal' : 'vertical';
-        }
-        if (flexWrap !== undefined) propsUpdates.wrap = flexWrap;
+        // Pass flex properties directly to props
+        if (flexDirection !== undefined)
+          propsUpdates.flexDirection = flexDirection;
+        if (flexWrap !== undefined) propsUpdates.flexWrap = flexWrap;
         if (alignItems !== undefined) propsUpdates.alignItems = alignItems;
-        if (justifyContent !== undefined) propsUpdates.justifyContent = justifyContent;
+        if (justifyContent !== undefined)
+          propsUpdates.justifyContent = justifyContent;
+        if (alignContent !== undefined)
+          propsUpdates.alignContent = alignContent;
         if (gap !== undefined) propsUpdates.gap = gap;
 
         // Move borderRadius to style updates
@@ -381,6 +384,8 @@ const FloatingToolbar = ({
         if (Object.keys(otherStyles).length > 0) {
           finalUpdates.style = otherStyles;
         }
+
+        console.log("Applying flex container updates:", finalUpdates);
 
         // Don't send empty updates
         if (Object.keys(finalUpdates).length > 0) {
@@ -463,7 +468,13 @@ const FloatingToolbar = ({
           />
         );
       case "Layout":
-        return <LayoutControls {...sharedProps} />;
+        return (
+          <LayoutControls
+            style={style}
+            props={props}
+            onStyleChange={handleStyleChange}
+          />
+        );
       case "Chart Controls":
         return <ChartControls {...sharedProps} />;
       case "Chart Data":
