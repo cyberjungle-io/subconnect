@@ -21,6 +21,20 @@ export class StyleCommandProcessor {
     console.log("Component style:", component?.style);
     console.log("Current context:", this.currentContext);
 
+    // Check for layout commands first for FLEX_CONTAINER
+    if (component?.type === "FLEX_CONTAINER") {
+      const layoutResult = LayoutProcessor.processCommand(input);
+      if (layoutResult) {
+        console.log("Layout processor result:", layoutResult);
+        // Return both style and props if they exist
+        return {
+          style: layoutResult.style,
+          props: layoutResult.props,
+          message: `Updated layout ${Object.keys(layoutResult.props || layoutResult.style)[0]}`
+        };
+      }
+    }
+
     // Handle direct color input when we have a pending prompt
     const directColorPattern =
       /^([a-z]+|#[0-9a-f]{3,6}|rgb\(\d+,\s*\d+,\s*\d+\))$/i;

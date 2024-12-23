@@ -182,7 +182,24 @@ export class LayoutProcessor {
     console.log("LayoutProcessor received input:", input);
     const lowercaseInput = input.toLowerCase().trim();
 
-    // First check for direct matches in natural language map
+    // Add direct command matching first
+    if (lowercaseInput === "horizontal") {
+      return {
+        props: {
+          flexDirection: "row"
+        }
+      };
+    }
+    
+    if (lowercaseInput === "vertical") {
+      return {
+        props: {
+          flexDirection: "column"
+        }
+      };
+    }
+
+    // Then check natural language map
     if (this.naturalLanguageMap[lowercaseInput]) {
       const value = this.naturalLanguageMap[lowercaseInput];
 
@@ -192,22 +209,11 @@ export class LayoutProcessor {
         property = "flexDirection";
       } else if (["wrap", "nowrap"].includes(value)) {
         property = "flexWrap";
-      } else if (
-        [
-          "flex-start",
-          "flex-end",
-          "center",
-          "space-between",
-          "space-around",
-          "space-evenly",
-        ].includes(value)
-      ) {
-        // Check input context for vertical alignment
-        const isVerticalAlign =
-          lowercaseInput.includes("vertical") ||
-          lowercaseInput.includes("height") ||
-          lowercaseInput.includes("top") ||
-          lowercaseInput.includes("bottom");
+      } else if (["flex-start", "flex-end", "center", "space-between", "space-around", "space-evenly"].includes(value)) {
+        const isVerticalAlign = lowercaseInput.includes("vertical") || 
+                              lowercaseInput.includes("height") || 
+                              lowercaseInput.includes("top") || 
+                              lowercaseInput.includes("bottom");
         property = isVerticalAlign ? "alignItems" : "justifyContent";
       } else if (["stretch", "baseline"].includes(value)) {
         property = "alignItems";
@@ -216,7 +222,7 @@ export class LayoutProcessor {
       if (property) {
         console.log(`Matched layout command: ${property}: ${value}`);
         return {
-          style: {
+          props: {
             [property]: value,
           },
         };
@@ -234,7 +240,7 @@ export class LayoutProcessor {
             value = this.naturalLanguageMap[value];
           }
           return {
-            style: {
+            props: {
               [property]: value,
             },
           };

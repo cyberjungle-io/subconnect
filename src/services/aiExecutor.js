@@ -76,14 +76,18 @@ export class AICommandExecutor {
     if (styleResult) {
       console.log("Style processor result:", styleResult);
 
-      // If we have style updates, apply them
-      if (styleResult.style && selectedComponent) {
+      // If we have style or props updates, apply them
+      if ((styleResult.style || styleResult.props) && selectedComponent) {
         const updatedComponent = {
           ...selectedComponent,
-          style: {
+          style: styleResult.style ? {
             ...selectedComponent.style,
             ...styleResult.style,
-          },
+          } : selectedComponent.style,
+          props: styleResult.props ? {
+            ...selectedComponent.props,
+            ...styleResult.props,
+          } : selectedComponent.props,
         };
 
         await dispatch(
@@ -108,7 +112,7 @@ export class AICommandExecutor {
         };
       }
 
-      // If we only have a message and/or options (no style updates), return them directly
+      // If we only have a message and/or options (no style/props updates), return them directly
       if (styleResult.message || styleResult.options) {
         return {
           success: true,
