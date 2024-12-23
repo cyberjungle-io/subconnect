@@ -38,6 +38,7 @@ import {
 } from "react-icons/fa";
 import { LayoutProcessor } from "./LayoutProcessor";
 import { SizeProcessor } from "./SizeProcessor";
+import { SpacingProcessor } from "./SpacingProcessor";
 
 const isLightColor = (color) => {
   // Convert hex to RGB
@@ -60,181 +61,13 @@ const isLightColor = (color) => {
 
 export class FlexContainerProcessor {
   static getSuggestions() {
-    const buttonClass = "text-xs px-1 py-1"; // Smaller text and padding
-    const headerClass = "text-xs font-small text-gray-200"; // Changed from text-gray-600 to text-gray-400 for lighter headers
+    const buttonClass = "text-xs px-1 py-1";
+    const headerClass = "text-xs font-small text-gray-200";
 
     return [
       LayoutProcessor.getSuggestions(headerClass, buttonClass),
       SizeProcessor.getSuggestions(headerClass, buttonClass),
-      {
-        text: "Spacing",
-        type: "category",
-        icon: FaArrowsAlt,
-        options: [
-          {
-            text: "Padding",
-            type: "info",
-            icon: FaExpandAlt,
-            className: headerClass,
-          },
-          {
-            type: "wrapper",
-            className: "flex flex-col gap-1",
-            options: [
-              {
-                type: "wrapper",
-                className: "flex gap-1",
-                options: [
-                  {
-                    text: "small",
-                    type: "command",
-                    icon: FaExpand,
-                    className: buttonClass,
-                  },
-                  {
-                    text: "medium",
-                    type: "command",
-                    icon: FaExpand,
-                    className: buttonClass,
-                  },
-                  {
-                    text: "large",
-                    type: "command",
-                    icon: FaExpand,
-                    className: buttonClass,
-                  },
-                ],
-              },
-              {
-                type: "wrapper",
-                className: "flex gap-1",
-                options: [
-                  {
-                    text: "add 5px",
-                    type: "command",
-                    icon: FaPlus,
-                    className: buttonClass,
-                  },
-                  {
-                    text: "remove 5px",
-                    type: "command",
-                    icon: FaTimes,
-                    className: buttonClass,
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            text: "Margin",
-            type: "info",
-            icon: FaArrowsAlt,
-            className: headerClass,
-          },
-          {
-            type: "wrapper",
-            className: "flex flex-col gap-1",
-            options: [
-              {
-                type: "wrapper",
-                className: "flex gap-1",
-                options: [
-                  {
-                    text: "small",
-                    type: "command",
-                    icon: FaArrowsAlt,
-                    className: buttonClass,
-                  },
-                  {
-                    text: "medium",
-                    type: "command",
-                    icon: FaArrowsAlt,
-                    className: buttonClass,
-                  },
-                  {
-                    text: "large",
-                    type: "command",
-                    icon: FaArrowsAlt,
-                    className: buttonClass,
-                  },
-                ],
-              },
-              {
-                type: "wrapper",
-                className: "flex gap-1",
-                options: [
-                  {
-                    text: "add 5px",
-                    type: "command",
-                    icon: FaPlus,
-                    className: buttonClass,
-                  },
-                  {
-                    text: "remove 5px",
-                    type: "command",
-                    icon: FaTimes,
-                    className: buttonClass,
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            text: "Gap",
-            type: "info",
-            icon: FaGripLines,
-            className: headerClass,
-          },
-          {
-            type: "wrapper",
-            className: "flex flex-col gap-1",
-            options: [
-              {
-                type: "wrapper",
-                className: "flex gap-1",
-                options: [
-                  {
-                    text: "small",
-                    type: "command",
-                    icon: FaGripLines,
-                    className: buttonClass,
-                  },
-                  {
-                    text: "medium",
-                    type: "command",
-                    icon: FaGripLines,
-                    className: buttonClass,
-                  },
-                  {
-                    text: "large",
-                    type: "command",
-                    icon: FaGripLines,
-                    className: buttonClass,
-                  },
-                ],
-              },
-              {
-                type: "wrapper",
-                className: "flex gap-1",
-                options: [
-                  {
-                    text: "add 5px",
-                    type: "command",
-                    icon: FaPlus,
-                    className: buttonClass,
-                  },
-                  {
-                    text: "remove 5px",
-                    type: "command",
-                    icon: FaTimes,
-                    className: buttonClass,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
+      SpacingProcessor.getSuggestions(headerClass, buttonClass),
       {
         text: "Border",
         type: "category",

@@ -1,3 +1,12 @@
+import {
+  FaArrowsAlt,
+  FaExpandAlt,
+  FaExpand,
+  FaPlus,
+  FaTimes,
+  FaGripLines,
+} from "react-icons/fa";
+
 export class SpacingProcessor {
   static getStylePatterns() {
     return {
@@ -13,7 +22,7 @@ export class SpacingProcessor {
         /(?:remove|clear|delete|eliminate)\s*(?:all)?\s*(?:the)?\s*padding/i,
         /(?:make|set)\s*(?:the)?\s*padding\s*(?:to)?\s*(?:zero|none|0)/i,
         /no\s*padding/i,
-        /(?:set|make|use|apply)?\s*(?:the)?\s*(?:padding\s+)?(small|medium|large)\s*padding/i
+        /(?:set|make|use|apply)?\s*(?:the)?\s*(?:padding\s+)?(small|medium|large)\s*padding/i,
       ],
       margin: [
         /add\s*(?:some)?\s*margin/i,
@@ -27,7 +36,7 @@ export class SpacingProcessor {
         /(?:remove|clear|delete|eliminate)\s*(?:all)?\s*(?:the)?\s*margin/i,
         /(?:make|set)\s*(?:the)?\s*margin\s*(?:to)?\s*(?:zero|none|0)/i,
         /no\s*margin/i,
-        /(?:set|make|use|apply)?\s*(?:the)?\s*(?:margin\s+)?(small|medium|large)\s*margin/i
+        /(?:set|make|use|apply)?\s*(?:the)?\s*(?:margin\s+)?(small|medium|large)\s*margin/i,
       ],
       gap: [
         /add\s*(?:a)?\s*gap\s*(?:between\s*items)?/i,
@@ -40,26 +49,26 @@ export class SpacingProcessor {
         /(?:remove|clear|delete|eliminate)\s*(?:the)?\s*gap/i,
         /(?:make|set)\s*(?:the)?\s*gap\s*(?:to)?\s*(?:zero|none|0)/i,
         /no\s*gap/i,
-        /(?:set|make|use|apply)?\s*(?:the)?\s*(?:gap\s+)?(small|medium|large)\s*gap/i
-      ]
+        /(?:set|make|use|apply)?\s*(?:the)?\s*(?:gap\s+)?(small|medium|large)\s*gap/i,
+      ],
     };
   }
 
   static getPropertyNames() {
     return {
-      padding: 'padding',
-      margin: 'margin',
-      gap: 'gap'
+      padding: "padding",
+      margin: "margin",
+      gap: "gap",
     };
   }
 
   static processCommand(input) {
-    console.log('SpacingProcessor received input:', input);
-    
+    console.log("SpacingProcessor received input:", input);
+
     const presetSizes = {
-      small: '8px',
-      medium: '16px',
-      large: '24px'
+      small: "8px",
+      medium: "16px",
+      large: "24px",
     };
 
     // Helper function to increment/decrement spacing
@@ -71,8 +80,8 @@ export class SpacingProcessor {
     // Get the active section from the UI context
     const getActiveSection = () => {
       const sections = document.querySelectorAll('[class*="text-gray-600"]');
-      let activeSection = 'padding'; // default
-      
+      let activeSection = "padding"; // default
+
       const clickedButton = document.activeElement;
       if (clickedButton) {
         let currentElement = clickedButton;
@@ -80,17 +89,17 @@ export class SpacingProcessor {
           let prevSibling = currentElement.previousElementSibling;
           while (prevSibling) {
             const text = prevSibling.textContent.toLowerCase();
-            if (text === 'padding' || text === 'margin' || text === 'gap') {
+            if (text === "padding" || text === "margin" || text === "gap") {
               activeSection = text;
               break;
             }
             prevSibling = prevSibling.previousElementSibling;
           }
-          if (activeSection !== 'padding') break;
+          if (activeSection !== "padding") break;
           currentElement = currentElement.parentElement;
         }
       }
-      console.log('Active section:', activeSection);
+      console.log("Active section:", activeSection);
       return activeSection;
     };
 
@@ -98,71 +107,245 @@ export class SpacingProcessor {
     if (input.match(/^add\s*5px$/i)) {
       const activeSection = getActiveSection();
       console.log(`Adding 5px to ${activeSection}`);
-      return { 
+      return {
         style: { [activeSection]: null },
         adjust: (currentStyle) => ({
-          [activeSection]: adjustSpacing(currentStyle[activeSection], 5)
-        })
+          [activeSection]: adjustSpacing(currentStyle[activeSection], 5),
+        }),
       };
     }
 
     if (input.match(/^remove\s*5px$/i)) {
       const activeSection = getActiveSection();
       console.log(`Removing 5px from ${activeSection}`);
-      return { 
+      return {
         style: { [activeSection]: null },
         adjust: (currentStyle) => ({
-          [activeSection]: adjustSpacing(currentStyle[activeSection], -5)
-        })
+          [activeSection]: adjustSpacing(currentStyle[activeSection], -5),
+        }),
       };
     }
 
     // Handle preset sizes (small, medium, large)
-    const sizeWords = ['small', 'medium', 'large'];
+    const sizeWords = ["small", "medium", "large"];
     if (sizeWords.includes(input.toLowerCase())) {
       const activeSection = getActiveSection();
       return {
         style: {
-          [activeSection]: presetSizes[input.toLowerCase()]
-        }
+          [activeSection]: presetSizes[input.toLowerCase()],
+        },
       };
     }
 
     // Process other patterns
-    for (const [property, patterns] of Object.entries(this.getStylePatterns())) {
+    for (const [property, patterns] of Object.entries(
+      this.getStylePatterns()
+    )) {
       for (const pattern of patterns) {
         const match = input.match(pattern);
-        
+
         if (match) {
           let value = match[1]?.toLowerCase();
-          
+
           // Handle preset sizes
           if (value in presetSizes) {
             return {
               style: {
-                [property]: presetSizes[value]
-              }
+                [property]: presetSizes[value],
+              },
             };
           }
 
           // Add 'px' if no unit is specified
           if (value && !value.match(/\d+(?:px|em|rem|%|vw|vh)?$/)) {
-            value += 'px';
+            value += "px";
           }
 
           if (value) {
             console.log(`Matched pattern for ${property}:`, value);
             return {
               style: {
-                [property]: value
-              }
+                [property]: value,
+              },
             };
           }
         }
       }
     }
 
-    console.log('SpacingProcessor result:', null);
+    console.log("SpacingProcessor result:", null);
     return null;
   }
-} 
+
+  static getSuggestions(headerClass, buttonClass) {
+    return {
+      text: "Spacing",
+      type: "category",
+      icon: FaArrowsAlt,
+      options: [
+        {
+          text: "Padding",
+          type: "info",
+          icon: FaExpandAlt,
+          className: headerClass,
+        },
+        {
+          type: "wrapper",
+          className: "flex flex-col gap-1",
+          options: [
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "small",
+                  type: "command",
+                  icon: FaExpand,
+                  className: buttonClass,
+                },
+                {
+                  text: "medium",
+                  type: "command",
+                  icon: FaExpand,
+                  className: buttonClass,
+                },
+                {
+                  text: "large",
+                  type: "command",
+                  icon: FaExpand,
+                  className: buttonClass,
+                },
+              ],
+            },
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "add 5px",
+                  type: "command",
+                  icon: FaPlus,
+                  className: buttonClass,
+                },
+                {
+                  text: "remove 5px",
+                  type: "command",
+                  icon: FaTimes,
+                  className: buttonClass,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          text: "Margin",
+          type: "info",
+          icon: FaArrowsAlt,
+          className: headerClass,
+        },
+        {
+          type: "wrapper",
+          className: "flex flex-col gap-1",
+          options: [
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "small",
+                  type: "command",
+                  icon: FaArrowsAlt,
+                  className: buttonClass,
+                },
+                {
+                  text: "medium",
+                  type: "command",
+                  icon: FaArrowsAlt,
+                  className: buttonClass,
+                },
+                {
+                  text: "large",
+                  type: "command",
+                  icon: FaArrowsAlt,
+                  className: buttonClass,
+                },
+              ],
+            },
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "add 5px",
+                  type: "command",
+                  icon: FaPlus,
+                  className: buttonClass,
+                },
+                {
+                  text: "remove 5px",
+                  type: "command",
+                  icon: FaTimes,
+                  className: buttonClass,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          text: "Gap",
+          type: "info",
+          icon: FaGripLines,
+          className: headerClass,
+        },
+        {
+          type: "wrapper",
+          className: "flex flex-col gap-1",
+          options: [
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "small",
+                  type: "command",
+                  icon: FaGripLines,
+                  className: buttonClass,
+                },
+                {
+                  text: "medium",
+                  type: "command",
+                  icon: FaGripLines,
+                  className: buttonClass,
+                },
+                {
+                  text: "large",
+                  type: "command",
+                  icon: FaGripLines,
+                  className: buttonClass,
+                },
+              ],
+            },
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "add 5px",
+                  type: "command",
+                  icon: FaPlus,
+                  className: buttonClass,
+                },
+                {
+                  text: "remove 5px",
+                  type: "command",
+                  icon: FaTimes,
+                  className: buttonClass,
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    };
+  }
+}
