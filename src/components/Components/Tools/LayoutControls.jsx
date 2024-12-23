@@ -2,7 +2,46 @@ import React from "react";
 
 const LayoutControls = ({ style, onStyleChange }) => {
   const handlePropChange = (name, value) => {
-    onStyleChange({ [name]: value });
+    // For direction, update flexDirection directly
+    if (name === "flexDirection") {
+      console.log("LayoutControls: Updating flexDirection", {
+        oldValue: value,
+        newProps: { flexDirection: value },
+      });
+      onStyleChange({
+        props: {
+          flexDirection: value,
+        },
+      });
+      return;
+    }
+
+    // For other layout properties, update props directly
+    if (
+      ["flexWrap", "alignItems", "justifyContent", "alignContent"].includes(
+        name
+      )
+    ) {
+      console.log("LayoutControls: Updating layout prop", {
+        name,
+        value,
+        newProps: { [name.charAt(0).toLowerCase() + name.slice(1)]: value },
+      });
+      onStyleChange({
+        props: {
+          [name.charAt(0).toLowerCase() + name.slice(1)]: value,
+        },
+      });
+      return;
+    }
+
+    // For any other properties, update style
+    console.log("LayoutControls: Updating style", {
+      name,
+      value,
+      newStyle: { [name]: value },
+    });
+    onStyleChange({ style: { [name]: value } });
   };
 
   const buttonClass =
@@ -75,7 +114,10 @@ const LayoutControls = ({ style, onStyleChange }) => {
         <div className="mb-4">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Direction</h4>
           <div className="flex gap-2">
-            {["row", "column"].map((value) => (
+            {[
+              { value: "row", label: "Row" },
+              { value: "column", label: "Column" },
+            ].map(({ value, label }) => (
               <button
                 key={value}
                 onClick={() => handlePropChange("flexDirection", value)}
@@ -85,7 +127,7 @@ const LayoutControls = ({ style, onStyleChange }) => {
                     : inactiveButtonClass
                 } flex-1`}
               >
-                {value === "row" ? "Horizontal" : "Vertical"}
+                {label}
               </button>
             ))}
           </div>

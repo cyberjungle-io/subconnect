@@ -27,11 +27,6 @@ import TodoRenderer from "./TodoRenderer";
 import { usePageNavigation } from "../../../contexts/PageNavigationContext";
 import { WebServiceExecutor } from "../../../services/webService";
 
-const DIRECTION_MAPPING = {
-  horizontal: 'row',
-  vertical: 'column'
-};
-
 const defaultGlobalSettings = {
   generalComponentStyle: {
     fontSize: "16px",
@@ -136,14 +131,17 @@ const getComponentStyle = (
     case "FLEX_CONTAINER":
       Object.assign(componentStyle, {
         display: "flex",
-        flexDirection: DIRECTION_MAPPING[props.direction] || "row",
-        flexWrap: props.wrap || "nowrap",
+        flexDirection: props.flexDirection || "row",
+        flexWrap: props.flexWrap || "nowrap",
         alignItems: props.alignItems || "center",
         justifyContent: props.justifyContent || "flex-start",
         alignContent: props.alignContent || "stretch",
         gap: props.gap || "0px",
         height: style.height || (isTopLevel ? "300px" : "auto"),
         minHeight: style.minHeight || "50px",
+        width: style.width || "100%",
+        boxSizing: "border-box",
+        padding: style.padding || "8px",
       });
 
       if (style.showBorder !== false) {
@@ -583,11 +581,19 @@ const ComponentRenderer = React.memo(
       };
 
       // Wrap the content in a div with content-element class
-      const renderWithContentClass = (content) => (
-        <div className="content-element component-content hover-target">
-          {content}
-        </div>
-      );
+      const renderWithContentClass = (content) => {
+        if (component.type === "FLEX_CONTAINER") {
+          return content;
+        }
+        
+        return (
+          <div 
+            className="w-full h-full relative overflow-visible hover:bg-opacity-10 hover:bg-gray-500"
+          >
+            {content}
+          </div>
+        );
+      };
 
       switch (component.type) {
         case "FLEX_CONTAINER":
