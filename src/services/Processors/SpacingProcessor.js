@@ -71,10 +71,44 @@ export class SpacingProcessor {
       large: "24px",
     };
 
-    // Helper function to increment/decrement spacing
+    // Helper function to parse spacing value
+    const parseSpacing = (value) => {
+      if (!value || value === "null") return 0;
+      const match = String(value).match(/^(-?\d+(?:\.\d+)?)/);
+      return match ? parseFloat(match[1]) : 0;
+    };
+
+    // Helper function to get unit from value
+    const getUnit = (value) => {
+      if (!value || value === "null") return "px";
+      const match = String(value).match(/[a-z%]+$/i);
+      return match ? match[0] : "px";
+    };
+
+    // Enhanced adjustSpacing function that handles compound values
     const adjustSpacing = (currentValue, increment) => {
-      const current = parseInt(currentValue) || 0;
-      return `${Math.max(0, current + increment)}px`;
+      // If no value exists, start with 0px
+      if (!currentValue || currentValue === "null") {
+        return `${Math.max(0, increment)}px`;
+      }
+
+      // Split compound values (e.g. "8px 10px 8px 10px")
+      const values = currentValue.split(" ");
+
+      if (values.length === 1) {
+        // Single value - adjust it
+        const parsedValue = parseSpacing(values[0]);
+        const unit = getUnit(values[0]);
+        return `${Math.max(0, parsedValue + increment)}${unit}`;
+      } else {
+        // Compound value - adjust all sides
+        const adjustedValues = values.map((val) => {
+          const parsedValue = parseSpacing(val);
+          const unit = getUnit(val);
+          return `${Math.max(0, parsedValue + increment)}${unit}`;
+        });
+        return adjustedValues.join(" ");
+      }
     };
 
     // Get the active section from the UI context
@@ -108,10 +142,20 @@ export class SpacingProcessor {
       const activeSection = getActiveSection();
       console.log(`Adding 5px to ${activeSection}`);
       return {
-        style: { [activeSection]: null },
-        adjust: (currentStyle) => ({
-          [activeSection]: adjustSpacing(currentStyle[activeSection], 5),
-        }),
+        adjust: (currentStyle) => {
+          const currentValue = currentStyle[activeSection] || "0px";
+          const newValue = adjustSpacing(currentValue, 5);
+          console.log(
+            `Adjusting ${activeSection} from ${currentValue} to ${newValue}`
+          );
+          return {
+            [activeSection]: newValue,
+            // Also update the corresponding prop if it exists
+            props: {
+              [activeSection]: newValue,
+            },
+          };
+        },
       };
     }
 
@@ -119,10 +163,20 @@ export class SpacingProcessor {
       const activeSection = getActiveSection();
       console.log(`Removing 5px from ${activeSection}`);
       return {
-        style: { [activeSection]: null },
-        adjust: (currentStyle) => ({
-          [activeSection]: adjustSpacing(currentStyle[activeSection], -5),
-        }),
+        adjust: (currentStyle) => {
+          const currentValue = currentStyle[activeSection] || "0px";
+          const newValue = adjustSpacing(currentValue, -5);
+          console.log(
+            `Adjusting ${activeSection} from ${currentValue} to ${newValue}`
+          );
+          return {
+            [activeSection]: newValue,
+            // Also update the corresponding prop if it exists
+            props: {
+              [activeSection]: newValue,
+            },
+          };
+        },
       };
     }
 

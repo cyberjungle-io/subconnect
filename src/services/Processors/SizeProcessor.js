@@ -261,40 +261,16 @@ export class SizeProcessor {
     console.log("SizeProcessor received input:", input);
     console.log("Current style:", currentStyle);
 
-    // Add value formatter helper
+    // Helper function to format values
     const formatValue = (value) => {
       if (!value) return null;
-      if (value === "auto" || value === "fit-content") return value;
-      // If it's just a number or has % already, handle appropriately
-      if (/^\d+%$/.test(value)) return value;
-      if (/^\d+$/.test(value)) return `${value}%`;
-      // Handle px values
-      if (/^\d+px$/.test(value)) return value;
+      if (value.match(/^\d+$/)) return `${value}px`;
       return value;
     };
 
-    // Handle percentage width commands first (most common for flex containers)
-    const percentagePattern =
-      /(?:set|make|change)?\s*(?:the)?\s*width\s*(?:to|=|:)?\s*(\d+)(?:\s*%|\s*percent)?\s*$/i;
-    const percentageMatch = input.match(percentagePattern);
-    if (percentageMatch) {
-      const value = `${percentageMatch[1]}%`;
-      console.log("Setting percentage width to:", value);
-      return {
-        style: {
-          width: value,
-          minWidth: value,
-          maxWidth: "100%",
-        },
-        message: `Set width to ${value}`,
-        property: "width",
-      };
-    }
-
-    // Handle fit commands
+    // Handle fit content commands first
     const fitPattern = /fit\s*(?:to)?\s*(content|vertical|horizontal)/i;
     const fitMatch = input.match(fitPattern);
-
     if (fitMatch) {
       const fitType = fitMatch[1].toLowerCase();
       console.log("Matched fit pattern:", fitType);
@@ -308,18 +284,20 @@ export class SizeProcessor {
               minWidth: "auto",
               maxWidth: "100%",
               minHeight: "0",
-              maxHeight: "100%",
+              maxHeight: "none",
             },
             message: "Set size to fit content",
+            property: "size",
           };
         case "vertical":
           return {
             style: {
               height: "fit-content",
               minHeight: "0",
-              maxHeight: "100%",
+              maxHeight: "none",
             },
             message: "Set height to fit content",
+            property: "height",
           };
         case "horizontal":
           return {
@@ -329,44 +307,63 @@ export class SizeProcessor {
               maxWidth: "100%",
             },
             message: "Set width to fit content",
+            property: "width",
           };
       }
     }
 
-    // Handle other width commands
+    // Handle width commands with comprehensive pattern
     const widthPattern =
-      /(?:set|make|change)?\s*(?:the)?\s*width\s*(?:to|=|:)?\s*(\d+(?:px)|fit-content|auto)\s*$/i;
+      /(?:set|make|change)?\s*(?:the)?\s*width\s*(?:to|=|:)?\s*(\d+(?:px|%)?|fit-content|auto)\s*$/i;
     const widthMatch = input.match(widthPattern);
     if (widthMatch) {
-      const value = formatValue(widthMatch[1]);
-      if (value) {
-        console.log("Setting width to:", value);
+      const value = widthMatch[1];
+      // Add % if it's just a number and less than or equal to 100
+      const formattedValue =
+        value.match(/^\d+$/) && parseInt(value) <= 100
+          ? `${value}%`
+          : formatValue(value);
+
+      if (formattedValue) {
+        console.log("Setting width to:", formattedValue);
         return {
           style: {
-            width: value,
+            width: formattedValue,
             minWidth:
-              value === "fit-content" || value === "auto" ? "auto" : "0",
+              formattedValue === "fit-content" || formattedValue === "auto"
+                ? "auto"
+                : "0",
             maxWidth: "100%",
           },
-          message: `Set width to ${value}`,
+          message: `Set width to ${formattedValue}`,
           property: "width",
         };
       }
     }
 
-    // Handle height commands
+    // Handle height commands with comprehensive pattern
     const heightPattern =
       /(?:set|make|change)?\s*(?:the)?\s*height\s*(?:to|=|:)?\s*(\d+(?:px|%)?|fit-content|auto)\s*$/i;
     const heightMatch = input.match(heightPattern);
     if (heightMatch) {
-      const value = formatValue(heightMatch[1]);
-      if (value) {
-        console.log("Setting height to:", value);
+      const value = heightMatch[1];
+      const formattedValue = formatValue(value);
+
+      if (formattedValue) {
+        console.log("Setting height to:", formattedValue);
         return {
           style: {
-            height: value,
+            height: formattedValue,
+            minHeight:
+              formattedValue === "fit-content" || formattedValue === "auto"
+                ? "auto"
+                : "0",
+            maxHeight:
+              formattedValue === "fit-content" || formattedValue === "auto"
+                ? "none"
+                : "100%",
           },
-          message: `Set height to ${value}`,
+          message: `Set height to ${formattedValue}`,
           property: "height",
         };
       }
@@ -484,9 +481,7 @@ export class SizeProcessor {
       if (Object.keys(changes).length > 0) {
         return {
           style: changes,
-          message: `Updated ${
-            isBigger ? "increased" : "decreased"
-          } size`,
+          message: `Updated ${isBigger ? "increased" : "decreased"} size`,
           type: "COMMAND_EXECUTED",
         };
       }
