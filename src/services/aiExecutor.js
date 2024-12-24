@@ -18,6 +18,7 @@ import { QueryValueProcessor } from "./Processors/QueryValueProcessor";
 import { ToolbarProcessor } from "./Processors/ToolbarProcessor";
 import { LLMProcessor } from "./Processors/LLMProcessor";
 import { SpacingProcessor } from "./Processors/SpacingProcessor";
+import { FlexContainerProcessor } from "./Processors/FlexContainerProcessor";
 
 export class AICommandExecutor {
   // Define actionWords as a static class property
@@ -67,12 +68,69 @@ export class AICommandExecutor {
   ) {
     console.log("Processing command for", selectedComponent?.type);
 
-    // First try style processors
+    // First try processing with FlexContainer if that's the selected component
+    if (selectedComponent?.type === "FLEX_CONTAINER") {
+      console.log("Trying FlexContainer processor first");
+      const flexResult = FlexContainerProcessor.processCommand(
+        input,
+        selectedComponent
+      );
+      if (flexResult) {
+        try {
+          // Handle style updates
+          if (flexResult.style) {
+            const updatedComponent = {
+              ...selectedComponent,
+              style: {
+                ...selectedComponent.style,
+                ...flexResult.style,
+              },
+            };
+            await dispatch(
+              updateComponent({
+                id: selectedComponent.id,
+                updates: updatedComponent,
+              })
+            );
+          }
+
+          // Handle prop updates
+          if (flexResult.props) {
+            const updatedComponent = {
+              ...selectedComponent,
+              props: {
+                ...selectedComponent.props,
+                ...flexResult.props,
+              },
+            };
+            await dispatch(
+              updateComponent({
+                id: selectedComponent.id,
+                updates: updatedComponent,
+              })
+            );
+          }
+
+          return {
+            success: true,
+            message:
+              flexResult.message || "Updated flex container successfully",
+          };
+        } catch (error) {
+          console.error("Error updating flex container:", error);
+          return {
+            success: false,
+            message: `Failed to update flex container: ${error.message}`,
+          };
+        }
+      }
+    }
+
+    // If FlexContainer processing didn't handle it, try style processors
     const styleResult = StyleCommandProcessor.processStyleCommand(
       input,
       selectedComponent
     );
-
     if (styleResult) {
       console.log("Style processor result:", styleResult);
 
@@ -236,7 +294,7 @@ export class AICommandExecutor {
       if (queryResult) return queryResult;
     }
 
-    // Try direct style processing first
+    // Only try direct style processing if FlexContainer processing didn't handle it
     if (selectedComponent) {
       const styleResult = await this.processStyleCommand(
         cleanInput,
@@ -254,13 +312,41 @@ export class AICommandExecutor {
     );
     if (llmResult) return llmResult;
 
-    // Fallback to traditional processing
-    return await this.processTraditionalCommand(
-      input,
-      dispatch,
-      selectedComponent,
-      state
-    );
+    // Add check for Table commands
+    if (
+      selectedComponent?.type === "TABLE" &&
+      TableProcessor.isTableCommand(input)
+    ) {
+      console.log("Processing Table-specific command");
+      const result = TableProcessor.processCommand(
+        input,
+        selectedComponent.props || {},
+        state
+      );
+
+      if (result) {
+        try {
+          await dispatch(
+            updateComponent({
+              id: selectedComponent.id,
+              updates: { ...selectedComponent, props: result.props },
+            })
+          );
+          return {
+            success: true,
+            message: result.message || `Updated table successfully`,
+          };
+        } catch (error) {
+          console.error("Table update failed:", error);
+          return {
+            success: false,
+            message: `Failed to update table: ${error.message}`,
+          };
+        }
+      }
+    }
+
+    return null;
   }
 
   static async processQueryValueCommand(input, component, dispatch, state) {
@@ -672,40 +758,6 @@ export class AICommandExecutor {
           return {
             success: false,
             message: `Sorry, I couldn't add the ${config.name}: ${error.message}`,
-          };
-        }
-      }
-    }
-
-    // Add check for Table commands
-    if (
-      selectedComponent?.type === "TABLE" &&
-      TableProcessor.isTableCommand(input)
-    ) {
-      console.log("Processing Table-specific command");
-      const result = TableProcessor.processCommand(
-        input,
-        selectedComponent.props || {},
-        state
-      );
-
-      if (result) {
-        try {
-          await dispatch(
-            updateComponent({
-              id: selectedComponent.id,
-              updates: { ...selectedComponent, props: result.props },
-            })
-          );
-          return {
-            success: true,
-            message: result.message || `Updated table successfully`,
-          };
-        } catch (error) {
-          console.error("Table update failed:", error);
-          return {
-            success: false,
-            message: `Failed to update table: ${error.message}`,
           };
         }
       }
