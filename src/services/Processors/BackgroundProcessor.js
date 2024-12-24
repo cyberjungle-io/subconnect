@@ -102,24 +102,8 @@ export class BackgroundProcessor {
     ) {
       return {
         type: "PROMPT",
-        message: "What color would you like to use?",
+        message: "What color would you like to use? (e.g., blue, #FF0000, rgb(255,0,0))",
         options: [
-          {
-            text: "Color formats accepted:",
-            type: "info",
-          },
-          {
-            text: "• Color names (e.g., blue, red, green)",
-            type: "info",
-          },
-          {
-            text: "• Hex codes (e.g., #FF0000)",
-            type: "info",
-          },
-          {
-            text: "• RGB values (e.g., rgb(255, 0, 0))",
-            type: "info",
-          },
           {
             type: "wrapper",
             className: "flex flex-wrap gap-1",
@@ -129,80 +113,63 @@ export class BackgroundProcessor {
               const finalButtonClass = buttonClass || defaultButtonClass;
 
               // Create array of theme colors
-              const themeButtons =
-                colorTheme.length === 0
-                  ? [
-                      {
-                        text: "black",
-                        command: "set background color to black",
-                        type: "command",
-                        icon: FaPalette,
-                        className: finalButtonClass,
-                        style: {
-                          backgroundColor: "#000000",
-                          color: "#ffffff",
-                          minWidth: "60px",
-                          textAlign: "center",
-                        },
-                      },
-                      {
-                        text: "gray",
-                        command: "set background color to gray",
-                        type: "command",
-                        icon: FaPalette,
-                        className: finalButtonClass,
-                        style: {
-                          backgroundColor: "#808080",
-                          color: "#ffffff",
-                          minWidth: "60px",
-                          textAlign: "center",
-                        },
-                      },
-                      {
-                        text: "blue",
-                        command: "set background color to blue",
-                        type: "command",
-                        icon: FaPalette,
-                        className: finalButtonClass,
-                        style: {
-                          backgroundColor: "#0000ff",
-                          color: "#ffffff",
-                          minWidth: "60px",
-                          textAlign: "center",
-                        },
-                      },
-                    ]
-                  : colorTheme.map((color) => ({
-                      text: color.name,
-                      command: `set background color to ${color.value}`,
+              return colorTheme.length === 0
+                ? [
+                    {
+                      text: "black",
+                      command: "set background color to black",
                       type: "command",
                       icon: FaPalette,
                       className: finalButtonClass,
                       style: {
-                        backgroundColor: color.value,
-                        color: isLightColor(color.value)
-                          ? "#000000"
-                          : "#ffffff",
+                        backgroundColor: "#000000",
+                        color: "#ffffff",
                         minWidth: "60px",
                         textAlign: "center",
                       },
-                    }));
-
-              // Add custom color button
-              return [
-                ...themeButtons,
-                {
-                  text: "custom",
-                  command: "set background color to custom",
-                  type: "command",
-                  icon: FaPalette,
-                  className: finalButtonClass,
-                  style: {
-                    minWidth: "60px",
-                    textAlign: "center",
-                  },
-                },
-              ];
+                    },
+                    {
+                      text: "gray",
+                      command: "set background color to gray",
+                      type: "command",
+                      icon: FaPalette,
+                      className: finalButtonClass,
+                      style: {
+                        backgroundColor: "#808080",
+                        color: "#ffffff",
+                        minWidth: "60px",
+                        textAlign: "center",
+                      },
+                    },
+                    {
+                      text: "blue",
+                      command: "set background color to blue",
+                      type: "command",
+                      icon: FaPalette,
+                      className: finalButtonClass,
+                      style: {
+                        backgroundColor: "#0000ff",
+                        color: "#ffffff",
+                        minWidth: "60px",
+                        textAlign: "center",
+                      },
+                    },
+                  ]
+                : colorTheme.map((color) => ({
+                    text: color.name,
+                    command: `set background color to ${color.value}`,
+                    type: "command",
+                    icon: FaPalette,
+                    className: finalButtonClass,
+                    style: {
+                      backgroundColor: color.value,
+                      color: isLightColor(color.value)
+                        ? "#000000"
+                        : "#ffffff",
+                      minWidth: "60px",
+                      textAlign: "center",
+                    },
+                  }));
             },
           },
         ],
