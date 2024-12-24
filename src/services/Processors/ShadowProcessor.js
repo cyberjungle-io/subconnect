@@ -1,3 +1,23 @@
+import {
+  FaCloudSun,
+  FaRegSquare,
+  FaSquare,
+  FaArrowUp,
+  FaLayerGroup,
+  FaArrowsAltH,
+  FaArrowsAltV,
+  FaWater,
+  FaExpandAlt,
+  FaPalette,
+  FaAdjust,
+  FaRegDotCircle,
+  FaDotCircle,
+  FaCircle,
+  FaRegCircle,
+  FaCompressAlt,
+  FaTimes,
+} from "react-icons/fa";
+
 export class ShadowProcessor {
   static pendingCustomization = null;
 
@@ -551,5 +571,217 @@ export class ShadowProcessor {
 
     // Generate the shadow value
     return `0px ${nextValues.y}px ${nextValues.blur}px ${nextValues.spread}px rgba(0, 0, 0, ${nextValues.opacity})`;
+  }
+
+  static getSuggestions(headerClass, buttonClass) {
+    return {
+      text: "Shadow",
+      type: "category",
+      icon: FaCloudSun,
+      options: [
+        {
+          text: "Outer Shadow",
+          type: "info",
+          icon: FaCloudSun,
+          className: headerClass,
+        },
+        {
+          type: "wrapper",
+          className: "flex flex-col gap-2",
+          options: [
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "subtle",
+                  command: "add subtle outer shadow",
+                  type: "command",
+                  icon: FaRegSquare,
+                  className: buttonClass,
+                },
+                {
+                  text: "medium",
+                  command: "add medium outer shadow",
+                  type: "command",
+                  icon: FaSquare,
+                  className: buttonClass,
+                  style: { color: "#666666" },
+                },
+                {
+                  text: "harsh",
+                  command: "add harsh outer shadow",
+                  type: "command",
+                  icon: FaSquare,
+                  className: buttonClass,
+                  style: { color: "#000000" },
+                },
+                {
+                  text: "floating",
+                  command: "add floating outer shadow",
+                  type: "command",
+                  icon: FaArrowUp,
+                  className: buttonClass,
+                },
+                {
+                  text: "layered",
+                  command: "add layered outer shadow",
+                  type: "command",
+                  icon: FaLayerGroup,
+                  className: buttonClass,
+                },
+              ],
+            },
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "X Offset",
+                  type: "command",
+                  icon: FaArrowsAltH,
+                  className: buttonClass,
+                  command: "customize outer shadow x-offset",
+                },
+                {
+                  text: "Y Offset",
+                  type: "command",
+                  icon: FaArrowsAltV,
+                  className: buttonClass,
+                  command: "customize outer shadow y-offset",
+                },
+                {
+                  text: "Blur",
+                  type: "command",
+                  icon: FaWater,
+                  className: buttonClass,
+                  command: "customize outer shadow blur",
+                },
+                {
+                  text: "Spread",
+                  type: "command",
+                  icon: FaExpandAlt,
+                  className: buttonClass,
+                  command: "customize outer shadow spread",
+                },
+                {
+                  text: "Color",
+                  type: "command",
+                  icon: FaPalette,
+                  className: buttonClass,
+                  command: "customize outer shadow color",
+                },
+                {
+                  text: "Opacity",
+                  type: "command",
+                  icon: FaAdjust,
+                  className: buttonClass,
+                  command: "customize outer shadow opacity",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          text: "Inner Shadow",
+          type: "info",
+          icon: FaCloudSun,
+          className: headerClass,
+        },
+        {
+          type: "wrapper",
+          className: "flex flex-col gap-2",
+          options: [
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "subtle",
+                  command: "add subtle inner shadow",
+                  type: "command",
+                  icon: FaRegDotCircle,
+                  className: buttonClass,
+                },
+                {
+                  text: "medium",
+                  command: "add medium inner shadow",
+                  type: "command",
+                  icon: FaDotCircle,
+                  className: buttonClass,
+                },
+                {
+                  text: "deep",
+                  command: "add deep inner shadow",
+                  type: "command",
+                  icon: FaCircle,
+                  className: buttonClass,
+                },
+                {
+                  text: "pressed",
+                  command: "add pressed inner shadow",
+                  type: "command",
+                  icon: FaCompressAlt,
+                  className: buttonClass,
+                },
+                {
+                  text: "hollow",
+                  command: "add hollow inner shadow",
+                  type: "command",
+                  icon: FaRegCircle,
+                  className: buttonClass,
+                },
+              ],
+            },
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "Blur",
+                  type: "command",
+                  icon: FaWater,
+                  className: buttonClass,
+                  command: "customize inner shadow blur",
+                },
+                {
+                  text: "Spread",
+                  type: "command",
+                  icon: FaExpandAlt,
+                  className: buttonClass,
+                  command: "customize inner shadow spread",
+                },
+                {
+                  text: "Color",
+                  type: "command",
+                  icon: FaPalette,
+                  className: buttonClass,
+                  command: "customize inner shadow color",
+                },
+                {
+                  text: "Opacity",
+                  type: "command",
+                  icon: FaAdjust,
+                  className: buttonClass,
+                  command: "customize inner shadow opacity",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          type: "wrapper",
+          className: "mt-2 pt-2 border-t border-gray-200",
+          options: [
+            {
+              text: "remove shadow",
+              type: "command",
+              icon: FaTimes,
+              className: buttonClass,
+            },
+          ],
+        },
+      ],
+    };
   }
 }

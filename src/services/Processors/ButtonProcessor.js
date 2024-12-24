@@ -1,6 +1,16 @@
 import React from "react";
 import { store } from "../../store/store";
-import { FaArrowRight } from "react-icons/fa";
+import {
+  FaArrowRight,
+  FaPalette,
+  FaAdjust,
+  FaMousePointer,
+  FaHandPointer,
+  FaICursor,
+  FaArrowsAlt,
+  FaTimes,
+  FaClock,
+} from "react-icons/fa";
 
 // Add isLightColor helper function
 const isLightColor = (color) => {
@@ -832,6 +842,134 @@ export class ButtonProcessor {
       transitionDuration: "transition duration",
       enablePageNavigation: "page navigation",
       targetPageId: "target page",
+    };
+  }
+
+  static getSuggestions(headerClass, buttonClass) {
+    return {
+      text: "Button",
+      type: "category",
+      icon: FaMousePointer,
+      options: [
+        {
+          text: "Page Navigation",
+          type: "info",
+          icon: FaArrowRight,
+          className: headerClass,
+        },
+        {
+          text: "enable page navigation",
+          type: "command",
+          icon: FaMousePointer,
+          className: buttonClass,
+          checkEnabled: (component) => !component?.style?.enablePageNavigation,
+        },
+        {
+          text: "change target page",
+          type: "command",
+          icon: FaArrowRight,
+          className: buttonClass,
+          checkEnabled: (component) => component?.style?.enablePageNavigation,
+          command: "enable page navigation",
+        },
+        {
+          text: "disable page navigation",
+          type: "command",
+          icon: FaTimes,
+          className: buttonClass,
+          checkEnabled: (component) => component?.style?.enablePageNavigation,
+        },
+        {
+          text: "Hover Effects",
+          type: "info",
+          icon: FaAdjust,
+          className: headerClass,
+        },
+        {
+          type: "wrapper",
+          className: "flex flex-col gap-1",
+          options: [
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "set hover animation",
+                  type: "command",
+                  icon: FaClock,
+                  className: buttonClass,
+                  command: "set hover animation",
+                },
+                {
+                  text: "change hover color",
+                  type: "command",
+                  icon: FaPalette,
+                  className: buttonClass,
+                },
+              ],
+            },
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "change hover text color",
+                  type: "command",
+                  icon: FaPalette,
+                  className: buttonClass,
+                },
+                {
+                  text: "remove all effects",
+                  type: "command",
+                  icon: FaTimes,
+                  className: `${buttonClass} text-red-600 hover:text-red-700`,
+                  command: "remove all hover effects",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          text: "Pointer Style",
+          type: "info",
+          icon: FaMousePointer,
+          className: headerClass,
+        },
+        {
+          type: "wrapper",
+          className: "flex flex-wrap gap-1",
+          options: [
+            {
+              text: "pointer",
+              command: "set cursor to pointer",
+              type: "command",
+              icon: FaHandPointer,
+              className: buttonClass,
+            },
+            {
+              text: "default",
+              command: "set cursor to default",
+              type: "command",
+              icon: FaMousePointer,
+              className: buttonClass,
+            },
+            {
+              text: "move",
+              command: "set cursor to move",
+              type: "command",
+              icon: FaArrowsAlt,
+              className: buttonClass,
+            },
+            {
+              text: "text",
+              command: "set cursor to text",
+              type: "command",
+              icon: FaICursor,
+              className: buttonClass,
+            },
+          ],
+        },
+      ],
     };
   }
 }
