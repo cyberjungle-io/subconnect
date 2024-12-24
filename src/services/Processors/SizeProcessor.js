@@ -96,60 +96,169 @@ export class SizeProcessor {
       icon: FaExpand,
       options: [
         {
-          text: "fit to content",
-          type: "command",
-          icon: FaCompress,
-          className: buttonClass,
-        },
-        {
-          text: "fit vertical",
-          type: "command",
-          icon: FaArrowsAltV,
-          className: buttonClass,
-        },
-        {
-          text: "fit horizontal",
-          type: "command",
+          text: "Width",
+          type: "info",
           icon: FaArrowsAltH,
-          className: buttonClass,
+          className: headerClass,
         },
         {
-          text: "make it bigger",
-          type: "command",
+          type: "wrapper",
+          className: "flex flex-col gap-1",
+          options: [
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "25%",
+                  command: "set width to 25%",
+                  type: "command",
+                  icon: FaArrowsAltH,
+                  className: buttonClass,
+                },
+                {
+                  text: "50%",
+                  command: "set width to 50%",
+                  type: "command",
+                  icon: FaArrowsAltH,
+                  className: buttonClass,
+                },
+                {
+                  text: "100%",
+                  command: "set width to 100%",
+                  type: "command",
+                  icon: FaArrowsAltH,
+                  className: buttonClass,
+                },
+              ],
+            },
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "200px",
+                  command: "set width to 200px",
+                  type: "command",
+                  icon: FaArrowsAltH,
+                  className: buttonClass,
+                },
+                {
+                  text: "300px",
+                  command: "set width to 300px",
+                  type: "command",
+                  icon: FaArrowsAltH,
+                  className: buttonClass,
+                },
+                {
+                  text: "fit-content",
+                  command: "set width to fit-content",
+                  type: "command",
+                  icon: FaCompress,
+                  className: buttonClass,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          text: "Height",
+          type: "info",
+          icon: FaArrowsAltV,
+          className: headerClass,
+        },
+        {
+          type: "wrapper",
+          className: "flex flex-col gap-1",
+          options: [
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "auto",
+                  command: "set height to auto",
+                  type: "command",
+                  icon: FaArrowsAltV,
+                  className: buttonClass,
+                },
+                {
+                  text: "100%",
+                  command: "set height to 100%",
+                  type: "command",
+                  icon: FaArrowsAltV,
+                  className: buttonClass,
+                },
+                {
+                  text: "fit-content",
+                  command: "set height to fit-content",
+                  type: "command",
+                  icon: FaCompress,
+                  className: buttonClass,
+                },
+              ],
+            },
+            {
+              type: "wrapper",
+              className: "flex gap-1",
+              options: [
+                {
+                  text: "200px",
+                  command: "set height to 200px",
+                  type: "command",
+                  icon: FaArrowsAltV,
+                  className: buttonClass,
+                },
+                {
+                  text: "300px",
+                  command: "set height to 300px",
+                  type: "command",
+                  icon: FaArrowsAltV,
+                  className: buttonClass,
+                },
+                {
+                  text: "400px",
+                  command: "set height to 400px",
+                  type: "command",
+                  icon: FaArrowsAltV,
+                  className: buttonClass,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          text: "Quick Adjust",
+          type: "info",
           icon: FaExpandAlt,
-          className: buttonClass,
+          className: headerClass,
         },
         {
-          text: "make it smaller",
-          type: "command",
-          icon: FaCompressAlt,
-          className: buttonClass,
-        },
-        {
-          text: "set width to 100%",
-          type: "command",
-          icon: FaArrowsAltH,
-          className: buttonClass,
-        },
-        {
-          text: "set height to auto",
-          type: "command",
-          icon: FaArrowsAltV,
-          className: buttonClass,
-          checkEnabled: (component) => component?.style?.height !== "auto",
-        },
-        {
-          text: "set height to 200px",
-          type: "command",
-          icon: FaArrowsAltV,
-          className: buttonClass,
-          checkVisible: (component) => component?.style?.height === "auto",
-        },
-        {
-          text: "set width to 300px",
-          type: "command",
-          icon: FaArrowsAltH,
-          className: buttonClass,
+          type: "wrapper",
+          className: "flex gap-1",
+          options: [
+            {
+              text: "bigger",
+              command: "make it bigger",
+              type: "command",
+              icon: FaExpandAlt,
+              className: buttonClass,
+            },
+            {
+              text: "smaller",
+              command: "make it smaller",
+              type: "command",
+              icon: FaCompressAlt,
+              className: buttonClass,
+            },
+            {
+              text: "fit to content",
+              command: "fit to content",
+              type: "command",
+              icon: FaCompress,
+              className: buttonClass,
+            },
+          ],
         },
       ],
     };
@@ -159,7 +268,35 @@ export class SizeProcessor {
     console.log("SizeProcessor received input:", input);
     console.log("Current style:", currentStyle);
 
-    // Add specific check for fit commands
+    // Add value formatter helper
+    const formatValue = (value) => {
+      if (!value) return null;
+      if (value === "auto" || value === "fit-content") return value;
+      // If it's just a number or has % already, handle appropriately
+      if (/^\d+%$/.test(value)) return value;
+      if (/^\d+$/.test(value)) return `${value}%`;
+      // Handle px values
+      if (/^\d+px$/.test(value)) return value;
+      return value;
+    };
+
+    // Handle percentage width commands first (most common for flex containers)
+    const percentagePattern =
+      /(?:set|make|change)?\s*(?:the)?\s*width\s*(?:to|=|:)?\s*(\d+)(?:\s*%|\s*percent)?\s*$/i;
+    const percentageMatch = input.match(percentagePattern);
+    if (percentageMatch) {
+      const value = `${percentageMatch[1]}%`;
+      console.log("Setting percentage width to:", value);
+      return {
+        style: {
+          width: value,
+        },
+        message: `Set width to ${value}`,
+        property: "width",
+      };
+    }
+
+    // Handle fit commands
     const fitPattern = /fit\s*(?:to)?\s*(content|vertical|horizontal)/i;
     const fitMatch = input.match(fitPattern);
 
@@ -174,47 +311,62 @@ export class SizeProcessor {
               width: "fit-content",
               height: "fit-content",
             },
+            message: "Set size to fit content",
           };
         case "vertical":
           return {
             style: {
               height: "fit-content",
             },
+            message: "Set height to fit content",
           };
         case "horizontal":
           return {
             style: {
               width: "fit-content",
             },
+            message: "Set width to fit content",
           };
       }
     }
 
-    // Add specific check for auto height command
-    const autoHeightPattern =
-      /(?:set|make|change)?\s*(?:the)?\s*height\s*(?:to)?\s*auto(?:matic)?/i;
-    if (autoHeightPattern.test(input)) {
-      console.log("Matched auto height pattern");
-
-      // Check if height is already auto
-      if (currentStyle.height === "auto") {
-        // Return null to indicate no change needed
-        console.log("Height is already auto, no change needed");
-        return null;
+    // Handle other width commands
+    const widthPattern =
+      /(?:set|make|change)?\s*(?:the)?\s*width\s*(?:to|=|:)?\s*(\d+(?:px)|fit-content|auto)\s*$/i;
+    const widthMatch = input.match(widthPattern);
+    if (widthMatch) {
+      const value = formatValue(widthMatch[1]);
+      if (value) {
+        console.log("Setting width to:", value);
+        return {
+          style: {
+            width: value,
+          },
+          message: `Set width to ${value}`,
+          property: "width",
+        };
       }
-
-      // Store the previous height value for potential undo
-      const previousHeight = currentStyle.height;
-      console.log("Changing height from", previousHeight, "to auto");
-
-      return {
-        style: {
-          height: "auto",
-        },
-      };
     }
 
-    // Handle "make bigger/smaller" commands
+    // Handle height commands
+    const heightPattern =
+      /(?:set|make|change)?\s*(?:the)?\s*height\s*(?:to|=|:)?\s*(\d+(?:px|%)?|fit-content|auto)\s*$/i;
+    const heightMatch = input.match(heightPattern);
+    if (heightMatch) {
+      const value = formatValue(heightMatch[1]);
+      if (value) {
+        console.log("Setting height to:", value);
+        return {
+          style: {
+            height: value,
+          },
+          message: `Set height to ${value}`,
+          property: "height",
+        };
+      }
+    }
+
+    // Handle make bigger/smaller commands
     const sizeChangePattern =
       /(?:make|set)\s*(?:it|this)?\s*(bigger|larger|smaller)/i;
     const sizeMatch = input.match(sizeChangePattern);
@@ -226,20 +378,16 @@ export class SizeProcessor {
       // Helper function to calculate new size
       const calculateNewSize = (currentValue, unit, isIncrease) => {
         if (unit === "%") {
-          // For percentages, use smaller increments
-          const increment = 5;
+          const increment = 10;
           const newValue = isIncrease
             ? currentValue + increment
             : currentValue - increment;
-          // Allow percentage to go from 5% to 100%
-          return `${Math.min(Math.max(newValue, 5), 100)}%`;
+          return `${Math.min(Math.max(newValue, 10), 100)}%`;
         } else if (unit === "px") {
-          // For pixels, use larger increments and no upper limit
           const increment = 50;
           const newValue = isIncrease
             ? currentValue + increment
             : currentValue - increment;
-          // Only limit the minimum pixel size
           return `${Math.max(newValue, 50)}px`;
         }
         return null;
@@ -253,13 +401,7 @@ export class SizeProcessor {
           const currentValue = parseFloat(value);
           const newSize = calculateNewSize(currentValue, unit, isBigger);
           if (newSize) changes.width = newSize;
-        } else if (currentStyle.width === "auto") {
-          // Start with a reasonable default size when converting from auto
-          changes.width = isBigger ? "300px" : "200px";
         }
-      } else {
-        // If no width is set, start with a default
-        changes.width = isBigger ? "300px" : "200px";
       }
 
       // Process height
@@ -272,74 +414,13 @@ export class SizeProcessor {
           const currentValue = parseFloat(value);
           const newSize = calculateNewSize(currentValue, unit, isBigger);
           if (newSize) changes.height = newSize;
-        } else if (currentStyle.height === "auto") {
-          // Start with a reasonable default size when converting from auto
-          changes.height = isBigger ? "300px" : "200px";
         }
-      } else {
-        // If no height is set, start with a default
-        changes.height = isBigger ? "300px" : "200px";
       }
 
-      console.log("Size changes:", changes);
-      return { style: changes };
-    }
-
-    // Handle specific width/height patterns
-    const stylePatterns = this.getStylePatterns();
-
-    // Process width patterns
-    for (const pattern of stylePatterns.width) {
-      const match = input.match(pattern);
-      if (match) {
-        let value = match[1]?.toLowerCase();
-
-        // Handle auto width
-        if (input.includes("auto")) {
-          return {
-            style: {
-              width: "auto",
-            },
-          };
-        }
-
-        // Handle percentage shortcuts
-        if (["25", "50", "75", "100"].includes(value)) {
-          value = `${value}%`;
-        }
-
+      if (Object.keys(changes).length > 0) {
         return {
-          style: {
-            width: value || "auto",
-          },
-        };
-      }
-    }
-
-    // Process height patterns
-    for (const pattern of stylePatterns.height) {
-      const match = input.match(pattern);
-      if (match) {
-        let value = match[1]?.toLowerCase();
-
-        // Handle auto height
-        if (input.includes("auto")) {
-          return {
-            style: {
-              height: "auto",
-            },
-          };
-        }
-
-        // Handle percentage shortcuts
-        if (["25", "50", "75", "100"].includes(value)) {
-          value = `${value}%`;
-        }
-
-        return {
-          style: {
-            height: value || "auto",
-          },
+          style: changes,
+          message: `Made component ${isBigger ? "bigger" : "smaller"}`,
         };
       }
     }
