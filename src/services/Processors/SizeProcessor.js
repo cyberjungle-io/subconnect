@@ -183,13 +183,6 @@ export class SizeProcessor {
                   className: buttonClass,
                 },
                 {
-                  text: "100%",
-                  command: "set height to 100%",
-                  type: "command",
-                  icon: FaArrowsAltV,
-                  className: buttonClass,
-                },
-                {
                   text: "fit-content",
                   command: "set height to fit-content",
                   type: "command",
@@ -290,6 +283,8 @@ export class SizeProcessor {
       return {
         style: {
           width: value,
+          minWidth: value,
+          maxWidth: "100%",
         },
         message: `Set width to ${value}`,
         property: "width",
@@ -310,6 +305,10 @@ export class SizeProcessor {
             style: {
               width: "fit-content",
               height: "fit-content",
+              minWidth: "auto",
+              maxWidth: "100%",
+              minHeight: "0",
+              maxHeight: "100%",
             },
             message: "Set size to fit content",
           };
@@ -317,6 +316,8 @@ export class SizeProcessor {
           return {
             style: {
               height: "fit-content",
+              minHeight: "0",
+              maxHeight: "100%",
             },
             message: "Set height to fit content",
           };
@@ -324,6 +325,8 @@ export class SizeProcessor {
           return {
             style: {
               width: "fit-content",
+              minWidth: "auto",
+              maxWidth: "100%",
             },
             message: "Set width to fit content",
           };
@@ -341,6 +344,9 @@ export class SizeProcessor {
         return {
           style: {
             width: value,
+            minWidth:
+              value === "fit-content" || value === "auto" ? "auto" : "0",
+            maxWidth: "100%",
           },
           message: `Set width to ${value}`,
           property: "width",
@@ -376,19 +382,45 @@ export class SizeProcessor {
       const changes = {};
 
       // Helper function to calculate new size
-      const calculateNewSize = (currentValue, unit, isIncrease) => {
+      const calculateNewSize = (
+        currentValue,
+        unit,
+        isIncrease,
+        dimension = "width"
+      ) => {
         if (unit === "%") {
           const increment = 10;
           const newValue = isIncrease
-            ? currentValue + increment
-            : currentValue - increment;
-          return `${Math.min(Math.max(newValue, 10), 100)}%`;
+            ? Math.min(currentValue + increment, 100)
+            : Math.max(currentValue - increment, 25);
+          return {
+            [`${dimension}`]: `${newValue}%`,
+            [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
+              dimension === "width" ? `${newValue}%` : "0",
+            [`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
+              "100%",
+          };
         } else if (unit === "px") {
           const increment = 50;
           const newValue = isIncrease
             ? currentValue + increment
-            : currentValue - increment;
-          return `${Math.max(newValue, 50)}px`;
+            : Math.max(currentValue - increment, 50);
+          return {
+            [`${dimension}`]: `${newValue}px`,
+            [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
+              "0",
+            [`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
+              "100%",
+          };
+        } else if (currentValue === "fit-content" || currentValue === "auto") {
+          // If current size is fit-content, switch to percentage based
+          return {
+            [`${dimension}`]: isIncrease ? "100%" : "75%",
+            [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
+              dimension === "width" ? (isIncrease ? "100%" : "75%") : "0",
+            [`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
+              "100%",
+          };
         }
         return null;
       };
@@ -399,8 +431,24 @@ export class SizeProcessor {
         if (widthMatch) {
           const [_, value, unit] = widthMatch;
           const currentValue = parseFloat(value);
-          const newSize = calculateNewSize(currentValue, unit, isBigger);
-          if (newSize) changes.width = newSize;
+          const newSize = calculateNewSize(
+            currentValue,
+            unit,
+            isBigger,
+            "width"
+          );
+          if (newSize) Object.assign(changes, newSize);
+        } else if (
+          currentStyle.width === "fit-content" ||
+          currentStyle.width === "auto"
+        ) {
+          const newSize = calculateNewSize(
+            currentStyle.width,
+            null,
+            isBigger,
+            "width"
+          );
+          if (newSize) Object.assign(changes, newSize);
         }
       }
 
@@ -412,15 +460,34 @@ export class SizeProcessor {
         if (heightMatch) {
           const [_, value, unit] = heightMatch;
           const currentValue = parseFloat(value);
-          const newSize = calculateNewSize(currentValue, unit, isBigger);
-          if (newSize) changes.height = newSize;
+          const newSize = calculateNewSize(
+            currentValue,
+            unit,
+            isBigger,
+            "height"
+          );
+          if (newSize) Object.assign(changes, newSize);
+        } else if (
+          currentStyle.height === "fit-content" ||
+          currentStyle.height === "auto"
+        ) {
+          const newSize = calculateNewSize(
+            currentStyle.height,
+            null,
+            isBigger,
+            "height"
+          );
+          if (newSize) Object.assign(changes, newSize);
         }
       }
 
       if (Object.keys(changes).length > 0) {
         return {
           style: changes,
-          message: `Made component ${isBigger ? "bigger" : "smaller"}`,
+          message: `Set size: ${
+            isBigger ? "increased" : "decreased"
+          } component dimensions`,
+          type: "COMMAND_EXECUTED",
         };
       }
     }
