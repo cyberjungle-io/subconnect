@@ -68,12 +68,40 @@ export class AICommandExecutor {
   ) {
     console.log("Processing command for", selectedComponent?.type);
 
-    // First try processing with FlexContainer if that's the selected component
+    // First check if this is a context-setting command
+    const contextResult = StyleCommandProcessor.processStyleCommand(
+      input,
+      selectedComponent
+    );
+    if (contextResult?.type === "PROMPT") {
+      console.log(
+        "Context/Prompt result from StyleCommandProcessor:",
+        contextResult
+      );
+      return {
+        success: true,
+        message: contextResult.message,
+        options: contextResult.options,
+        type: contextResult.type,
+        property: contextResult.property,
+        context: contextResult.context,
+        followUp: contextResult.followUp,
+        state: state,
+      };
+    }
+
+    // Then try processing with FlexContainer if that's the selected component
     if (selectedComponent?.type === "FLEX_CONTAINER") {
       console.log("Trying FlexContainer processor first");
+      // Pass the current context to FlexContainerProcessor
+      const currentContext = StyleCommandProcessor.currentContext;
+      console.log("Current context before FlexContainer:", currentContext);
+      
       const flexResult = FlexContainerProcessor.processCommand(
         input,
-        selectedComponent
+        selectedComponent,
+        "px-2 py-1 rounded-md shadow-sm hover:bg-gray-50",
+        currentContext // Pass context as fourth parameter
       );
       if (flexResult) {
         try {
@@ -126,64 +154,14 @@ export class AICommandExecutor {
       }
     }
 
-    // If FlexContainer processing didn't handle it, try style processors
-    const styleResult = StyleCommandProcessor.processStyleCommand(
-      input,
-      selectedComponent
-    );
-    if (styleResult) {
-      console.log("Style processor result:", styleResult);
-
-      // If we have style or props updates, apply them
-      if ((styleResult.style || styleResult.props) && selectedComponent) {
-        const updatedComponent = {
-          ...selectedComponent,
-          style: styleResult.style
-            ? {
-                ...selectedComponent.style,
-                ...styleResult.style,
-              }
-            : selectedComponent.style,
-          props: styleResult.props
-            ? {
-                ...selectedComponent.props,
-                ...styleResult.props,
-              }
-            : selectedComponent.props,
-        };
-
-        await dispatch(
-          updateComponent({
-            id: selectedComponent.id,
-            updates: updatedComponent,
-          })
-        );
-
-        // If we have a message and options, return them for the chat
-        if (styleResult.message || styleResult.options) {
-          return {
-            success: true,
-            message: styleResult.message || "Updated style successfully",
-            options: styleResult.options,
-          };
-        }
-
-        return {
-          success: true,
-          message: "Updated style successfully",
-        };
-      }
-
-      // If we only have a message and/or options (no style/props updates), return them directly
-      if (styleResult.message || styleResult.options) {
-        return {
-          success: true,
-          message: styleResult.message,
-          options: styleResult.options,
-        };
-      }
-
-      return styleResult;
+    // If neither handled it, return the original style result if it exists
+    if (contextResult) {
+      return {
+        success: true,
+        message: contextResult.message,
+        options: contextResult.options,
+        ...contextResult,
+      };
     }
 
     // Clean the input first

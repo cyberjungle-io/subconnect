@@ -1,6 +1,25 @@
 import { ColorProcessor } from "./ColorProcessor";
 import { FaPalette, FaAdjust, FaPaintBrush, FaTimes } from "react-icons/fa";
 
+const isLightColor = (color) => {
+  // Convert hex to RGB
+  let r, g, b;
+  if (color.startsWith("#")) {
+    const hex = color.replace("#", "");
+    r = parseInt(hex.substr(0, 2), 16);
+    g = parseInt(hex.substr(2, 2), 16);
+    b = parseInt(hex.substr(4, 2), 16);
+  } else if (color.startsWith("rgb")) {
+    [r, g, b] = color.match(/\d+/g).map(Number);
+  } else {
+    return true; // Default to dark text for named colors
+  }
+
+  // Calculate relative luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.5;
+};
+
 export class BackgroundProcessor {
   static colorKeywords = {
     // Common color aliases
@@ -67,19 +86,23 @@ export class BackgroundProcessor {
     };
   }
 
-  static processCommand(input, currentStyle = {}) {
+  static processCommand(
+    input,
+    currentStyle = {},
+    buttonClass = "px-2 py-1 rounded-md shadow-sm"
+  ) {
     console.log("BackgroundProcessor received input:", input);
     const lowercaseInput = input.toLowerCase();
 
-    // More flexible pattern for initial background color command
+    // Handle the initial "change background color" command
     if (
-      /^(?:change|set|modify)?\s*(?:the\s+)?background\s*(?:color)?$/i.test(
+      /^(?:change|set|modify)\s*(?:the\s+)?background\s*(?:color)?$/i.test(
         input
       )
     ) {
       return {
         type: "PROMPT",
-        message: "What color would you like to use? You can specify:",
+        message: "What color would you like to use?",
         options: [
           {
             text: "Color formats accepted:",
@@ -96,6 +119,91 @@ export class BackgroundProcessor {
           {
             text: "• RGB values (e.g., rgb(255, 0, 0))",
             type: "info",
+          },
+          {
+            type: "wrapper",
+            className: "flex flex-wrap gap-1",
+            options: (state) => {
+              const colorTheme = state?.colorTheme || [];
+              const defaultButtonClass = "px-2 py-1 rounded-md shadow-sm"; // Fallback button class
+              const finalButtonClass = buttonClass || defaultButtonClass;
+
+              // Create array of theme colors
+              const themeButtons =
+                colorTheme.length === 0
+                  ? [
+                      {
+                        text: "black",
+                        command: "set background color to black",
+                        type: "command",
+                        icon: FaPalette,
+                        className: finalButtonClass,
+                        style: {
+                          backgroundColor: "#000000",
+                          color: "#ffffff",
+                          minWidth: "60px",
+                          textAlign: "center",
+                        },
+                      },
+                      {
+                        text: "gray",
+                        command: "set background color to gray",
+                        type: "command",
+                        icon: FaPalette,
+                        className: finalButtonClass,
+                        style: {
+                          backgroundColor: "#808080",
+                          color: "#ffffff",
+                          minWidth: "60px",
+                          textAlign: "center",
+                        },
+                      },
+                      {
+                        text: "blue",
+                        command: "set background color to blue",
+                        type: "command",
+                        icon: FaPalette,
+                        className: finalButtonClass,
+                        style: {
+                          backgroundColor: "#0000ff",
+                          color: "#ffffff",
+                          minWidth: "60px",
+                          textAlign: "center",
+                        },
+                      },
+                    ]
+                  : colorTheme.map((color) => ({
+                      text: color.name,
+                      command: `set background color to ${color.value}`,
+                      type: "command",
+                      icon: FaPalette,
+                      className: finalButtonClass,
+                      style: {
+                        backgroundColor: color.value,
+                        color: isLightColor(color.value)
+                          ? "#000000"
+                          : "#ffffff",
+                        minWidth: "60px",
+                        textAlign: "center",
+                      },
+                    }));
+
+              // Add custom color button
+              return [
+                ...themeButtons,
+                {
+                  text: "custom",
+                  command: "set background color to custom",
+                  type: "command",
+                  icon: FaPalette,
+                  className: finalButtonClass,
+                  style: {
+                    minWidth: "60px",
+                    textAlign: "center",
+                  },
+                },
+              ];
+            },
           },
         ],
         property: "backgroundColor",
@@ -301,79 +409,29 @@ export class BackgroundProcessor {
       icon: FaPalette,
       options: [
         {
-          text: "Color",
-          type: "info",
-          icon: FaPalette,
-          className: headerClass,
-        },
-        {
-          type: "wrapper",
-          className: "flex flex-col gap-1",
-          options: [
-            {
-              type: "wrapper",
-              className: "flex gap-1",
-              options: [
-                {
-                  text: "change color",
-                  type: "command",
-                  icon: FaPalette,
-                  className: buttonClass,
-                  command: "change background color",
-                },
-                {
-                  text: "make transparent",
-                  type: "command",
-                  icon: FaAdjust,
-                  className: buttonClass,
-                  command: "make background transparent",
-                },
-              ],
-            },
-            {
-              type: "wrapper",
-              className: "flex gap-1",
-              options: [
-                {
-                  text: "add gradient",
-                  type: "command",
-                  icon: FaPaintBrush,
-                  className: buttonClass,
-                },
-                {
-                  text: "remove background",
-                  type: "command",
-                  icon: FaTimes,
-                  className: buttonClass,
-                  command: "remove background color",
-                },
-              ],
-            },
-          ],
-        },
-        {
-          text: "Opacity",
-          type: "info",
-          icon: FaAdjust,
-          className: headerClass,
-        },
-        {
           type: "wrapper",
           className: "flex gap-1",
           options: [
             {
-              text: "more opaque",
+              text: "change color",
               type: "command",
-              icon: FaAdjust,
+              icon: FaPalette,
               className: buttonClass,
-              command: "make background more opaque",
+              command: "change background color",
             },
             {
-              text: "more transparent",
+              text: "add image",
               type: "command",
-              icon: FaAdjust,
+              icon: FaPaintBrush,
               className: buttonClass,
-              command: "make background more transparent",
+              command: "add background image",
+            },
+            {
+              text: "remove background",
+              type: "command",
+              icon: FaTimes,
+              className: buttonClass,
+              command: "remove background color",
             },
           ],
         },

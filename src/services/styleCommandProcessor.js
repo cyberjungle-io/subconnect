@@ -21,19 +21,29 @@ export class StyleCommandProcessor {
     console.log("Component style:", component?.style);
     console.log("Current context:", this.currentContext);
 
+    // Check for initial context-setting commands
+    const contextCommands = {
+      background:
+        /^(?:change|set|modify)\s*(?:the\s+)?background\s*(?:color)?$/i,
+      border: /^(?:change|set|modify)\s*(?:the\s+)?border/i,
+      shadow: /^(?:change|set|modify)\s*(?:the\s+)?shadow/i,
+    };
+
+    // Check if this is a context-setting command
+    for (const [context, pattern] of Object.entries(contextCommands)) {
+      if (pattern.test(input)) {
+        console.log(`Setting context to: ${context}`);
+        this.setContext(context);
+        break;
+      }
+    }
+
     // Check for layout commands first for FLEX_CONTAINER
     if (component?.type === "FLEX_CONTAINER") {
       const layoutResult = LayoutProcessor.processCommand(input);
       if (layoutResult) {
         console.log("Layout processor result:", layoutResult);
-        // Return both style and props if they exist
-        return {
-          style: layoutResult.style,
-          props: layoutResult.props,
-          message: `Updated layout ${
-            Object.keys(layoutResult.props || layoutResult.style)[0]
-          }`,
-        };
+        return layoutResult;
       }
     }
 
@@ -235,6 +245,7 @@ export class StyleCommandProcessor {
   }
 
   static clearContext() {
+    console.log("Clearing context");
     this.lastModifiedProperty = null;
     this.lastModifiedValue = null;
     this.lastUsedProcessor = null;
