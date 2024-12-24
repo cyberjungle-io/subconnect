@@ -96,7 +96,7 @@ export class AICommandExecutor {
       // Pass the current context to FlexContainerProcessor
       const currentContext = StyleCommandProcessor.currentContext;
       console.log("Current context before FlexContainer:", currentContext);
-      
+
       const flexResult = FlexContainerProcessor.processCommand(
         input,
         selectedComponent,

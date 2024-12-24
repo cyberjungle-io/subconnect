@@ -74,8 +74,7 @@ export class FlexContainerProcessor {
     // Then try other valid processors in order of likelihood
     for (const Processor of this.validProcessors) {
       if (Processor === LayoutProcessor) continue; // Skip as we already tried it
-      if (context && Processor === contextProcessorMap[context])
-        continue;
+      if (context && Processor === contextProcessorMap[context]) continue;
 
       console.log(`Trying ${Processor.name}`);
       const result = Processor.processCommand(

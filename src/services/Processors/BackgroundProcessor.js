@@ -102,7 +102,8 @@ export class BackgroundProcessor {
     ) {
       return {
         type: "PROMPT",
-        message: "What color would you like to use? (e.g., blue, #FF0000, rgb(255,0,0))",
+        message:
+          "What color would you like to use? (e.g., blue, #FF0000, rgb(255,0,0))",
         options: [
           {
             type: "wrapper",
@@ -163,9 +164,7 @@ export class BackgroundProcessor {
                     className: finalButtonClass,
                     style: {
                       backgroundColor: color.value,
-                      color: isLightColor(color.value)
-                        ? "#000000"
-                        : "#ffffff",
+                      color: isLightColor(color.value) ? "#000000" : "#ffffff",
                       minWidth: "60px",
                       textAlign: "center",
                     },
