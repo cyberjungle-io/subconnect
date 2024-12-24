@@ -484,9 +484,9 @@ export class SizeProcessor {
       if (Object.keys(changes).length > 0) {
         return {
           style: changes,
-          message: `Set size: ${
+          message: `Updated ${
             isBigger ? "increased" : "decreased"
-          } component dimensions`,
+          } size`,
           type: "COMMAND_EXECUTED",
         };
       }
