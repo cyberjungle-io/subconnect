@@ -73,6 +73,7 @@ export class SpacingProcessor {
 
     // Helper function to parse spacing value
     const parseSpacing = (value) => {
+      console.log("Parsing spacing value:", value);
       if (!value || value === "null") return 0;
       const match = String(value).match(/^(-?\d+(?:\.\d+)?)/);
       return match ? parseFloat(match[1]) : 0;
@@ -80,6 +81,7 @@ export class SpacingProcessor {
 
     // Helper function to get unit from value
     const getUnit = (value) => {
+      console.log("Getting unit from value:", value);
       if (!value || value === "null") return "px";
       const match = String(value).match(/[a-z%]+$/i);
       return match ? match[0] : "px";
@@ -87,19 +89,26 @@ export class SpacingProcessor {
 
     // Enhanced adjustSpacing function that handles compound values
     const adjustSpacing = (currentValue, increment) => {
+      console.log("Adjusting spacing:", { currentValue, increment });
+
       // If no value exists, start with 0px
       if (!currentValue || currentValue === "null") {
-        return `${Math.max(0, increment)}px`;
+        const newValue = `${Math.max(0, increment)}px`;
+        console.log("No current value, returning:", newValue);
+        return newValue;
       }
 
       // Split compound values (e.g. "8px 10px 8px 10px")
       const values = currentValue.split(" ");
+      console.log("Split values:", values);
 
       if (values.length === 1) {
         // Single value - adjust it
         const parsedValue = parseSpacing(values[0]);
         const unit = getUnit(values[0]);
-        return `${Math.max(0, parsedValue + increment)}${unit}`;
+        const newValue = `${Math.max(0, parsedValue + increment)}${unit}`;
+        console.log("Adjusted single value:", newValue);
+        return newValue;
       } else {
         // Compound value - adjust all sides
         const adjustedValues = values.map((val) => {
@@ -107,12 +116,15 @@ export class SpacingProcessor {
           const unit = getUnit(val);
           return `${Math.max(0, parsedValue + increment)}${unit}`;
         });
-        return adjustedValues.join(" ");
+        const newValue = adjustedValues.join(" ");
+        console.log("Adjusted compound value:", newValue);
+        return newValue;
       }
     };
 
     // Get the active section from the UI context
     const getActiveSection = () => {
+      console.log("Getting active section");
       const sections = document.querySelectorAll('[class*="text-gray-600"]');
       let activeSection = "padding"; // default
 
@@ -137,6 +149,27 @@ export class SpacingProcessor {
       return activeSection;
     };
 
+    // Handle preset sizes first (small, medium, large)
+    const presetMatch = input.match(/^(small|medium|large)$/i);
+    if (presetMatch) {
+      const activeSection = getActiveSection();
+      const presetValue = presetSizes[presetMatch[1].toLowerCase()];
+      console.log(
+        `Applying ${presetMatch[1]} preset (${presetValue}) to ${activeSection}`
+      );
+
+      return {
+        adjust: (currentStyle) => {
+          console.log(
+            `Setting ${activeSection} to preset value: ${presetValue}`
+          );
+          return {
+            [activeSection]: presetValue,
+          };
+        },
+      };
+    }
+
     // Handle add/remove 5px commands
     if (input.match(/^add\s*5px$/i)) {
       const activeSection = getActiveSection();
@@ -150,10 +183,6 @@ export class SpacingProcessor {
           );
           return {
             [activeSection]: newValue,
-            // Also update the corresponding prop if it exists
-            props: {
-              [activeSection]: newValue,
-            },
           };
         },
       };
@@ -171,22 +200,7 @@ export class SpacingProcessor {
           );
           return {
             [activeSection]: newValue,
-            // Also update the corresponding prop if it exists
-            props: {
-              [activeSection]: newValue,
-            },
           };
-        },
-      };
-    }
-
-    // Handle preset sizes (small, medium, large)
-    const sizeWords = ["small", "medium", "large"];
-    if (sizeWords.includes(input.toLowerCase())) {
-      const activeSection = getActiveSection();
-      return {
-        style: {
-          [activeSection]: presetSizes[input.toLowerCase()],
         },
       };
     }
@@ -200,15 +214,6 @@ export class SpacingProcessor {
 
         if (match) {
           let value = match[1]?.toLowerCase();
-
-          // Handle preset sizes
-          if (value in presetSizes) {
-            return {
-              style: {
-                [property]: presetSizes[value],
-              },
-            };
-          }
 
           // Add 'px' if no unit is specified
           if (value && !value.match(/\d+(?:px|em|rem|%|vw|vh)?$/)) {

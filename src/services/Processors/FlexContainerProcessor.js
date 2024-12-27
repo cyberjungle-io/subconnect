@@ -63,6 +63,40 @@ export class FlexContainerProcessor {
       if (result) {
         console.log(`${Processor.name} matched:`, result);
 
+        // Handle adjustment functions
+        if (result.adjust) {
+          const adjustedValues = result.adjust(component?.style);
+          console.log("Adjusted values:", adjustedValues);
+
+          // Handle props separately if they exist
+          if (adjustedValues.props) {
+            const { props, ...styleValues } = adjustedValues;
+            return {
+              style: {
+                ...component.style,
+                ...styleValues,
+              },
+              props: {
+                ...component.props,
+                ...props,
+              },
+              message: result.message || `Updated spacing`,
+              property: result.property,
+            };
+          }
+
+          // Handle style-only updates
+          return {
+            style: {
+              ...component.style,
+              ...adjustedValues,
+            },
+            message: result.message || `Updated spacing`,
+            property: result.property,
+          };
+        }
+
+        // Handle direct style/props updates
         if (result.style || result.props) {
           return {
             style: {
