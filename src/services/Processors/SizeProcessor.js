@@ -220,55 +220,176 @@ export class SizeProcessor {
             },
           ],
         },
-        {
-          text: "Quick Adjust",
-          type: "info",
-          icon: FaExpandAlt,
-          className: headerClass,
-        },
-        {
-          type: "wrapper",
-          className: "flex gap-1",
-          options: [
-            {
-              text: "bigger",
-              command: "make it bigger",
-              type: "command",
-              icon: FaExpandAlt,
-              className: buttonClass,
-            },
-            {
-              text: "smaller",
-              command: "make it smaller",
-              type: "command",
-              icon: FaCompressAlt,
-              className: buttonClass,
-            },
-            {
-              text: "fit to content",
-              command: "fit to content",
-              type: "command",
-              icon: FaCompress,
-              className: buttonClass,
-            },
-          ],
-        },
       ],
     };
   }
 
-  static processCommand(input, currentStyle = {}) {
+  static processCommand(input, context) {
     console.log("SizeProcessor received input:", input);
-    console.log("Current style:", currentStyle);
+    console.log("Current style:", context);
+
+    // Extract style from context correctly
+    const currentStyle = context?.style || {};
 
     // Helper function to format values
     const formatValue = (value) => {
       if (!value) return null;
+      // If it's just a number, add px
       if (value.match(/^\d+$/)) return `${value}px`;
-      return value;
+      // If it already has units or is a special value, return as is
+      if (
+        value.match(/^(\d+)(px|%|em|rem|vh|vw)$/) ||
+        value === "auto" ||
+        value === "fit-content"
+      ) {
+        return value;
+      }
+      return null;
     };
 
-    // Handle fit content commands first
+    // Handle make bigger/smaller commands
+    const sizeChangePattern =
+      /(?:make|set)\s*(?:it|this)?\s*(bigger|larger|smaller)/i;
+    const sizeMatch = input.match(sizeChangePattern);
+
+    if (sizeMatch) {
+      const isBigger = sizeMatch[1].match(/bigger|larger/i);
+      const changes = {};
+
+      // Helper function to calculate new size
+      const calculateNewSize = (
+        currentValue,
+        unit,
+        isIncrease,
+        dimension = "width"
+      ) => {
+        // Handle percentage values
+        if (unit === "%") {
+          const increment = dimension === "width" ? 10 : 5; // Smaller increment for height
+          const newValue = isIncrease
+            ? Math.min(currentValue + increment, 100)
+            : Math.max(currentValue - increment, 10);
+          return {
+            [dimension]: `${newValue}%`,
+            [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
+              "0",
+            [`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
+              dimension === "width" ? "100%" : "none",
+          };
+        }
+        // Handle pixel values
+        else if (unit === "px") {
+          const baseIncrement = Math.max(Math.floor(currentValue * 0.1), 20); // 10% of current size or minimum 20px
+          const newValue = isIncrease
+            ? currentValue + baseIncrement
+            : Math.max(currentValue - baseIncrement, 50);
+          return {
+            [dimension]: `${newValue}px`,
+            [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
+              "0",
+            [`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
+              "none",
+          };
+        }
+        // Handle fit-content or auto
+        else if (currentValue === "fit-content" || currentValue === "auto") {
+          return {
+            [dimension]: isIncrease ? "100%" : "75%",
+            [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
+              "0",
+            [`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
+              "100%",
+          };
+        }
+        // Default fallback - use percentages for width, pixels for height
+        return {
+          [dimension]:
+            dimension === "width"
+              ? isIncrease
+                ? "100%"
+                : "75%"
+              : isIncrease
+              ? "300px"
+              : "200px",
+          [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]: "0",
+          [`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
+            dimension === "width" ? "100%" : "none",
+        };
+      };
+
+      // Process width
+      if (currentStyle.width) {
+        const widthMatch = currentStyle.width.match(/^([\d.]+)([%px]+|auto)$/);
+        if (widthMatch) {
+          const [_, value, unit] = widthMatch;
+          const currentValue = parseFloat(value);
+          const newSize = calculateNewSize(
+            currentValue,
+            unit,
+            isBigger,
+            "width"
+          );
+          Object.assign(changes, newSize);
+        } else if (
+          currentStyle.width === "fit-content" ||
+          currentStyle.width === "auto"
+        ) {
+          const newSize = calculateNewSize(
+            currentStyle.width,
+            null,
+            isBigger,
+            "width"
+          );
+          Object.assign(changes, newSize);
+        }
+      } else {
+        // Default width behavior if no width is set
+        Object.assign(changes, calculateNewSize(100, "%", isBigger, "width"));
+      }
+
+      // Process height
+      if (currentStyle.height) {
+        const heightMatch = currentStyle.height.match(
+          /^([\d.]+)([%px]+|auto)$/
+        );
+        if (heightMatch) {
+          const [_, value, unit] = heightMatch;
+          const currentValue = parseFloat(value);
+          const newSize = calculateNewSize(
+            currentValue,
+            unit,
+            isBigger,
+            "height"
+          );
+          Object.assign(changes, newSize);
+        } else if (
+          currentStyle.height === "fit-content" ||
+          currentStyle.height === "auto"
+        ) {
+          const newSize = calculateNewSize(
+            currentStyle.height,
+            null,
+            isBigger,
+            "height"
+          );
+          Object.assign(changes, newSize);
+        }
+      } else {
+        // Default height behavior if no height is set
+        Object.assign(changes, calculateNewSize(200, "px", isBigger, "height"));
+      }
+
+      if (Object.keys(changes).length > 0) {
+        return {
+          style: changes,
+          message: `${isBigger ? "Increased" : "Decreased"} size`,
+          type: "COMMAND_EXECUTED",
+          property: "size",
+        };
+      }
+    }
+
+    // Handle fit content commands
     const fitPattern = /fit\s*(?:to)?\s*(content|vertical|horizontal)/i;
     const fitMatch = input.match(fitPattern);
     if (fitMatch) {
@@ -336,6 +457,7 @@ export class SizeProcessor {
             maxWidth: "100%",
           },
           message: `Set width to ${formattedValue}`,
+          type: "COMMAND_EXECUTED",
           property: "width",
         };
       }
@@ -364,125 +486,8 @@ export class SizeProcessor {
                 : "100%",
           },
           message: `Set height to ${formattedValue}`,
-          property: "height",
-        };
-      }
-    }
-
-    // Handle make bigger/smaller commands
-    const sizeChangePattern =
-      /(?:make|set)\s*(?:it|this)?\s*(bigger|larger|smaller)/i;
-    const sizeMatch = input.match(sizeChangePattern);
-
-    if (sizeMatch) {
-      const isBigger = sizeMatch[1].match(/bigger|larger/i);
-      const changes = {};
-
-      // Helper function to calculate new size
-      const calculateNewSize = (
-        currentValue,
-        unit,
-        isIncrease,
-        dimension = "width"
-      ) => {
-        if (unit === "%") {
-          const increment = 10;
-          const newValue = isIncrease
-            ? Math.min(currentValue + increment, 100)
-            : Math.max(currentValue - increment, 25);
-          return {
-            [`${dimension}`]: `${newValue}%`,
-            [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
-              dimension === "width" ? `${newValue}%` : "0",
-            [`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
-              "100%",
-          };
-        } else if (unit === "px") {
-          const increment = 50;
-          const newValue = isIncrease
-            ? currentValue + increment
-            : Math.max(currentValue - increment, 50);
-          return {
-            [`${dimension}`]: `${newValue}px`,
-            [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
-              "0",
-            [`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
-              "100%",
-          };
-        } else if (currentValue === "fit-content" || currentValue === "auto") {
-          // If current size is fit-content, switch to percentage based
-          return {
-            [`${dimension}`]: isIncrease ? "100%" : "75%",
-            [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
-              dimension === "width" ? (isIncrease ? "100%" : "75%") : "0",
-            [`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
-              "100%",
-          };
-        }
-        return null;
-      };
-
-      // Process width
-      if (currentStyle.width) {
-        const widthMatch = currentStyle.width.match(/^([\d.]+)([%px]+|auto)$/);
-        if (widthMatch) {
-          const [_, value, unit] = widthMatch;
-          const currentValue = parseFloat(value);
-          const newSize = calculateNewSize(
-            currentValue,
-            unit,
-            isBigger,
-            "width"
-          );
-          if (newSize) Object.assign(changes, newSize);
-        } else if (
-          currentStyle.width === "fit-content" ||
-          currentStyle.width === "auto"
-        ) {
-          const newSize = calculateNewSize(
-            currentStyle.width,
-            null,
-            isBigger,
-            "width"
-          );
-          if (newSize) Object.assign(changes, newSize);
-        }
-      }
-
-      // Process height
-      if (currentStyle.height) {
-        const heightMatch = currentStyle.height.match(
-          /^([\d.]+)([%px]+|auto)$/
-        );
-        if (heightMatch) {
-          const [_, value, unit] = heightMatch;
-          const currentValue = parseFloat(value);
-          const newSize = calculateNewSize(
-            currentValue,
-            unit,
-            isBigger,
-            "height"
-          );
-          if (newSize) Object.assign(changes, newSize);
-        } else if (
-          currentStyle.height === "fit-content" ||
-          currentStyle.height === "auto"
-        ) {
-          const newSize = calculateNewSize(
-            currentStyle.height,
-            null,
-            isBigger,
-            "height"
-          );
-          if (newSize) Object.assign(changes, newSize);
-        }
-      }
-
-      if (Object.keys(changes).length > 0) {
-        return {
-          style: changes,
-          message: `Updated ${isBigger ? "increased" : "decreased"} size`,
           type: "COMMAND_EXECUTED",
+          property: "height",
         };
       }
     }
