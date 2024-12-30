@@ -13,6 +13,7 @@ import {
   FaGripLinesVertical,
   FaExpandAlt,
 } from "react-icons/fa";
+import { LLMProcessor } from "./LLMProcessor";
 
 export class LayoutProcessor {
   // Update natural language mappings to include simpler terms
@@ -110,6 +111,190 @@ export class LayoutProcessor {
     "reverse wrap": "wrap-reverse",
   };
 
+  // Add metadata for registry
+  static getMetadata() {
+    return {
+      id: "LayoutProcessor",
+      name: "Layout Processor",
+      priority: 95,
+      contextTypes: ["FLEX_CONTAINER", "ALL"],
+      patterns: [
+        // Direct command patterns
+        {
+          pattern: /^(horizontal|vertical)$/i,
+          type: "LAYOUT",
+          priority: 100,
+          property: "flexDirection",
+          examples: ["horizontal", "vertical"],
+        },
+        // Direct wrap commands
+        {
+          pattern: /^(wrap|nowrap|wrap\-reverse)$/i,
+          type: "LAYOUT",
+          priority: 100,
+          property: "flexWrap",
+          examples: ["wrap", "nowrap", "wrap-reverse"],
+        },
+        // Direct justify content commands
+        {
+          pattern: /^(start|end|center|between|around|evenly)$/i,
+          type: "LAYOUT",
+          priority: 100,
+          property: "justifyContent",
+          examples: ["start", "end", "center", "between", "around", "evenly"],
+        },
+        // Direct align items commands
+        {
+          pattern: /^(stretch|baseline|top|bottom|middle)$/i,
+          type: "LAYOUT",
+          priority: 100,
+          property: "alignItems",
+          examples: ["stretch", "baseline", "top", "bottom", "middle"],
+        },
+        {
+          pattern: /(?:flex|direction|justify|align|gap|wrap)/i,
+          type: "LAYOUT",
+          priority: 95,
+          property: "layout",
+          examples: ["set flex direction to row", "align items center"],
+        },
+        {
+          pattern: /(?:horizontal|vertical|row|column)/i,
+          type: "LAYOUT",
+          priority: 90,
+          property: "flexDirection",
+          examples: ["make it horizontal", "change to vertical"],
+        },
+        {
+          pattern: /(?:wrap|nowrap)/i,
+          type: "LAYOUT",
+          priority: 85,
+          property: "flexWrap",
+          examples: ["enable wrap", "no wrap"],
+        },
+        {
+          pattern: /(?:justify|space|distribute)/i,
+          type: "LAYOUT",
+          priority: 85,
+          property: "justifyContent",
+          examples: ["justify content center", "space between items"],
+        },
+        {
+          pattern: /(?:align|stretch|baseline)/i,
+          type: "LAYOUT",
+          priority: 85,
+          property: "alignItems",
+          examples: ["align items center", "stretch items"],
+        },
+      ],
+    };
+  }
+
+  // Add back the original processCommand with modifications
+  static processCommand(input, context) {
+    console.log("LayoutProcessor processing:", input, context);
+    const lowercaseInput = input.toLowerCase().trim();
+
+    // Direct command handling for flexDirection
+    if (lowercaseInput === "horizontal") {
+      return {
+        props: { flexDirection: "row" },
+        confidence: 1.0,
+        message: "Changed layout to horizontal",
+      };
+    }
+
+    if (lowercaseInput === "vertical") {
+      return {
+        props: { flexDirection: "column" },
+        confidence: 1.0,
+        message: "Changed layout to vertical",
+      };
+    }
+
+    // Direct command handling for flexWrap
+    const wrapCommands = {
+      wrap: "wrap",
+      nowrap: "nowrap",
+      "wrap-reverse": "wrap-reverse",
+    };
+    if (wrapCommands[lowercaseInput]) {
+      return {
+        props: { flexWrap: wrapCommands[lowercaseInput] },
+        confidence: 1.0,
+        message: `Changed wrap mode to ${wrapCommands[lowercaseInput]}`,
+      };
+    }
+
+    // Direct command handling for justifyContent
+    const justifyCommands = {
+      start: "flex-start",
+      end: "flex-end",
+      center: "center",
+      between: "space-between",
+      around: "space-around",
+      evenly: "space-evenly",
+    };
+    if (justifyCommands[lowercaseInput]) {
+      return {
+        props: { justifyContent: justifyCommands[lowercaseInput] },
+        confidence: 1.0,
+        message: `Updated justify content to ${justifyCommands[lowercaseInput]}`,
+      };
+    }
+
+    // Direct command handling for alignItems
+    const alignCommands = {
+      stretch: "stretch",
+      baseline: "baseline",
+      top: "flex-start",
+      bottom: "flex-end",
+      middle: "center",
+    };
+    if (alignCommands[lowercaseInput]) {
+      return {
+        props: { alignItems: alignCommands[lowercaseInput] },
+        confidence: 1.0,
+        message: `Updated align items to ${alignCommands[lowercaseInput]}`,
+      };
+    }
+
+    // Natural language mapping handling
+    if (this.naturalLanguageMap[lowercaseInput]) {
+      const value = this.naturalLanguageMap[lowercaseInput];
+      let property;
+
+      if (["row", "column"].includes(value)) {
+        property = "flexDirection";
+      } else if (["wrap", "nowrap", "wrap-reverse"].includes(value)) {
+        property = "flexWrap";
+      } else if (
+        [
+          "flex-start",
+          "flex-end",
+          "center",
+          "space-between",
+          "space-around",
+          "space-evenly",
+        ].includes(value)
+      ) {
+        property = "justifyContent";
+      } else if (["stretch", "baseline"].includes(value)) {
+        property = "alignItems";
+      }
+
+      if (property) {
+        return {
+          props: { [property]: value },
+          confidence: 0.9,
+          message: `Updated ${property} to ${value}`,
+        };
+      }
+    }
+
+    return null;
+  }
+
   static getStylePatterns() {
     return {
       flexDirection: [
@@ -176,89 +361,6 @@ export class LayoutProcessor {
         /(?:space|gap)\s*(?:between|around)\s*(?:rows|lines)/i,
       ],
     };
-  }
-
-  static processCommand(input) {
-    console.log("LayoutProcessor received input:", input);
-    const lowercaseInput = input.toLowerCase().trim();
-
-    // Add direct command matching first
-    if (lowercaseInput === "horizontal") {
-      return {
-        props: {
-          flexDirection: "row",
-        },
-      };
-    }
-
-    if (lowercaseInput === "vertical") {
-      return {
-        props: {
-          flexDirection: "column",
-        },
-      };
-    }
-
-    // Then check natural language map
-    if (this.naturalLanguageMap[lowercaseInput]) {
-      const value = this.naturalLanguageMap[lowercaseInput];
-
-      // Determine the appropriate property based on the value
-      let property;
-      if (["row", "column"].includes(value)) {
-        property = "flexDirection";
-      } else if (["wrap", "nowrap"].includes(value)) {
-        property = "flexWrap";
-      } else if (
-        [
-          "flex-start",
-          "flex-end",
-          "center",
-          "space-between",
-          "space-around",
-          "space-evenly",
-        ].includes(value)
-      ) {
-        const isVerticalAlign =
-          lowercaseInput.includes("vertical") ||
-          lowercaseInput.includes("height") ||
-          lowercaseInput.includes("top") ||
-          lowercaseInput.includes("bottom");
-        property = isVerticalAlign ? "alignItems" : "justifyContent";
-      } else if (["stretch", "baseline"].includes(value)) {
-        property = "alignItems";
-      }
-
-      if (property) {
-        console.log(`Matched layout command: ${property}: ${value}`);
-        return {
-          props: {
-            [property]: value,
-          },
-        };
-      }
-    }
-
-    // If no direct match, try the patterns
-    const patterns = this.getStylePatterns();
-    for (const [property, propertyPatterns] of Object.entries(patterns)) {
-      for (const pattern of propertyPatterns) {
-        const match = lowercaseInput.match(pattern);
-        if (match) {
-          let value = match[1]?.toLowerCase();
-          if (this.naturalLanguageMap[value]) {
-            value = this.naturalLanguageMap[value];
-          }
-          return {
-            props: {
-              [property]: value,
-            },
-          };
-        }
-      }
-    }
-
-    return null;
   }
 
   static getPropertyNames() {
@@ -452,5 +554,39 @@ export class LayoutProcessor {
         },
       ],
     };
+  }
+
+  static getIntentDefinitions() {
+    return [
+      {
+        type: "LAYOUT_UPDATE",
+        description: "User wants to modify layout/direction",
+        examples: [
+          {
+            input: "make it vertical",
+            output: {
+              type: "LAYOUT_UPDATE",
+              targetProperty: "flexDirection",
+              value: "column",
+              confidence: 0.9,
+            },
+          },
+          {
+            input: "center items",
+            output: {
+              type: "LAYOUT_UPDATE",
+              targetProperty: "justifyContent",
+              value: "center",
+              confidence: 0.9,
+            },
+          },
+        ],
+      },
+    ];
+  }
+
+  // Add method to detect layout-specific intents
+  static async detectIntent(input) {
+    return LLMProcessor.detectIntent(input, this.getIntentDefinitions());
   }
 }

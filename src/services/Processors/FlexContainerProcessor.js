@@ -6,6 +6,7 @@ import { ShadowProcessor } from "./ShadowProcessor";
 import { BackgroundProcessor } from "./BackgroundProcessor";
 import { ButtonProcessor } from "./ButtonProcessor";
 import { StyleCommandProcessor } from "./StyleCommandProcessor";
+import { LLMProcessor } from "./LLMProcessor";
 
 export class FlexContainerProcessor {
   static validProcessors = [
@@ -18,7 +19,51 @@ export class FlexContainerProcessor {
     ButtonProcessor,
   ];
 
+  static getMetadata() {
+    return {
+      id: "FlexContainerProcessor",
+      name: "Flex Container Processor",
+      priority: 90,
+      contextTypes: ["FLEX_CONTAINER", "ALL"],
+      patterns: [
+        {
+          pattern: /(?:container|flex|box|layout)/i,
+          type: "COMPONENT",
+          priority: 90,
+          property: "container",
+          examples: ["create flex container", "add container"],
+        },
+        ...LayoutProcessor.getMetadata().patterns,
+      ],
+    };
+  }
+
+  static async processCommand(input, context) {
+    console.log("FlexContainerProcessor processing:", input, context);
+
+    // Try layout processor first
+    const layoutResult = LayoutProcessor.processCommand(input, context);
+    if (layoutResult) {
+      return {
+        ...layoutResult,
+        confidence: layoutResult.confidence + 0.1,
+      };
+    }
+
+    // Process other flex container specific commands
+    return null;
+  }
+
   static processCommand(input, component, buttonClass, context) {
+    if (window.processorRegistry) {
+      return window.processorRegistry.processCommand(input, {
+        ...context,
+        component,
+        buttonClass,
+      });
+    }
+
+    // Fallback to old implementation if registry not available
     console.log("FlexContainerProcessor processing command:", input);
     console.log("Received context:", context);
     console.log("Current component:", component);
@@ -131,5 +176,30 @@ export class FlexContainerProcessor {
       BackgroundProcessor.getSuggestions(headerClass, buttonClass),
       ButtonProcessor.getSuggestions(headerClass, buttonClass),
     ];
+  }
+
+  static getIntentDefinitions() {
+    return [
+      {
+        type: "COMPONENT",
+        description: "User wants to create or modify a flex container",
+        examples: [
+          {
+            input: "create flex container",
+            output: {
+              type: "COMPONENT",
+              targetProperty: "flex_container",
+              value: null,
+              confidence: 0.9,
+            },
+          },
+        ],
+      },
+      ...LayoutProcessor.getIntentDefinitions(), // Include layout intents
+    ];
+  }
+
+  static async detectIntent(input) {
+    return LLMProcessor.detectIntent(input, this.getIntentDefinitions());
   }
 }

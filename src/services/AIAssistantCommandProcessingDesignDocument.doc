@@ -1,0 +1,324 @@
+# AI Assistant Command Processing System Design Document
+
+## Overview
+This document describes the architecture and implementation of the AI command processing system, which combines pattern matching, LLM-based intent detection, and direct command processing for handling user inputs in the application.
+
+## Core Components
+
+### 1. ProcessorRegistry
+The central hub for managing and coordinating all command processors.
+
+**Key Responsibilities:**
+- Maintains registry of all processors
+- Handles processor registration
+- Coordinates command processing flow
+- Manages pattern matching
+- Scores and selects best processor matches
+
+**Command Processing Flow:**
+```javascript
+async processCommand(input, context) {
+  try {
+    // 1. Handle direct commands first
+    const lowercaseInput = input.toLowerCase().trim();
+    if (directCommands[lowercaseInput]) {
+      return layoutProcessor.processor.processCommand(input, context);
+    }
+
+    // 2. Get processor-specific intents
+    const intentResult = await layoutProcessor.processor.detectIntent(input);
+
+    // 3. Find pattern matches
+    const patternMatches = this.findPatternMatches(input);
+
+    // 4. Score results
+    const scoredResults = await this.scoreResults(patternMatches, intentResult, context);
+
+    // 5. Select best processor
+    const bestMatch = this.selectBestMatch(scoredResults);
+
+    // 6. Execute selected processor
+    return await selectedProcessor.processor.processCommand(input, context);
+  } catch (error) {
+    console.error("ProcessorRegistry error:", error);
+    return null;
+  }
+}
+```
+
+### 2. Processors
+Individual processors handle specific types of commands. Each processor follows a standard interface:
+
+```javascript
+class BaseProcessor {
+  static getMetadata() {
+    return {
+      id: "ProcessorId",
+      name: "Processor Name",
+      priority: 0-100,
+      contextTypes: ["COMPONENT_TYPE", "ALL"],
+      patterns: [
+        {
+          pattern: /regex_pattern/i,
+          type: "COMMAND_TYPE",
+          priority: 0-100,
+          property: "targetProperty",
+          examples: ["example commands"]
+        }
+      ]
+    };
+  }
+
+  static getIntentDefinitions() {
+    return [
+      {
+        type: "INTENT_TYPE",
+        description: "Intent description",
+        examples: [
+          {
+            input: "example input",
+            output: {
+              type: "INTENT_TYPE",
+              targetProperty: "property",
+              value: "value",
+              confidence: 0.0-1.0
+            }
+          }
+        ]
+      }
+    ];
+  }
+
+  static processCommand(input, context) {
+    // Process command and return result
+  }
+}
+```
+
+### 3. Command Processing Types
+
+#### A. Direct Commands
+Highest priority processing path for simple, exact commands:
+
+```javascript
+const directCommands = {
+  // Layout commands
+  horizontal: true,
+  vertical: true,
+  wrap: true,
+  nowrap: true,
+  "wrap-reverse": true,
+  
+  // Justify content commands
+  start: true,
+  end: true,
+  center: true,
+  between: true,
+  around: true,
+  evenly: true,
+  
+  // Align items commands
+  stretch: true,
+  baseline: true,
+  top: true,
+  bottom: true,
+  middle: true
+};
+```
+
+#### B. Pattern Matching
+Regular expression based matching with priority scoring:
+
+```javascript
+findPatternMatches(input) {
+  const matches = [];
+  for (const [pattern, config] of this.patterns.entries()) {
+    const match = input.toLowerCase().trim().match(pattern);
+    if (match) {
+      matches.push({
+        pattern: pattern,
+        ...config,
+        matchedValue: match[1] || match[0]
+      });
+    }
+  }
+  return matches;
+}
+```
+
+#### C. LLM Intent Detection
+Uses LLM for complex natural language understanding:
+
+```javascript
+static async detectIntent(input, availableIntents = []) {
+  const llmService = new LLMService();
+  
+  const intentDescriptions = availableIntents
+    .map(intent => `      - "${intent.type}": ${intent.description}`)
+    .join('\n');
+
+  const examples = availableIntents
+    .map(intent => intent.examples || [])
+    .flat()
+    .map(example => 
+      `      Input: "${example.input}"\n      ${JSON.stringify(example.output)}`
+    )
+    .join('\n\n');
+
+  const prompt = `
+    Analyze the following user input and match it to one of these intents:
+    ${intentDescriptions}
+    ...
+  `;
+
+  const response = await llmService.sendMessage(prompt);
+  return JSON.parse(response.content);
+}
+```
+
+### 4. Error Handling
+
+```javascript
+class ProcessorErrorBoundary extends React.Component {
+  state = { 
+    hasError: false,
+    error: null,
+    errorInfo: null
+  };
+
+  componentDidCatch(error, errorInfo) {
+    console.error("ProcessorErrorBoundary caught an error:", error, errorInfo);
+    this.setState({ error, errorInfo });
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-boundary">
+          <h3>AI Assistant Error</h3>
+          <p>Something went wrong with the AI Assistant.</p>
+          {process.env.NODE_ENV === 'development' && (
+            <details>
+              <summary>Error Details</summary>
+              <pre>{this.state.error?.toString()}</pre>
+            </details>
+          )}
+          <button onClick={() => {
+            this.setState({ hasError: false });
+            window.processorRegistry = new ProcessorRegistry();
+          }}>
+            Try Again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+```
+
+## Integration
+
+### Provider Setup
+```javascript
+// App.js
+function App() {
+  return (
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <ProcessorRegistryProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </ProcessorRegistryProvider>
+      </PersistGate>
+    </Provider>
+  );
+}
+```
+
+### Processor Registration
+```javascript
+// ProcessorRegistryContext.js
+export function ProcessorRegistryProvider({ children }) {
+  const registry = new ProcessorRegistry();
+
+  useEffect(() => {
+    // Make registry globally available
+    window.processorRegistry = registry;
+
+    // Register processors in priority order
+    registry.registerProcessor(LayoutProcessor.getMetadata(), LayoutProcessor);
+    registry.registerProcessor(FlexContainerProcessor.getMetadata(), FlexContainerProcessor);
+    // ... register other processors
+
+    return () => {
+      delete window.processorRegistry;
+    };
+  }, [registry]);
+
+  return (
+    <ProcessorErrorBoundary>
+      <ProcessorRegistryContext.Provider value={registry}>
+        {children}
+      </ProcessorRegistryContext.Provider>
+    </ProcessorErrorBoundary>
+  );
+}
+```
+
+## File Structure
+```
+src/services/
+├── AIAssistantCommandProcessingDesignDocument.doc
+├── ProcessorRegistry.js
+├── ProcessorRegistryContext.js
+├── ProcessorErrorBoundary.js
+├── aiExecutor.js
+├── Processors/
+│   ├── LLMProcessor.js
+│   ├── LayoutProcessor.js
+│   ├── FlexContainerProcessor.js
+│   └── ... other processors
+└── llm/
+    └── llmService.js
+```
+
+## Best Practices
+
+1. **Direct Commands First**
+   - Check for exact matches before LLM processing
+   - Maintain a map of valid direct commands
+   - Use high priority (100) for direct command patterns
+
+2. **Pattern Matching**
+   - Use specific regex patterns
+   - Include examples in metadata
+   - Assign appropriate priorities
+
+3. **LLM Processing**
+   - Use for complex natural language
+   - Provide clear intent definitions
+   - Include representative examples
+
+4. **Error Handling**
+   - Use error boundaries
+   - Provide recovery options
+   - Log errors appropriately
+
+## Future Enhancements
+
+1. **Command Chaining**
+   - Allow multiple commands in sequence
+   - Handle dependencies between commands
+
+2. **Context Awareness**
+   - Improve component type handling
+   - Consider previous commands
+   - Remember user preferences
+
+3. **Performance Optimization**
+   - Cache LLM results
+   - Optimize pattern matching
+   - Batch similar commands
+

@@ -4,46 +4,49 @@ import { updateComponent, aiAddComponent } from "../../features/editorSlice";
 import { componentConfig } from "../../components/Components/componentConfig";
 
 export class LLMProcessor {
-  static async detectIntent(input) {
+  static async detectIntent(input, availableIntents = []) {
     const llmService = new LLMService();
+
+    // Build dynamic prompt based on available intents
+    const intentDescriptions = availableIntents
+      .map((intent) => `      - "${intent.type}": ${intent.description}`)
+      .join("\n");
+
+    const examples = availableIntents
+      .map((intent) => intent.examples || [])
+      .flat()
+      .map(
+        (example) =>
+          `      Input: "${example.input}"\n      ${JSON.stringify(
+            example.output
+          )}`
+      )
+      .join("\n\n");
+
     const prompt = `
       Analyze the following user input and match it to one of these intents:
-      - "ADD_COMPONENT": User wants to add a new component
-      - "STYLE_UPDATE": User wants to modify component styles
-      
-      For ADD_COMPONENT, set targetProperty to the component name.
+${intentDescriptions}
       
       Return ONLY valid JSON in this exact format:
       {
-        "type": "ADD_COMPONENT or STYLE_UPDATE",
-        "targetProperty": "component name or style property",
+        "type": "${availableIntents.map((i) => i.type).join(" or ")}",
+        "targetProperty": "property name",
         "value": "target value if applicable",
         "confidence": number between 0 and 1
       }
 
-      Example for component:
-      {"type": "ADD_COMPONENT", "targetProperty": "container", "value": null, "confidence": 0.9}
+      Examples:
+${examples}
+
+      User input: ${input}
     `;
 
     try {
-      const response = await llmService.sendMessage(
-        prompt + "\n\nUser input: " + input
-      );
-      // Clean the response content to ensure it's valid JSON
-      const cleanedContent = response.content
-        .trim()
-        .replace(/^[^{]*/, "")
-        .replace(/[^}]*$/, "");
-      return JSON.parse(cleanedContent);
+      const response = await llmService.sendMessage(prompt);
+      return JSON.parse(response.content);
     } catch (error) {
-      console.error("Error parsing LLM response:", error);
-      // Return a safe fallback that won't break the flow
-      return {
-        type: "UNKNOWN",
-        targetProperty: null,
-        value: null,
-        confidence: 0,
-      };
+      console.error("Error in detectIntent:", error);
+      throw error;
     }
   }
 
