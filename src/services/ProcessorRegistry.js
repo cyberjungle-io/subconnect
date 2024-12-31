@@ -57,9 +57,50 @@ export class ProcessorRegistry {
         top: true,
         bottom: true,
         middle: true,
+        // Add spacing presets
+        small: true,
+        medium: true,
+        large: true,
+        // Add spacing adjustments
+        "add 5px": true,
+        "remove 5px": true,
       };
 
       if (directCommands[lowercaseInput]) {
+        // Check for spacing commands first
+        if (
+          ["small", "medium", "large", "add 5px", "remove 5px"].includes(
+            lowercaseInput
+          )
+        ) {
+          const spacingProcessor = this.processors.get("SpacingProcessor");
+          if (spacingProcessor) {
+            const result = spacingProcessor.processor.processCommand(
+              input,
+              context
+            );
+            // Format result for message display
+            if (result) {
+              if (result.adjust) {
+                const adjustedResult = result.adjust(context?.style || {});
+                return {
+                  ...adjustedResult,
+                  success: true,
+                  type: "COMMAND_EXECUTED",
+                  content: adjustedResult.message || `Updated spacing`,
+                };
+              }
+              return {
+                ...result,
+                success: true,
+                type: "COMMAND_EXECUTED",
+                content: result.message || `Updated spacing`,
+              };
+            }
+          }
+        }
+
+        // Then check layout commands
         const layoutProcessor = this.processors.get("LayoutProcessor");
         if (layoutProcessor) {
           return layoutProcessor.processor.processCommand(input, context);

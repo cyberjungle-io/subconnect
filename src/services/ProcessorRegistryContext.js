@@ -8,6 +8,7 @@ import { ShadowProcessor } from "./Processors/ShadowProcessor";
 import { BackgroundProcessor } from "./Processors/BackgroundProcessor";
 import { ButtonProcessor } from "./Processors/ButtonProcessor";
 import { LayoutProcessor } from "./Processors/LayoutProcessor";
+import { SpacingProcessor } from "./Processors/SpacingProcessor";
 
 const ProcessorRegistryContext = createContext(null);
 
@@ -140,6 +141,33 @@ export function ProcessorRegistryProvider({ children }) {
         ],
       },
       ButtonProcessor
+    );
+
+    // Register Spacing Processor
+    registry.registerProcessor(
+      {
+        id: "SpacingProcessor",
+        name: "Spacing Processor",
+        priority: 85,
+        contextTypes: ["ALL"],
+        patterns: [
+          {
+            pattern: /^(small|medium|large)$/i,
+            type: "STYLE",
+            priority: 100,
+            property: "spacing",
+            examples: ["small", "medium", "large"],
+          },
+          {
+            pattern: /^(add|remove)\s*5px$/i,
+            type: "STYLE",
+            priority: 100,
+            property: "spacing",
+            examples: ["add 5px", "remove 5px"],
+          },
+        ],
+      },
+      SpacingProcessor
     );
   }, []);
 

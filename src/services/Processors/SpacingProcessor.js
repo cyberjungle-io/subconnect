@@ -159,14 +159,11 @@ export class SpacingProcessor {
       );
 
       return {
-        adjust: (currentStyle) => {
-          console.log(
-            `Setting ${activeSection} to preset value: ${presetValue}`
-          );
-          return {
-            [activeSection]: presetValue,
-          };
+        style: {
+          [activeSection]: presetValue,
         },
+        message: `Set ${activeSection} to ${presetMatch[1].toLowerCase()}`,
+        property: activeSection,
       };
     }
 
@@ -182,7 +179,11 @@ export class SpacingProcessor {
             `Adjusting ${activeSection} from ${currentValue} to ${newValue}`
           );
           return {
-            [activeSection]: newValue,
+            style: {
+              [activeSection]: newValue,
+            },
+            message: `Increased ${activeSection} by 5px`,
+            property: activeSection,
           };
         },
       };
@@ -199,7 +200,11 @@ export class SpacingProcessor {
             `Adjusting ${activeSection} from ${currentValue} to ${newValue}`
           );
           return {
-            [activeSection]: newValue,
+            style: {
+              [activeSection]: newValue,
+            },
+            message: `Decreased ${activeSection} by 5px`,
+            property: activeSection,
           };
         },
       };
