@@ -91,6 +91,30 @@ export class BorderProcessor {
     let matchFound = false;
     let result = null;
 
+    // Extract current border values - Fix parsing logic
+    let currentBorderWidth = 0;
+    if (currentStyle?.borderWidth) {
+      // Handle both single values and space-separated values
+      const borderWidths = currentStyle.borderWidth.split(" ");
+      currentBorderWidth = parseInt(borderWidths[0]) || 0;
+    } else if (currentStyle?.style?.borderWidth) {
+      // Check nested style object if exists
+      const borderWidths = currentStyle.style.borderWidth.split(" ");
+      currentBorderWidth = parseInt(borderWidths[0]) || 0;
+    }
+
+    const currentBorderStyle =
+      currentStyle?.borderStyle || currentStyle?.style?.borderStyle || "solid";
+    const currentBorderColor =
+      currentStyle?.borderColor || currentStyle?.style?.borderColor || "black";
+
+    console.log("Current border values:", {
+      width: currentBorderWidth,
+      style: currentBorderStyle,
+      color: currentBorderColor,
+      rawStyle: currentStyle,
+    });
+
     // Check for custom color request first
     if (
       input.includes("custom") ||
@@ -214,23 +238,33 @@ export class BorderProcessor {
 
     // Handle increment/decrement patterns
     if (input.match(/^add\s*1px\s*(?:to\s*)?border$/i)) {
-      const currentWidth = parseInt(currentStyle.borderWidth) || 0;
+      console.log("Adding 1px to border width:", currentBorderWidth);
+      const newWidth = currentBorderWidth + 1;
+      console.log("New border width will be:", newWidth);
+
       return {
         style: {
-          borderWidth: `${currentWidth + 1}px`,
-          borderStyle: currentStyle.borderStyle || "solid",
-          borderColor: currentStyle.borderColor || "black",
+          borderWidth: `${newWidth}px`,
+          borderStyle: currentBorderStyle,
+          borderColor: currentBorderColor,
         },
       };
     }
 
     if (input.match(/^remove\s*1px\s*(?:from\s*)?border$/i)) {
-      const currentWidth = parseInt(currentStyle.borderWidth) || 0;
+      const newWidth = Math.max(0, currentBorderWidth - 1);
+      console.log(
+        "Removing 1px from border width:",
+        currentBorderWidth,
+        "->",
+        newWidth
+      );
+
       return {
         style: {
-          borderWidth: `${Math.max(0, currentWidth - 1)}px`,
-          borderStyle: currentStyle.borderStyle || "solid",
-          borderColor: currentStyle.borderColor || "black",
+          borderWidth: `${newWidth}px`,
+          borderStyle: currentBorderStyle,
+          borderColor: currentBorderColor,
         },
       };
     }

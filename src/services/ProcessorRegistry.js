@@ -13,6 +13,15 @@ export class ProcessorRegistry {
       throw new Error("Processor metadata must include id and patterns");
     }
 
+    // Special handling for border-related patterns
+    if (metadata.id === "BorderProcessor") {
+      metadata.patterns = metadata.patterns.map((pattern) => ({
+        ...pattern,
+        priority: pattern.priority || 90, // Give border patterns high priority
+        contextTypes: [...(pattern.contextTypes || []), "ALL"],
+      }));
+    }
+
     this.processors.set(metadata.id, {
       metadata,
       processor,
@@ -32,6 +41,20 @@ export class ProcessorRegistry {
 
   async processCommand(input, context) {
     try {
+      // Check for border-specific commands first
+      if (input.toLowerCase().includes("border")) {
+        const borderProcessor = this.processors.get("BorderProcessor");
+        if (borderProcessor) {
+          const result = await borderProcessor.processor.processCommand(
+            input,
+            context
+          );
+          if (result) {
+            return result;
+          }
+        }
+      }
+
       // Handle direct commands first
       const lowercaseInput = input.toLowerCase().trim();
 

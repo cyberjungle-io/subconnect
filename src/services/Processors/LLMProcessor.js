@@ -17,23 +17,27 @@ export class LLMProcessor {
       .flat()
       .map(
         (example) =>
-          `      Input: "${example.input}"\n      ${JSON.stringify(
+          `      Input: "${example.input}"\n      Output: ${JSON.stringify(
             example.output
           )}`
       )
       .join("\n\n");
 
     const prompt = `
+      You are a command processor that must output ONLY valid JSON.
+      
       Analyze the following user input and match it to one of these intents:
 ${intentDescriptions}
       
-      Return ONLY valid JSON in this exact format:
+      You must return ONLY a JSON object in this exact format:
       {
         "type": "${availableIntents.map((i) => i.type).join(" or ")}",
         "targetProperty": "property name",
         "value": "target value if applicable",
         "confidence": number between 0 and 1
       }
+
+      Do not include any explanations or text outside the JSON.
 
       Examples:
 ${examples}
@@ -43,10 +47,29 @@ ${examples}
 
     try {
       const response = await llmService.sendMessage(prompt);
-      return JSON.parse(response.content);
+      const content = response.content.trim();
+
+      // Validate that the response looks like JSON
+      if (!content.startsWith("{") || !content.endsWith("}")) {
+        console.error("Invalid LLM response format:", content);
+        return {
+          type: "UNKNOWN",
+          targetProperty: null,
+          value: null,
+          confidence: 0,
+        };
+      }
+
+      return JSON.parse(content);
     } catch (error) {
       console.error("Error in detectIntent:", error);
-      throw error;
+      // Return a safe fallback
+      return {
+        type: "UNKNOWN",
+        targetProperty: null,
+        value: null,
+        confidence: 0,
+      };
     }
   }
 
