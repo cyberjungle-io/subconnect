@@ -84,14 +84,18 @@ export class ProcessorRegistry {
               if (result.adjust) {
                 const adjustedResult = result.adjust(context?.style || {});
                 return {
-                  ...adjustedResult,
+                  style: adjustedResult.style,
+                  message: adjustedResult.message,
+                  property: adjustedResult.property,
                   success: true,
                   type: "COMMAND_EXECUTED",
                   content: adjustedResult.message || `Updated spacing`,
                 };
               }
               return {
-                ...result,
+                style: result.style,
+                message: result.message,
+                property: result.property,
                 success: true,
                 type: "COMMAND_EXECUTED",
                 content: result.message || `Updated spacing`,

@@ -164,6 +164,9 @@ export class SpacingProcessor {
         },
         message: `Set ${activeSection} to ${presetMatch[1].toLowerCase()}`,
         property: activeSection,
+        success: true,
+        type: "COMMAND_EXECUTED",
+        content: `Set ${activeSection} to ${presetMatch[1].toLowerCase()}`,
       };
     }
 
@@ -182,8 +185,11 @@ export class SpacingProcessor {
             style: {
               [activeSection]: newValue,
             },
-            message: `Increased ${activeSection} by 5px`,
+            message: `Updated ${activeSection} by adding 5px`,
             property: activeSection,
+            success: true,
+            type: "COMMAND_EXECUTED",
+            content: `Updated ${activeSection} by adding 5px`,
           };
         },
       };
@@ -203,8 +209,11 @@ export class SpacingProcessor {
             style: {
               [activeSection]: newValue,
             },
-            message: `Decreased ${activeSection} by 5px`,
+            message: `Updated ${activeSection} by removing 5px`,
             property: activeSection,
+            success: true,
+            type: "COMMAND_EXECUTED",
+            content: `Updated ${activeSection} by removing 5px`,
           };
         },
       };
