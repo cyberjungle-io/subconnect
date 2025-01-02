@@ -21,6 +21,25 @@ import {
 export class ShadowProcessor {
   static pendingCustomization = null;
 
+  static isLightColor(color) {
+    // Convert hex to RGB
+    let r, g, b;
+    if (color.startsWith("#")) {
+      const hex = color.replace("#", "");
+      r = parseInt(hex.substr(0, 2), 16);
+      g = parseInt(hex.substr(2, 2), 16);
+      b = parseInt(hex.substr(4, 2), 16);
+    } else if (color.startsWith("rgb")) {
+      [r, g, b] = color.match(/\d+/g).map(Number);
+    } else {
+      return true; // Default to dark text for named colors
+    }
+
+    // Calculate relative luminance
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5;
+  }
+
   static getStylePatterns() {
     return {
       boxShadow: [
@@ -184,7 +203,11 @@ export class ShadowProcessor {
     };
   }
 
-  static processCommand(input, currentStyle = {}) {
+  static processCommand(
+    input,
+    currentStyle = {},
+    buttonClass = "px-2 py-1 rounded-md shadow-sm"
+  ) {
     console.log(
       "ShadowProcessor received input:",
       input,
@@ -322,6 +345,95 @@ export class ShadowProcessor {
         range = "-10px to 20px";
       } else if (lowercaseInput.includes("color")) {
         property = "color";
+        return {
+          type: "PROMPT",
+          message: "What color would you like to use?",
+          options: [
+            {
+              type: "wrapper",
+              className: "flex flex-wrap gap-1",
+              options: (state) => {
+                const colorTheme = state?.colorTheme || [];
+                const defaultButtonClass = "px-2 py-1 rounded-md shadow-sm";
+                const finalButtonClass = buttonClass || defaultButtonClass;
+
+                // Create array of theme colors
+                const themeButtons =
+                  colorTheme.length === 0
+                    ? [
+                        {
+                          text: "black",
+                          command: `set ${isInner ? "inner" : "outer"} shadow color to black`,
+                          type: "command",
+                          icon: FaPalette,
+                          className: finalButtonClass,
+                          style: {
+                            backgroundColor: "#000000",
+                            color: "#ffffff",
+                            minWidth: "60px",
+                            textAlign: "center",
+                          },
+                        },
+                        {
+                          text: "gray",
+                          command: `set ${isInner ? "inner" : "outer"} shadow color to gray`,
+                          type: "command",
+                          icon: FaPalette,
+                          className: finalButtonClass,
+                          style: {
+                            backgroundColor: "#808080",
+                            color: "#ffffff",
+                            minWidth: "60px",
+                            textAlign: "center",
+                          },
+                        },
+                        {
+                          text: "blue",
+                          command: `set ${isInner ? "inner" : "outer"} shadow color to blue`,
+                          type: "command",
+                          icon: FaPalette,
+                          className: finalButtonClass,
+                          style: {
+                            backgroundColor: "#0000ff",
+                            color: "#ffffff",
+                            minWidth: "60px",
+                            textAlign: "center",
+                          },
+                        },
+                      ]
+                    : colorTheme.map((color) => ({
+                        text: color.name,
+                        command: `set ${isInner ? "inner" : "outer"} shadow color to ${color.value}`,
+                        type: "command",
+                        icon: FaPalette,
+                        className: finalButtonClass,
+                        style: {
+                          backgroundColor: color.value,
+                          color: this.isLightColor(color.value) ? "#000000" : "#ffffff",
+                          minWidth: "60px",
+                          textAlign: "center",
+                        },
+                      }));
+
+                return [
+                  ...themeButtons,
+                  {
+                    text: "Formats: color names, hex (#FF0000), or rgb(255, 0, 0)",
+                    type: "info",
+                    className: "w-full text-xs text-gray-600 mt-2 mb-1",
+                  },
+                  {
+                    text: "Example: set shadow color to #FF0000",
+                    type: "info",
+                    className: "text-xs text-gray-600 italic",
+                  },
+                ];
+              },
+            },
+          ],
+          property: `${isInner ? "inner" : "outer"}ShadowColor`,
+          context: isInner ? "innerShadow" : "outerShadow",
+        };
       } else if (lowercaseInput.includes("opacity")) {
         property = "opacity";
         example = "0.3";
@@ -671,13 +783,6 @@ export class ShadowProcessor {
                   className: buttonClass,
                   command: "customize outer shadow color",
                 },
-                {
-                  text: "Opacity",
-                  type: "command",
-                  icon: FaAdjust,
-                  className: buttonClass,
-                  command: "customize outer shadow opacity",
-                },
               ],
             },
           ],
@@ -757,13 +862,6 @@ export class ShadowProcessor {
                   icon: FaPalette,
                   className: buttonClass,
                   command: "customize inner shadow color",
-                },
-                {
-                  text: "Opacity",
-                  type: "command",
-                  icon: FaAdjust,
-                  className: buttonClass,
-                  command: "customize inner shadow opacity",
                 },
               ],
             },
