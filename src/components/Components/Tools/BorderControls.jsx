@@ -5,7 +5,6 @@ import { FaLink, FaUnlink } from 'react-icons/fa'; // Import chain link icons
 const UNITS = ['px', '%', 'em', 'rem', 'vw', 'vh'];
 
 const BorderControls = ({ style, onStyleChange }) => {
-  const [showBorder, setShowBorder] = useState(true);
   const [borderWidth, setBorderWidth] = useState({ top: '1px', right: '1px', bottom: '1px', left: '1px' });
   const [borderStyle, setBorderStyle] = useState('solid');
   const [borderColor, setBorderColor] = useState('#000000');
@@ -14,11 +13,6 @@ const BorderControls = ({ style, onStyleChange }) => {
   const [allBorderRadius, setAllBorderRadius] = useState('1px');
   const [showAllBorderWidth, setShowAllBorderWidth] = useState(true);
   const [showAllBorderRadius, setShowAllBorderRadius] = useState(true);
-  const [previousBorderState, setPreviousBorderState] = useState(null);
-
-  // Update the button classes
-  const activeButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300";
-  const inactiveButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]";
 
   useEffect(() => {
     if (style.borderWidth) {
@@ -39,7 +33,6 @@ const BorderControls = ({ style, onStyleChange }) => {
       setBorderRadius({ topLeft: '1px', topRight: '1px', bottomRight: '1px', bottomLeft: '1px' });
       setAllBorderRadius('1px');
     }
-    setShowBorder(style.borderWidth !== '0px');
   }, [style]);
 
   const handleBorderChange = useCallback((property, value) => {
@@ -133,42 +126,6 @@ const BorderControls = ({ style, onStyleChange }) => {
       }
     }
   }, [handleSingleBorderWidthChange, handleSingleBorderRadiusChange]);
-
-  const toggleBorder = useCallback(() => {
-    setShowBorder(prev => !prev);
-    if (showBorder) {
-      // If turning off the border, save the current state and set border to none
-      setPreviousBorderState({
-        borderWidth: `${borderWidth.top} ${borderWidth.right} ${borderWidth.bottom} ${borderWidth.left}`,
-        borderStyle,
-        borderColor,
-        borderRadius: `${borderRadius.topLeft} ${borderRadius.topRight} ${borderRadius.bottomRight} ${borderRadius.bottomLeft}`
-      });
-      onStyleChange({
-        borderWidth: '0px',
-        borderStyle: 'none',
-        borderColor: 'transparent',
-        borderRadius: '0px'
-      });
-    } else {
-      // If turning on the border, restore the previous state or use default values
-      const newState = previousBorderState || {
-        borderWidth: '1px',
-        borderStyle: 'solid',
-        borderColor: '#000000',
-        borderRadius: '0px'
-      };
-      onStyleChange(newState);
-      
-      // Update local state
-      const [top, right, bottom, left] = newState.borderWidth.split(' ');
-      setBorderWidth({ top, right: right || top, bottom: bottom || top, left: left || right || top });
-      setBorderStyle(newState.borderStyle);
-      setBorderColor(newState.borderColor);
-      const [topLeft, topRight, bottomRight, bottomLeft] = newState.borderRadius.split(' ');
-      setBorderRadius({ topLeft, topRight: topRight || topLeft, bottomRight: bottomRight || topLeft, bottomLeft: bottomLeft || topRight || topLeft });
-    }
-  }, [showBorder, borderWidth, borderStyle, borderColor, borderRadius, onStyleChange]);
 
   const renderInput = (side, value, setter, property) => (
     <div className="flex flex-col items-center">
@@ -393,24 +350,13 @@ const BorderControls = ({ style, onStyleChange }) => {
 
   return (
     <div className="border-controls space-y-4">
-      <div className="flex w-full space-x-2">
-        <button
-          onClick={toggleBorder}
-          className={showBorder ? activeButtonClass : inactiveButtonClass}
-        >
-          Border
-        </button>
+      <div className="pt-4">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Border</h3>
+        {styleContent}
+        {widthContent}
+        {radiusContent}
+        {colorContent}
       </div>
-
-      {showBorder && (
-        <div className="pt-4">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Border</h3>
-          {styleContent}
-          {widthContent}
-          {radiusContent}
-          {colorContent}
-        </div>
-      )}
     </div>
   );
 };
