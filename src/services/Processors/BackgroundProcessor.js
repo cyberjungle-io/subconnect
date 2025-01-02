@@ -94,6 +94,100 @@ export class BackgroundProcessor {
     console.log("BackgroundProcessor received input:", input);
     const lowercaseInput = input.toLowerCase();
 
+    // Add image upload handling
+    if (/^(?:add|set|change)?\s*(?:the\s+)?background\s+image$/i.test(input)) {
+      return new Promise((resolve, reject) => {
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*,.svg";
+
+        fileInput.onchange = async (event) => {
+          const file = event.target.files[0];
+          if (!file) {
+            resolve(null);
+            return;
+          }
+
+          try {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+              const result = e.target.result;
+
+              if (file.type === "image/svg+xml") {
+                // Import DOMPurify dynamically
+                const DOMPurify = (await import("dompurify")).default;
+                // Sanitize SVG content
+                const sanitizedSvg = DOMPurify.sanitize(result);
+                const encodedSvg = encodeURIComponent(sanitizedSvg);
+
+                resolve({
+                  style: {
+                    backgroundImage: `url("data:image/svg+xml,${encodedSvg}")`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                  },
+                  message: "Set background image successfully",
+                  property: "backgroundImage",
+                });
+              } else {
+                resolve({
+                  style: {
+                    backgroundImage: `url("${result}")`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    backgroundRepeat: "no-repeat",
+                  },
+                  message: "Set background image successfully",
+                  property: "backgroundImage",
+                });
+              }
+            };
+
+            reader.onerror = () => {
+              reject(new Error("Failed to read file"));
+            };
+
+            reader.readAsDataURL(file);
+          } catch (error) {
+            console.error("Error processing image:", error);
+            reject(error);
+          }
+        };
+
+        // Handle file dialog cancellation
+        window.addEventListener(
+          "focus",
+          () => {
+            setTimeout(() => {
+              if (!fileInput.files.length) {
+                resolve(null);
+              }
+            }, 300);
+          },
+          { once: true }
+        );
+
+        fileInput.click();
+      });
+    }
+
+    // Handle remove background image command
+    if (
+      /^(?:remove|clear|delete)\s*(?:the\s+)?background\s+image$/i.test(input)
+    ) {
+      return {
+        style: {
+          backgroundImage: "none",
+          backgroundSize: "auto",
+          backgroundPosition: "initial",
+          backgroundRepeat: "initial",
+        },
+        message: "Removed background image successfully",
+        property: "backgroundImage",
+      };
+    }
+
     // Handle the initial "change background color" command
     if (
       /^(?:change|set|modify)\s*(?:the\s+)?background\s*(?:color)?$/i.test(
@@ -376,14 +470,88 @@ export class BackgroundProcessor {
       options: [
         {
           type: "wrapper",
-          className: "flex gap-1",
+          className: "flex flex-col gap-1",
           options: [
             {
-              text: "change color",
-              type: "command",
-              icon: FaPalette,
-              className: buttonClass,
-              command: "change background color",
+              type: "wrapper",
+              className: "flex flex-wrap gap-1",
+              options: (state) => {
+                const colorTheme = state?.colorTheme || [];
+
+                // Create array of theme colors
+                const themeButtons =
+                  colorTheme.length === 0
+                    ? [
+                        {
+                          text: "black",
+                          command: "set background color to black",
+                          type: "command",
+                          icon: FaPalette,
+                          className: buttonClass,
+                          style: {
+                            backgroundColor: "#000000",
+                            color: "#ffffff",
+                            minWidth: "60px",
+                            textAlign: "center",
+                          },
+                        },
+                        {
+                          text: "gray",
+                          command: "set background color to gray",
+                          type: "command",
+                          icon: FaPalette,
+                          className: buttonClass,
+                          style: {
+                            backgroundColor: "#808080",
+                            color: "#ffffff",
+                            minWidth: "60px",
+                            textAlign: "center",
+                          },
+                        },
+                        {
+                          text: "blue",
+                          command: "set background color to blue",
+                          type: "command",
+                          icon: FaPalette,
+                          className: buttonClass,
+                          style: {
+                            backgroundColor: "#0000ff",
+                            color: "#ffffff",
+                            minWidth: "60px",
+                            textAlign: "center",
+                          },
+                        },
+                      ]
+                    : colorTheme.map((color) => ({
+                        text: color.name,
+                        command: `set background color to ${color.value}`,
+                        type: "command",
+                        icon: FaPalette,
+                        className: `${buttonClass} relative`,
+                        style: {
+                          backgroundColor: color.value,
+                          color: isLightColor(color.value)
+                            ? "#000000"
+                            : "#ffffff",
+                          minWidth: "60px",
+                          textAlign: "center",
+                        },
+                      }));
+
+                return [
+                  ...themeButtons,
+                  {
+                    text: "Formats: color names, hex (#FF0000), or rgb(255, 0, 0)",
+                    type: "info",
+                    className: "w-full text-xs text-gray-600 mt-2 mb-1",
+                  },
+                  {
+                    text: "Example: set background color to #FF0000",
+                    type: "info",
+                    className: "text-xs text-gray-600 italic",
+                  },
+                ];
+              },
             },
             {
               text: "add image",
@@ -391,13 +559,6 @@ export class BackgroundProcessor {
               icon: FaPaintBrush,
               className: buttonClass,
               command: "add background image",
-            },
-            {
-              text: "remove background",
-              type: "command",
-              icon: FaTimes,
-              className: buttonClass,
-              command: "remove background color",
             },
           ],
         },
