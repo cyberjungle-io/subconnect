@@ -205,16 +205,74 @@ export class ShadowProcessor {
 
   static processCommand(
     input,
-    currentStyle = {},
+    context = {},
     buttonClass = "px-2 py-1 rounded-md shadow-sm"
   ) {
     console.log(
       "ShadowProcessor received input:",
       input,
-      "Current style:",
-      currentStyle
+      "Current context:",
+      context
     );
+
+    // Extract style from context properly
+    const currentStyle = context?.style || context || {};
     const lowercaseInput = input.toLowerCase();
+
+    // Handle direct color commands for shadow
+    const colorCommandPattern =
+      /(?:set|change|make)\s+(?:the\s+)?(?:inner|outer)?\s*shadow\s+color\s+(?:to\s+)?(#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|[a-z]+|\([^)]+\))/i;
+    const colorMatch = input.match(colorCommandPattern);
+
+    if (colorMatch) {
+      const color = colorMatch[1] || colorMatch[0].split(" ").pop();
+      const isInner = lowercaseInput.includes("inner");
+
+      // Get current shadow state
+      const currentShadow = currentStyle.boxShadow || "none";
+      console.log("Current shadow:", currentShadow);
+
+      const shadows = currentShadow.split(/,(?![^(]*\))/g).map((s) => s.trim());
+
+      // Find the relevant shadow (inner or outer)
+      const shadowIndex = isInner
+        ? shadows.findIndex((s) => s.includes("inset"))
+        : shadows.findIndex((s) => !s.includes("inset"));
+
+      if (shadowIndex === -1) {
+        // If no existing shadow, create new one with default values
+        const newShadow = isInner
+          ? this.getShadowPresets().inner.medium
+          : this.getShadowPresets().outer.medium;
+
+        newShadow.color = color;
+        const shadowString = this.generateShadowString(newShadow, isInner);
+        shadows.push(shadowString);
+      } else {
+        // Parse existing shadow
+        const shadowValues = this.parseShadowString(shadows[shadowIndex]);
+        shadowValues.color = color;
+        const newShadowString = this.generateShadowString(
+          shadowValues,
+          isInner
+        );
+        console.log("Generated new shadow string:", newShadowString);
+        shadows[shadowIndex] = newShadowString;
+      }
+
+      const newBoxShadow = shadows.join(", ");
+      console.log("Final box-shadow value:", newBoxShadow);
+
+      return {
+        style: {
+          boxShadow: newBoxShadow,
+        },
+        message: `Updated ${
+          isInner ? "inner" : "outer"
+        } shadow color to ${color}`,
+        property: "boxShadow",
+      };
+    }
 
     // Handle shadow removal first
     if (
@@ -363,7 +421,9 @@ export class ShadowProcessor {
                     ? [
                         {
                           text: "black",
-                          command: `set ${isInner ? "inner" : "outer"} shadow color to black`,
+                          command: `set ${
+                            isInner ? "inner" : "outer"
+                          } shadow color to black`,
                           type: "command",
                           icon: FaPalette,
                           className: finalButtonClass,
@@ -376,7 +436,9 @@ export class ShadowProcessor {
                         },
                         {
                           text: "gray",
-                          command: `set ${isInner ? "inner" : "outer"} shadow color to gray`,
+                          command: `set ${
+                            isInner ? "inner" : "outer"
+                          } shadow color to gray`,
                           type: "command",
                           icon: FaPalette,
                           className: finalButtonClass,
@@ -389,7 +451,9 @@ export class ShadowProcessor {
                         },
                         {
                           text: "blue",
-                          command: `set ${isInner ? "inner" : "outer"} shadow color to blue`,
+                          command: `set ${
+                            isInner ? "inner" : "outer"
+                          } shadow color to blue`,
                           type: "command",
                           icon: FaPalette,
                           className: finalButtonClass,
@@ -403,13 +467,17 @@ export class ShadowProcessor {
                       ]
                     : colorTheme.map((color) => ({
                         text: color.name,
-                        command: `set ${isInner ? "inner" : "outer"} shadow color to ${color.value}`,
+                        command: `set ${
+                          isInner ? "inner" : "outer"
+                        } shadow color to ${color.value}`,
                         type: "command",
                         icon: FaPalette,
                         className: finalButtonClass,
                         style: {
                           backgroundColor: color.value,
-                          color: this.isLightColor(color.value) ? "#000000" : "#ffffff",
+                          color: this.isLightColor(color.value)
+                            ? "#000000"
+                            : "#ffffff",
                           minWidth: "60px",
                           textAlign: "center",
                         },
