@@ -69,6 +69,44 @@ export class ShadowProcessor {
         // Intensity modification patterns
         /(?:can you |please |could you )?(?:make|set)\s*(?:the|all|it)?\s*(?:shadows?\s*)?(stronger|weaker|lighter|darker|more intense|less intense|more|less)/i,
         /(?:increase|decrease)\s*(?:the)?\s*(?:shadow\s*)?(?:intensity|strength|effect|darkness)/i,
+
+        // Add specific customization patterns
+        /^customize\s+(?:the\s+)?(?:inner|outer)?\s*shadow\s+(?:x-offset|y-offset|blur|spread|color|opacity)$/i,
+
+        // Direct value patterns for customization - Add high priority
+        {
+          pattern: /^-?\d+(?:\.\d+)?(?:px|em|rem|%)?$/i,
+          type: "SHADOW_VALUE",
+          priority: 100,
+          property: "boxShadow",
+          examples: ["4px", "10", "-2px"],
+        },
+
+        // Color value patterns
+        {
+          pattern: /^#[0-9a-f]{3,6}$/i,
+          type: "SHADOW_VALUE",
+          priority: 100,
+          property: "boxShadow",
+          examples: ["#fff", "#000000"],
+        },
+        {
+          pattern: /^rgba?\([^)]+\)$/i,
+          type: "SHADOW_VALUE",
+          priority: 100,
+          property: "boxShadow",
+          examples: ["rgb(0,0,0)", "rgba(0,0,0,0.5)"],
+        },
+        {
+          pattern: /^[a-z]+$/i,
+          type: "SHADOW_VALUE",
+          priority: 100,
+          property: "boxShadow",
+          examples: ["black", "blue"],
+        },
+
+        // Natural language customization
+        /(?:set|change|make)\s+(?:the\s+)?(?:inner|outer)?\s*shadow\s+(?:x-offset|y-offset|blur|spread)\s+(?:to\s+)?(-?\d+(?:\.\d+)?(?:px|em|rem|%)?)/i,
       ],
     };
   }
@@ -203,6 +241,146 @@ export class ShadowProcessor {
     };
   }
 
+  static handleCustomizationCommand(
+    input,
+    buttonClass = "px-2 py-1 rounded-md shadow-sm"
+  ) {
+    const match = input.match(
+      /customize\s+(?:the\s+)?(inner|outer)?\s*shadow\s+(x-offset|y-offset|blur|spread|color|opacity)/i
+    );
+
+    if (match) {
+      const [_, type, property] = match;
+      const isInner = type === "inner";
+
+      // Map the property names to our internal names
+      const propertyMap = {
+        "x-offset": "xOffset",
+        "y-offset": "yOffset",
+        blur: "blur",
+        spread: "spread",
+        color: "color",
+        opacity: "opacity",
+      };
+
+      // Store the customization state
+      this.pendingCustomization = {
+        isInner,
+        property: propertyMap[property],
+      };
+
+      // Return different prompts based on property type
+      if (property === "color") {
+        return {
+          type: "PROMPT",
+          message: "Enter your custom shadow color:",
+          options: [
+            {
+              type: "wrapper",
+              className: "flex flex-col gap-1",
+              options: [
+                {
+                  type: "wrapper",
+                  className: "flex flex-wrap gap-1",
+                  options: (state) => {
+                    const colorTheme = state?.colorTheme || [];
+
+                    // Create array of theme colors
+                    const themeButtons =
+                      colorTheme.length === 0
+                        ? [
+                            {
+                              text: "black",
+                              command: "black",
+                              type: "command",
+                              icon: FaPalette,
+                              className: buttonClass,
+                              style: {
+                                backgroundColor: "#000000",
+                                color: "#ffffff",
+                                minWidth: "60px",
+                                textAlign: "center",
+                              },
+                            },
+                            {
+                              text: "gray",
+                              command: "gray",
+                              type: "command",
+                              icon: FaPalette,
+                              className: buttonClass,
+                              style: {
+                                backgroundColor: "#808080",
+                                color: "#ffffff",
+                                minWidth: "60px",
+                                textAlign: "center",
+                              },
+                            },
+                            {
+                              text: "blue",
+                              command: "blue",
+                              type: "command",
+                              icon: FaPalette,
+                              className: buttonClass,
+                              style: {
+                                backgroundColor: "#0000ff",
+                                color: "#ffffff",
+                                minWidth: "60px",
+                                textAlign: "center",
+                              },
+                            },
+                          ]
+                        : colorTheme.map((color) => ({
+                            text: color.name,
+                            command: color.value,
+                            type: "command",
+                            icon: FaPalette,
+                            className: buttonClass,
+                            style: {
+                              backgroundColor: color.value,
+                              color: this.isLightColor(color.value)
+                                ? "#000000"
+                                : "#ffffff",
+                              minWidth: "60px",
+                              textAlign: "center",
+                            },
+                          }));
+
+                    // Add format examples
+                    return [
+                      ...themeButtons,
+                      {
+                        text: "Formats: color names, hex (#FF0000), or rgb(255, 0, 0)",
+                        type: "info",
+                        className: "w-full text-xs text-gray-600 mt-2 mb-1",
+                      },
+                      {
+                        text: "Example: set shadow color to #FF0000",
+                        type: "info",
+                        className: "text-xs text-gray-600 italic",
+                      },
+                    ];
+                  },
+                },
+              ],
+            },
+          ],
+          property: "boxShadow",
+          context: "shadow",
+        };
+      }
+
+      return {
+        type: "PROMPT",
+        message: `Please enter a value for the ${
+          type || "outer"
+        } shadow ${property} (e.g., 4px)`,
+        property: "boxShadow",
+        context: "shadow",
+      };
+    }
+    return null;
+  }
+
   static processCommand(
     input,
     context = {},
@@ -214,10 +392,119 @@ export class ShadowProcessor {
       "Current context:",
       context
     );
+    console.log("Pending customization:", this.pendingCustomization);
 
-    // Extract style from context properly
-    const currentStyle = context?.style || context || {};
+    // Add this check at the beginning
+    if (!this.canHandle(input) && !this.pendingCustomization) {
+      return null;
+    }
+
     const lowercaseInput = input.toLowerCase();
+    const currentStyle = context?.style || context || {};
+
+    // Check for customization command first
+    const customizationResult = this.handleCustomizationCommand(
+      input,
+      buttonClass
+    );
+    if (customizationResult) {
+      return customizationResult;
+    }
+
+    // Handle direct numeric/color input when customization is pending
+    if (this.pendingCustomization) {
+      const { isInner, property } = this.pendingCustomization;
+
+      // Check if input is a valid measurement or color
+      const measurementPattern = /^-?\d+(?:\.\d+)?(?:px|em|rem|%)?$/;
+      const colorPattern = /^(#[0-9a-f]{3,6}|rgba?\([^)]+\)|[a-z]+)$/i;
+      const isValidMeasurement = measurementPattern.test(input);
+      const isValidColor = colorPattern.test(input);
+
+      if (!isValidMeasurement && !isValidColor) {
+        // Don't clear pendingCustomization on invalid input
+        return {
+          success: false,
+          message:
+            "Please enter a valid measurement (e.g., 4px) or color value",
+        };
+      }
+
+      // Add px if just a number for measurements
+      const value =
+        isValidMeasurement && !input.match(/[a-z%]/) ? `${input}px` : input;
+
+      // Get current shadow state
+      const currentShadow = currentStyle.boxShadow || "none";
+      const shadows = currentShadow.split(/,(?![^(]*\))/g).map((s) => s.trim());
+
+      // Find relevant shadow
+      const shadowIndex = isInner
+        ? shadows.findIndex((s) => s.includes("inset"))
+        : shadows.findIndex((s) => !s.includes("inset"));
+
+      // Get shadow values
+      let shadowValues =
+        shadowIndex === -1
+          ? isInner
+            ? this.getShadowPresets().inner.medium
+            : this.getShadowPresets().outer.medium
+          : this.parseShadowString(shadows[shadowIndex]);
+
+      // Map property names to shadow properties
+      const propertyMap = {
+        xOffset: "x",
+        yOffset: "y",
+        blur: "blur",
+        spread: "spread",
+        color: "color",
+        opacity: "opacity",
+      };
+
+      // Update the shadow value
+      shadowValues[propertyMap[property]] = value;
+
+      // Generate new shadow string
+      const newShadowString = this.generateShadowString(shadowValues, isInner);
+
+      // Update shadows array
+      if (shadowIndex === -1) {
+        shadows.push(newShadowString);
+      } else {
+        shadows[shadowIndex] = newShadowString;
+      }
+
+      // Only clear pendingCustomization if we're not working with colors
+      // or if the color input was successful
+      if (property !== "color" || (property === "color" && isValidColor)) {
+        this.pendingCustomization = null;
+      }
+
+      const result = {
+        style: {
+          boxShadow: shadows.join(", "),
+        },
+        message: `Updated shadow ${property} to ${value}`,
+        property: "boxShadow",
+      };
+
+      // If it was a color update, maintain the color customization context
+      if (property === "color" && isValidColor) {
+        return {
+          ...result,
+          followUp: {
+            type: "PROMPT",
+            message:
+              "Enter another color or press any other command to finish:",
+            options: customizationResult?.options,
+            property: "boxShadow",
+            context: "shadow",
+          },
+        };
+      }
+
+      return result;
+    }
 
     // Handle direct color commands for shadow
     const colorCommandPattern =
@@ -283,95 +570,6 @@ export class ShadowProcessor {
       return {
         style: {
           boxShadow: "none",
-        },
-      };
-    }
-
-    // Check if we have a pending customization and are receiving a value
-    if (this.pendingCustomization) {
-      const { isInner, property } = this.pendingCustomization;
-      const value = input.trim();
-      this.pendingCustomization = null;
-
-      // Get current shadow state
-      const currentShadow = currentStyle.boxShadow || "none";
-      const shadowParts = currentShadow
-        .split(/,(?![^(]*\))/g)
-        .map((part) => part.trim());
-
-      // Find the relevant shadow (inner or outer)
-      const shadowIndex = isInner
-        ? shadowParts.findIndex((part) => part.includes("inset"))
-        : shadowParts.findIndex((part) => !part.includes("inset"));
-
-      let shadowValues;
-      if (shadowIndex === -1) {
-        // If no existing shadow of this type, use default preset
-        shadowValues = isInner
-          ? this.getShadowPresets().inner.medium
-          : this.getShadowPresets().outer.medium;
-      } else {
-        // Parse existing shadow
-        shadowValues = this.parseShadowString(shadowParts[shadowIndex]);
-      }
-
-      // Store the original color and opacity before any updates
-      const originalColor = shadowValues.color;
-      const originalOpacity = shadowValues.opacity;
-
-      // Update the specified property
-      if (property === "opacity") {
-        const numValue = parseFloat(value);
-        if (!isNaN(numValue)) {
-          shadowValues.opacity = Math.max(0, Math.min(1, numValue));
-          shadowValues.color = originalColor; // Preserve color
-        }
-      } else if (property === "color") {
-        try {
-          const tempDiv = document.createElement("div");
-          tempDiv.style.color = value;
-          document.body.appendChild(tempDiv);
-          const computedColor = window.getComputedStyle(tempDiv).color;
-          document.body.removeChild(tempDiv);
-
-          const rgbMatch = computedColor.match(
-            /rgb\((\d+),\s*(\d+),\s*(\d+)\)/
-          );
-          if (rgbMatch) {
-            const [_, r, g, b] = rgbMatch;
-            shadowValues.color = `#${Number(r)
-              .toString(16)
-              .padStart(2, "0")}${Number(g)
-              .toString(16)
-              .padStart(2, "0")}${Number(b).toString(16).padStart(2, "0")}`;
-            shadowValues.opacity = originalOpacity; // Preserve opacity
-          } else {
-            shadowValues.color = value;
-          }
-        } catch (error) {
-          console.error("Error parsing color:", error);
-          shadowValues.color = value;
-        }
-      } else {
-        // For all other properties (blur, spread, etc.), preserve color and opacity
-        shadowValues[property] = value;
-        shadowValues.color = originalColor;
-        shadowValues.opacity = originalOpacity;
-      }
-
-      // Generate new shadow string
-      const newShadowString = this.generateShadowString(shadowValues, isInner);
-
-      // Update shadow parts array
-      if (shadowIndex === -1) {
-        shadowParts.push(newShadowString);
-      } else {
-        shadowParts[shadowIndex] = newShadowString;
-      }
-
-      return {
-        style: {
-          boxShadow: shadowParts.join(", "),
         },
       };
     }
@@ -949,5 +1147,20 @@ export class ShadowProcessor {
         },
       ],
     };
+  }
+
+  // Add this method to help with pattern matching
+  static canHandle(input) {
+    // Check if we have a pending customization
+    if (this.pendingCustomization) {
+      const measurementPattern = /^-?\d+(?:\.\d+)?(?:px|em|rem|%)?$/;
+      const colorPattern = /^(#[0-9a-f]{3,6}|rgba?\([^)]+\)|[a-z]+)$/i;
+      return measurementPattern.test(input) || colorPattern.test(input);
+    }
+
+    // Check for customization command
+    const customizationPattern =
+      /customize\s+(?:the\s+)?(?:inner|outer)?\s*shadow\s+(?:x-offset|y-offset|blur|spread|color|opacity)/i;
+    return customizationPattern.test(input);
   }
 }

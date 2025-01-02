@@ -44,8 +44,53 @@ export class ProcessorRegistry {
       console.log("ProcessorRegistry processing command:", input);
       console.log("With context:", context);
 
+      // Handle direct shadow value inputs first
+      const shadowValuePattern = /^-?\d+(?:\.\d+)?(?:px|em|rem|%)?$/i;
+      const colorPattern = /^(#[0-9a-f]{3,6}|rgba?\([^)]+\)|[a-z]+)$/i;
+
+      if (shadowValuePattern.test(input) || colorPattern.test(input)) {
+        const shadowProcessor = this.processors.get("ShadowProcessor");
+        if (shadowProcessor?.processor.pendingCustomization) {
+          const result = await shadowProcessor.processor.processCommand(
+            input,
+            context
+          );
+          if (result) {
+            console.log("Shadow value processor result:", result);
+            return result;
+          }
+        }
+      }
+
+      // Get LLM intent
+      const intentResult = await LLMProcessor.detectIntent(input);
+      console.log("LLM Intent detected:", intentResult);
+
+      // Find pattern matches
+      const patternMatches = this.findPatternMatches(input);
+      console.log("Pattern matches found:", patternMatches);
+
+      // If no pattern matches but we have a pending shadow customization,
+      // try processing as a shadow value
+      if (patternMatches.length === 0) {
+        const shadowProcessor = this.processors.get("ShadowProcessor");
+        if (shadowProcessor?.processor.pendingCustomization) {
+          const result = await shadowProcessor.processor.processCommand(
+            input,
+            context
+          );
+          if (result) {
+            console.log("Shadow value processor result:", result);
+            return result;
+          }
+        }
+      }
+
       // Check for border-specific commands first
-      if (input.toLowerCase().includes("border") || input.toLowerCase().includes("radius")) {
+      if (
+        input.toLowerCase().includes("border") ||
+        input.toLowerCase().includes("radius")
+      ) {
         console.log("Detected border/radius command");
         const borderProcessor = this.processors.get("BorderProcessor");
         if (borderProcessor) {
@@ -139,26 +184,6 @@ export class ProcessorRegistry {
         }
       }
 
-      // Get processor-specific intents
-      const layoutProcessor = this.processors.get("LayoutProcessor");
-      const intentResult = await layoutProcessor.processor.detectIntent(input);
-      console.log("LLM Intent detected:", intentResult);
-
-      // 2. Find pattern matches
-      const patternMatches = this.findPatternMatches(input);
-      console.log("Pattern matches found:", patternMatches);
-
-      // Handle direct commands first
-      if (patternMatches.length > 0) {
-        const directMatch = patternMatches.find((m) => m.priority === 100);
-        if (directMatch) {
-          const matchedProcessor = this.processors.get(directMatch.processorId);
-          if (matchedProcessor) {
-            return matchedProcessor.processor.processCommand(input, context);
-          }
-        }
-      }
-
       // 3. Score results combining LLM and pattern matching
       const scoredResults = await this.scoreResults(
         patternMatches,
@@ -214,6 +239,14 @@ export class ProcessorRegistry {
 
       // Base pattern match score (0.1-0.4)
       let score = 0.1 + (match.priority / 100) * 0.3;
+
+      // Give higher score to SHADOW_VALUE type when there's a pending customization
+      if (
+        match.type === "SHADOW_VALUE" &&
+        processor.processor.pendingCustomization
+      ) {
+        score += 0.5;
+      }
 
       // Context relevance (0-0.3)
       if (this.isContextRelevant(processor.metadata, context)) {
