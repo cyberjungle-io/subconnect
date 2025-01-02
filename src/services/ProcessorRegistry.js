@@ -41,8 +41,12 @@ export class ProcessorRegistry {
 
   async processCommand(input, context) {
     try {
+      console.log("ProcessorRegistry processing command:", input);
+      console.log("With context:", context);
+
       // Check for border-specific commands first
-      if (input.toLowerCase().includes("border")) {
+      if (input.toLowerCase().includes("border") || input.toLowerCase().includes("radius")) {
+        console.log("Detected border/radius command");
         const borderProcessor = this.processors.get("BorderProcessor");
         if (borderProcessor) {
           const result = await borderProcessor.processor.processCommand(
@@ -50,6 +54,7 @@ export class ProcessorRegistry {
             context
           );
           if (result) {
+            console.log("Border processor result:", result);
             return result;
           }
         }
@@ -182,10 +187,13 @@ export class ProcessorRegistry {
   }
 
   findPatternMatches(input) {
+    console.log("Finding pattern matches for input:", input);
     const matches = [];
     for (const [pattern, config] of this.patterns.entries()) {
+      console.log("Testing pattern:", pattern);
       const match = input.toLowerCase().trim().match(pattern);
       if (match) {
+        console.log("Found match for pattern:", pattern);
         matches.push({
           pattern: pattern,
           ...config,
@@ -193,6 +201,7 @@ export class ProcessorRegistry {
         });
       }
     }
+    console.log("All matches found:", matches);
     return matches;
   }
 

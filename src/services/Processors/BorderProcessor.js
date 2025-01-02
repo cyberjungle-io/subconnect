@@ -40,12 +40,9 @@ export class BorderProcessor {
         /(?:set|make|change)?\s*(?:the)?\s*border\s*radius\s*(?:to|=|:)?\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh))/i,
         /(?:make|set)?\s*(?:the)?\s*corners?\s*rounded(?:\s*to\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh)))?/i,
         /round(?:ed)?\s*(?:corners?)?\s*(?:to|=|:)?\s*(\d+(?:\.\d+)?(?:px|em|rem|%|vw|vh))?/i,
-        /increase\s*(?:the)?\s*(?:border)?\s*radius(?:\s*a\s*(?:little|bit|tad))?\s*(?:more|higher|bigger)?/i,
-        /decrease\s*(?:the)?\s*(?:border)?\s*radius(?:\s*a\s*(?:little|bit|tad))?\s*(?:more|lower|smaller)?/i,
-        /make\s*(?:the)?\s*(?:border)?\s*radius\s*(?:a\s*(?:little|bit|tad))?\s*(?:bigger|larger|higher|smaller|lower)/i,
-        /^(?:set|make|change)\s*(?:the\s*)?(?:border\s*)?radius\s*(?:to\s*)?(small|medium|large)$/i,
         /^add\s*1px\s*(?:to\s*)?(?:border\s*)?radius$/i,
         /^remove\s*1px\s*(?:from\s*)?(?:border\s*)?radius$/i,
+        /^(?:set|make|change)\s*(?:the\s*)?(?:border\s*)?radius\s*(?:to\s*)?(small|medium|large)$/i,
       ],
       borderStyle: [
         /(?:set|make|change)?\s*(?:the)?\s*border\s*style\s*(?:to|=|:)?\s*(solid|dashed|dotted|double|groove|ridge|inset|outset)/i,
@@ -85,20 +82,84 @@ export class BorderProcessor {
     };
   }
 
+  static getMetadata() {
+    return {
+      id: "BorderProcessor",
+      name: "Border Processor",
+      priority: 80,
+      contextTypes: ["ALL"],
+      patterns: [
+        {
+          pattern: /border\s*(width|style|color|radius)?/i,
+          type: "STYLE",
+          priority: 80,
+          examples: ["add border", "set border width to 2px", "add 1px to radius"],
+        },
+        {
+          pattern: /^add\s*1px\s*(?:to\s*)?(?:border\s*)?radius$/i,
+          type: "STYLE",
+          priority: 100,
+          property: "borderRadius",
+          examples: ["add 1px to radius", "add 1px to border radius"],
+        },
+        {
+          pattern: /^remove\s*1px\s*(?:from\s*)?(?:border\s*)?radius$/i,
+          type: "STYLE",
+          priority: 100,
+          property: "borderRadius",
+          examples: ["remove 1px from radius", "remove 1px from border radius"],
+        },
+        {
+          pattern: /^(?:set|make|change)\s*(?:the\s*)?border\s*radius\s*(?:to\s*)?(small|medium|large)$/i,
+          type: "STYLE",
+          priority: 90,
+          property: "borderRadius",
+          examples: ["set border radius to small", "make border radius large"],
+        },
+        {
+          pattern: /^add\s*1px\s*(?:to\s*)?(?:border|radius)$/i,
+          type: "STYLE",
+          priority: 100,
+          examples: ["add 1px to border", "add 1px to radius"],
+        },
+        {
+          pattern: /^remove\s*1px\s*(?:from\s*)?(?:border|radius)$/i,
+          type: "STYLE",
+          priority: 100,
+          examples: ["remove 1px from border", "remove 1px from radius"],
+        },
+      ],
+    };
+  }
+
   static processCommand(input, currentStyle = {}) {
     const presets = this.getPresets();
     const stylePatterns = this.getStylePatterns();
     let matchFound = false;
     let result = null;
 
-    // Extract current border values - Fix parsing logic
+    // Extract current border values with detailed logging
     let currentBorderWidth = 0;
+    let currentBorderRadius = 0;
+
+    console.log("Processing border command:", input);
+    console.log("Current style:", currentStyle);
+
+    // Improve border radius extraction
+    if (currentStyle?.borderRadius) {
+      const borderRadii = currentStyle.borderRadius.split(" ");
+      currentBorderRadius = parseInt(borderRadii[0]) || 0;
+      console.log("Extracted border radius from borderRadius:", currentBorderRadius);
+    } else if (currentStyle?.style?.borderRadius) {
+      const borderRadii = currentStyle.style.borderRadius.split(" ");
+      currentBorderRadius = parseInt(borderRadii[0]) || 0;
+      console.log("Extracted border radius from style.borderRadius:", currentBorderRadius);
+    }
+
     if (currentStyle?.borderWidth) {
-      // Handle both single values and space-separated values
       const borderWidths = currentStyle.borderWidth.split(" ");
       currentBorderWidth = parseInt(borderWidths[0]) || 0;
     } else if (currentStyle?.style?.borderWidth) {
-      // Check nested style object if exists
       const borderWidths = currentStyle.style.borderWidth.split(" ");
       currentBorderWidth = parseInt(borderWidths[0]) || 0;
     }
@@ -110,6 +171,7 @@ export class BorderProcessor {
 
     console.log("Current border values:", {
       width: currentBorderWidth,
+      radius: currentBorderRadius,
       style: currentBorderStyle,
       color: currentBorderColor,
       rawStyle: currentStyle,
@@ -269,22 +331,36 @@ export class BorderProcessor {
       };
     }
 
-    // Handle radius increment/decrement
-    if (input.match(/^add\s*1px\s*(?:to\s*)?radius$/i)) {
-      const currentRadius = parseInt(currentStyle.borderRadius) || 0;
+    // Handle radius increment/decrement with improved logging
+    const radiusAddMatch = input.match(/^add\s*1px\s*(?:to\s*)?(?:border\s*)?radius$/i);
+    if (radiusAddMatch) {
+      console.log("Matched radius increment pattern");
+      console.log("Current border radius before increment:", currentBorderRadius);
+      const newRadius = currentBorderRadius + 1;
+      console.log("New border radius after increment:", newRadius);
+
       return {
         style: {
-          borderRadius: `${currentRadius + 1}px`,
+          borderRadius: `${newRadius}px`,
         },
+        message: `Increased border radius to ${newRadius}px`,
+        property: "borderRadius",
       };
     }
 
-    if (input.match(/^remove\s*1px\s*(?:from\s*)?radius$/i)) {
-      const currentRadius = parseInt(currentStyle.borderRadius) || 0;
+    const radiusRemoveMatch = input.match(/^remove\s*1px\s*(?:from\s*)?(?:border\s*)?radius$/i);
+    if (radiusRemoveMatch) {
+      console.log("Matched radius decrement pattern");
+      console.log("Current border radius before decrement:", currentBorderRadius);
+      const newRadius = Math.max(0, currentBorderRadius - 1);
+      console.log("New border radius after decrement:", newRadius);
+
       return {
         style: {
-          borderRadius: `${Math.max(0, currentRadius - 1)}px`,
+          borderRadius: `${newRadius}px`,
         },
+        message: `Decreased border radius to ${newRadius}px`,
+        property: "borderRadius",
       };
     }
 
