@@ -352,39 +352,20 @@ export class BorderProcessor {
       /^(?:set|make|change)\s*(?:the\s*)?(?:border\s*)?(?:width|radius)?\s*(?:to\s*)?(small|medium|large)$/i
     );
     if (presetMatch) {
-      console.log("Matched preset pattern:", presetMatch[0]);
-      console.log("Current border properties:", {
-        width: currentBorderWidth,
-        style: currentBorderStyle,
-        color: currentBorderColor,
-        radius: currentBorderRadius
-      });
-
       const size = presetMatch[1].toLowerCase();
-      if (input.includes('radius')) {
-        console.log("Applying radius preset:", presets.borderRadius[size]);
+      if (input.includes("radius")) {
         return {
           style: {
-            borderRadius: presets.borderRadius[size]
+            borderRadius: presets.borderRadius[size],
           },
-          message: `Set border radius to ${size} (${presets.borderRadius[size]})`,
-          property: 'borderRadius'
         };
       } else {
-        console.log("Applying width preset:", presets.borderWidth[size]);
-        console.log("Preserving existing border properties:", {
-          style: currentBorderStyle,
-          color: currentBorderColor
-        });
-        
         return {
           style: {
             borderWidth: presets.borderWidth[size],
-            borderStyle: currentBorderStyle || 'solid',
-            borderColor: currentBorderColor || 'black'
+            borderStyle: "solid",
+            borderColor: currentStyle.borderColor || "black",
           },
-          message: `Set border width to ${size} (${presets.borderWidth[size]})`,
-          property: 'borderWidth'
         };
       }
     }
@@ -628,19 +609,18 @@ export class BorderProcessor {
                         },
                       }));
 
-                // Add custom color button
+                // Add format examples
                 return [
                   ...themeButtons,
                   {
-                    text: "custom",
-                    command: "set border color to custom",
-                    type: "command",
-                    icon: FaPalette,
-                    className: buttonClass,
-                    style: {
-                      minWidth: "60px",
-                      textAlign: "center",
-                    },
+                    text: "Formats: color names, hex (#FF0000), or rgb(255, 0, 0)",
+                    type: "info",
+                    className: "w-full text-xs text-gray-600 mt-2 mb-1",
+                  },
+                  {
+                    text: "Example: set border color to #FF0000",
+                    type: "info",
+                    className: "text-xs text-gray-600 italic",
                   },
                 ];
               },
