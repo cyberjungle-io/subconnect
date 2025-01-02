@@ -394,13 +394,28 @@ export class ShadowProcessor {
     );
     console.log("Pending customization:", this.pendingCustomization);
 
-    // Add this check at the beginning
-    if (!this.canHandle(input) && !this.pendingCustomization) {
-      return null;
-    }
-
     const lowercaseInput = input.toLowerCase();
     const currentStyle = context?.style || context || {};
+
+    // Handle shadow removal with simpler pattern
+    if (/^remove\s+shadow$/i.test(lowercaseInput)) {
+      return {
+        style: {
+          boxShadow: "none",
+        },
+        message: "Set shadow to none",
+        property: "boxShadow",
+      };
+    }
+
+    // Check for customization command first
+    const customizationResult = this.handleCustomizationCommand(
+      input,
+      buttonClass
+    );
+    if (customizationResult) {
+      return customizationResult;
+    }
 
     // Define property map at the beginning of the method
     const propertyMap = {
@@ -411,15 +426,6 @@ export class ShadowProcessor {
       color: "color",
       opacity: "opacity",
     };
-
-    // Check for customization command first
-    const customizationResult = this.handleCustomizationCommand(
-      input,
-      buttonClass
-    );
-    if (customizationResult) {
-      return customizationResult;
-    }
 
     // Handle direct numeric/color input when customization is pending
     if (this.pendingCustomization) {
@@ -585,19 +591,6 @@ export class ShadowProcessor {
           isInner ? "inner" : "outer"
         } shadow color to ${color}`,
         property: "boxShadow",
-      };
-    }
-
-    // Handle shadow removal first
-    if (
-      /(remove|clear|delete|get rid of|turn off|switch off|no) .*(shadow|shadows)/i.test(
-        lowercaseInput
-      )
-    ) {
-      return {
-        style: {
-          boxShadow: "none",
-        },
       };
     }
 
