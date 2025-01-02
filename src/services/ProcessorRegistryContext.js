@@ -124,14 +124,32 @@ export function ProcessorRegistryProvider({ children }) {
       BackgroundProcessor
     );
 
-    // Register Button Processor
+    // Register Button Processor with navigation patterns
     registry.registerProcessor(
       {
         id: "ButtonProcessor",
         name: "Button Processor",
-        priority: 65,
-        contextTypes: ["BUTTON"],
+        priority: 95,
+        contextTypes: ["ALL"],
         patterns: [
+          {
+            pattern: /^(?:enable|disable)\s*(?:page)?\s*navigation$/i,
+            type: "COMMAND",
+            priority: 100,
+            property: "navigation",
+          },
+          {
+            pattern: /^change\s*(?:the)?\s*target\s*page$/i,
+            type: "COMMAND",
+            priority: 100,
+            property: "navigation",
+          },
+          {
+            pattern: /^set\s*target\s*page\s*to\s*([a-zA-Z0-9_-]+)$/i,
+            type: "COMMAND",
+            priority: 100,
+            property: "navigation",
+          },
           {
             pattern: /(?:button|hover|click)/i,
             type: "STYLE",

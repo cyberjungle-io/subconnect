@@ -143,108 +143,67 @@ export class ButtonProcessor {
   }
 
   static processCommand(input, currentStyle = {}) {
-    // Log incoming command and state
-    console.log("ButtonProcessor received input:", input);
+    // Get current state
     const state = store.getState();
+    const currentProject = state.w3s?.currentProject?.data;
+    const pages = currentProject?.pages || [];
+    
+    // Get current page ID more reliably
+    const currentPageId = currentProject?.currentPage?._id || pages.find((p) => p.active)?._id;
 
-    // Get current page ID from the editor state
-    const currentPageId = state.w3s.currentProject?.data?.pages?.find(
-      (p) => p.active
-    )?._id;
-
-    // Log more detailed state information
-    console.log("Current Redux State:", {
-      currentPageId,
-      pages: state.w3s.currentProject?.data?.pages?.map((p) => ({
-        id: p._id,
-        name: p.name,
-        active: p.active,
-      })),
-      currentProject: state.w3s.currentProject.data,
-    });
-
-    // Handle page navigation commands
+    // Handle enable/disable navigation
     const enableNavigationPattern = /^enable\s*(?:page)?\s*navigation$/i;
     const disableNavigationPattern = /^disable\s*(?:page)?\s*navigation$/i;
     const changeTargetPagePattern = /^change\s*(?:the)?\s*target\s*page$/i;
-    const setTargetPagePattern = /^set\s*target\s*page\s*to\s*([a-zA-Z0-9]+)$/i;
+    const setTargetPagePattern =
+      /^set\s*target\s*page\s*to\s*([a-zA-Z0-9_-]+)$/i;
 
-    // Get current project from Redux store
-    const currentProject = state.w3s.currentProject.data;
-
-    console.log("Processing with:", {
-      currentPageId,
-      availablePages: currentProject?.pages?.filter((p) => !p.active),
-      pattern: {
-        enable: enableNavigationPattern.test(input),
-        change: changeTargetPagePattern.test(input),
-      },
-    });
-
+    // Enable navigation command
     if (enableNavigationPattern.test(input)) {
-      // If there are no pages, just enable navigation
-      if (!currentProject?.pages?.length) {
-        console.log("No pages found in project");
+      // Debug logging
+      console.log("Current page ID:", currentPageId);
+      console.log("Pages:", pages);
+      
+      // Filter out current page more strictly
+      const availablePages = pages.filter((p) => p._id !== currentPageId && !p.active);
+      
+      console.log("Available pages:", availablePages);
+
+      // Return prompt with page options if pages exist
+      if (availablePages.length > 0) {
         return {
-          style: {
-            enablePageNavigation: true,
-          },
-          message: "Enabled page navigation",
-          success: true,
+          type: "PROMPT",
+          message: "Select a target page:",
+          context: "navigation",
+          options: [
+            {
+              text: "Available Pages",
+              type: "info",
+              className: "text-xs font-semibold text-gray-600",
+            },
+            ...availablePages.map((page) => ({
+              text: page.name || `Page ${page._id}`,
+              type: "command",
+              command: `set target page to ${page._id}`,
+              icon: FaArrowRight,
+              className:
+                "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+            })),
+          ],
         };
       }
 
-      // Filter out the current page from options
-      const availablePages = currentProject.pages.filter((page) => {
-        const isCurrentPage = page.active;
-        console.log("Checking page:", {
-          pageId: page._id,
-          pageName: page.name,
-          isActive: page.active,
-          isCurrentPage,
-        });
-        return !isCurrentPage;
-      });
-
-      console.log("Filtered pages:", availablePages);
-
-      if (availablePages.length === 0) {
-        console.log("No available pages after filtering");
-        return {
-          style: {
-            enablePageNavigation: true,
-          },
-          message: "No other pages available for navigation",
-          success: true,
-        };
-      }
-
-      // If there are pages, return the page selection prompt immediately
+      // Just enable navigation if no pages
       return {
-        type: "PROMPT",
-        message: "Select a target page:",
-        context: "navigation",
-        options: [
-          {
-            text: "Available Pages",
-            type: "info",
-            className: "text-xs font-semibold text-gray-600",
-          },
-          ...availablePages.map((page) => ({
-            text: page.name,
-            type: "command",
-            command: `set target page to ${page._id}`,
-            icon: FaArrowRight,
-            className:
-              "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
-          })),
-        ],
         style: {
           enablePageNavigation: true,
         },
+        message: "Enabled page navigation",
+        success: true,
       };
     }
 
+    // Disable navigation command
     if (disableNavigationPattern.test(input)) {
       return {
         style: {
@@ -256,30 +215,10 @@ export class ButtonProcessor {
       };
     }
 
+    // Change target page command
     if (changeTargetPagePattern.test(input)) {
-      console.log("Processing change target page command");
-
-      if (!currentProject?.pages?.length) {
-        console.log("No pages found in project");
-        return {
-          success: false,
-          message: "No pages available in the current project",
-        };
-      }
-
-      // Filter out the selected page from options
-      const availablePages = currentProject.pages.filter((page) => {
-        const isCurrentPage = page.active;
-        console.log("Checking page for target change:", {
-          pageId: page._id,
-          pageName: page.name,
-          isActive: page.active,
-          isCurrentPage,
-        });
-        return !isCurrentPage;
-      });
-
-      console.log("Available pages for target change:", availablePages);
+      // Use same strict filtering here too
+      const availablePages = pages.filter((p) => p._id !== currentPageId && !p.active);
 
       if (availablePages.length === 0) {
         return {
@@ -299,7 +238,7 @@ export class ButtonProcessor {
             className: "text-xs font-semibold text-gray-600",
           },
           ...availablePages.map((page) => ({
-            text: page.name,
+            text: page.name || `Page ${page._id}`,
             type: "command",
             command: `set target page to ${page._id}`,
             icon: FaArrowRight,
@@ -310,12 +249,12 @@ export class ButtonProcessor {
       };
     }
 
+    // Set target page command
     const targetPageMatch = input.match(setTargetPagePattern);
     if (targetPageMatch) {
       const pageId = targetPageMatch[1];
-      const currentPageId = state?.editor?.currentPage?._id;
+      const currentPageId = pages.find((p) => p.active)?._id;
 
-      // Don't allow setting target to current page
       if (pageId === currentPageId) {
         return {
           success: false,
