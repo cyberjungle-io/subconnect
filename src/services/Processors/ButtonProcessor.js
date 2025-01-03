@@ -163,15 +163,26 @@ export class ButtonProcessor {
 
     // Enable navigation command
     if (enableNavigationPattern.test(input)) {
-      // Debug logging
+      // Get current state
+      const state = store.getState();
+      const currentProject = state.w3s?.currentProject?.data;
+      const currentPageId =
+        state.w3s?.page?._id || state.editor?.currentPage?._id;
+
       console.log("Current project:", currentProject);
       console.log("Current page ID:", currentPageId);
 
-      // Filter out current page using ID comparison
-      const availablePages = pages.filter((p) => {
-        console.log("Checking page:", p.name, p._id);
-        console.log("Is current?", p._id === currentPageId);
-        return p._id !== currentPageId;
+      // Filter out current page and ensure we have valid pages
+      const availablePages = (currentProject?.pages || []).filter((p) => {
+        const isCurrentPage = p._id === currentPageId;
+        console.log(
+          "Checking page:",
+          p.name,
+          p._id,
+          "Is current?",
+          isCurrentPage
+        );
+        return !isCurrentPage; // Only include pages that aren't the current page
       });
 
       console.log(
@@ -203,12 +214,12 @@ export class ButtonProcessor {
         };
       }
 
-      // Just enable navigation if no pages
+      // Just enable navigation if no other pages available
       return {
         style: {
           enablePageNavigation: true,
         },
-        message: "Enabled page navigation",
+        message: "Enabled page navigation, but no other pages available",
         success: true,
       };
     }

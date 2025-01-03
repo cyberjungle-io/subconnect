@@ -1,40 +1,43 @@
-import React, { useState } from 'react';
-import ColorPicker from '../../common/ColorPicker';
-import { useSelector } from 'react-redux';
+import React, { useState } from "react";
+import ColorPicker from "../../common/ColorPicker";
+import { useSelector } from "react-redux";
 
 const CURSOR_OPTIONS = [
-  { value: 'pointer', label: 'Pointer' },
-  { value: 'default', label: 'Default' },
-  { value: 'move', label: 'Move' },
-  { value: 'grab', label: 'Grab' },
-  { value: 'grabbing', label: 'Grabbing' },
-  { value: 'not-allowed', label: 'Not Allowed' },
-  { value: 'wait', label: 'Wait' },
-  { value: 'progress', label: 'Progress' },
-  { value: 'help', label: 'Help' },
-  { value: 'crosshair', label: 'Crosshair' },
-  { value: 'text', label: 'Text' },
-  { value: 'copy', label: 'Copy' },
-  { value: 'cell', label: 'Cell' },
+  { value: "pointer", label: "Pointer" },
+  { value: "default", label: "Default" },
+  { value: "move", label: "Move" },
+  { value: "grab", label: "Grab" },
+  { value: "grabbing", label: "Grabbing" },
+  { value: "not-allowed", label: "Not Allowed" },
+  { value: "wait", label: "Wait" },
+  { value: "progress", label: "Progress" },
+  { value: "help", label: "Help" },
+  { value: "crosshair", label: "Crosshair" },
+  { value: "text", label: "Text" },
+  { value: "copy", label: "Copy" },
+  { value: "cell", label: "Cell" },
 ];
 
 const HTTP_METHODS = [
-  { value: 'GET', label: 'GET' },
-  { value: 'POST', label: 'POST' },
-  { value: 'PUT', label: 'PUT' },
-  { value: 'DELETE', label: 'DELETE' },
+  { value: "GET", label: "GET" },
+  { value: "POST", label: "POST" },
+  { value: "PUT", label: "PUT" },
+  { value: "DELETE", label: "DELETE" },
 ];
 
 const AUTH_TYPES = [
-  { value: 'none', label: 'None' },
-  { value: 'bearer', label: 'Bearer Token' },
-  { value: 'api-key', label: 'API Key' },
+  { value: "none", label: "None" },
+  { value: "bearer", label: "Bearer Token" },
+  { value: "api-key", label: "API Key" },
 ];
 
 const ButtonControls = ({ style = {}, onStyleChange }) => {
   const [showHoverEffects, setShowHoverEffects] = useState(false);
   const [showWebService, setShowWebService] = useState(false);
   const currentProject = useSelector((state) => state.w3s.currentProject?.data);
+  const currentPageId = useSelector(
+    (state) => state.w3s?.page?._id || state.editor?.currentPage?._id
+  );
 
   const handleChange = (changes) => {
     onStyleChange({ ...style, ...changes });
@@ -61,8 +64,10 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
   );
 
   // Add these button classes
-  const activeButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300";
-  const inactiveButtonClass = "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]";
+  const activeButtonClass =
+    "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-[#cce7ff] text-blue-700 border-blue-300";
+  const inactiveButtonClass =
+    "px-3 py-1 text-sm rounded-full transition-colors duration-200 border bg-white text-blue-600 border-blue-200 hover:bg-[#e6f3ff]";
 
   return (
     <div className="space-y-4">
@@ -72,7 +77,9 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
           onClick={() => {
             handleChange({ enablePageNavigation: !style.enablePageNavigation });
           }}
-          className={style.enablePageNavigation ? activeButtonClass : inactiveButtonClass}
+          className={
+            style.enablePageNavigation ? activeButtonClass : inactiveButtonClass
+          }
         >
           Page Navigation
         </button>
@@ -97,16 +104,18 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
             Target Page
           </label>
           <select
-            value={style.targetPageId || ''}
+            value={style.targetPageId || ""}
             onChange={(e) => handleChange({ targetPageId: e.target.value })}
             className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="">Select a page</option>
-            {currentProject.pages.map((page, index) => (
-              <option key={page._id || index} value={page._id}>
-                {page.name}
-              </option>
-            ))}
+            {currentProject.pages
+              .filter((page) => page._id !== currentPageId)
+              .map((page, index) => (
+                <option key={page._id || index} value={page._id}>
+                  {page.name}
+                </option>
+              ))}
           </select>
         </div>
       )}
@@ -119,14 +128,16 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
               Service Type
             </label>
             <select
-              value={style.serviceType || 'data'}
-              onChange={(e) => handleChange({ 
-                serviceType: e.target.value,
-                serviceConfig: {
-                  ...style.serviceConfig,
-                  type: e.target.value
-                }
-              })}
+              value={style.serviceType || "data"}
+              onChange={(e) =>
+                handleChange({
+                  serviceType: e.target.value,
+                  serviceConfig: {
+                    ...style.serviceConfig,
+                    type: e.target.value,
+                  },
+                })
+              }
               className="w-full p-2 text-sm border border-gray-300 rounded-md"
             >
               <option value="data">Data Service</option>
@@ -139,16 +150,18 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
               HTTP Method
             </label>
             <select
-              value={style.serviceConfig?.method || 'GET'}
-              onChange={(e) => handleChange({
-                serviceConfig: {
-                  ...style.serviceConfig,
-                  method: e.target.value
-                }
-              })}
+              value={style.serviceConfig?.method || "GET"}
+              onChange={(e) =>
+                handleChange({
+                  serviceConfig: {
+                    ...style.serviceConfig,
+                    method: e.target.value,
+                  },
+                })
+              }
               className="w-full p-2 text-sm border border-gray-300 rounded-md"
             >
-              {HTTP_METHODS.map(method => (
+              {HTTP_METHODS.map((method) => (
                 <option key={method.value} value={method.value}>
                   {method.label}
                 </option>
@@ -162,13 +175,15 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
             </label>
             <input
               type="text"
-              value={style.serviceConfig?.endpoint || ''}
-              onChange={(e) => handleChange({
-                serviceConfig: {
-                  ...style.serviceConfig,
-                  endpoint: e.target.value
-                }
-              })}
+              value={style.serviceConfig?.endpoint || ""}
+              onChange={(e) =>
+                handleChange({
+                  serviceConfig: {
+                    ...style.serviceConfig,
+                    endpoint: e.target.value,
+                  },
+                })
+              }
               className="w-full p-2 text-sm border border-gray-300 rounded-md"
               placeholder="https://api.example.com/data"
             />
@@ -179,19 +194,21 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
               Authentication
             </label>
             <select
-              value={style.serviceConfig?.authentication?.type || 'none'}
-              onChange={(e) => handleChange({
-                serviceConfig: {
-                  ...style.serviceConfig,
-                  authentication: {
-                    type: e.target.value,
-                    credentials: {}
-                  }
-                }
-              })}
+              value={style.serviceConfig?.authentication?.type || "none"}
+              onChange={(e) =>
+                handleChange({
+                  serviceConfig: {
+                    ...style.serviceConfig,
+                    authentication: {
+                      type: e.target.value,
+                      credentials: {},
+                    },
+                  },
+                })
+              }
               className="w-full p-2 text-sm border border-gray-300 rounded-md"
             >
-              {AUTH_TYPES.map(type => (
+              {AUTH_TYPES.map((type) => (
                 <option key={type.value} value={type.value}>
                   {type.label}
                 </option>
@@ -199,32 +216,36 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
             </select>
           </div>
 
-          {style.serviceConfig?.authentication?.type === 'bearer' && (
+          {style.serviceConfig?.authentication?.type === "bearer" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Bearer Token
               </label>
               <input
                 type="text"
-                value={style.serviceConfig?.authentication?.credentials?.token || ''}
-                onChange={(e) => handleChange({
-                  serviceConfig: {
-                    ...style.serviceConfig,
-                    authentication: {
-                      ...style.serviceConfig.authentication,
-                      credentials: {
-                        token: e.target.value
-                      }
-                    }
-                  }
-                })}
+                value={
+                  style.serviceConfig?.authentication?.credentials?.token || ""
+                }
+                onChange={(e) =>
+                  handleChange({
+                    serviceConfig: {
+                      ...style.serviceConfig,
+                      authentication: {
+                        ...style.serviceConfig.authentication,
+                        credentials: {
+                          token: e.target.value,
+                        },
+                      },
+                    },
+                  })
+                }
                 className="w-full p-2 text-sm border border-gray-300 rounded-md"
                 placeholder="Enter bearer token"
               />
             </div>
           )}
 
-          {style.serviceConfig?.authentication?.type === 'api-key' && (
+          {style.serviceConfig?.authentication?.type === "api-key" && (
             <>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -232,19 +253,24 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
                 </label>
                 <input
                   type="text"
-                  value={style.serviceConfig?.authentication?.credentials?.header || ''}
-                  onChange={(e) => handleChange({
-                    serviceConfig: {
-                      ...style.serviceConfig,
-                      authentication: {
-                        ...style.serviceConfig.authentication,
-                        credentials: {
-                          ...style.serviceConfig.authentication.credentials,
-                          header: e.target.value
-                        }
-                      }
-                    }
-                  })}
+                  value={
+                    style.serviceConfig?.authentication?.credentials?.header ||
+                    ""
+                  }
+                  onChange={(e) =>
+                    handleChange({
+                      serviceConfig: {
+                        ...style.serviceConfig,
+                        authentication: {
+                          ...style.serviceConfig.authentication,
+                          credentials: {
+                            ...style.serviceConfig.authentication.credentials,
+                            header: e.target.value,
+                          },
+                        },
+                      },
+                    })
+                  }
                   className="w-full p-2 text-sm border border-gray-300 rounded-md"
                   placeholder="X-API-Key"
                 />
@@ -255,19 +281,23 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
                 </label>
                 <input
                   type="text"
-                  value={style.serviceConfig?.authentication?.credentials?.key || ''}
-                  onChange={(e) => handleChange({
-                    serviceConfig: {
-                      ...style.serviceConfig,
-                      authentication: {
-                        ...style.serviceConfig.authentication,
-                        credentials: {
-                          ...style.serviceConfig.authentication.credentials,
-                          key: e.target.value
-                        }
-                      }
-                    }
-                  })}
+                  value={
+                    style.serviceConfig?.authentication?.credentials?.key || ""
+                  }
+                  onChange={(e) =>
+                    handleChange({
+                      serviceConfig: {
+                        ...style.serviceConfig,
+                        authentication: {
+                          ...style.serviceConfig.authentication,
+                          credentials: {
+                            ...style.serviceConfig.authentication.credentials,
+                            key: e.target.value,
+                          },
+                        },
+                      },
+                    })
+                  }
                   className="w-full p-2 text-sm border border-gray-300 rounded-md"
                   placeholder="Enter API key"
                 />
@@ -275,44 +305,51 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
             </>
           )}
 
-          {style.serviceType === 'data' && (
+          {style.serviceType === "data" && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Response Path
               </label>
               <input
                 type="text"
-                value={style.serviceConfig?.responseMapping?.path || ''}
-                onChange={(e) => handleChange({
-                  serviceConfig: {
-                    ...style.serviceConfig,
-                    responseMapping: {
-                      ...style.serviceConfig?.responseMapping,
-                      path: e.target.value
-                    }
-                  }
-                })}
+                value={style.serviceConfig?.responseMapping?.path || ""}
+                onChange={(e) =>
+                  handleChange({
+                    serviceConfig: {
+                      ...style.serviceConfig,
+                      responseMapping: {
+                        ...style.serviceConfig?.responseMapping,
+                        path: e.target.value,
+                      },
+                    },
+                  })
+                }
                 className="w-full p-2 text-sm border border-gray-300 rounded-md"
                 placeholder="data.results"
               />
             </div>
           )}
 
-          {style.serviceType === 'action' && (
+          {style.serviceType === "action" && (
             <>
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  checked={style.serviceConfig?.actionConfig?.confirmationRequired || false}
-                  onChange={(e) => handleChange({
-                    serviceConfig: {
-                      ...style.serviceConfig,
-                      actionConfig: {
-                        ...style.serviceConfig?.actionConfig,
-                        confirmationRequired: e.target.checked
-                      }
-                    }
-                  })}
+                  checked={
+                    style.serviceConfig?.actionConfig?.confirmationRequired ||
+                    false
+                  }
+                  onChange={(e) =>
+                    handleChange({
+                      serviceConfig: {
+                        ...style.serviceConfig,
+                        actionConfig: {
+                          ...style.serviceConfig?.actionConfig,
+                          confirmationRequired: e.target.checked,
+                        },
+                      },
+                    })
+                  }
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                 />
                 <label className="ml-2 block text-sm text-gray-700">
@@ -326,16 +363,20 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
                 </label>
                 <input
                   type="text"
-                  value={style.serviceConfig?.actionConfig?.successMessage || ''}
-                  onChange={(e) => handleChange({
-                    serviceConfig: {
-                      ...style.serviceConfig,
-                      actionConfig: {
-                        ...style.serviceConfig?.actionConfig,
-                        successMessage: e.target.value
-                      }
-                    }
-                  })}
+                  value={
+                    style.serviceConfig?.actionConfig?.successMessage || ""
+                  }
+                  onChange={(e) =>
+                    handleChange({
+                      serviceConfig: {
+                        ...style.serviceConfig,
+                        actionConfig: {
+                          ...style.serviceConfig?.actionConfig,
+                          successMessage: e.target.value,
+                        },
+                      },
+                    })
+                  }
                   className="w-full p-2 text-sm border border-gray-300 rounded-md"
                   placeholder="Action completed successfully"
                 />
@@ -347,16 +388,18 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
                 </label>
                 <input
                   type="text"
-                  value={style.serviceConfig?.actionConfig?.errorMessage || ''}
-                  onChange={(e) => handleChange({
-                    serviceConfig: {
-                      ...style.serviceConfig,
-                      actionConfig: {
-                        ...style.serviceConfig?.actionConfig,
-                        errorMessage: e.target.value
-                      }
-                    }
-                  })}
+                  value={style.serviceConfig?.actionConfig?.errorMessage || ""}
+                  onChange={(e) =>
+                    handleChange({
+                      serviceConfig: {
+                        ...style.serviceConfig,
+                        actionConfig: {
+                          ...style.serviceConfig?.actionConfig,
+                          errorMessage: e.target.value,
+                        },
+                      },
+                    })
+                  }
                   className="w-full p-2 text-sm border border-gray-300 rounded-md"
                   placeholder="Action failed"
                 />
@@ -374,8 +417,10 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
               Hover Color
             </label>
             <ColorPicker
-              color={style.hoverBackgroundColor || '#e6e6e6'}
-              onChange={(color) => handleChange({ hoverBackgroundColor: color })}
+              color={style.hoverBackgroundColor || "#e6e6e6"}
+              onChange={(color) =>
+                handleChange({ hoverBackgroundColor: color })
+              }
             />
           </div>
 
@@ -384,7 +429,7 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
               Hover Text Color
             </label>
             <ColorPicker
-              color={style.hoverColor || '#000000'}
+              color={style.hoverColor || "#000000"}
               onChange={(color) => handleChange({ hoverColor: color })}
             />
           </div>
@@ -407,11 +452,11 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
               Cursor Style
             </label>
             <select
-              value={style.cursor || 'pointer'}
+              value={style.cursor || "pointer"}
               onChange={(e) => handleChange({ cursor: e.target.value })}
               className="w-full p-2 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             >
-              {CURSOR_OPTIONS.map(option => (
+              {CURSOR_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -425,10 +470,11 @@ const ButtonControls = ({ style = {}, onStyleChange }) => {
             </label>
             {renderInput(
               parseInt(style.transitionDuration) || 200,
-              (value) => handleChange({ 
-                transitionDuration: value,
-                transition: `all ${value}ms ease-in-out`
-              }),
+              (value) =>
+                handleChange({
+                  transitionDuration: value,
+                  transition: `all ${value}ms ease-in-out`,
+                }),
               0,
               1000,
               50
