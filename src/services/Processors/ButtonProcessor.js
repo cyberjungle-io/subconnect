@@ -147,9 +147,12 @@ export class ButtonProcessor {
     const state = store.getState();
     const currentProject = state.w3s?.currentProject?.data;
     const pages = currentProject?.pages || [];
-    
-    // Get current page ID more reliably
-    const currentPageId = currentProject?.currentPage?._id || pages.find((p) => p.active)?._id;
+
+    // Get current page ID from w3s state
+    const currentPageId = state.w3s?.page?._id;
+
+    console.log("W3S State:", state.w3s);
+    console.log("Current page from state:", state.w3s?.page);
 
     // Handle enable/disable navigation
     const enableNavigationPattern = /^enable\s*(?:page)?\s*navigation$/i;
@@ -161,13 +164,20 @@ export class ButtonProcessor {
     // Enable navigation command
     if (enableNavigationPattern.test(input)) {
       // Debug logging
+      console.log("Current project:", currentProject);
       console.log("Current page ID:", currentPageId);
-      console.log("Pages:", pages);
-      
-      // Filter out current page more strictly
-      const availablePages = pages.filter((p) => p._id !== currentPageId && !p.active);
-      
-      console.log("Available pages:", availablePages);
+
+      // Filter out current page using ID comparison
+      const availablePages = pages.filter((p) => {
+        console.log("Checking page:", p.name, p._id);
+        console.log("Is current?", p._id === currentPageId);
+        return p._id !== currentPageId;
+      });
+
+      console.log(
+        "Filtered available pages:",
+        availablePages.map((p) => p.name)
+      );
 
       // Return prompt with page options if pages exist
       if (availablePages.length > 0) {
@@ -218,7 +228,9 @@ export class ButtonProcessor {
     // Change target page command
     if (changeTargetPagePattern.test(input)) {
       // Use same strict filtering here too
-      const availablePages = pages.filter((p) => p._id !== currentPageId && !p.active);
+      const availablePages = pages.filter(
+        (p) => p._id !== currentPageId && !p.active
+      );
 
       if (availablePages.length === 0) {
         return {
