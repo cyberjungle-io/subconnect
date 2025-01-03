@@ -7,6 +7,7 @@ import { BackgroundProcessor } from "./BackgroundProcessor";
 import { ButtonProcessor } from "./ButtonProcessor";
 import { StyleCommandProcessor } from "./StyleCommandProcessor";
 import { LLMProcessor } from "./LLMProcessor";
+import { NestProcessor } from "./NestProcessor";
 
 export class FlexContainerProcessor {
   static validProcessors = [
@@ -175,6 +176,7 @@ export class FlexContainerProcessor {
       ShadowProcessor.getSuggestions(headerClass, buttonClass),
       BackgroundProcessor.getSuggestions(headerClass, buttonClass),
       ButtonProcessor.getSuggestions(headerClass, buttonClass),
+      NestProcessor.getSuggestions(headerClass, buttonClass),
     ];
   }
 

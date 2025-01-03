@@ -9,6 +9,7 @@ import { BackgroundProcessor } from "./Processors/BackgroundProcessor";
 import { ButtonProcessor } from "./Processors/ButtonProcessor";
 import { LayoutProcessor } from "./Processors/LayoutProcessor";
 import { SpacingProcessor } from "./Processors/SpacingProcessor";
+import { NestProcessor } from "./Processors/NestProcessor";
 
 const ProcessorRegistryContext = createContext(null);
 
@@ -233,6 +234,9 @@ export function ProcessorRegistryProvider({ children }) {
       },
       SpacingProcessor
     );
+
+    // Register NestProcessor
+    registry.registerProcessor(NestProcessor.getMetadata(), NestProcessor);
   }, []);
 
   return (

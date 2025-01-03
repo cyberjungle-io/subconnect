@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import { componentConfig } from "../components/Components/componentConfig";
 import {
   aiAddComponent,
@@ -56,6 +57,67 @@ export class AICommandExecutor {
       if (result) {
         console.log("Processor result:", result);
 
+        // Handle NEST_COMPONENT type results
+        if (result.type === "NEST_COMPONENT" && selectedComponent) {
+          const config = componentConfig[result.componentType];
+          if (!config) {
+            throw new Error(`Invalid component type: ${result.componentType}`);
+          }
+
+          // Generate unique ID and timestamp for the new component
+          const timestamp = Date.now();
+          const uniqueId = `${timestamp}_${uuidv4().split("-")[0]}`;
+          const componentName = `${result.componentType}_${timestamp}`.slice(
+            0,
+            20
+          );
+
+          // Create the new component as a child with unique ID
+          const newComponent = {
+            id: uniqueId,
+            type: result.componentType,
+            name: componentName,
+            acceptsChildren: config.acceptsChildren || false,
+            children: [],
+            content: config.defaultContent || "",
+            position: { x: 20, y: 20 },
+            props: {
+              name: `AI Created ${config.name}`,
+              ...config.defaultProps,
+              id: uniqueId,
+              isDraggingDisabled: false,
+              name: componentName,
+              depth: (selectedComponent.props?.depth || 0) + 1,
+            },
+            style: {
+              ...config.defaultSize,
+              ...config.style,
+              padding: "0px",
+              margin: "0px",
+              gap: "0px",
+              left: 0,
+              top: 0,
+            },
+          };
+
+          // Update the parent component with the new child
+          await dispatch(
+            updateComponent({
+              id: selectedComponent.id,
+              updates: {
+                children: [...(selectedComponent.children || []), newComponent],
+              },
+            })
+          );
+
+          return {
+            success: true,
+            message:
+              result.message || `Added ${config.name} as child component`,
+            type: "COMMAND_EXECUTED",
+          };
+        }
+
         // Handle style/props updates
         if (result.style || result.props) {
           const updatedComponent = {
@@ -112,18 +174,10 @@ export class AICommandExecutor {
       };
     } catch (error) {
       console.error("AICommandExecutor error:", error);
-      // Determine if this is a recoverable error
-      const isRecoverable = !(
-        error instanceof TypeError || error instanceof ReferenceError
-      );
-
       return {
         success: false,
-        message: isRecoverable
-          ? `I encountered an issue: ${error.message}. Please try again.`
-          : "Sorry, I'm having technical difficulties. Please try again later.",
+        message: `Error: ${error.message}`,
         error: error,
-        recoverable: isRecoverable,
       };
     }
   }
