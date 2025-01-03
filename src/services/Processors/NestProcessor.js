@@ -9,14 +9,14 @@ export class NestProcessor {
     return {
       id: "NestProcessor",
       name: "Nest Processor",
-      priority: 95,
+      priority: 100,
       contextTypes: ["FLEX_CONTAINER"],
       patterns: [
         {
           pattern:
             /^(?:nest|add|create|insert)\s+(?:a\s+)?(\w+)(?:\s+(?:in|inside|to))?$/i,
           type: "NEST",
-          priority: 95,
+          priority: 100,
           property: "nest",
           examples: ["nest text", "add image", "create button inside"],
         },
@@ -33,6 +33,21 @@ export class NestProcessor {
 
     if (match) {
       const componentType = match[1].toUpperCase();
+
+      // Special handling for FLEX_CONTAINER
+      if (
+        componentType === "FLEX_CONTAINER" ||
+        componentType === "FLEX" ||
+        componentType === "CONTAINER"
+      ) {
+        return {
+          type: "NEST_COMPONENT",
+          componentType: "FLEX_CONTAINER",
+          message: `Added Flex Container as child component`,
+          success: true,
+        };
+      }
+
       if (componentConfig[componentType]) {
         return {
           type: "NEST_COMPONENT",
