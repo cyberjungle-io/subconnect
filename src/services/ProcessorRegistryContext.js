@@ -163,7 +163,8 @@ export function ProcessorRegistryProvider({ children }) {
             property: "serviceType",
           },
           {
-            pattern: /^set\s*(?:http)?\s*method\s*to\s*(GET|POST|PUT|DELETE|PATCH)$/i,
+            pattern:
+              /^set\s*(?:http)?\s*method\s*to\s*(GET|POST|PUT|DELETE|PATCH)$/i,
             type: "COMMAND",
             priority: 100,
             property: "httpMethod",
@@ -179,6 +180,27 @@ export function ProcessorRegistryProvider({ children }) {
             type: "STYLE",
             priority: 65,
             examples: ["set button color", "change hover effect"],
+          },
+          {
+            pattern:
+              /^set\s*(?:the\s+)?cursor\s*(?:to|=|:)?\s*(pointer|default|move|grab|grabbing|not-allowed|wait|progress|help|crosshair|text|copy|cell)/i,
+            type: "STYLE",
+            priority: 90,
+            property: "cursor",
+          },
+          {
+            pattern:
+              /(?:make|change|update)\s*(?:the\s+)?(?:mouse\s+)?cursor\s*(?:to|into|as|like|become)?\s*(pointer|default|move|grab|grabbing|not-allowed|wait|progress|help|crosshair|text|copy|cell)/i,
+            type: "STYLE",
+            priority: 90,
+            property: "cursor",
+          },
+          {
+            pattern:
+              /^cursor\s*(?::|=|to)?\s*(pointer|default|move|grab|grabbing|not-allowed|wait|progress|help|crosshair|text|copy|cell)$/i,
+            type: "STYLE",
+            priority: 90,
+            property: "cursor",
           },
         ],
       },

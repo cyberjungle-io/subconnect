@@ -129,10 +129,11 @@ export class ButtonProcessor {
 
       cursor: [
         // Direct cursor settings
-        /(?:set|change|make)\s*(?:the)?\s*cursor\s*(?:to|=|:)?\s*(pointer|default|move|grab|grabbing|not-allowed|wait|progress|help|crosshair|text|copy|cell)/i,
-        // Natural language
-        /(?:make|set)?\s*(?:the)?\s*mouse\s*(?:cursor|pointer)\s*(?:look like|change to|become)\s*(?:a|an)?\s*(pointer|hand|arrow|grabber|text cursor|copy symbol)/i,
-        /(?:show|display)\s*(?:a|an)?\s*(pointer|hand|arrow|grabber|text cursor|copy symbol)\s*(?:cursor|mouse)/i,
+        /^set\s*(?:the\s+)?cursor\s*(?:to|=|:)?\s*(pointer|default|move|grab|grabbing|not-allowed|wait|progress|help|crosshair|text|copy|cell)/i,
+        // Natural language variations
+        /(?:make|change|update)\s*(?:the\s+)?(?:mouse\s+)?cursor\s*(?:to|into|as|like|become)?\s*(pointer|default|move|grab|grabbing|not-allowed|wait|progress|help|crosshair|text|copy|cell)/i,
+        // Shorthand commands
+        /^cursor\s*(?::|=|to)?\s*(pointer|default|move|grab|grabbing|not-allowed|wait|progress|help|crosshair|text|copy|cell)$/i,
       ],
 
       transitionDuration: [
@@ -795,7 +796,8 @@ export class ButtonProcessor {
     }
 
     // Handle web service setup
-    const enableWebServicePattern = /^(?:enable|configure|setup)\s*web\s*service$/i;
+    const enableWebServicePattern =
+      /^(?:enable|configure|setup)\s*web\s*service$/i;
     if (enableWebServicePattern.test(input)) {
       return {
         type: "PROMPT",
@@ -812,14 +814,16 @@ export class ButtonProcessor {
             type: "command",
             command: "set service type to data",
             icon: FaDatabase,
-            className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+            className:
+              "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
           },
           {
             text: "Action Service",
             type: "command",
             command: "set service type to action",
             icon: FaBolt,
-            className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+            className:
+              "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
           },
         ],
       };
@@ -840,12 +844,13 @@ export class ButtonProcessor {
             type: "info",
             className: "text-xs font-semibold text-gray-600",
           },
-          ...this.HTTP_METHODS.map(method => ({
+          ...this.HTTP_METHODS.map((method) => ({
             text: method.label,
             type: "command",
             command: `set http method to ${method.value}`,
             icon: FaGlobe,
-            className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+            className:
+              "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
           })),
         ],
         style: {
@@ -858,7 +863,8 @@ export class ButtonProcessor {
     }
 
     // Handle HTTP method selection
-    const httpMethodPattern = /^set\s*(?:http)?\s*method\s*to\s*(GET|POST|PUT|DELETE|PATCH)$/i;
+    const httpMethodPattern =
+      /^set\s*(?:http)?\s*method\s*to\s*(GET|POST|PUT|DELETE|PATCH)$/i;
     const httpMethodMatch = input.match(httpMethodPattern);
     if (httpMethodMatch) {
       const method = httpMethodMatch[1].toUpperCase();
@@ -892,12 +898,13 @@ export class ButtonProcessor {
             type: "info",
             className: "text-xs font-semibold text-gray-600",
           },
-          ...this.AUTH_TYPES.map(auth => ({
+          ...this.AUTH_TYPES.map((auth) => ({
             text: auth.label,
             type: "command",
             command: `set auth type to ${auth.value}`,
             icon: FaLock,
-            className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+            className:
+              "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
           })),
         ],
         style: {
