@@ -10,6 +10,10 @@ import {
   FaArrowsAlt,
   FaTimes,
   FaClock,
+  FaDatabase,
+  FaBolt,
+  FaGlobe,
+  FaLock,
 } from "react-icons/fa";
 
 // Add isLightColor helper function
@@ -61,6 +65,20 @@ export class ButtonProcessor {
     gray: "#808080",
     grey: "#808080",
   };
+
+  static HTTP_METHODS = [
+    { value: "GET", label: "GET" },
+    { value: "POST", label: "POST" },
+    { value: "PUT", label: "PUT" },
+    { value: "DELETE", label: "DELETE" },
+    { value: "PATCH", label: "PATCH" },
+  ];
+
+  static AUTH_TYPES = [
+    { value: "none", label: "None" },
+    { value: "bearer", label: "Bearer Token" },
+    { value: "api-key", label: "API Key" },
+  ];
 
   static getStylePatterns() {
     return {
@@ -776,6 +794,121 @@ export class ButtonProcessor {
       };
     }
 
+    // Handle web service setup
+    const enableWebServicePattern = /^(?:enable|configure|setup)\s*web\s*service$/i;
+    if (enableWebServicePattern.test(input)) {
+      return {
+        type: "PROMPT",
+        message: "Select service type:",
+        context: "webService",
+        options: [
+          {
+            text: "Service Type",
+            type: "info",
+            className: "text-xs font-semibold text-gray-600",
+          },
+          {
+            text: "Data Service",
+            type: "command",
+            command: "set service type to data",
+            icon: FaDatabase,
+            className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+          },
+          {
+            text: "Action Service",
+            type: "command",
+            command: "set service type to action",
+            icon: FaBolt,
+            className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+          },
+        ],
+      };
+    }
+
+    // Handle service type selection
+    const serviceTypePattern = /^set\s*service\s*type\s*to\s*(data|action)$/i;
+    const serviceTypeMatch = input.match(serviceTypePattern);
+    if (serviceTypeMatch) {
+      const serviceType = serviceTypeMatch[1].toLowerCase();
+      return {
+        type: "PROMPT",
+        message: "Select HTTP method:",
+        context: "webService",
+        options: [
+          {
+            text: "HTTP Method",
+            type: "info",
+            className: "text-xs font-semibold text-gray-600",
+          },
+          ...this.HTTP_METHODS.map(method => ({
+            text: method.label,
+            type: "command",
+            command: `set http method to ${method.value}`,
+            icon: FaGlobe,
+            className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+          })),
+        ],
+        style: {
+          serviceConfig: {
+            ...currentStyle.serviceConfig,
+            type: serviceType,
+          },
+        },
+      };
+    }
+
+    // Handle HTTP method selection
+    const httpMethodPattern = /^set\s*(?:http)?\s*method\s*to\s*(GET|POST|PUT|DELETE|PATCH)$/i;
+    const httpMethodMatch = input.match(httpMethodPattern);
+    if (httpMethodMatch) {
+      const method = httpMethodMatch[1].toUpperCase();
+      return {
+        type: "PROMPT",
+        message: "Enter endpoint URL:",
+        context: "webService",
+        needsInput: true,
+        inputType: "url",
+        style: {
+          serviceConfig: {
+            ...currentStyle.serviceConfig,
+            method,
+          },
+        },
+      };
+    }
+
+    // Handle endpoint URL setting
+    const endpointPattern = /^set\s*endpoint\s*(?:url)?\s*to\s*(.+)$/i;
+    const endpointMatch = input.match(endpointPattern);
+    if (endpointMatch) {
+      const endpoint = endpointMatch[1];
+      return {
+        type: "PROMPT",
+        message: "Select authentication type:",
+        context: "webService",
+        options: [
+          {
+            text: "Authentication",
+            type: "info",
+            className: "text-xs font-semibold text-gray-600",
+          },
+          ...this.AUTH_TYPES.map(auth => ({
+            text: auth.label,
+            type: "command",
+            command: `set auth type to ${auth.value}`,
+            icon: FaLock,
+            className: "text-xs px-2 py-1 bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 border border-gray-200 hover:border-gray-300 rounded-md transition-all duration-150",
+          })),
+        ],
+        style: {
+          serviceConfig: {
+            ...currentStyle.serviceConfig,
+            endpoint,
+          },
+        },
+      };
+    }
+
     return null;
   }
 
@@ -840,6 +973,27 @@ export class ButtonProcessor {
           icon: FaTimes,
           className: buttonClass,
           checkEnabled: (component) => component?.style?.enablePageNavigation,
+        },
+        {
+          text: "Web Service",
+          type: "info",
+          icon: FaGlobe,
+          className: headerClass,
+        },
+        {
+          text: "configure web service",
+          type: "command",
+          icon: FaDatabase,
+          className: buttonClass,
+          command: "setup web service",
+        },
+        {
+          text: "remove web service",
+          type: "command",
+          icon: FaTimes,
+          className: `${buttonClass} text-red-600 hover:text-red-700`,
+          command: "remove web service",
+          checkEnabled: (component) => component?.style?.serviceConfig,
         },
         {
           text: "Hover Effects",

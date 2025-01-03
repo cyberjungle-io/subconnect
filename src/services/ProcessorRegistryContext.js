@@ -151,6 +151,30 @@ export function ProcessorRegistryProvider({ children }) {
             property: "navigation",
           },
           {
+            pattern: /^(?:enable|configure|setup)\s*web\s*service$/i,
+            type: "COMMAND",
+            priority: 100,
+            property: "webService",
+          },
+          {
+            pattern: /^set\s*service\s*type\s*to\s*(data|action)$/i,
+            type: "COMMAND",
+            priority: 100,
+            property: "serviceType",
+          },
+          {
+            pattern: /^set\s*(?:http)?\s*method\s*to\s*(GET|POST|PUT|DELETE|PATCH)$/i,
+            type: "COMMAND",
+            priority: 100,
+            property: "httpMethod",
+          },
+          {
+            pattern: /^set\s*endpoint\s*(?:url)?\s*to\s*(.+)$/i,
+            type: "COMMAND",
+            priority: 100,
+            property: "endpoint",
+          },
+          {
             pattern: /(?:button|hover|click)/i,
             type: "STYLE",
             priority: 65,
