@@ -360,11 +360,12 @@ export class BorderProcessor {
           },
         };
       } else {
+        // Preserve existing border properties while updating width
         return {
           style: {
             borderWidth: presets.borderWidth[size],
-            borderStyle: "solid",
-            borderColor: currentStyle.borderColor || "black",
+            borderStyle: currentBorderStyle,
+            borderColor: currentBorderColor,
           },
         };
       }

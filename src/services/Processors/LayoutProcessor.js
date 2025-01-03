@@ -200,7 +200,7 @@ export class LayoutProcessor {
       return {
         props: { flexDirection: "row" },
         confidence: 1.0,
-        message: "Changed layout to horizontal",
+        message: "Set layout to horizontal",
       };
     }
 
@@ -208,7 +208,7 @@ export class LayoutProcessor {
       return {
         props: { flexDirection: "column" },
         confidence: 1.0,
-        message: "Changed layout to vertical",
+        message: "Set layout to vertical",
       };
     }
 
@@ -222,7 +222,7 @@ export class LayoutProcessor {
       return {
         props: { flexWrap: wrapCommands[lowercaseInput] },
         confidence: 1.0,
-        message: `Changed wrap mode to ${wrapCommands[lowercaseInput]}`,
+        message: `Updated wrap mode to ${wrapCommands[lowercaseInput]}`,
       };
     }
 

@@ -3,8 +3,6 @@ import {
   FaCompress,
   FaArrowsAltV,
   FaArrowsAltH,
-  FaExpandAlt,
-  FaCompressAlt,
 } from "react-icons/fa";
 
 export class SizeProcessor {
@@ -220,39 +218,6 @@ export class SizeProcessor {
             },
           ],
         },
-        {
-          text: "Quick Adjust",
-          type: "info",
-          icon: FaExpandAlt,
-          className: headerClass,
-        },
-        {
-          type: "wrapper",
-          className: "flex gap-1",
-          options: [
-            {
-              text: "bigger",
-              command: "make it bigger",
-              type: "command",
-              icon: FaExpandAlt,
-              className: buttonClass,
-            },
-            {
-              text: "smaller",
-              command: "make it smaller",
-              type: "command",
-              icon: FaCompressAlt,
-              className: buttonClass,
-            },
-            {
-              text: "fit to content",
-              command: "fit to content",
-              type: "command",
-              icon: FaCompress,
-              className: buttonClass,
-            },
-          ],
-        },
       ],
     };
   }
@@ -365,124 +330,6 @@ export class SizeProcessor {
           },
           message: `Set height to ${formattedValue}`,
           property: "height",
-        };
-      }
-    }
-
-    // Handle make bigger/smaller commands
-    const sizeChangePattern =
-      /(?:make|set)\s*(?:it|this)?\s*(bigger|larger|smaller)/i;
-    const sizeMatch = input.match(sizeChangePattern);
-
-    if (sizeMatch) {
-      const isBigger = sizeMatch[1].match(/bigger|larger/i);
-      const changes = {};
-
-      // Helper function to calculate new size
-      const calculateNewSize = (
-        currentValue,
-        unit,
-        isIncrease,
-        dimension = "width"
-      ) => {
-        if (unit === "%") {
-          const increment = 10;
-          const newValue = isIncrease
-            ? Math.min(currentValue + increment, 100)
-            : Math.max(currentValue - increment, 25);
-          return {
-            [`${dimension}`]: `${newValue}%`,
-            [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
-              dimension === "width" ? `${newValue}%` : "0",
-            [`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
-              "100%",
-          };
-        } else if (unit === "px") {
-          const increment = 50;
-          const newValue = isIncrease
-            ? currentValue + increment
-            : Math.max(currentValue - increment, 50);
-          return {
-            [`${dimension}`]: `${newValue}px`,
-            [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
-              "0",
-            [`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
-              "100%",
-          };
-        } else if (currentValue === "fit-content" || currentValue === "auto") {
-          // If current size is fit-content, switch to percentage based
-          return {
-            [`${dimension}`]: isIncrease ? "100%" : "75%",
-            [`min${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
-              dimension === "width" ? (isIncrease ? "100%" : "75%") : "0",
-            [`max${dimension.charAt(0).toUpperCase() + dimension.slice(1)}`]:
-              "100%",
-          };
-        }
-        return null;
-      };
-
-      // Process width
-      if (currentStyle.width) {
-        const widthMatch = currentStyle.width.match(/^([\d.]+)([%px]+|auto)$/);
-        if (widthMatch) {
-          const [_, value, unit] = widthMatch;
-          const currentValue = parseFloat(value);
-          const newSize = calculateNewSize(
-            currentValue,
-            unit,
-            isBigger,
-            "width"
-          );
-          if (newSize) Object.assign(changes, newSize);
-        } else if (
-          currentStyle.width === "fit-content" ||
-          currentStyle.width === "auto"
-        ) {
-          const newSize = calculateNewSize(
-            currentStyle.width,
-            null,
-            isBigger,
-            "width"
-          );
-          if (newSize) Object.assign(changes, newSize);
-        }
-      }
-
-      // Process height
-      if (currentStyle.height) {
-        const heightMatch = currentStyle.height.match(
-          /^([\d.]+)([%px]+|auto)$/
-        );
-        if (heightMatch) {
-          const [_, value, unit] = heightMatch;
-          const currentValue = parseFloat(value);
-          const newSize = calculateNewSize(
-            currentValue,
-            unit,
-            isBigger,
-            "height"
-          );
-          if (newSize) Object.assign(changes, newSize);
-        } else if (
-          currentStyle.height === "fit-content" ||
-          currentStyle.height === "auto"
-        ) {
-          const newSize = calculateNewSize(
-            currentStyle.height,
-            null,
-            isBigger,
-            "height"
-          );
-          if (newSize) Object.assign(changes, newSize);
-        }
-      }
-
-      if (Object.keys(changes).length > 0) {
-        return {
-          style: changes,
-          message: `Updated ${isBigger ? "increased" : "decreased"} size`,
-          type: "COMMAND_EXECUTED",
         };
       }
     }
